@@ -1,0 +1,7 @@
+# Roslyn Tools
+A set of tools used by Roslyn.
+
+### Status
+||Debug Build|Debug x86|Debug x64|Release Build|Release x86|Release x64|
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+|**master**|[![Build Status](http://dotnet-ci.cloudapp.net/buildStatus/icon?job=Private/dotnet_roslyn-tools/master/windows_debug_build)](http://dotnet-ci.cloudapp.net/job/Private/job/dotnet_roslyn-tools/job/master/job/windows_debug_build/)|[![Build Status](http://dotnet-ci.cloudapp.net/buildStatus/icon?job=Private/dotnet_roslyn-tools/master/windows_debug_unit32)](http://dotnet-ci.cloudapp.net/job/Private/job/dotnet_roslyn-tools/job/master/job/windows_debug_unit32/)|[![Build Status](http://dotnet-ci.cloudapp.net/buildStatus/icon?job=Private/dotnet_roslyn-tools/master/windows_debug_unit64)](http://dotnet-ci.cloudapp.net/job/Private/job/dotnet_roslyn-tools/job/master/job/windows_debug_unit64/)|[![Build Status](http://dotnet-ci.cloudapp.net/buildStatus/icon?job=Private/dotnet_roslyn-tools/master/windows_release_build)](http://dotnet-ci.cloudapp.net/job/Private/job/dotnet_roslyn-tools/job/master/job/windows_release_build/)|[![Build Status](http://dotnet-ci.cloudapp.net/buildStatus/icon?job=Private/dotnet_roslyn-tools/master/windows_release_unit32)](http://dotnet-ci.cloudapp.net/job/Private/job/dotnet_roslyn-tools/job/master/job/windows_release_unit32/)|[![Build Status](http://dotnet-ci.cloudapp.net/buildStatus/icon?job=Private/dotnet_roslyn-tools/master/windows_release_unit64)](http://dotnet-ci.cloudapp.net/job/Private/job/dotnet_roslyn-tools/job/master/job/windows_release_unit64/)|

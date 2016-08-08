@@ -1,0 +1,76 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.25604.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7C921001-EF26-441B-98E2-F88AA90FFBAF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1063E05B-16CB-434C-9F91-A1710B4AAAB8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{F1DE5839-68C4-4243-A725-E6742D2114BF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Signing", "Signing", "{63E9A1D5-6BFB-44D0-BD6C-909A6B8DC01E}"
+	ProjectSection(SolutionItems) = preProject
+		build\Signing\35MSSharedLib1024.snk = build\Signing\35MSSharedLib1024.snk
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{ABAC7A0D-5EBA-4003-B102-6A667B10D0DD}"
+	ProjectSection(SolutionItems) = preProject
+		build\Targets\GenerateAssemblyInfo.targets = build\Targets\GenerateAssemblyInfo.targets
+		build\Targets\GenerateInternalsVisibleTo.targets = build\Targets\GenerateInternalsVisibleTo.targets
+		build\Targets\Settings.targets = build\Targets\Settings.targets
+		build\Targets\Versions.targets = build\Targets\Versions.targets
+		build\Targets\VSL.Imports.targets = build\Targets\VSL.Imports.targets
+		build\Targets\VSL.Settings.targets = build\Targets\VSL.Settings.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Toolset", "Toolset", "{1F779A8A-240A-4DE6-829E-3FE32FBFCA0A}"
+	ProjectSection(SolutionItems) = preProject
+		build\Toolset\dev14.project.json = build\Toolset\dev14.project.json
+		build\Toolset\project.json = build\Toolset\project.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Windows", "Windows", "{1618719C-DB93-4445-9EC8-B572E46FFEBA}"
+	ProjectSection(SolutionItems) = preProject
+		build\Scripts\Windows\Build.ps1 = build\Scripts\Windows\Build.ps1
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignTool", "src\SignTool\SignTool.csproj", "{3DA711E1-055F-4352-A5E1-F9169C86A20F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FA0280AF-BAA7-4EC1-93CE-06F9FCB97A98}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		Build.cmd = Build.cmd
+		LICENSE.md = LICENSE.md
+		netci.groovy = netci.groovy
+		nuget.config = nuget.config
+		README.md = README.md
+		Restore.cmd = Restore.cmd
+		Test.cmd = Test.cmd
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3DA711E1-055F-4352-A5E1-F9169C86A20F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DA711E1-055F-4352-A5E1-F9169C86A20F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DA711E1-055F-4352-A5E1-F9169C86A20F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DA711E1-055F-4352-A5E1-F9169C86A20F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F1DE5839-68C4-4243-A725-E6742D2114BF} = {7C921001-EF26-441B-98E2-F88AA90FFBAF}
+		{63E9A1D5-6BFB-44D0-BD6C-909A6B8DC01E} = {7C921001-EF26-441B-98E2-F88AA90FFBAF}
+		{ABAC7A0D-5EBA-4003-B102-6A667B10D0DD} = {7C921001-EF26-441B-98E2-F88AA90FFBAF}
+		{1F779A8A-240A-4DE6-829E-3FE32FBFCA0A} = {7C921001-EF26-441B-98E2-F88AA90FFBAF}
+		{1618719C-DB93-4445-9EC8-B572E46FFEBA} = {F1DE5839-68C4-4243-A725-E6742D2114BF}
+		{3DA711E1-055F-4352-A5E1-F9169C86A20F} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
+	EndGlobalSection
+EndGlobal

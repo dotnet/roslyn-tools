@@ -1,0 +1,47 @@
+###############################################################################
+# EditorConfig is awesome: http://EditorConfig.org
+###############################################################################
+
+###############################################################################
+# Top-most EditorConfig file
+###############################################################################
+root = true
+
+###############################################################################
+# Set default behavior to:
+#   a UTF-8 encoding,
+#   Windows-style line endings,
+#   a newline ending the file,
+#   4 space indentation, and
+#   trimming of trailing whitespace
+###############################################################################
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+###############################################################################
+# Set file behavior to:
+#   2 space indentation, and
+#   no newline ending the file
+###############################################################################
+[*.{csproj,json,nuspec,proj,projitems,props,resx,ruleset,shproj,targets,vbproj,vcxproj,vcxproj.filters,vsct,vsixmanifest}]
+indent_size = 2
+insert_final_newline = false
+
+###############################################################################
+# Set file behavior to:
+#   2 space indentation
+###############################################################################
+[*.{cmd,config,ps1}]
+indent_size = 2
+
+###############################################################################
+# Set file behavior to:
+#   tabular indentation
+###############################################################################
+[*.sln]
+indent_style = tab
