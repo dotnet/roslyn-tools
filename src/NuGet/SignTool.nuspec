@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>RoslynTools.Microsoft.SignTool</id>
+    <summary>Signing tool for shipping Roslyn Assemblies</summary>
+    <description>Signing tool for shipping Roslyn Assemblies</description>
+    <dependencies>
+    </dependencies>
+    <language>en-US</language>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <licenseUrl>$licenseUrl$</licenseUrl>
+    <projectUrl>$projectUrl$</projectUrl>
+    <releaseNotes>$releaseNotes$</releaseNotes>
+    <tags>$tags$</tags>
+  </metadata>
+  <files>
+    <file src="SignTool.exe" target="tools" />
+    <file src="Newtonsoft.Json.dll" target="tools" />
+    <file src="System.Collections.Immutable.dll" target="tools" />
+    <file src="System.Reflection.Metadata.dll" target="tools" />
+    <file src="$thirdPartyNoticesPath$" target="" />
+  </files>
+</package>

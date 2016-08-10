@@ -9,6 +9,7 @@ Param(
   [switch] $realSign,
   [switch] $skipBuild,
   [switch] $skipDeploy,
+  [switch] $skipPackage,
   [switch] $skipRestore,
   [switch] $skipTest,
   [switch] $skipTest32,
@@ -62,7 +63,7 @@ function Locate-BinariesPath {
 function Locate-LogPath {
   $artifactsPath = Locate-ArtifactsPath
   $logPath = Join-Path -path $artifactsPath -ChildPath "log\"
-  
+
   Create-Directory -path $logPath
   return Resolve-Path -path $logPath
 }
@@ -134,6 +135,12 @@ function Locate-NuGetConfig {
   $rootPath = Locate-RootPath
   $nugetConfig = Join-Path -path $rootPath -childPath "nuget.config"
   return Resolve-Path -path $nugetConfig
+}
+
+function Locate-NuGetProjectPath {
+  $rootPath = Locate-RootPath
+  $projectPath = Join-Path -path $rootPath -ChildPath "src\NuGet\NuGet.proj"
+  return Resolve-Path -path $projectPath
 }
 
 function Locate-PackagesPath {
@@ -278,6 +285,28 @@ function Perform-Build {
   Write-Host -object "The build completed successfully." -foregroundColor Green
 }
 
+function Perform-Package {
+  Write-Host -object ""
+
+  if ($skipPackage) {
+    Write-Host -object "Skipping NuGet Packaging"
+    return
+  }
+
+  $msbuild = Locate-MSBuild
+  $msbuildLogPath = Locate-MSBuildLogPath
+  $solution = Locate-Solution
+
+  $msbuildSummaryLog = Join-Path -path $msbuildLogPath -childPath "RoslynToolsPackage.log"
+  $msbuildWarningLog = Join-Path -path $msbuildLogPath -childPath "RoslynToolsPackage.wrn"
+  $msbuildFailureLog = Join-Path -path $msbuildLogPath -childPath "RoslynToolsPackage.err"
+
+  $nugetProjectPath = Locate-NuGetProjectPath
+
+  Write-Host "Starting package..."
+  & $msbuild /t:$target /p:Configuration=$configuration /m /v:m /flp1:Summary`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildSummaryLog /flp2:WarningsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildWarningLog /flp3:ErrorsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildFailureLog /nr:false $nugetProjectPath
+}
+
 function Perform-RealSign {
   Write-Host -object ""
 
@@ -303,7 +332,7 @@ function Perform-RealSign {
   if ($lastExitCode -ne 0) {
     throw "The real sign task failed with an exit code of '$lastExitCode'."
   }
-  
+
   Write-Host -object "The real sign task completed successfully." -foregroundColor Green
 }
 
@@ -386,7 +415,7 @@ function Print-Help {
   if (-not $help) {
     return
   }
-  
+
   Write-Host -object "Build Script"
   Write-Host -object "    Help                  - [Switch] - Prints this help message."
   Write-Host -object ""
@@ -402,18 +431,20 @@ function Print-Help {
   Write-Host -object "    RealSign              - [Switch] - Indicates this build needs real signing performed."
   Write-Host -object "    SkipBuild             - [Switch] - Indicates the build step should be skipped."
   Write-Host -object "    SkipDeploy            - [Switch] - Indicates the VSIX deployment step should be skipped."
+  Write-Host -object "    SkipPackage           - [Switch] - Indicates the NuGet Package step should be skipped."
   Write-Host -object "    SkipRestore           - [Switch] - Indicates the restore step should be skipped."
   Write-Host -object "    SkipTest              - [Switch] - Indicates the test step should be skipped."
   Write-Host -object "    SkipTest32            - [Switch] - Indicates the 32-bit Unit Tests should be skipped."
   Write-Host -object "    SkipTest64            - [Switch] - Indicates the 64-bit Unit Tests should be skipped."
   Write-Host -object "    Integration           - [Switch] - Indicates the Integration Tests should be run."
-  
+
   Exit 0
 }
 
 Print-Help
 Perform-Restore
 Perform-Build
+Perform-Package
 # Perform-RealSign
 # Perform-Test-x86
 # Perform-Test-x64
