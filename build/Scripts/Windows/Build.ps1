@@ -2,11 +2,11 @@
 Param(
   [string] $configuration = "Debug",
   [string] $deployHive = "Exp",
+  [switch] $help,
   [string] $msbuildVersion = "15.0",
   [string] $nugetVersion = "3.5.0-beta2",
-  [string] $publishedPackageVersion = "0.1.0-beta",
-  [switch] $help,
   [switch] $official,
+  [string] $publishedPackageVersion = "0.1.0-beta",
   [switch] $realSign,
   [switch] $skipBuild,
   [switch] $skipDeploy,
@@ -17,8 +17,8 @@ Param(
   [switch] $skipTest64,
   [string] $target = "Build",
   [string] $testFilter = "*.UnitTests.dll",
-  [string] $xUnitVersion = "2.1.0",
-  [string] $csiVersion = "1.3.2"
+  [string] $toolsetVersion = "1.3.2",
+  [string] $xUnitVersion = "2.1.0"
 )
 
 set-strictmode -version 2.0
@@ -75,10 +75,10 @@ function Locate-BuiltSignToolPath {
 
 function Locate-CsiPath {
   $packagesPath = Locate-PackagesPath
-  $csiPath = Join-Path -path $packagesPath -ChildPath "Microsoft.Net.Compilers\$csiVersion\tools\csi.exe"
+  $csiPath = Join-Path -path $packagesPath -ChildPath "Microsoft.Net.Compilers\$toolsetVersion\tools\csi.exe"
 
   if (!(Test-Path -path $csiPath)) {
-    throw "The specified CSI version ($csiVersion) could not be located."
+    throw "The specified CSI version ($toolsetVersion) could not be located."
   }
 
   return Resolve-Path -Path $csiPath
@@ -458,8 +458,8 @@ function Print-Help {
   Write-Host -object "    publishedPackageVersion    - [String] - Specifies the version of the published NuGet package. Defaults to '0.1.0-beta'."
   Write-Host -object "    Target                     - [String] - Specifies the build target. Defaults to 'Build'."
   Write-Host -object "    TestFilter                 - [String] - Specifies the test filter. Defaults to '*.UnitTests.dll'."
+  Write-Host -object "    toolsetVersion             - [String] - Specifies the CSI version. Defaults to '1.3.2'."
   Write-Host -object "    xUnitVersion               - [String] - Specifies the xUnit version. Defaults to '2.1.0'."
-  Write-Host -object "    csiVersion                 - [String] - Specifies the CSI version. Defaults to '1.3.2'."
   Write-Host -object ""
   Write-Host -object "    Official                   - [Switch] - Indicates this is an official build which changes the semantic version."
   Write-Host -object "    RealSign                   - [Switch] - Indicates this build needs real signing performed."
@@ -479,9 +479,9 @@ try {
   Print-Help
   Perform-Restore
   Perform-Build
-  Perform-Package
   # Perform-RealSign
   # Perform-Test-x86
+  Perform-Package
 } catch [exception] {
     write-host $_.Exception
     exit -1
