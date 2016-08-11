@@ -6,7 +6,7 @@ Param(
   [string] $msbuildVersion = "15.0",
   [string] $nugetVersion = "3.5.0-beta2",
   [switch] $official,
-  [string] $publishedPackageVersion = "0.1.0-beta",
+  [string] $PublishedPackageVersion = "0.1.0-beta",
   [switch] $realSign,
   [switch] $skipBuild,
   [switch] $skipDeploy,
@@ -17,7 +17,7 @@ Param(
   [switch] $skipTest64,
   [string] $target = "Build",
   [string] $testFilter = "*.UnitTests.dll",
-  [string] $toolsetVersion = "1.3.2",
+  [string] $ToolsetVersion = "1.3.2",
   [string] $xUnitVersion = "2.1.0"
 )
 
@@ -75,10 +75,10 @@ function Locate-BuiltSignToolPath {
 
 function Locate-CsiPath {
   $packagesPath = Locate-PackagesPath
-  $csiPath = Join-Path -path $packagesPath -ChildPath "Microsoft.Net.Compilers\$toolsetVersion\tools\csi.exe"
+  $csiPath = Join-Path -path $packagesPath -ChildPath "Microsoft.Net.Compilers\$ToolsetVersion\tools\csi.exe"
 
   if (!(Test-Path -path $csiPath)) {
-    throw "The specified CSI version ($toolsetVersion) could not be located."
+    throw "The specified CSI version ($ToolsetVersion) could not be located."
   }
 
   return Resolve-Path -Path $csiPath
@@ -330,7 +330,7 @@ function Perform-Package {
   $nugetOutPath = Locate-NuGetOutputPath
 
   Write-Host "Starting package..."
-  & $csi $nugetScriptPath $signToolPath $publishedPackageVersion $NuGetOutPath
+  & $csi $nugetScriptPath $signToolPath $PublishedPackageVersion $NuGetOutPath
 
   if ($lastExitCode -ne 0) {
     throw "The package task failed with an exit code of '$lastExitCode'."
@@ -455,10 +455,10 @@ function Print-Help {
   Write-Host -object "    DeployHive                 - [String] - Specifies the VSIX deployment hive. Defaults to 'Exp'."
   Write-Host -object "    MSBuildVersion             - [String] - Specifies the MSBuild version. Defaults to '15.0'."
   Write-Host -object "    NuGetVersion               - [String] - Specifies the NuGet version. Defaults to '3.5.0-beta2'."
-  Write-Host -object "    publishedPackageVersion    - [String] - Specifies the version of the published NuGet package. Defaults to '0.1.0-beta'."
+  Write-Host -object "    PublishedPackageVersion    - [String] - Specifies the version of the published NuGet package. Defaults to '0.1.0-beta'."
   Write-Host -object "    Target                     - [String] - Specifies the build target. Defaults to 'Build'."
   Write-Host -object "    TestFilter                 - [String] - Specifies the test filter. Defaults to '*.UnitTests.dll'."
-  Write-Host -object "    toolsetVersion             - [String] - Specifies the CSI version. Defaults to '1.3.2'."
+  Write-Host -object "    ToolsetVersion             - [String] - Specifies the CSI version. Defaults to '1.3.2'."
   Write-Host -object "    xUnitVersion               - [String] - Specifies the xUnit version. Defaults to '2.1.0'."
   Write-Host -object ""
   Write-Host -object "    Official                   - [Switch] - Indicates this is an official build which changes the semantic version."
