@@ -21,6 +21,9 @@ Param(
   [string] $csiVersion = "1.3.2"
 )
 
+set-strictmode -version 2.0
+$ErrorActionPreference = "Stop"
+
 function Create-Directory([string[]] $path) {
   if (!(Test-Path -path $path)) {
     New-Item -path $path -force -itemType "Directory" | Out-Null
@@ -472,10 +475,14 @@ function Print-Help {
   Exit 0
 }
 
-Print-Help
-Perform-Restore
-Perform-Build
-Perform-Package
-# Perform-RealSign
-# Perform-Test-x86
-# Perform-Test-x64
+try {
+  Print-Help
+  Perform-Restore
+  Perform-Build
+  Perform-Package
+  # Perform-RealSign
+  # Perform-Test-x86
+} catch [exception] {
+    write-host $_.Exception
+    exit -1
+}
