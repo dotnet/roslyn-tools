@@ -201,7 +201,7 @@ Directory.CreateDirectory(OutDir);
 var ErrorLogFile = Path.Combine(OutDir, "skipped_packages.txt");
 try
 {
-    if (File.Exists(ErrorLogFile)) File.Delete(ErrorLogFile);
+    File.Delete(ErrorLogFile);
 }
 catch
 {
