@@ -37,6 +37,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Windows", "Windows", "{1618
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignTool", "src\SignTool\SignTool.csproj", "{3DA711E1-055F-4352-A5E1-F9169C86A20F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{C0E7FE5B-10C1-414A-B54F-DA182205053F}"
+	ProjectSection(SolutionItems) = preProject
+		src\NuGet\BuildNuGets.csx = src\NuGet\BuildNuGets.csx
+		src\NuGet\SignTool.nuspec = src\NuGet\SignTool.nuspec
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FA0280AF-BAA7-4EC1-93CE-06F9FCB97A98}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -72,5 +78,6 @@ Global
 		{1F779A8A-240A-4DE6-829E-3FE32FBFCA0A} = {7C921001-EF26-441B-98E2-F88AA90FFBAF}
 		{1618719C-DB93-4445-9EC8-B572E46FFEBA} = {F1DE5839-68C4-4243-A725-E6742D2114BF}
 		{3DA711E1-055F-4352-A5E1-F9169C86A20F} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
+		{C0E7FE5B-10C1-414A-B54F-DA182205053F} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
 	EndGlobalSection
 EndGlobal
