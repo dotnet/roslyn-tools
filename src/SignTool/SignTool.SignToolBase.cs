@@ -13,22 +13,17 @@ namespace SignTool
     {
         private abstract class SignToolBase : ISignTool
         {
-            internal string MSBuildPath { get; }
-            internal string BinariesPath { get; }
-            internal string SettingsFile { get; }
-            internal string AppPath { get; }
+            private readonly SignToolArgs _args;
 
-            internal SignToolBase(string appPath, string binariesPath, string settingsFile, string msbuildPath)
+            internal string MSBuildPath => _args.MSBuildPath;
+            internal string OutputPath => _args.OutputPath;
+            internal string IntermediateOutputPath => _args.IntermediateOutputPath;
+            internal string NuGetPackagesPath => _args.NuGetPackagesPath;
+            internal string AppPath => _args.AppPath;
+
+            internal SignToolBase(SignToolArgs args)
             {
-                BinariesPath = binariesPath;
-                SettingsFile = settingsFile;
-                AppPath = appPath;
-                MSBuildPath = msbuildPath;
-
-                if (!File.Exists(MSBuildPath))
-                {
-                    throw new Exception($"Unable to locate MSBuild at the path '{msbuildPath}'.");
-                }
+                _args = args;
             }
 
             public abstract void RemovePublicSign(string assemblyPath);
@@ -41,7 +36,8 @@ namespace SignTool
             {
                 var buildFilePath = Path.Combine(AppPath, "build.proj");
                 var commandLine = new StringBuilder();
-                commandLine.Append(@"/v:m /target:RoslynSign ");
+
+                commandLine.Append(@"/v:m /target:BatchSignTool ");
                 commandLine.Append($@"""{buildFilePath}"" ");
                 Console.WriteLine($"msbuild.exe {commandLine.ToString()}");
 
@@ -76,8 +72,12 @@ namespace SignTool
                 AppendLine(builder, depth: 0, text: @"<?xml version=""1.0"" encoding=""utf-8""?>");
                 AppendLine(builder, depth: 0, text: @"<Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">");
 
-                AppendLine(builder, depth: 1, text: $@"<Import Project=""{SettingsFile}"" />");
+                // Setup the code to get the NuGet package root.
+                AppendLine(builder, depth: 0, text: @"<PropertyGroup>");
+                AppendLine(builder, depth: 1, text: $@"<NuGetPackageRoot>{NuGetPackagesPath}</NuGetPackageRoot>");
+                AppendLine(builder, depth: 0, text: @"</PropertyGroup>");
 
+                // TODO: need an option for Microbuild version
                 AppendLine(builder, depth: 1, text: $@"<Import Project=""$(NuGetPackageRoot)\MicroBuild.Core\0.2.0\build\MicroBuild.Core.props"" />");
                 AppendLine(builder, depth: 1, text: $@"<Import Project=""$(NuGetPackageRoot)\MicroBuild.Core\0.2.0\build\MicroBuild.Core.targets"" />");
 
@@ -96,9 +96,9 @@ namespace SignTool
 
                 AppendLine(builder, depth: 1, text: $@"</ItemGroup>");
 
-                var intermediatesPath = Path.Combine(Path.GetDirectoryName(BinariesPath), "Obj");
-                AppendLine(builder, depth: 1, text: @"<Target Name=""RoslynSign"">");
-                AppendLine(builder, depth: 2, text: $@"<SignFiles Files=""@(FilesToSign)"" BinariesDirectory=""{BinariesPath}"" IntermediatesDirectory=""{intermediatesPath}"" Type=""real"" />");
+                var intermediatesPath = Path.Combine(Path.GetDirectoryName(OutputPath), "Obj");
+                AppendLine(builder, depth: 1, text: @"<Target Name=""BatchSignTool"">");
+                AppendLine(builder, depth: 2, text: $@"<SignFiles Files=""@(FilesToSign)"" BinariesDirectory=""{OutputPath}"" IntermediatesDirectory=""{IntermediateOutputPath}"" Type=""real"" />");
                 AppendLine(builder, depth: 1, text: @"</Target>");
                 AppendLine(builder, depth: 0, text: @"</Project>");
 

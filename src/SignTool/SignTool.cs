@@ -20,14 +20,14 @@ namespace SignTool
 
     internal static partial class SignToolFactory
     {
-        internal static ISignTool Create(string appPath, string binariesPath, string settingsFile, string msbuildPath, bool test)
+        internal static ISignTool Create(SignToolArgs args)
         {
-            if (test)
+            if (args.Test)
             {
-                return new TestSignTool(appPath, binariesPath, settingsFile, msbuildPath);
+                return new TestSignTool(args);
             }
 
-            return new RealSignTool(appPath, binariesPath, settingsFile, msbuildPath);
+            return new RealSignTool(args);
         }
     }
 }

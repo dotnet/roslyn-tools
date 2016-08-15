@@ -14,116 +14,214 @@ namespace SignTool
     {
         internal static void Main(string[] args)
         {
-            string binariesPath;
-            string settingsFile;
-            string msbuildPath;
-            bool test;
-
-            if (!ParseCommandLineArguments(args, out binariesPath, out settingsFile, out msbuildPath, out test))
+            SignToolArgs signToolArgs;
+            if (!ParseCommandLineArguments(StandardHost.Instance, args, out signToolArgs))
             {
-                Console.WriteLine("SignTool.exe [-test] [-binariesPath <path>] [-settingsFile <path>] [-msbuildPath <path>]");
+                PrintUsage();
                 Environment.Exit(1);
             }
 
-            var signTool = SignToolFactory.Create(AppContext.BaseDirectory, binariesPath, settingsFile, msbuildPath, test);
-            var batchData = ReadBatchSignInput(binariesPath);
+            if (!File.Exists(signToolArgs.MSBuildPath))
+            {
+                Console.WriteLine($"Unable to locate MSBuild at the path '{signToolArgs.MSBuildPath}'.");
+                Environment.Exit(1);
+            }
+
+            var signTool = SignToolFactory.Create(signToolArgs);
+            var batchData = ReadConfigFile(signToolArgs.OutputPath, signToolArgs.ConfigFile);
             var util = new BatchSignUtil(signTool, batchData);
             util.Go();
         }
 
-        internal static BatchSignInput ReadBatchSignInput(string rootBinaryPath)
+        internal static BatchSignInput ReadConfigFile(string outputPath, string configFile)
         {
-            var filePath = Path.Combine(AppContext.BaseDirectory, "BatchSignData.json");
-            using (var file = File.OpenText(filePath))
+            using (var file = File.OpenText(configFile))
             {
-                var serializer = new JsonSerializer();
-                var fileJson = (Json.FileJson)serializer.Deserialize(file, typeof(Json.FileJson));
-                var map = new Dictionary<string, SignInfo>();
-                var allGood = true;
-                foreach (var item in fileJson.SignList)
-                {
-                    var data = new SignInfo(certificate: item.Certificate, strongName: item.StrongName);
-                    foreach (var name in item.FileList)
-                    {
-                        if (map.ContainsKey(name))
-                        {
-                            Console.WriteLine($"Duplicate file entry: {name}");
-                            allGood = false;
-                        }
-                        else
-                        {
-                            map.Add(name, data);
-                        }
-                    }
-                }
-
-                if (!allGood)
+                BatchSignInput batchData;
+                if (!TryReadConfigFile(Console.Out, file, outputPath, out batchData))
                 {
                     Environment.Exit(1);
                 }
 
-                return new BatchSignInput(rootBinaryPath, map, fileJson.ExcludeList);
+                return batchData;
             }
         }
 
-        internal static bool ParseCommandLineArguments(
-            string[] args,
-            out string binariesPath,
-            out string settingsFile,
-            out string msbuildPath,
-            out bool test)
+        internal static bool TryReadConfigFile(TextWriter output, TextReader configReader, string outputPath, out BatchSignInput batchData)
         {
-            binariesPath = Path.GetDirectoryName(Path.GetDirectoryName(AppContext.BaseDirectory));
-            settingsFile = Path.Combine(Environment.CurrentDirectory, @"build\Targets\Settings.targets");
-            msbuildPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"MSBuild\14.0\bin\MSBuild.exe");
-            test = false;
+            var serializer = new JsonSerializer();
+            var fileJson = (Json.FileJson)serializer.Deserialize(configReader, typeof(Json.FileJson));
+            var map = new Dictionary<string, SignInfo>();
+            var allGood = true;
+            foreach (var item in fileJson.SignList)
+            {
+                var data = new SignInfo(certificate: item.Certificate, strongName: item.StrongName);
+                foreach (var name in item.FileList)
+                {
+                    if (map.ContainsKey(name))
+                    {
+                        Console.WriteLine($"Duplicate file entry: {name}");
+                        allGood = false;
+                    }
+                    else
+                    {
+                        map.Add(name, data);
+                    }
+                }
+            }
+
+            if (!allGood)
+            {
+                batchData = null;
+                return false;
+            }
+
+            batchData = new BatchSignInput(outputPath, map, fileJson.ExcludeList ?? Array.Empty<string>());
+            return true;
+        }
+
+        internal static void PrintUsage()
+        {
+            var usage =
+@"SignTool.exe [-test] [-intermediateOutputPath <path>] [-msbuildPath <path>] [-nugetPackagesPath <path>] [-config <path>] outputPath
+
+test: Run tool without actually modifying any state.
+outputPath: Directory containing the binaries.
+intermediateOutputPath: Directory containing intermediate output.  Default is (outputpath\..\Obj).
+nugetPackagesPath: Path containing downloaded NuGet packages.
+msbuildPath: Path to MSBuild.exe to use as signing mechanism.
+config: Path to SignToolData.json. Default build\config\SignToolData.json.
+";
+            Console.WriteLine(usage);
+        }
+
+        internal static bool ParseCommandLineArguments(
+            IHost host,
+            string[] args,
+            out SignToolArgs signToolArgs)
+        {
+            signToolArgs = default(SignToolArgs);
+
+            string intermediateOutputPath = null;
+            string outputPath = null;
+            string msbuildPath = null;
+            string nugetPackagesPath = null;
+            string configFile = null;
+            var test = false;
 
             var i = 0;
-            while (i < args.Length)
+
+            while (i + 1 < args.Length)
             {
-                var current = args[i];
-                switch (current.ToLower())
+                var current = args[i].ToLower();
+                switch (current)
                 {
                     case "-test":
                         test = true;
                         i++;
                         break;
-                    case "-binariespath":
-                        if (i + 1 >= args.Length)
+                    case "-intermediateoutputpath":
+                        if (!ParsePathOption(args, ref i, current, out intermediateOutputPath))
                         {
-                            Console.WriteLine("-binariesPath needs an argument");
                             return false;
                         }
-
-                        binariesPath = args[i + 1];
-                        i += 2;
-                        break;
-                    case "-settingsfile":
-                        if (i + 1 >= args.Length)
-                        {
-                            Console.WriteLine("-settingsFile needs an argument");
-                            return false;
-                        }
-
-                        settingsFile = args[i + 1];
-                        i += 2;
                         break;
                     case "-msbuildpath":
-                        if (i + 1 >= args.Length)
+                        if (!ParsePathOption(args, ref i, current, out msbuildPath))
                         {
-                            Console.WriteLine("-msbuildPath needs an argument");
                             return false;
                         }
-
-                        msbuildPath = args[i + 1];
-                        i += 2;
+                        break;
+                    case "-nugetpackagespath":
+                        if (!ParsePathOption(args, ref i, current, out nugetPackagesPath))
+                        {
+                            return false;
+                        }
+                        break;
+                    case "-config":
+                        if (!ParsePathOption(args, ref i, current, out configFile))
+                        {
+                            return false;
+                        }
                         break;
                     default:
                         Console.WriteLine($"Unrecognized option {current}");
                         return false;
                 }
             }
+
+            if (i + 1 != args.Length)
+            {
+                Console.WriteLine("Need a value for outputPath");
+                return false;
+            }
+
+            outputPath = args[i];
+
+            // Get defaults for all of the optional values that weren't specified
+            msbuildPath = msbuildPath ?? Path.Combine(host.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"MSBuild\14.0\bin\MSBuild.exe");
+            intermediateOutputPath = intermediateOutputPath ?? Path.Combine(Path.GetDirectoryName(outputPath), "Obj");
+
+            if (string.IsNullOrWhiteSpace(nugetPackagesPath))
+            {
+                nugetPackagesPath = host.GetEnvironmentVariable("NUGET_PACKAGES");
+                if (string.IsNullOrWhiteSpace(nugetPackagesPath))
+                {
+                    nugetPackagesPath = Path.Combine(
+                        host.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                        @".nuget\packages");
+                }
+            }
+
+            if (configFile == null)
+            {
+                var sourcesPath = GetSourcesPath(host, outputPath);
+                if (sourcesPath != null)
+                {
+                    configFile = Path.Combine(sourcesPath, @"build\config\SignToolData.json");
+                }
+            }
+
+            signToolArgs = new SignToolArgs(
+                outputPath: outputPath,
+                msbuildPath: msbuildPath,
+                intermediateOutputPath: intermediateOutputPath,
+                nugetPackagesPath: nugetPackagesPath,
+                appPath: AppContext.BaseDirectory,
+                configFile: configFile,
+                test: test);
             return true;
+        }
+
+        private static bool ParsePathOption(string[] args, ref int i, string optionName, out string optionValue)
+        {
+            if (i + 1 >= args.Length)
+            {
+                Console.WriteLine($"{optionName} needs an argument");
+                optionValue = null;
+                return false;
+            }
+
+            optionValue = args[i + 1];
+            i += 2;
+            return true;
+        }
+
+        private static string GetSourcesPath(IHost host, string outputPath)
+        {
+            var current = Path.GetDirectoryName(outputPath);
+            while (!string.IsNullOrEmpty(current))
+            {
+                var gitDir = Path.Combine(current, ".git");
+                if (host.DirectoryExists(gitDir))
+                {
+                    return current;
+                }
+
+                current = Path.GetDirectoryName(current);
+            }
+
+            return null;
         }
     }
 }

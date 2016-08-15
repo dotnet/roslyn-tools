@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.25604.1
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7C921001-EF26-441B-98E2-F88AA90FFBAF}"
 EndProject
@@ -57,6 +57,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Test.cmd = Test.cmd
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignToolTests", "src\SignToolTests\SignToolTests.csproj", "{AB372697-8CAA-433F-AEC1-10A122FBB4EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{3DA711E1-055F-4352-A5E1-F9169C86A20F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DA711E1-055F-4352-A5E1-F9169C86A20F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DA711E1-055F-4352-A5E1-F9169C86A20F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB372697-8CAA-433F-AEC1-10A122FBB4EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB372697-8CAA-433F-AEC1-10A122FBB4EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB372697-8CAA-433F-AEC1-10A122FBB4EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB372697-8CAA-433F-AEC1-10A122FBB4EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,5 +85,6 @@ Global
 		{1618719C-DB93-4445-9EC8-B572E46FFEBA} = {F1DE5839-68C4-4243-A725-E6742D2114BF}
 		{3DA711E1-055F-4352-A5E1-F9169C86A20F} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
 		{C0E7FE5B-10C1-414A-B54F-DA182205053F} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
+		{AB372697-8CAA-433F-AEC1-10A122FBB4EE} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
 	EndGlobalSection
 EndGlobal

@@ -176,7 +176,7 @@ function Locate-NuGetScriptPath {
 
 function Locate-PackagesPath {
   if ($env:NUGET_PACKAGES -eq $null) {
-    $env:NUGET_PACKAGES =  Join-Path -path $env:UserProfile -childPath "Packages\"
+    $env:NUGET_PACKAGES =  Join-Path -path $env:UserProfile -childPath ".nuget\packages\"
   }
 
   $packagesPath = $env:NUGET_PACKAGES
