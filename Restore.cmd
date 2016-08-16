@@ -1,1 +1,1 @@
-@call %~dp0build.cmd -skipBuild -skipTest %*
+@call %~dp0build.cmd -skipBuild -skipTest -skipPackage %*
