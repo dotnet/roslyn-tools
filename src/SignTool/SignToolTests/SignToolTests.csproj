@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\build\Targets\VSL.Settings.targets" />
+  <Import Project="..\..\..\build\Targets\VSL.Settings.targets" />
   <PropertyGroup>
     <ProjectGuid>{AB372697-8CAA-433F-AEC1-10A122FBB4EE}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -10,11 +10,10 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
+    <Compile Include="ProgramTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ProgramTests.cs" />
+    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SignTool\SignTool.csproj">
@@ -22,11 +21,5 @@
       <Name>SignTool</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <Import Project="..\..\build\Targets\VSL.Imports.targets" />
+  <Import Project="..\..\..\build\Targets\VSL.Imports.targets" />
 </Project>

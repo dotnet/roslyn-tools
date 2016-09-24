@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.25722.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7C921001-EF26-441B-98E2-F88AA90FFBAF}"
 EndProject
@@ -16,6 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Signing", "Signing", "{63E9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{ABAC7A0D-5EBA-4003-B102-6A667B10D0DD}"
 	ProjectSection(SolutionItems) = preProject
+		build\Targets\Dependencies.props = build\Targets\Dependencies.props
 		build\Targets\GenerateAssemblyInfo.targets = build\Targets\GenerateAssemblyInfo.targets
 		build\Targets\GenerateInternalsVisibleTo.targets = build\Targets\GenerateInternalsVisibleTo.targets
 		build\Targets\Settings.targets = build\Targets\Settings.targets
@@ -34,8 +35,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Windows", "Windows", "{1618
 	ProjectSection(SolutionItems) = preProject
 		build\Scripts\Windows\Build.ps1 = build\Scripts\Windows\Build.ps1
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignTool", "src\SignTool\SignTool.csproj", "{3DA711E1-055F-4352-A5E1-F9169C86A20F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{C0E7FE5B-10C1-414A-B54F-DA182205053F}"
 	ProjectSection(SolutionItems) = preProject
@@ -57,9 +56,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Test.cmd = Test.cmd
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignToolTests", "src\SignToolTests\SignToolTests.csproj", "{AB372697-8CAA-433F-AEC1-10A122FBB4EE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SignTool", "SignTool", "{4E42E51F-089D-440D-864F-2D9458D692E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModifyVsixManifest", "ModifyVsixManifest\ModifyVsixManifest.csproj", "{C2D10BD8-726A-4A75-B7AD-18EB25ED768A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ModifyVsixManifest", "ModifyVsixManifest", "{BE8F47C2-8B57-4837-8E20-9D11A3D329C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignTool", "src\SignTool\SignTool\SignTool.csproj", "{3DA711E1-055F-4352-A5E1-F9169C86A20F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Config", "Config", "{4CA46D02-2270-48EC-A82E-1A64FA705FC2}"
+	ProjectSection(SolutionItems) = preProject
+		build\Config\SignToolData.json = build\Config\SignToolData.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModifyVsixManifest", "src\ModifyVsixManifest\ModifyVsixManifest\ModifyVsixManifest.csproj", "{C2D10BD8-726A-4A75-B7AD-18EB25ED768A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignToolTests", "src\SignTool\SignToolTests\SignToolTests.csproj", "{AB372697-8CAA-433F-AEC1-10A122FBB4EE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,14 +81,14 @@ Global
 		{3DA711E1-055F-4352-A5E1-F9169C86A20F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DA711E1-055F-4352-A5E1-F9169C86A20F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DA711E1-055F-4352-A5E1-F9169C86A20F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AB372697-8CAA-433F-AEC1-10A122FBB4EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AB372697-8CAA-433F-AEC1-10A122FBB4EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AB372697-8CAA-433F-AEC1-10A122FBB4EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AB372697-8CAA-433F-AEC1-10A122FBB4EE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C2D10BD8-726A-4A75-B7AD-18EB25ED768A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C2D10BD8-726A-4A75-B7AD-18EB25ED768A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2D10BD8-726A-4A75-B7AD-18EB25ED768A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2D10BD8-726A-4A75-B7AD-18EB25ED768A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB372697-8CAA-433F-AEC1-10A122FBB4EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB372697-8CAA-433F-AEC1-10A122FBB4EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB372697-8CAA-433F-AEC1-10A122FBB4EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB372697-8CAA-433F-AEC1-10A122FBB4EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -89,9 +99,12 @@ Global
 		{ABAC7A0D-5EBA-4003-B102-6A667B10D0DD} = {7C921001-EF26-441B-98E2-F88AA90FFBAF}
 		{1F779A8A-240A-4DE6-829E-3FE32FBFCA0A} = {7C921001-EF26-441B-98E2-F88AA90FFBAF}
 		{1618719C-DB93-4445-9EC8-B572E46FFEBA} = {F1DE5839-68C4-4243-A725-E6742D2114BF}
-		{3DA711E1-055F-4352-A5E1-F9169C86A20F} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
 		{C0E7FE5B-10C1-414A-B54F-DA182205053F} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
-		{AB372697-8CAA-433F-AEC1-10A122FBB4EE} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
-		{C2D10BD8-726A-4A75-B7AD-18EB25ED768A} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
+		{4E42E51F-089D-440D-864F-2D9458D692E7} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
+		{BE8F47C2-8B57-4837-8E20-9D11A3D329C3} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
+		{3DA711E1-055F-4352-A5E1-F9169C86A20F} = {4E42E51F-089D-440D-864F-2D9458D692E7}
+		{4CA46D02-2270-48EC-A82E-1A64FA705FC2} = {7C921001-EF26-441B-98E2-F88AA90FFBAF}
+		{C2D10BD8-726A-4A75-B7AD-18EB25ED768A} = {BE8F47C2-8B57-4837-8E20-9D11A3D329C3}
+		{AB372697-8CAA-433F-AEC1-10A122FBB4EE} = {4E42E51F-089D-440D-864F-2D9458D692E7}
 	EndGlobalSection
 EndGlobal
