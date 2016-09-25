@@ -1,4 +1,4 @@
-#r "System.Xml.Linq"
+﻿#r "System.Xml.Linq"
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -38,7 +38,7 @@ var LicenseUrlTest = @"http://go.microsoft.com/fwlink/?LinkId=529445";
 
 var Authors = @"Microsoft";
 var ProjectURL = @"http://msdn.com/roslyn";
-var Tags = @"Roslyn Signing";
+var Tags = @"Roslyn Build Tool";
 
 // Read preceding variables from MSBuild file
 var doc = XDocument.Load(Path.Combine(SolutionRoot, "build/Targets/Dependencies.props"));
@@ -78,7 +78,8 @@ var NetCompilersPropsPath = Path.Combine(NuGetAdditionalFilesPath, "Microsoft.Ne
 // the following packages will only be publised on myget not on nuget:
 var PreReleaseOnlyPackages = new HashSet<string>
 {
-    "SignTool",
+    "LocateVS",
+    "SignTool"
 };
 
 // Create an empty directory to be used in NuGet pack

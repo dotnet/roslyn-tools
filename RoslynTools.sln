@@ -39,6 +39,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{C0E7FE5B-10C1-414A-B54F-DA182205053F}"
 	ProjectSection(SolutionItems) = preProject
 		src\NuGet\BuildNuGets.csx = src\NuGet\BuildNuGets.csx
+		src\NuGet\LocateVS.nuspec = src\NuGet\LocateVS.nuspec
 		src\NuGet\SignTool.nuspec = src\NuGet\SignTool.nuspec
 	EndProjectSection
 EndProject
