@@ -4,8 +4,8 @@
       "certificate": "Microsoft402",
       "strongName": "MsSharedLib72",
       "values": [
-        "ModifyVsixManifest\\ModifyVsixManifest.exe",
-        "SignTool\\SignTool.exe"
+        "LocateVS\\LocateVS.dll"
+        "ModifyVsixManifest\\ModifyVsixManifest.exe"
       ]
     }
   ]

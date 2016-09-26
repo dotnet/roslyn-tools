@@ -6,7 +6,7 @@ Param(
   [string] $msbuildVersion = "15.0",
   [string] $nugetVersion = "3.5.0-beta2",
   [switch] $official,
-  [string] $PublishedPackageVersion = "0.1.0-beta",
+  [string] $PublishedPackageVersion = "0.2.0-beta",
   [switch] $realSign,
   [switch] $skipBuild,
   [switch] $skipDeploy,

@@ -7,7 +7,6 @@
     <RootNamespace>LocateVS</RootNamespace>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <OutputType>Library</OutputType>
-    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <None Include="project.json" />
