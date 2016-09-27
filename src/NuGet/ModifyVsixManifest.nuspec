@@ -1,0 +1,22 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>RoslynTools.Microsoft.ModifyVsixManifest</id>
+    <summary>Tool for manually updating a VSIX manifest file in-situ.</summary>
+    <description>Tool for manually updating a VSIX manifest file in-situ.</description>
+    <dependencies></dependencies>
+    <language>en-US</language>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <licenseUrl>$licenseUrl$</licenseUrl>
+    <projectUrl>$projectUrl$</projectUrl>
+    <releaseNotes>$releaseNotes$</releaseNotes>
+    <tags>$tags$</tags>
+  </metadata>
+  <files>
+    <file src="ModifyVsixManifest\ModifyVsixManifest.exe" target="lib\net46" />
+    <file src="ModifyVsixManifest\Mono.Options.dll" target="lib\net46" />
+    <file src="$thirdPartyNoticesPath$" target="" />
+  </files>
+</package>
