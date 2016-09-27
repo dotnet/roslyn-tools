@@ -79,6 +79,7 @@ var NetCompilersPropsPath = Path.Combine(NuGetAdditionalFilesPath, "Microsoft.Ne
 var PreReleaseOnlyPackages = new HashSet<string>
 {
     "LocateVS",
+    "ModifyVsixManifest",
     "SignTool"
 };
 
