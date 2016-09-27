@@ -1,11 +1,10 @@
 ﻿<?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
-    <id>RoslynTools.Microsoft.SignTool</id>
-    <summary>Signing tool for shipping Roslyn Assemblies</summary>
-    <description>Signing tool for shipping Roslyn Assemblies</description>
-    <dependencies>
-    </dependencies>
+    <id>RoslynTools.Microsoft.LocateVS</id>
+    <summary>Tool for locating the installation path of VS Dev15 or later</summary>
+    <description>Tool for locating the installation path of VS Dev15 or later</description>
+    <dependencies></dependencies>
     <language>en-US</language>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <version>$version$</version>
@@ -16,10 +15,8 @@
     <tags>$tags$</tags>
   </metadata>
   <files>
-    <file src="SignTool\SignTool.exe" target="tools" />
-    <file src="SignTool\Newtonsoft.Json.dll" target="tools" />
-    <file src="SignTool\System.Collections.Immutable.dll" target="tools" />
-    <file src="SignTool\System.Reflection.Metadata.dll" target="tools" />
+    <file src="LocateVS\LocateVS.dll" target="lib\net46" />
+    <file src="LocateVS\Microsoft.VisualStudio.Setup.Configuration.Interop.dll" target="lib\net46" />
     <file src="$thirdPartyNoticesPath$" target="" />
   </files>
 </package>

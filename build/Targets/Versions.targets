@@ -3,9 +3,9 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <!-- This is the assembly version from the .NET assembly perspective. It should only be revved during significant point releases. -->
-    <AssemblyVersionBase Condition="'$(AssemblyVersion)' == ''">0.1.0</AssemblyVersionBase>
+    <AssemblyVersionBase Condition="'$(AssemblyVersion)' == ''">0.2.0</AssemblyVersionBase>
     <!-- This is the file version as placed in the PE header. It should be revved during point releases, and is also what provides the basis for our NuGet package versioning. -->
-    <FileVersionBase Condition="'$(FileVersionBase)' == ''">0.1.0</FileVersionBase>
+    <FileVersionBase Condition="'$(FileVersionBase)' == ''">0.2.0</FileVersionBase>
     <!-- This is the base of the NuGet versioning for prerelease packages -->
     <NuGetPreReleaseVersion>$(FileVersionBase)-beta</NuGetPreReleaseVersion>
   </PropertyGroup>

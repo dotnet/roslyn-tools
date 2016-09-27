@@ -6,7 +6,7 @@ Param(
   [string] $msbuildVersion = "15.0",
   [string] $nugetVersion = "3.5.0-beta2",
   [switch] $official,
-  [string] $PublishedPackageVersion = "0.1.0-beta",
+  [string] $PublishedPackageVersion = "0.2.0-beta",
   [switch] $realSign,
   [switch] $skipBuild,
   [switch] $skipDeploy,
@@ -162,8 +162,8 @@ function Locate-NuGetConfig {
 }
 
 function Locate-NuGetOutputPath {
-  $signToolDir = Locate-BuiltSignToolPath
-  $outDir = Join-Path -path $signToolDir -ChildPath "NuGet\PreRelease"
+  $binariesPath = Locate-BinariesPath
+  $outDir = Join-Path -path $binariesPath -ChildPath "NuGet\PreRelease"
   Create-Directory -Path $outDir
   return Resolve-Path -path $outDir
 }
@@ -326,11 +326,11 @@ function Perform-Package {
 
   $csi = Locate-CsiPath
   $nugetScriptPath = Locate-NuGetScriptPath
-  $signToolPath = Locate-BuiltSignToolPath
+  $binariesPath = Locate-BinariesPath
   $nugetOutPath = Locate-NuGetOutputPath
 
   Write-Host "Starting package..."
-  & $csi $nugetScriptPath $signToolPath $PublishedPackageVersion $NuGetOutPath
+  & $csi $nugetScriptPath $binariesPath $PublishedPackageVersion $NuGetOutPath
 
   if ($lastExitCode -ne 0) {
     throw "The package task failed with an exit code of '$lastExitCode'."
