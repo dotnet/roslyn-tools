@@ -1,11 +1,9 @@
 ﻿{
-  "dependencies": {
-    "Mono.Options": "4.4.0.0"
-  },
+  "dependencies": {},
   "frameworks": {
-    "net46": { }
+    "net46": {}
   },
   "runtimes": {
-    "win": { }
+    "win": {}
   }
 }
