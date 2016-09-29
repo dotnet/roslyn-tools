@@ -16,7 +16,6 @@
   </metadata>
   <files>
     <file src="ModifyVsixManifest\ModifyVsixManifest.exe" target="lib\net46" />
-    <file src="ModifyVsixManifest\Mono.Options.dll" target="lib\net46" />
     <file src="$thirdPartyNoticesPath$" target="" />
   </files>
 </package>
