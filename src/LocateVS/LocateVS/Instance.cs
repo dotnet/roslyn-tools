@@ -60,7 +60,7 @@ namespace LocateVS
 
             var instanceFoundWithInvalidState = false;
 
-            foreach (ISetupInstance2 instance in instances)
+            foreach (ISetupInstance2 instance in instances.OrderByDescending(i => i.GetInstallationVersion()))
             {
                 var packages = instance.GetPackages()
                                         .Where((package) => requiredPackageIds.Contains(package.GetId()));
