@@ -80,7 +80,8 @@ var PreReleaseOnlyPackages = new HashSet<string>
 {
     "LocateVS",
     "ModifyVsixManifest",
-    "SignTool"
+    "SignTool",
+    "VsixExpInstaller"
 };
 
 // Create an empty directory to be used in NuGet pack

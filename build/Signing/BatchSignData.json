@@ -5,7 +5,8 @@
       "strongName": "MsSharedLib72",
       "values": [
         "LocateVS\\LocateVS.dll",
-        "ModifyVsixManifest\\ModifyVsixManifest.exe"
+        "ModifyVsixManifest\\ModifyVsixManifest.exe",
+        "VSIXExpInstaller\\VSIXExpInstaller.exe"
       ]
     }
   ]

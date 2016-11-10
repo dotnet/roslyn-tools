@@ -42,6 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{C0E7FE5B
 		src\NuGet\LocateVS.nuspec = src\NuGet\LocateVS.nuspec
 		src\NuGet\ModifyVsixManifest.nuspec = src\NuGet\ModifyVsixManifest.nuspec
 		src\NuGet\SignTool.nuspec = src\NuGet\SignTool.nuspec
+		src\NuGet\VSIXExpInstaller.nuspec = src\NuGet\VSIXExpInstaller.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FA0280AF-BAA7-4EC1-93CE-06F9FCB97A98}"
@@ -77,6 +78,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGetAdditionalFiles", "NuG
 		build\NuGetAdditionalFiles\ThirdPartyNotices.rtf = build\NuGetAdditionalFiles\ThirdPartyNotices.rtf
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VsixExpInstaller", "VsixExpInstaller", "{6B58AE05-69DD-434E-9C92-F7B49043F09C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VsixExpInstaller", "src\VSIXExpInstaller\VSIXExpInstaller\VsixExpInstaller.csproj", "{55DFEADF-E80C-4F0D-957F-93A1B66C585E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +104,10 @@ Global
 		{3205EA1F-4080-4DC1-8D5B-33B215C9A404}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3205EA1F-4080-4DC1-8D5B-33B215C9A404}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3205EA1F-4080-4DC1-8D5B-33B215C9A404}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55DFEADF-E80C-4F0D-957F-93A1B66C585E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55DFEADF-E80C-4F0D-957F-93A1B66C585E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55DFEADF-E80C-4F0D-957F-93A1B66C585E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55DFEADF-E80C-4F0D-957F-93A1B66C585E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -118,5 +127,7 @@ Global
 		{4928B2EE-0924-4627-90EE-B834442026DF} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
 		{3205EA1F-4080-4DC1-8D5B-33B215C9A404} = {4928B2EE-0924-4627-90EE-B834442026DF}
 		{98F8C3C0-B47E-43CA-9399-C179B4AE728D} = {7C921001-EF26-441B-98E2-F88AA90FFBAF}
+		{6B58AE05-69DD-434E-9C92-F7B49043F09C} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
+		{55DFEADF-E80C-4F0D-957F-93A1B66C585E} = {6B58AE05-69DD-434E-9C92-F7B49043F09C}
 	EndGlobalSection
 EndGlobal
