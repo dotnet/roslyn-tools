@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.25725.0
+VisualStudioVersion = 15.0.25909.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7C921001-EF26-441B-98E2-F88AA90FFBAF}"
 EndProject
@@ -12,6 +12,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Signing", "Signing", "{63E9A1D5-6BFB-44D0-BD6C-909A6B8DC01E}"
 	ProjectSection(SolutionItems) = preProject
 		build\Signing\35MSSharedLib1024.snk = build\Signing\35MSSharedLib1024.snk
+		build\Signing\BatchSignData.json = build\Signing\BatchSignData.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{ABAC7A0D-5EBA-4003-B102-6A667B10D0DD}"
@@ -27,7 +28,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{ABAC
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Toolset", "Toolset", "{1F779A8A-240A-4DE6-829E-3FE32FBFCA0A}"
 	ProjectSection(SolutionItems) = preProject
-		build\Toolset\dev14.project.json = build\Toolset\dev14.project.json
 		build\Toolset\project.json = build\Toolset\project.json
 	EndProjectSection
 EndProject
@@ -64,11 +64,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ModifyVsixManifest", "Modif
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignTool", "src\SignTool\SignTool\SignTool.csproj", "{3DA711E1-055F-4352-A5E1-F9169C86A20F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Config", "Config", "{4CA46D02-2270-48EC-A82E-1A64FA705FC2}"
-	ProjectSection(SolutionItems) = preProject
-		build\Config\SignToolData.json = build\Config\SignToolData.json
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModifyVsixManifest", "src\ModifyVsixManifest\ModifyVsixManifest\ModifyVsixManifest.csproj", "{C2D10BD8-726A-4A75-B7AD-18EB25ED768A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignToolTests", "src\SignTool\SignToolTests\SignToolTests.csproj", "{AB372697-8CAA-433F-AEC1-10A122FBB4EE}"
@@ -76,6 +71,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LocateVS", "LocateVS", "{4928B2EE-0924-4627-90EE-B834442026DF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocateVS", "src\LocateVS\LocateVS\LocateVS.csproj", "{3205EA1F-4080-4DC1-8D5B-33B215C9A404}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGetAdditionalFiles", "NuGetAdditionalFiles", "{98F8C3C0-B47E-43CA-9399-C179B4AE728D}"
+	ProjectSection(SolutionItems) = preProject
+		build\NuGetAdditionalFiles\ThirdPartyNotices.rtf = build\NuGetAdditionalFiles\ThirdPartyNotices.rtf
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -113,10 +113,10 @@ Global
 		{4E42E51F-089D-440D-864F-2D9458D692E7} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
 		{BE8F47C2-8B57-4837-8E20-9D11A3D329C3} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
 		{3DA711E1-055F-4352-A5E1-F9169C86A20F} = {4E42E51F-089D-440D-864F-2D9458D692E7}
-		{4CA46D02-2270-48EC-A82E-1A64FA705FC2} = {7C921001-EF26-441B-98E2-F88AA90FFBAF}
 		{C2D10BD8-726A-4A75-B7AD-18EB25ED768A} = {BE8F47C2-8B57-4837-8E20-9D11A3D329C3}
 		{AB372697-8CAA-433F-AEC1-10A122FBB4EE} = {4E42E51F-089D-440D-864F-2D9458D692E7}
 		{4928B2EE-0924-4627-90EE-B834442026DF} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
 		{3205EA1F-4080-4DC1-8D5B-33B215C9A404} = {4928B2EE-0924-4627-90EE-B834442026DF}
+		{98F8C3C0-B47E-43CA-9399-C179B4AE728D} = {7C921001-EF26-441B-98E2-F88AA90FFBAF}
 	EndGlobalSection
 EndGlobal

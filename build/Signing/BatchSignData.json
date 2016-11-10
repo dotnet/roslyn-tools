@@ -1,10 +1,10 @@
-{
+﻿{
   "sign": [
     {
       "certificate": "Microsoft402",
       "strongName": "MsSharedLib72",
       "values": [
-        "LocateVS\\LocateVS.dll"
+        "LocateVS\\LocateVS.dll",
         "ModifyVsixManifest\\ModifyVsixManifest.exe"
       ]
     }

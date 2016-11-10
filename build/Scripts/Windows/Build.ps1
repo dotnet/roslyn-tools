@@ -1,12 +1,14 @@
 ﻿[CmdletBinding(PositionalBinding=$false)]
 Param(
+  [switch] $clearPackageCache,
   [string] $configuration = "Debug",
   [string] $deployHive = "Exp",
   [switch] $help,
+  [string] $locateVsApiVersion = "0.2.0-beta",
   [string] $msbuildVersion = "15.0",
-  [string] $nugetVersion = "3.5.0-beta2",
+  [string] $nugetVersion = "3.6.0-beta1",
   [switch] $official,
-  [string] $PublishedPackageVersion = "0.2.0-beta",
+  [string] $publishedPackageVersion = "0.2.1-beta",
   [switch] $realSign,
   [switch] $skipBuild,
   [switch] $skipDeploy,
@@ -16,9 +18,9 @@ Param(
   [switch] $skipTest32,
   [switch] $skipTest64,
   [string] $target = "Build",
+  [string] $toolsetVersion = "2.0.0-rc2-61110-03",
   [string] $testFilter = "*.UnitTests.dll",
-  [string] $ToolsetVersion = "1.3.2",
-  [string] $xUnitVersion = "2.1.0"
+  [string] $xUnitVersion = "2.2.0-beta3-build3402"
 )
 
 set-strictmode -version 2.0
@@ -51,7 +53,7 @@ function Get-RegistryValue([string] $keyName, [string] $valueName) {
 
 function Locate-ArtifactsPath {
   $rootPath = Locate-RootPath
-  $artifactsPath = Join-Path -path $rootPath -ChildPath "Artifacts\$configuration\"
+  $artifactsPath = Join-Path -path $rootPath -ChildPath "artifacts\$configuration\"
 
   Create-Directory -path $artifactsPath
   return Resolve-Path -path $artifactsPath
@@ -65,17 +67,17 @@ function Locate-BinariesPath {
   return Resolve-Path -path $binariesPath
 }
 
-function Locate-BuiltSignToolPath {
-  $binariesPath = Locate-BinariesPath
-  $signToolPath = Join-Path -path $binariesPath -ChildPath "SignTool\"
+function Locate-IntermediatesPath {
+  $artifactsPath = Locate-ArtifactsPath
+  $intermediatesPath = Join-Path -path $artifactsPath -ChildPath "obj\"
 
-  Create-Directory -path $signToolPath
-  return Resolve-Path -path $signToolPath
+  Create-Directory -path $intermediatesPath
+  return Resolve-Path -path $intermediatesPath
 }
 
 function Locate-CsiPath {
   $packagesPath = Locate-PackagesPath
-  $csiPath = Join-Path -path $packagesPath -ChildPath "Microsoft.Net.Compilers\$ToolsetVersion\tools\csi.exe"
+  $csiPath = Join-Path -path $packagesPath -ChildPath "Microsoft.Net.Compilers\$toolsetVersion\tools\csi.exe"
 
   if (!(Test-Path -path $csiPath)) {
     throw "The specified CSI version ($ToolsetVersion) could not be located."
@@ -84,12 +86,15 @@ function Locate-CsiPath {
   return Resolve-Path -Path $csiPath
 }
 
-function Locate-LogPath {
-  $artifactsPath = Locate-ArtifactsPath
-  $logPath = Join-Path -path $artifactsPath -ChildPath "log\"
+function Locate-LocateVsApi {
+  $packagesPath = Locate-PackagesPath
+  $locateVsApi = Join-Path -path $packagesPath -ChildPath "RoslynTools.Microsoft.LocateVS\$locateVsApiVersion\lib\net46\LocateVS.dll"
 
-  Create-Directory -path $logPath
-  return Resolve-Path -path $logPath
+  if (!(Test-Path -path $locateVsApi)) {
+    throw "The specified LocateVS API version ($locateVsApiVersion) could not be located."
+  }
+
+  return Resolve-Path -path $locateVsApi
 }
 
 function Locate-MSBuild {
@@ -104,36 +109,33 @@ function Locate-MSBuild {
 }
 
 function Locate-MSBuildLogPath {
-  $logPath = Locate-LogPath
-  $msbuildLogPath = Join-Path -path $logPath -ChildPath "MSBuild\"
+  $artifactsPath = Locate-ArtifactsPath
+  $msbuildLogPath = Join-Path -path $artifactsPath -ChildPath "log\"
 
   Create-Directory -path $msbuildLogPath
   return Resolve-Path -path $msbuildLogPath
 }
 
 function Locate-MSBuildPath {
-  $msbuildVersionPath = Locate-MSBuildVersionPath
-  $msbuildPath = Get-RegistryValue -keyName $msbuildVersionPath -valueName "MSBuildToolsPath"
+  $locateVsApi = Locate-LocateVsApi
+  $requiredPackageIds = @()
+
+  $requiredPackageIds += "Microsoft.Component.MSBuild"
+  $requiredPackageIds += "Microsoft.Net.Component.4.6.TargetingPack"
+  $requiredPackageIds += "Microsoft.VisualStudio.Component.PortableLibrary"
+  $requiredPackageIds += "Microsoft.VisualStudio.Component.Roslyn.Compiler"
+  $requiredPackageIds += "Microsoft.VisualStudio.Component.VSSDK"
+
+  Add-Type -path $locateVsApi
+  $visualStudioInstallationPath = [LocateVS.Instance]::GetInstallPath($msbuildVersion, $requiredPackageIds)
+
+  $msbuildPath = Join-Path -path $visualStudioInstallationPath -childPath "MSBuild\$msbuildVersion\Bin"
   return Resolve-Path -path $msbuildPath
-}
-
-function Locate-MSBuildVersionPath {
-  $msbuildVersionPath = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\MSBuild\ToolsVersions\$msbuildVersion"
-
-  if (!(Test-Path -path $msbuildVersionPath)) {
-    $msbuildVersionPath = "HKLM:\SOFTWARE\Microsoft\MSBuild\ToolsVersions\$msbuildVersion"
-
-    if (!(Test-Path -path $msbuildVersionPath)) {
-      throw "The specified MSBuild version ($msbuildVersion) could not be located."
-    }
-  }
-
-  return Resolve-Path -path $msbuildVersionPath
 }
 
 function Locate-NuGet {
   $rootPath = Locate-RootPath
-  $nuget = Join-Path -path $rootPath -childPath "NuGet.exe"
+  $nuget = Join-Path -path $rootPath -childPath "nuget.exe"
 
   if (Test-Path -path $nuget) {
     $currentVersion = Get-ProductVersion -path $nuget
@@ -164,6 +166,7 @@ function Locate-NuGetConfig {
 function Locate-NuGetOutputPath {
   $binariesPath = Locate-BinariesPath
   $outDir = Join-Path -path $binariesPath -ChildPath "NuGet\PreRelease"
+
   Create-Directory -Path $outDir
   return Resolve-Path -path $outDir
 }
@@ -197,15 +200,15 @@ function Locate-ScriptPath {
   return Resolve-Path -path $scriptPath
 }
 
-function Locate-SettingsFile {
+function Locate-SignConfig {
   $rootPath = Locate-RootPath
-  $settingsFile = Join-Path -path $rootPath -childPath "build\Targets\VSL.Settings.targets"
+  $signConfig = Join-Path -path $rootPath -childPath "build\Signing\BatchSignData.json"
 
-  if (!(Test-Path -path $settingsFile)) {
-    throw "The settings file could not be located."
+  if (!(Test-Path -path $signConfig)) {
+    throw "The sign tool configuration file could not be located."
   }
 
-  return Resolve-Path -path $settingsFile
+  return Resolve-Path -path $signConfig
 }
 
 function Locate-SignTool {
@@ -229,12 +232,6 @@ function Locate-Toolset {
   $rootPath = Locate-RootPath
   $toolset = Join-Path -path $rootPath -childPath "build\Toolset\project.json"
   return Resolve-Path -path $toolset
-}
-
-function Locate-Toolset-Dev14 {
-  $rootPath = Locate-RootPath
-  $toolsetDev14 = Join-Path -path $rootPath -childPath "build\Toolset\dev14.project.json"
-  return Resolve-Path -path $toolsetDev14
 }
 
 function Locate-xUnit-x86 {
@@ -268,8 +265,8 @@ function Locate-xUnitPath {
 }
 
 function Locate-xUnitLogPath {
-  $logPath = Locate-LogPath
-  $xUnitLogPath = Join-Path -path $logPath -ChildPath "xUnit\"
+  $artifactsPath = Locate-ArtifactsPath
+  $xUnitLogPath = Join-Path -path $artifactsPath -ChildPath "log\"
 
   Create-Directory -path $xUnitLogPath
   return Resolve-Path -path $xUnitLogPath
@@ -298,16 +295,17 @@ function Perform-Build {
 
   $msbuild = Locate-MSBuild
   $msbuildLogPath = Locate-MSBuildLogPath
-  $solution = Locate-Solution
-
-  $msbuildSummaryLog = Join-Path -path $msbuildLogPath -childPath "RoslynTools.log"
-  $msbuildWarningLog = Join-Path -path $msbuildLogPath -childPath "RoslynTools.wrn"
-  $msbuildFailureLog = Join-Path -path $msbuildLogPath -childPath "RoslynTools.err"
 
   $deploy = (-not $skipDeploy)
 
-  Write-Host -object "Starting build..."
-  & $msbuild /t:$target /p:Configuration=$configuration /p:DeployExtension=$deploy /p:DeployHive=$deployHive /p:OfficialBuild=$official /m /tv:$msbuildVersion /v:m /flp1:Summary`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildSummaryLog /flp2:WarningsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildWarningLog /flp3:ErrorsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildFailureLog /nr:false $solution
+  $solution = Locate-Solution
+
+  $solutionSummaryLog = Join-Path -path $msbuildLogPath -childPath "RoslynTools.log"
+  $solutionWarningLog = Join-Path -path $msbuildLogPath -childPath "RoslynTools.wrn"
+  $solutionFailureLog = Join-Path -path $msbuildLogPath -childPath "RoslynTools.err"
+
+  Write-Host -object "Starting solution build..."
+  & $msbuild /t:$target /p:Configuration=$configuration /p:DeployExtension=$deploy /p:DeployHive=$deployHive /p:OfficialBuild=$official /m /tv:$msbuildVersion /v:m /flp1:Summary`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$solutionSummaryLog /flp2:WarningsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$solutionWarningLog /flp3:ErrorsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$solutionFailureLog /nr:false $solution
 
   if ($lastExitCode -ne 0) {
     throw "The build failed with an exit code of '$lastExitCode'."
@@ -348,17 +346,19 @@ function Perform-RealSign {
   }
 
   $binariesPath = Locate-BinariesPath
+  $intermediatesPath = Locate-IntermediatesPath
+  $packagesPath = Locate-PackagesPath
   $msbuild = Locate-MSBuild
-  $settingsFile = Locate-SettingsFile
+  $signConfig = Locate-SignConfig
   $signTool = Locate-SignTool
 
   if ($realSign) {
     Write-Host -object "Starting real signing..."
-    & $signTool -binariesPath $binariesPath -msbuildPath $msbuild -settingsFile $settingsFile
+    & $signTool -intermediateOutputPath $intermediatesPath -msbuildPath $msbuild -nugetPackagesPath $packagesPath -config $signConfig $binariesPath
   }
   else {
     Write-Host -object "Starting test signing..."
-    & $signTool -test -binariesPath $binariesPath -msbuildPath $msbuild -settingsFile $settingsFile
+    & $signTool -test -intermediateOutputPath $intermediatesPath -msbuildPath $msbuild -nugetPackagesPath $packagesPath -config $signConfig $binariesPath
   }
 
   if ($lastExitCode -ne 0) {
@@ -380,13 +380,25 @@ function Perform-Restore {
   $nugetConfig = Locate-NuGetConfig
   $packagesPath = Locate-PackagesPath
   $toolset = Locate-Toolset
-  $toolsetDev14 = Locate-Toolset-Dev14
   $solution = Locate-Solution
+  
+  if ($clearPackageCache) {
+    Write-Host -object "Clearing local package cache..."
+    & $nuget locals all -clear
+  }
 
-  Write-Host -object "Starting restore..."
+  Write-Host -object "Starting toolset restore..."
   & $nuget restore -packagesDirectory $packagesPath -msbuildVersion $msbuildVersion -verbosity quiet -nonInteractive -configFile $nugetConfig $toolset
-  & $nuget restore -packagesDirectory $packagesPath -msbuildVersion $msbuildVersion -verbosity quiet -nonInteractive -configFile $nugetConfig $toolsetDev14
-  & $nuget restore -packagesDirectory $packagesPath -msbuildVersion $msbuildVersion -verbosity quiet -nonInteractive -configFile $nugetConfig $solution
+
+  if ($lastExitCode -ne 0) {
+    throw "The restore failed with an exit code of '$lastExitCode'."
+  }
+
+  Write-Host -object "Locating MSBuild install path..."
+  $msbuildPath = Locate-MSBuildPath
+
+  Write-Host -object "Starting solution restore..."
+  & $nuget restore -packagesDirectory $packagesPath -msbuildPath $msbuildPath -verbosity quiet -nonInteractive -configFile $nugetConfig $solution
 
   if ($lastExitCode -ne 0) {
     throw "The restore failed with an exit code of '$lastExitCode'."
@@ -394,6 +406,7 @@ function Perform-Restore {
 
   Write-Host -object "The restore completed successfully." -foregroundColor Green
 }
+
 
 function Perform-Test-x86 {
   Write-Host -object ""
@@ -407,7 +420,7 @@ function Perform-Test-x86 {
   $xUnitLogPath = Locate-xUnitLogPath
   $xUnitTestBinaries = @(Locate-xUnitTestBinaries)
 
-  $xUnitResultLog = Join-Path -path $xUnitLogPath -childPath "x86.xml"
+  $xUnitResultLog = Join-Path -path $xUnitLogPath -childPath "xUnit-x86.xml"
 
   Write-Host -object "Starting test x86..."
   & $xUnit @xUnitTestBinaries -xml $xUnitResultLog
@@ -431,7 +444,7 @@ function Perform-Test-x64 {
   $xUnitLogPath = Locate-xUnitLogPath
   $xUnitTestBinaries = @(Locate-xUnitTestBinaries)
 
-  $xUnitResultLog = Join-Path -path $xUnitLogPath -childPath "x64.xml"
+  $xUnitResultLog = Join-Path -path $xUnitLogPath -childPath "xUnit-x64.xml"
 
   Write-Host -object "Starting test x64..."
   & $xUnit @xUnitTestBinaries -xml $xUnitResultLog
@@ -454,12 +467,12 @@ function Print-Help {
   Write-Host -object "    Configuration              - [String] - Specifies the build configuration. Defaults to 'Debug'."
   Write-Host -object "    DeployHive                 - [String] - Specifies the VSIX deployment hive. Defaults to 'Exp'."
   Write-Host -object "    MSBuildVersion             - [String] - Specifies the MSBuild version. Defaults to '15.0'."
-  Write-Host -object "    NuGetVersion               - [String] - Specifies the NuGet version. Defaults to '3.5.0-beta2'."
-  Write-Host -object "    PublishedPackageVersion    - [String] - Specifies the version of the published NuGet package. Defaults to '0.1.0-beta'."
+  Write-Host -object "    NuGetVersion               - [String] - Specifies the NuGet version. Defaults to '3.6.0-beta1'."
+  Write-Host -object "    PublishedPackageVersion    - [String] - Specifies the version of the published NuGet package. Defaults to '0.2.1-beta'."
   Write-Host -object "    Target                     - [String] - Specifies the build target. Defaults to 'Build'."
   Write-Host -object "    TestFilter                 - [String] - Specifies the test filter. Defaults to '*.UnitTests.dll'."
-  Write-Host -object "    ToolsetVersion             - [String] - Specifies the CSI version. Defaults to '1.3.2'."
-  Write-Host -object "    xUnitVersion               - [String] - Specifies the xUnit version. Defaults to '2.1.0'."
+  Write-Host -object "    ToolsetVersion             - [String] - Specifies the CSI version. Defaults to '2.0.0-rc2-61110-03'."
+  Write-Host -object "    xUnitVersion               - [String] - Specifies the xUnit version. Defaults to '2.2.0-beta3-build3402'."
   Write-Host -object ""
   Write-Host -object "    Official                   - [Switch] - Indicates this is an official build which changes the semantic version."
   Write-Host -object "    RealSign                   - [Switch] - Indicates this build needs real signing performed."
@@ -479,8 +492,8 @@ try {
   Print-Help
   Perform-Restore
   Perform-Build
-  # Perform-RealSign
-  # Perform-Test-x86
+  Perform-RealSign
+  Perform-Test-x86
   Perform-Package
 } catch [exception] {
     write-host $_.Exception

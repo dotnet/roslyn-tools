@@ -15,7 +15,7 @@
     <tags>$tags$</tags>
   </metadata>
   <files>
-    <file src="ModifyVsixManifest\ModifyVsixManifest.exe" target="lib\net46" />
+    <file src="ModifyVsixManifest\ModifyVsixManifest.exe" target="tools" />
     <file src="$thirdPartyNoticesPath$" target="" />
   </files>
 </package>
