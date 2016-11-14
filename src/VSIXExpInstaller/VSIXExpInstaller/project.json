@@ -5,7 +5,8 @@
     "Microsoft.VisualStudio.Settings.15.0": "15.0.25824-RC",
     "Microsoft.VisualStudio.Shell.15.0": "15.0.25901-RC",
     "Microsoft.VisualStudio.Telemetry": "15.0.722-masterBFDFE2B0",
-    "Microsoft.VisualStudio.Utilities.Internal": "14.0.61-master2D0FF461"
+    "Microsoft.VisualStudio.Utilities.Internal": "14.0.61-master2D0FF461",
+    "Newtonsoft.Json": "8.0.3"
   },
   "frameworks": {
     "net46": {}
