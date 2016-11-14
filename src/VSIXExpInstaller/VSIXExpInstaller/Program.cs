@@ -149,8 +149,7 @@ namespace VsixExpInstaller
                             var extensionManager = (IVsExtensionManager)(extensionManagerService);
                             IInstallableExtension vsixToInstall = extensionManager.CreateInstallableExtension(vsixPath);
 
-                            IInstalledExtension existing;
-                            bool found = extensionManagerService.TryGetInstalledExtension(vsixToInstall.Header.Identifier, out existing) && !existing.Header.InstalledByMsi;
+                            bool found = extensionManagerService.TryGetInstalledExtension(vsixToInstall.Header.Identifier, out IInstalledExtension existing) && !existing.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
                             if (uninstall)
                             {
                                 if (found)
