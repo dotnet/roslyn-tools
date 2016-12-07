@@ -14,11 +14,12 @@ namespace VsixExpInstaller
 
         static string ExtractArg(List<string> args, string prefix)
         {
-            for (int i = 0; i < args.Count; i++)
+            for (var i = 0; i < args.Count; i++)
             {
-                if (args[i].StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                if (args[i].StartsWith($"/{prefix}", StringComparison.OrdinalIgnoreCase) ||
+                    args[i].StartsWith($"-{prefix}", StringComparison.OrdinalIgnoreCase))
                 {
-                    string result = args[i].Substring(prefix.Length);
+                    var result = args[i].Substring(prefix.Length);
                     args.RemoveAt(i);
                     return result;
                 }
@@ -29,9 +30,10 @@ namespace VsixExpInstaller
 
         static bool FindArg(List<string> args, string argName)
         {
-            for (int i = 0; i < args.Count; i++)
+            for (var i = 0; i < args.Count; i++)
             {
-                if (String.Compare(args[i], argName, StringComparison.OrdinalIgnoreCase) == 0)
+                if (string.Compare(args[i], $"/{argName}", StringComparison.OrdinalIgnoreCase) == 0 ||
+                    string.Compare(args[i], $"-{argName}", StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     args.RemoveAt(i);
                     return true;
@@ -122,12 +124,12 @@ namespace VsixExpInstaller
         private static void RemoveExtensionFromPendingDeletions(WritableSettingsStore settingsStore, IExtensionHeader vsixToInstallHeader)
         {
             const string PendingDeletionsCollectionPath = ExtensionManagerCollectionPath + @"\PendingDeletions";
-            var vsixToDeletePropery = $"{vsixToInstallHeader.Identifier},{vsixToInstallHeader.Version}";
+            var vsixToDeleteProperty = $"{vsixToInstallHeader.Identifier},{vsixToInstallHeader.Version}";
 
             if (settingsStore.CollectionExists(PendingDeletionsCollectionPath) &&
-                settingsStore.PropertyExists(PendingDeletionsCollectionPath, vsixToDeletePropery))
+                settingsStore.PropertyExists(PendingDeletionsCollectionPath, vsixToDeleteProperty))
             {
-                settingsStore.DeleteProperty(PendingDeletionsCollectionPath, vsixToDeletePropery);
+                settingsStore.DeleteProperty(PendingDeletionsCollectionPath, vsixToDeleteProperty);
             }
         }
 
@@ -158,12 +160,13 @@ namespace VsixExpInstaller
                 return 0;
             }
 
-            List<string> argList = new List<string>(args);
+            var argList = new List<string>(args);
 
-            string rootSuffix = ExtractArg(argList, "/rootSuffix:") ?? "Exp";
-            bool uninstall = FindArg(argList, "/u");
-            bool uninstallAll = FindArg(argList, "/uninstallAll");
-            string vsInstallDir = ExtractArg(argList, "/vsInstallDir:") ?? Environment.GetEnvironmentVariable("VsInstallDir");
+            var rootSuffix = ExtractArg(argList, "rootSuffix:") ?? "Exp";
+            var uninstall = FindArg(argList, "u");
+            var uninstallAll = FindArg(argList, "uninstallAll");
+            var printHelp = FindArg(argList, "?") || FindArg(argList, "h") || FindArg(argList, "help");
+            var vsInstallDir = ExtractArg(argList, "vsInstallDir:") ?? Environment.GetEnvironmentVariable("VsInstallDir");
 
             var expectedArgCount = uninstallAll ? 0 : 1;
 
@@ -200,7 +203,7 @@ namespace VsixExpInstaller
                             var vsixToInstallHeader = vsixToInstall.Header;
 
                             var foundBefore = extensionManagerService.TryGetInstalledExtension(vsixToInstallHeader.Identifier, out var installedVsixBefore);
-                            var installedGloballyBefore = installedVsixBefore.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
+                            var installedGloballyBefore = foundBefore && installedVsixBefore.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
 
                             if (uninstall)
                             {
@@ -238,7 +241,7 @@ namespace VsixExpInstaller
                                 extensionManagerService = new ExtensionManagerService(settingsManager);
 
                                 var foundAfter = extensionManagerService.TryGetInstalledExtension(vsixToInstallHeader.Identifier, out var installedVsixAfter);
-                                var installedGloballyAfter = installedVsixAfter.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
+                                var installedGloballyAfter = foundAfter && installedVsixAfter.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
 
                                 if (uninstall && foundAfter)
                                 {
