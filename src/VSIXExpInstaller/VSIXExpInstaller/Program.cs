@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Principal;
 using Microsoft.VisualStudio.ExtensionManager;
 using Microsoft.VisualStudio.Settings;
@@ -12,14 +13,14 @@ namespace VsixExpInstaller
     {
         const string ExtensionManagerCollectionPath = "ExtensionManager";
 
-        static string ExtractArg(List<string> args, string prefix)
+        static string ExtractArg(List<string> args, string argName)
         {
             for (var i = 0; i < args.Count; i++)
             {
-                if (args[i].StartsWith($"/{prefix}", StringComparison.OrdinalIgnoreCase) ||
-                    args[i].StartsWith($"-{prefix}", StringComparison.OrdinalIgnoreCase))
+                if (args[i].StartsWith($"/{argName}:", StringComparison.OrdinalIgnoreCase) ||
+                    args[i].StartsWith($"-{argName}:", StringComparison.OrdinalIgnoreCase))
                 {
-                    var result = args[i].Substring(prefix.Length);
+                    var result = args[i].Substring(argName.Length + 2);
                     args.RemoveAt(i);
                     return result;
                 }
@@ -162,11 +163,11 @@ namespace VsixExpInstaller
 
             var argList = new List<string>(args);
 
-            var rootSuffix = ExtractArg(argList, "rootSuffix:") ?? "Exp";
+            var rootSuffix = ExtractArg(argList, "rootSuffix") ?? "Exp";
             var uninstall = FindArg(argList, "u");
             var uninstallAll = FindArg(argList, "uninstallAll");
             var printHelp = FindArg(argList, "?") || FindArg(argList, "h") || FindArg(argList, "help");
-            var vsInstallDir = ExtractArg(argList, "vsInstallDir:") ?? Environment.GetEnvironmentVariable("VsInstallDir");
+            var vsInstallDir = ExtractArg(argList, "vsInstallDir") ?? Environment.GetEnvironmentVariable("VsInstallDir");
 
             var expectedArgCount = uninstallAll ? 0 : 1;
 
@@ -183,106 +184,134 @@ namespace VsixExpInstaller
             {
                 devenvPath = GetDevenvPath(vsInstallDir);
 
-                using (var settingsManager = ExternalSettingsManager.CreateForApplication(devenvPath, rootSuffix))
-                {
-                    ExtensionManagerService extensionManagerService = null;
+                var assemblyResolutionPaths = new string[] {
+                    Path.Combine(vsInstallDir, @"Common7\IDE"),
+                    Path.Combine(vsInstallDir, @"Common7\IDE\PrivateAssemblies"),
+                    Path.Combine(vsInstallDir, @"Common7\IDE\PublicAssemblies")
+                };
 
-                    try
+                AppDomain.CurrentDomain.AssemblyResolve += (object sender, ResolveEventArgs eventArgs) => {
+                    var assemblyFileName = $"{eventArgs.Name.Split(',')[0]}.dll";
+
+                    foreach (var assemblyResolutionPath in assemblyResolutionPaths)
                     {
-                        extensionManagerService = new ExtensionManagerService(settingsManager);
+                        var assemblyFilePath = Path.Combine(assemblyResolutionPath, assemblyFileName);
 
-                        if (uninstallAll)
+                        if (File.Exists(assemblyFilePath))
                         {
-                            Console.WriteLine("Uninstalling all... ");
-                            UninstallAll(extensionManagerService);
+                            return Assembly.LoadFrom(assemblyFilePath);
                         }
-                        else
+                    }
+
+                    return null;
+                };
+
+                RunProgram();
+
+                // Move all of this into a local method so that it only causes the assembly loads after the resolver has been hooked up
+                void RunProgram()
+                {
+                    using (var settingsManager = ExternalSettingsManager.CreateForApplication(devenvPath, rootSuffix))
+                    {
+                        ExtensionManagerService extensionManagerService = null;
+
+                        try
                         {
-                            var extensionManager = (IVsExtensionManager)(extensionManagerService);
-                            var vsixToInstall = extensionManager.CreateInstallableExtension(vsixPath);
-                            var vsixToInstallHeader = vsixToInstall.Header;
+                            extensionManagerService = new ExtensionManagerService(settingsManager);
 
-                            var foundBefore = extensionManagerService.TryGetInstalledExtension(vsixToInstallHeader.Identifier, out var installedVsixBefore);
-                            var installedGloballyBefore = foundBefore && installedVsixBefore.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
-
-                            if (uninstall)
+                            if (uninstallAll)
                             {
-                                if (foundBefore && !installedGloballyBefore)
-                                {
-                                    Console.WriteLine("Uninstalling {0}... ", vsixPath);
-                                    extensionManagerService.Uninstall(installedVsixBefore);
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Nothing to uninstall... ");
-                                }
+                                Console.WriteLine("Uninstalling all... ");
+                                UninstallAll(extensionManagerService);
                             }
                             else
                             {
-                                if (foundBefore && !installedGloballyBefore)
+                                var extensionManager = (IVsExtensionManager)(extensionManagerService);
+                                var vsixToInstall = extensionManager.CreateInstallableExtension(vsixPath);
+                                var vsixToInstallHeader = vsixToInstall.Header;
+
+                                var foundBefore = extensionManagerService.TryGetInstalledExtension(vsixToInstallHeader.Identifier, out var installedVsixBefore);
+                                var installedGloballyBefore = foundBefore && installedVsixBefore.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
+
+                                if (uninstall)
                                 {
-                                    Console.WriteLine("Updating {0}... ", vsixPath);
-                                    extensionManagerService.Uninstall(installedVsixBefore);
+                                    if (foundBefore && !installedGloballyBefore)
+                                    {
+                                        Console.WriteLine("Uninstalling {0}... ", vsixPath);
+                                        extensionManagerService.Uninstall(installedVsixBefore);
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Nothing to uninstall... ");
+                                    }
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Installing {0}... ", vsixPath);
-                                }
-
-                                extensionManagerService.Install(vsixToInstall, perMachine: false);
-                                var settingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
-
-                                EnableLoadingAllExtensions(settingsStore);
-                                RemoveExtensionFromPendingDeletions(settingsStore, vsixToInstallHeader);
-                                UpdateLastExtensionsChange(settingsStore);
-
-                                // Recreate the extensionManagerService to force the extension cache to recreate
-                                extensionManagerService?.Close();
-                                extensionManagerService = new ExtensionManagerService(settingsManager);
-
-                                var foundAfter = extensionManagerService.TryGetInstalledExtension(vsixToInstallHeader.Identifier, out var installedVsixAfter);
-                                var installedGloballyAfter = foundAfter && installedVsixAfter.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
-
-                                if (uninstall && foundAfter)
-                                {
-                                    if (installedGloballyBefore && installedGloballyAfter)
+                                    if (foundBefore && !installedGloballyBefore)
                                     {
-                                        throw new Exception($"The extension failed to uninstall. It is still installed globally.");
-                                    }
-                                    else if (!installedGloballyBefore && installedGloballyAfter)
-                                    {
-                                        Console.WriteLine("The local extension was succesfully uninstalled. However, the global extension is still installed.");
+                                        Console.WriteLine("Updating {0}... ", vsixPath);
+                                        extensionManagerService.Uninstall(installedVsixBefore);
                                     }
                                     else
                                     {
-                                        Console.WriteLine("The extension was succesfully uninstalled.");
+                                        Console.WriteLine("Installing {0}... ", vsixPath);
                                     }
-                                }
-                                else if (!uninstall)
-                                {
-                                    if (!foundAfter)
+
+                                    extensionManagerService.Install(vsixToInstall, perMachine: false);
+                                    var settingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
+
+                                    EnableLoadingAllExtensions(settingsStore);
+                                    RemoveExtensionFromPendingDeletions(settingsStore, vsixToInstallHeader);
+                                    UpdateLastExtensionsChange(settingsStore);
+
+                                    // Recreate the extensionManagerService to force the extension cache to recreate
+                                    extensionManagerService?.Close();
+                                    extensionManagerService = new ExtensionManagerService(settingsManager);
+
+                                    var foundAfter = extensionManagerService.TryGetInstalledExtension(vsixToInstallHeader.Identifier, out var installedVsixAfter);
+                                    var installedGloballyAfter = foundAfter && installedVsixAfter.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
+
+                                    if (uninstall && foundAfter)
                                     {
-                                        throw new Exception($"The extension failed to install. It could not be located.");
+                                        if (installedGloballyBefore && installedGloballyAfter)
+                                        {
+                                            throw new Exception($"The extension failed to uninstall. It is still installed globally.");
+                                        }
+                                        else if (!installedGloballyBefore && installedGloballyAfter)
+                                        {
+                                            Console.WriteLine("The local extension was succesfully uninstalled. However, the global extension is still installed.");
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("The extension was succesfully uninstalled.");
+                                        }
                                     }
-                                    else if (installedVsixAfter.Header.Version != vsixToInstallHeader.Version)
+                                    else if (!uninstall)
                                     {
-                                        throw new Exception("The extension failed to install. The located version does not match the expected version.");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("The extension was succesfully installed.");
+                                        if (!foundAfter)
+                                        {
+                                            throw new Exception($"The extension failed to install. It could not be located.");
+                                        }
+                                        else if (installedVsixAfter.Header.Version != vsixToInstallHeader.Version)
+                                        {
+                                            throw new Exception("The extension failed to install. The located version does not match the expected version.");
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("The extension was succesfully installed.");
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    finally
-                    {
-                        extensionManagerService?.Close();
-                        extensionManagerService = null;
-                    }
+                        finally
+                        {
+                            extensionManagerService?.Close();
+                            extensionManagerService = null;
+                        }
 
-                    Console.WriteLine("Done!");
+                        Console.WriteLine("Done!");
+                    }
                 }
             }
             catch (Exception e)

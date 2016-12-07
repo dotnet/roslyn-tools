@@ -22,7 +22,7 @@
 
   <PropertyGroup>
     <XUnitConsoleRunnerPackageName>xunit.runner.console</XUnitConsoleRunnerPackageName>
-    <XUnitConsoleRunnerPackageVersion>2.2.0-beta3-build3402</XUnitConsoleRunnerPackageVersion>
+    <XUnitConsoleRunnerPackageVersion>2.2.0-beta4-build3444</XUnitConsoleRunnerPackageVersion>
     <XUnitConsoleRunnerExeFilePath>$(NuGetPackageRoot)\$(XUnitConsoleRunnerPackageName)\$(XUnitConsoleRunnerPackageVersion)\tools\xunit.console.x86.exe</XUnitConsoleRunnerExeFilePath>
   </PropertyGroup>
 
@@ -35,7 +35,7 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
 
   <PropertyGroup>
-    <MicrosoftVSSDKVersion>15.0.25907-RC2</MicrosoftVSSDKVersion>
+    <MicrosoftVSSDKVersion>15.0.25929-RC2</MicrosoftVSSDKVersion>
     <MSBuildVersion Condition="'$(MSBuildVersion)' == ''">15.1</MSBuildVersion>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
     <VisualStudioReferenceMajorVersion Condition="'$(VisualStudioReferenceMajorVersion)' == ''">$(VisualStudioVersion.Substring(0, $(VisualStudioVersion.IndexOf('.'))))</VisualStudioReferenceMajorVersion>

@@ -17,26 +17,7 @@
   </metadata>
   <files>
     <file src="VSIXExpInstaller\VSIXExpInstaller.exe" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.ExtensionEngine.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.ExtensionManager.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.ExtensionManager.Implementation.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.OLE.Interop.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.RegDetour.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Settings.15.0.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Setup.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Setup.Common.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Setup.Download.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Setup.Engine.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Shell.15.0.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Shell.Framework.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Shell.Interop.8.0.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Shell.Interop.9.0.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Shell.Interop.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Telemetry.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Threading.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Utilities.Internal.dll" target="tools" />
-    <file src="VSIXExpInstaller\Microsoft.VisualStudio.Validation.dll" target="tools" />
-    <file src="VSIXExpInstaller\Newtonsoft.Json.dll" target="tools" />
+    <file src="VSIXExpInstaller\VsixExpInstaller.exe.config" target="tools" />
     <file src="$thirdPartyNoticesPath$" target="" />
   </files>
 </package>

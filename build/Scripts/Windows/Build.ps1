@@ -4,7 +4,7 @@ Param(
   [string] $configuration = "Debug",
   [string] $deployHive = "Exp",
   [switch] $help,
-  [string] $locateVsApiVersion = "0.2.1-beta",
+  [string] $locateVsApiVersion = "0.2.2-beta",
   [string] $msbuildVersion = "15.0",
   [string] $nugetVersion = "3.6.0-beta1",
   [switch] $official,
@@ -20,7 +20,7 @@ Param(
   [string] $target = "Build",
   [string] $toolsetVersion = "2.0.0-rc2-61110-03",
   [string] $testFilter = "*.UnitTests.dll",
-  [string] $xUnitVersion = "2.2.0-beta3-build3402"
+  [string] $xUnitVersion = "2.2.0-beta4-build3444"
 )
 
 set-strictmode -version 2.0
@@ -472,7 +472,7 @@ function Print-Help {
   Write-Host -object "    Target                     - [String] - Specifies the build target. Defaults to 'Build'."
   Write-Host -object "    TestFilter                 - [String] - Specifies the test filter. Defaults to '*.UnitTests.dll'."
   Write-Host -object "    ToolsetVersion             - [String] - Specifies the CSI version. Defaults to '2.0.0-rc2-61110-03'."
-  Write-Host -object "    xUnitVersion               - [String] - Specifies the xUnit version. Defaults to '2.2.0-beta3-build3402'."
+  Write-Host -object "    xUnitVersion               - [String] - Specifies the xUnit version. Defaults to '2.2.0-beta4-build3444'."
   Write-Host -object ""
   Write-Host -object "    Official                   - [Switch] - Indicates this is an official build which changes the semantic version."
   Write-Host -object "    RealSign                   - [Switch] - Indicates this build needs real signing performed."
