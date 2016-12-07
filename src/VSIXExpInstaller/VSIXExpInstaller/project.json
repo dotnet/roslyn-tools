@@ -1,17 +1,20 @@
 ﻿{
   "dependencies": {
+    "EnvDTE": "8.0.0",
+    "Microsoft.Build.Utilities.Core": "15.1.262-preview5",
     "Microsoft.Internal.VisualStudio.Shell.Interop.10.0.DesignTime": "10.0.30319",
     "Microsoft.Internal.VisualStudio.Shell.Interop.11.0.DesignTime": "11.0.61030",
-    "Microsoft.VisualStudio.Settings.15.0": "15.0.25824-RC",
-    "Microsoft.VisualStudio.Shell.15.0": "15.0.25901-RC",
-    "Microsoft.VisualStudio.Telemetry": "15.0.722-masterBFDFE2B0",
-    "Microsoft.VisualStudio.Utilities.Internal": "14.0.61-master2D0FF461",
-    "Newtonsoft.Json": "8.0.3"
+    "Microsoft.VisualStudio.Settings.15.0": "15.0.25824-rc",
+    "Microsoft.VisualStudio.Shell.15.0": "15.0.25901-rc",
+    "Microsoft.VisualStudio.Telemetry": "15.0.768-masterECC7336C",
+    "Microsoft.VisualStudio.Utilities.Internal": "14.0.72-masterF9EB1D39",
+    "Newtonsoft.Json": "8.0.3",
+    "System.Collections.Immutable": "1.2.0"
   },
   "frameworks": {
     "net46": {}
   },
   "runtimes": {
-    "win": {}
+    "win-x86": {}
   }
 }

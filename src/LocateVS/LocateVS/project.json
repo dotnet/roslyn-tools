@@ -1,11 +1,11 @@
 ﻿{
   "dependencies": {
-    "Microsoft.VisualStudio.Setup.Configuration.Interop": "1.1.142-preview4-29265"
+    "Microsoft.VisualStudio.Setup.Configuration.Interop": "1.3.269-rc"
   },
   "frameworks": {
     "net46": { }
   },
   "runtimes": {
-    "win": { }
+    "win": {}
   }
 }
