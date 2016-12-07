@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Principal;
 using Microsoft.VisualStudio.ExtensionManager;
 using Microsoft.VisualStudio.Settings;
 
@@ -9,6 +10,8 @@ namespace VsixExpInstaller
 {
     public class Program
     {
+        const string ExtensionManagerCollectionPath = "ExtensionManager";
+
         static string ExtractArg(List<string> args, string prefix)
         {
             for (int i = 0; i < args.Count; i++)
@@ -101,6 +104,52 @@ namespace VsixExpInstaller
             return Path.Combine(vsInstallDir, @"Common7\IDE\DevEnv.exe");
         }
 
+        private static void EnableLoadingAllExtensions(WritableSettingsStore settingsStore)
+        {
+            const string EnableAdminExtensionsProperty = "EnableAdminExtensions";
+
+            if (!settingsStore.CollectionExists(ExtensionManagerCollectionPath))
+            {
+                settingsStore.CreateCollection(ExtensionManagerCollectionPath);
+            }
+
+            if (!settingsStore.GetBoolean(ExtensionManagerCollectionPath, EnableAdminExtensionsProperty, defaultValue: false))
+            {
+                settingsStore.SetBoolean(ExtensionManagerCollectionPath, EnableAdminExtensionsProperty, value: true);
+            }
+        }
+
+        private static void RemoveExtensionFromPendingDeletions(WritableSettingsStore settingsStore, IExtensionHeader vsixToInstallHeader)
+        {
+            const string PendingDeletionsCollectionPath = ExtensionManagerCollectionPath + @"\PendingDeletions";
+            var vsixToDeletePropery = $"{vsixToInstallHeader.Identifier},{vsixToInstallHeader.Version}";
+
+            if (settingsStore.CollectionExists(PendingDeletionsCollectionPath) &&
+                settingsStore.PropertyExists(PendingDeletionsCollectionPath, vsixToDeletePropery))
+            {
+                settingsStore.DeleteProperty(PendingDeletionsCollectionPath, vsixToDeletePropery);
+            }
+        }
+
+        private static void UpdateLastExtensionsChange(WritableSettingsStore settingsStore)
+        {
+            const string ExtensionsChangedProperty = "ExtensionsChanged";
+
+            if (!settingsStore.CollectionExists(ExtensionManagerCollectionPath))
+            {
+                settingsStore.CreateCollection(ExtensionManagerCollectionPath);
+            }
+
+            settingsStore.SetInt64(ExtensionManagerCollectionPath, ExtensionsChangedProperty, value: DateTime.UtcNow.ToFileTimeUtc());
+        }
+
+        private static bool IsRunningAsAdmin()
+        {
+            var identity = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        }
+
         public static int Main(string[] args)
         {
             if (args.Length == 0)
@@ -131,7 +180,7 @@ namespace VsixExpInstaller
             {
                 devenvPath = GetDevenvPath(vsInstallDir);
 
-                using (ExternalSettingsManager settingsManager = ExternalSettingsManager.CreateForApplication(devenvPath, rootSuffix))
+                using (var settingsManager = ExternalSettingsManager.CreateForApplication(devenvPath, rootSuffix))
                 {
                     ExtensionManagerService extensionManagerService = null;
 
@@ -147,15 +196,18 @@ namespace VsixExpInstaller
                         else
                         {
                             var extensionManager = (IVsExtensionManager)(extensionManagerService);
-                            IInstallableExtension vsixToInstall = extensionManager.CreateInstallableExtension(vsixPath);
+                            var vsixToInstall = extensionManager.CreateInstallableExtension(vsixPath);
+                            var vsixToInstallHeader = vsixToInstall.Header;
 
-                            bool found = extensionManagerService.TryGetInstalledExtension(vsixToInstall.Header.Identifier, out IInstalledExtension existing) && !existing.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
+                            var foundBefore = extensionManagerService.TryGetInstalledExtension(vsixToInstallHeader.Identifier, out var installedVsixBefore);
+                            var installedGloballyBefore = installedVsixBefore.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
+
                             if (uninstall)
                             {
-                                if (found)
+                                if (foundBefore && !installedGloballyBefore)
                                 {
                                     Console.WriteLine("Uninstalling {0}... ", vsixPath);
-                                    extensionManagerService.Uninstall(existing);
+                                    extensionManagerService.Uninstall(installedVsixBefore);
                                 }
                                 else
                                 {
@@ -164,10 +216,10 @@ namespace VsixExpInstaller
                             }
                             else
                             {
-                                if (found)
+                                if (foundBefore && !installedGloballyBefore)
                                 {
                                     Console.WriteLine("Updating {0}... ", vsixPath);
-                                    extensionManagerService.Uninstall(existing);
+                                    extensionManagerService.Uninstall(installedVsixBefore);
                                 }
                                 else
                                 {
@@ -175,15 +227,59 @@ namespace VsixExpInstaller
                                 }
 
                                 extensionManagerService.Install(vsixToInstall, perMachine: false);
+                                var settingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
+
+                                EnableLoadingAllExtensions(settingsStore);
+                                RemoveExtensionFromPendingDeletions(settingsStore, vsixToInstallHeader);
+                                UpdateLastExtensionsChange(settingsStore);
+
+                                // Recreate the extensionManagerService to force the extension cache to recreate
+                                extensionManagerService?.Close();
+                                extensionManagerService = new ExtensionManagerService(settingsManager);
+
+                                var foundAfter = extensionManagerService.TryGetInstalledExtension(vsixToInstallHeader.Identifier, out var installedVsixAfter);
+                                var installedGloballyAfter = installedVsixAfter.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
+
+                                if (uninstall && foundAfter)
+                                {
+                                    if (installedGloballyBefore && installedGloballyAfter)
+                                    {
+                                        throw new Exception($"The extension failed to uninstall. It is still installed globally.");
+                                    }
+                                    else if (!installedGloballyBefore && installedGloballyAfter)
+                                    {
+                                        Console.WriteLine("The local extension was succesfully uninstalled. However, the global extension is still installed.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("The extension was succesfully uninstalled.");
+                                    }
+                                }
+                                else if (!uninstall)
+                                {
+                                    if (!foundAfter)
+                                    {
+                                        throw new Exception($"The extension failed to install. It could not be located.");
+                                    }
+                                    else if (installedVsixAfter.Header.Version != vsixToInstallHeader.Version)
+                                    {
+                                        throw new Exception("The extension failed to install. The located version does not match the expected version.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("The extension was succesfully installed.");
+                                    }
+                                }
                             }
                         }
-
-                        Console.WriteLine("Done!");
                     }
                     finally
                     {
                         extensionManagerService?.Close();
+                        extensionManagerService = null;
                     }
+
+                    Console.WriteLine("Done!");
                 }
             }
             catch (Exception e)
