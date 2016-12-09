@@ -16,7 +16,7 @@
   <!-- Import the global NuGet packages -->
   <PropertyGroup>
     <ToolsetCompilerPackageName>Microsoft.Net.Compilers</ToolsetCompilerPackageName>
-    <ToolsetCompilerPackageVersion>2.0.0-rc2-61110-03</ToolsetCompilerPackageVersion>
+    <ToolsetCompilerPackageVersion>2.0.0-rc2-61205-04</ToolsetCompilerPackageVersion>
     <ToolsetCompilerPropsFilePath>$(NuGetPackageRoot)\$(ToolsetCompilerPackageName)\$(ToolsetCompilerPackageVersion)\build\Microsoft.Net.Compilers.props</ToolsetCompilerPropsFilePath>
   </PropertyGroup>
 
