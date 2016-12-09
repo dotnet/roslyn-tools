@@ -1,6 +1,8 @@
 ﻿{
   "dependencies": {
-    "Microsoft.VisualStudio.Setup.Configuration.Interop": "1.3.269-rc"
+    "Microsoft.VisualStudio.Setup.Configuration.Interop": "1.3.269-rc",
+    "Microsoft.VisualStudio.Setup.Configuration.Native.x64": "1.3.269-rc",
+    "Microsoft.VisualStudio.Setup.Configuration.Native.x86": "1.3.269-rc"
   },
   "frameworks": {
     "net46": { }

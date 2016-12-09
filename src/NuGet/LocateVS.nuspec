@@ -17,6 +17,8 @@
   <files>
     <file src="LocateVS\LocateVS.dll" target="lib\net46" />
     <file src="LocateVS\Microsoft.VisualStudio.Setup.Configuration.Interop.dll" target="lib\net46" />
+    <file src="LocateVS\Microsoft.VisualStudio.Setup.Configuration.Native.x64.dll" target="lib\net46" />
+    <file src="LocateVS\Microsoft.VisualStudio.Setup.Configuration.Native.x86.dll" target="lib\net46" />
     <file src="$thirdPartyNoticesPath$" target="" />
   </files>
 </package>
