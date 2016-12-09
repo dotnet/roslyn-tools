@@ -247,11 +247,15 @@ namespace VsixExpInstaller
                                 }
                                 else
                                 {
-                                    if (foundBefore && !installedGloballyBefore)
+                                    if (foundBefore && installedGloballyBefore && (vsixToInstallHeader.Version < installedVsixBefore.Header.Version))
+                                    {
+                                        throw new Exception($"The version you are attempting to install ({vsixToInstallHeader.Version}) has a version that is less than the one installed globally ({installedVsixBefore.Header.Version}).");
+                                    }
+                                    else if (foundBefore && !installedGloballyBefore)
                                     {
                                         Console.WriteLine("Updating {0}... ", vsixPath);
                                         extensionManagerService.Uninstall(installedVsixBefore);
-                                    }
+                                    } 
                                     else
                                     {
                                         Console.WriteLine("Installing {0}... ", vsixPath);
