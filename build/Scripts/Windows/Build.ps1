@@ -4,12 +4,13 @@ Param(
   [string] $configuration = "Debug",
   [string] $deployHive = "Exp",
   [switch] $help,
-  [string] $locateVsApiVersion = "0.2.3-beta",
+  [string] $locateVsApiVersion = "0.2.4-beta",
   [string] $msbuildVersion = "15.0",
   [string] $nugetVersion = "3.6.0-beta1",
   [switch] $official,
-  [string] $publishedPackageVersion = "0.2.3-beta",
+  [string] $publishedPackageVersion = "0.2.4-beta",
   [switch] $realSign,
+  [string] $signToolVersion = "0.2.4-beta",
   [switch] $skipBuild,
   [switch] $skipDeploy,
   [switch] $skipPackage,
@@ -23,7 +24,7 @@ Param(
   [string] $xUnitVersion = "2.2.0-beta4-build3444"
 )
 
-set-strictmode -version 2.0
+Set-StrictMode -version 2.0
 $ErrorActionPreference = "Stop"
 
 function Create-Directory([string[]] $path) {
@@ -88,7 +89,7 @@ function Locate-CsiPath {
 
 function Locate-LocateVsApi {
   $packagesPath = Locate-PackagesPath
-  $locateVsApi = Join-Path -path $packagesPath -ChildPath "RoslynTools.Microsoft.LocateVS\$locateVsApiVersion\lib\net46\LocateVS.dll"
+  $locateVsApi = Join-Path -path $packagesPath -ChildPath "RoslynTools.Microsoft.LocateVS\$locateVsApiVersion\tools\LocateVS.dll"
 
   if (!(Test-Path -path $locateVsApi)) {
     throw "The specified LocateVS API version ($locateVsApiVersion) could not be located."
@@ -212,11 +213,11 @@ function Locate-SignConfig {
 }
 
 function Locate-SignTool {
-  $binariesPath = Locate-BinariesPath
-  $signTool = Join-Path -path $binariesPath -childPath "SignTool\SignTool.exe"
+  $packagesPath = Locate-PackagesPath
+  $signTool = Join-Path -path $packagesPath -childPath "RoslynTools.Microsoft.SignTool\$signToolVersion\tools\SignTool.exe"
 
   if (!(Test-Path -path $signTool)) {
-    throw "The sign tool could not be located."
+    throw "The specified sign tool version ($signToolVersion) could not be located."
   }
 
   return Resolve-Path -path $signTool
@@ -462,28 +463,30 @@ function Print-Help {
   }
 
   Write-Host -object "Build Script"
-  Write-Host -object "    Help                       - [Switch] - Prints this help message."
+  Write-Host -object "  Help                    - [Switch] - Prints this help message."
   Write-Host -object ""
-  Write-Host -object "    Configuration              - [String] - Specifies the build configuration. Defaults to 'Debug'."
-  Write-Host -object "    DeployHive                 - [String] - Specifies the VSIX deployment hive. Defaults to 'Exp'."
-  Write-Host -object "    MSBuildVersion             - [String] - Specifies the MSBuild version. Defaults to '15.0'."
-  Write-Host -object "    NuGetVersion               - [String] - Specifies the NuGet version. Defaults to '3.6.0-beta1'."
-  Write-Host -object "    PublishedPackageVersion    - [String] - Specifies the version of the published NuGet package. Defaults to '0.2.3-beta'."
-  Write-Host -object "    Target                     - [String] - Specifies the build target. Defaults to 'Build'."
-  Write-Host -object "    TestFilter                 - [String] - Specifies the test filter. Defaults to '*.UnitTests.dll'."
-  Write-Host -object "    ToolsetVersion             - [String] - Specifies the CSI version. Defaults to '2.0.0-rc2-61110-03'."
-  Write-Host -object "    xUnitVersion               - [String] - Specifies the xUnit version. Defaults to '2.2.0-beta4-build3444'."
+  Write-Host -object "  Configuration           - [String] - Specifies the build configuration. Defaults to 'Debug'."
+  Write-Host -object "  DeployHive              - [String] - Specifies the VSIX deployment hive. Defaults to 'Exp'."
+  Write-Host -object "  LocateVsApiVersion      - [String] - Specifies the LocateVs API version. Defaults to '0.2.4-beta'."
+  Write-Host -object "  MSBuildVersion          - [String] - Specifies the MSBuild version. Defaults to '15.0'."
+  Write-Host -object "  NuGetVersion            - [String] - Specifies the NuGet version. Defaults to '3.6.0-beta1'."
+  Write-Host -object "  PublishedPackageVersion - [String] - Specifies the version of the published NuGet package. Defaults to '0.2.4-beta'."
+  Write-Host -object "  SignToolVersion         - [String] - Specifies the Sign tool version. Defaults to '0.2.4-beta'."
+  Write-Host -object "  Target                  - [String] - Specifies the build target. Defaults to 'Build'."
+  Write-Host -object "  TestFilter              - [String] - Specifies the test filter. Defaults to '*.UnitTests.dll'."
+  Write-Host -object "  ToolsetVersion          - [String] - Specifies the CSI version. Defaults to '2.0.0-rc2-61110-03'."
+  Write-Host -object "  xUnitVersion            - [String] - Specifies the xUnit version. Defaults to '2.2.0-beta4-build3444'."
   Write-Host -object ""
-  Write-Host -object "    Official                   - [Switch] - Indicates this is an official build which changes the semantic version."
-  Write-Host -object "    RealSign                   - [Switch] - Indicates this build needs real signing performed."
-  Write-Host -object "    SkipBuild                  - [Switch] - Indicates the build step should be skipped."
-  Write-Host -object "    SkipDeploy                 - [Switch] - Indicates the VSIX deployment step should be skipped."
-  Write-Host -object "    SkipPackage                - [Switch] - Indicates the NuGet Package step should be skipped."
-  Write-Host -object "    SkipRestore                - [Switch] - Indicates the restore step should be skipped."
-  Write-Host -object "    SkipTest                   - [Switch] - Indicates the test step should be skipped."
-  Write-Host -object "    SkipTest32                 - [Switch] - Indicates the 32-bit Unit Tests should be skipped."
-  Write-Host -object "    SkipTest64                 - [Switch] - Indicates the 64-bit Unit Tests should be skipped."
-  Write-Host -object "    Integration                - [Switch] - Indicates the Integration Tests should be run."
+  Write-Host -object "  ClearPackageCache       - [Switch] - Indicates local package cache should be cleared before restore."
+  Write-Host -object "  Official                - [Switch] - Indicates this is an official build which changes the semantic version."
+  Write-Host -object "  RealSign                - [Switch] - Indicates this build needs real signing performed."
+  Write-Host -object "  SkipBuild               - [Switch] - Indicates the build step should be skipped."
+  Write-Host -object "  SkipDeploy              - [Switch] - Indicates the VSIX deployment step should be skipped."
+  Write-Host -object "  SkipPackage             - [Switch] - Indicates the NuGet Package step should be skipped."
+  Write-Host -object "  SkipRestore             - [Switch] - Indicates the restore step should be skipped."
+  Write-Host -object "  SkipTest                - [Switch] - Indicates the test step should be skipped."
+  Write-Host -object "  SkipTest32              - [Switch] - Indicates the 32-bit Unit Tests should be skipped."
+  Write-Host -object "  SkipTest64              - [Switch] - Indicates the 64-bit Unit Tests should be skipped."
 
   Exit 0
 }
@@ -496,6 +499,6 @@ try {
   Perform-Test-x86
   Perform-Package
 } catch [exception] {
-    write-host $_.Exception
-    exit -1
+    Write-Host -object $_.Exception
+    Exit -1
 }

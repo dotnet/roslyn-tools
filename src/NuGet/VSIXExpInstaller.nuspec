@@ -17,7 +17,7 @@
   </metadata>
   <files>
     <file src="VSIXExpInstaller\VSIXExpInstaller.exe" target="tools" />
-    <file src="VSIXExpInstaller\VsixExpInstaller.exe.config" target="tools" />
+    <file src="VSIXExpInstaller\VSIXExpInstaller.exe.config" target="tools" />
     <file src="$thirdPartyNoticesPath$" target="" />
   </files>
 </package>

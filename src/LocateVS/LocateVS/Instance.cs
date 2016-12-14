@@ -12,19 +12,16 @@ namespace LocateVS
     {
         private static ISetupConfiguration GetSetupConfiguration()
         {
-            ISetupConfiguration setupConfiguration;
-
             try
             {
-                setupConfiguration = new SetupConfiguration();
+                return new SetupConfiguration();
             }
             catch (COMException comException) when (comException.HResult == Interop.REGDB_E_CLASSNOTREG)
             {
                 // Fallback to P/Invoke if the COM registration is missing
-                Interop.GetSetupConfiguration(out setupConfiguration);
+                Interop.GetSetupConfiguration(out var setupConfiguration, reserved: IntPtr.Zero);
+                return setupConfiguration;
             }
-
-            return setupConfiguration;
         }
 
         private static IEnumerable<ISetupInstance> EnumerateVisualStudioInstances()

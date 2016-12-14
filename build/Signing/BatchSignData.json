@@ -6,6 +6,7 @@
       "values": [
         "LocateVS\\LocateVS.dll",
         "ModifyVsixManifest\\ModifyVsixManifest.exe",
+        "SignTool\\SignTool.exe",
         "VSIXExpInstaller\\VSIXExpInstaller.exe"
       ]
     }

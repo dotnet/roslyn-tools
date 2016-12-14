@@ -10,21 +10,27 @@ namespace LocateVS
     {
         public const int REGDB_E_CLASSNOTREG = unchecked((int)0x80040154);
 
-        [DllImport("Microsoft.VisualStudio.Setup.Configuration.Native.x64.dll")]
-        public static extern void GetSetupConfiguration_x64([MarshalAs(UnmanagedType.Interface)] out ISetupConfiguration setupConfiguration);
+        [DllImport("x64\\Microsoft.VisualStudio.Setup.Configuration.Native.dll", BestFitMapping = false, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "GetSetupConfiguration", ExactSpelling = true, PreserveSig = true, SetLastError = false, ThrowOnUnmappableChar = false)]
+        public static extern int GetSetupConfiguration_x64(
+            [Out, MarshalAs(UnmanagedType.Interface)] out ISetupConfiguration setupConfiguration,
+            [In] IntPtr pReserved
+        );
 
-        [DllImport("Microsoft.VisualStudio.Setup.Configuration.Native.x86.dll")]
-        public static extern void GetSetupConfiguration_x86([MarshalAs(UnmanagedType.Interface)] out ISetupConfiguration setupConfiguration);
+        [DllImport("x86\\Microsoft.VisualStudio.Setup.Configuration.Native.dll", BestFitMapping = false, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "GetSetupConfiguration", ExactSpelling = true, PreserveSig = true, SetLastError = false, ThrowOnUnmappableChar = false)]
+        public static extern int GetSetupConfiguration_x86(
+            [Out, MarshalAs(UnmanagedType.Interface)] out ISetupConfiguration setupConfiguration,
+            [In] IntPtr pReserved
+        );
 
-        public static void GetSetupConfiguration(out ISetupConfiguration setupConfiguration)
+        public static void GetSetupConfiguration(out ISetupConfiguration setupConfiguration, IntPtr reserved)
         {
             if (Environment.Is64BitProcess)
             {
-                GetSetupConfiguration_x64(out setupConfiguration);
+                GetSetupConfiguration_x64(out setupConfiguration, reserved);
             }
             else
             {
-                GetSetupConfiguration_x86(out setupConfiguration);
+                GetSetupConfiguration_x86(out setupConfiguration, reserved);
             }
         }
     }
