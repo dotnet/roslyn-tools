@@ -1,0 +1,1 @@
+%~dp0..\..\nuget pack %~dp0RepoToolset.nuspec -BasePath %~dp0..\RepoToolset

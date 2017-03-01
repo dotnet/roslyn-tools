@@ -1,0 +1,19 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>RoslynTools.Microsoft.RepoToolset</id>
+    <summary>Common toolset for repositories</summary>
+    <description>Common toolset for repositories</description>
+    <dependencies>
+    </dependencies>
+    <language>en-US</language>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <version>1.0.0-alpha7</version>
+    <authors>Microsoft</authors>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkId=529443</licenseUrl>
+    <tags>Repository Toolset MSBuild SDK</tags>
+  </metadata>
+  <files>
+    <file src="*.*" target="tools" />
+  </files>
+</package>
