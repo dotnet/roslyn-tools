@@ -1,4 +1,4 @@
-# Description
+﻿# Description
 
 RepoToolset is a set of msbuild props and targets files that provide build features needed across repos, such as CI integration, packaging, testing, and signing.
 
@@ -27,6 +27,11 @@ artifacts
        $(MSBuildProjectName).$(PackageVersion).nupkg
     TestResults
        $(MSBuildProjectName)_$(TargetFramework)_$(TestArchitecture).xml
+    VSSetup
+       $(VisualStudioSetupComponent)
+         *.vsix
+         *.json
+         *.vsmand
     tmp
   log
 ```
@@ -94,7 +99,7 @@ Projects shall be standard dotnet SDK based projects. No project level customiza
 
 Test project file names shall end with "UnitTest", e.g. "MyProject.UnitTest.csproj".  
 
-> Due to a [bug](https://github.com/Microsoft/msbuild/issues/1721) in msbuild targets each test project file is currently required to import ```src\Directory.Build.targets``` file manually at its end:
+> Due to a [bug](https://github.com/Microsoft/msbuild/issues/1721) in msbuild targets each project file that targets multiple frameworks is currently required to import ```src\Directory.Build.targets``` file manually at its end:
 > ```<Import Project="..\Directory.Build.targets" Condition="'$(TargetFramework)' == ''"/>```
 
 Source directory ```src``` shall contain ```Directory.Build.props``` and ```Directory.Build.targets``` files like so:
@@ -141,7 +146,7 @@ It is recommended to add the following ```build.proj``` to the repo that invokes
       Build            "true" to build solution
       Test             "true" to run tests
       Sign             "true" to sign built binaries
-      Pack             "true" to build nuget packages
+      Pack             "true" to build nuget and Visual Studio Setup packages
   -->
   <PropertyGroup>
     <SolutionPath Condition="'$(SolutionPath)' == ''">$(MSBuildThisFileDirectory)MyMainSolution.sln</SolutionPath>
@@ -183,6 +188,29 @@ Example of ```Toolset.proj``` that lists all toolset-level packages required by 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
 ```
+
+### Building VSIX packages and Visual Studio Setup components
+
+Set ```VisualStudioDeploymentRootSuffix``` property to specify the root suffix of the VS hive to deploy to.
+
+Import .props and .targets files to each project building a VSIX:
+
+```xml
+  <Import Project="$(RepoToolsetDir)VisualStudio.props"/>
+```
+
+```xml
+  <Import Project="$(RepoToolsetDir)VisualStudio.targets"/>
+```
+
+To include the VSIX in Visual Studio setup component that is inserted into Visual Studio by MicroBuild, set the following properties:
+
+```xml
+    <VsixPackageId>{Package ID as specified in .vsixmanifest file}</VsixPackageId>
+    <VisualStudioSetupComponent>{VS setup component name to include the VSIX in}</VisualStudioSetupComponent>
+```
+
+The Visual Studio setup package will be built by Pack task.
 
 ### Main build script (OS Specific)
 
