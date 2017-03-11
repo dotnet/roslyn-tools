@@ -184,12 +184,17 @@ Example of ```Toolset.proj``` that lists all toolset-level packages required by 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <ItemGroup>
     <PackageReference Include="RoslynTools.Microsoft.RepoToolset" Version="$(RoslynToolsMicrosoftRepoToolsetVersion)" />
-    <PackageReference Include="RoslynTools.Microsoft.XUnitLogger" Version="$(RoslynToolsMicrosoftXUnitLoggerVersion)" />
     <PackageReference Include="RoslynTools.Microsoft.SignTool" Version="$(RoslynToolsMicrosoftSignToolVersion)" />
     <PackageReference Include="MicroBuild.Core" Version="$(MicroBuildCoreVersion)" />
     <PackageReference Include="MicroBuild.Core.Sentinel" Version="1.0.0" />
     <PackageReference Include="MicroBuild.Plugins.SwixBuild" Version="$(MicroBuildPluginsSwixBuildVersion)" />
     <PackageReference Include="Microsoft.Net.Compilers" Version="$(ToolsetCompilerPackageVersion)" />
+    
+    <!-- When using desktop msbuild driver -->
+    <PackageReference Include="xunit.runner.console" Version="$(XUnitRunnerConsoleVersion)" />
+
+    <!-- When using dotnet cli driver -->
+    <PackageReference Include="RoslynTools.Microsoft.XUnitLogger" Version="$(RoslynToolsMicrosoftXUnitLoggerVersion)" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
