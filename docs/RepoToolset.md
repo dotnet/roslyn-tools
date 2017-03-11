@@ -4,8 +4,8 @@ RepoToolset is a set of msbuild props and targets files that provide build featu
 
 The goals are 
 - to reduce the amount of copies of same or similar props, targets and scripts across repos
-- cross-platform build that relies on dotnet cli, which is expected to be downloaded during restore
-- no dependency on software installed on the machine
+- enable cross-platform build that relies on dotnet cli, which is expected to be downloaded during restore, as well as destkop msbuild based build
+- no dependency on software installed on the machine when using dotnet cli
 - be as close to the latest shipping dotnet SDK as possible, with minimal overrides and tweaks
 - be modular and flexible, not all repos need all features; let the repo choose subset of features to import
 - unify common operations and structure across repos
@@ -56,11 +56,17 @@ Versions.props file is present in the repo and defines versions of all dependenc
     <RoslynToolsMicrosoftRepoToolsetVersion>1.0.0-alpha5</RoslynToolsMicrosoftRepoToolsetVersion>
     <RoslynToolsMicrosoftXUnitLoggerVersion>1.0.0-alpha1</RoslynToolsMicrosoftXUnitLoggerVersion>
     <RoslynToolsMicrosoftSignToolVersion>0.3.1-beta</RoslynToolsMicrosoftSignToolVersion>
-    <DotNetCliVersion>1.0.0-rc4-004777</DotNetCliVersion>
     <MicroBuildCoreVersion>0.2.0</MicroBuildCoreVersion>
     <MicroBuildPluginsSwixBuildVersion>1.0.101</MicroBuildPluginsSwixBuildVersion>
     <ToolsetCompilerPackageVersion>2.0.0-rc4</ToolsetCompilerPackageVersion>
     <XUnitVersion>2.2.0-beta4-build3444</XUnitVersion>
+
+    <!-- Tool versions when using dotnet cli build driver -->
+    <DotNetCliVersion>1.0.0-rc4-004777</DotNetCliVersion>
+
+    <!-- Tool versions when using desktop msbuild driver -->
+    <VSWhereVersion>1.0.47</VSWhereVersion>
+    <XUnitRunnerConsoleVersion>2.2.0-beta4-build3444</XUnitRunnerConsoleVersion>
 </PropertyGroup>
 </Project>
 ```
@@ -217,7 +223,12 @@ The Visual Studio setup package will be built by Pack task.
 Used to acquire and restore dotnet cli (if not restored yet) and kick off build locally as well as from CI.
 
 #### build.ps1 
+Example of dotnet cli driven build:
+
 https://github.com/dotnet/symreader-converter/blob/master/build/build.ps1.
+
+Example of desktop msbuild driven build:
+https://github.com/dotnet/interactive-window/blob/master/build/build.ps1.
 
 #### CIBuild.cmd
 
