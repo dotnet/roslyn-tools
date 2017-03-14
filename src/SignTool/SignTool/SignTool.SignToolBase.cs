@@ -18,7 +18,6 @@ namespace SignTool
             private readonly SignToolArgs _args;
 
             internal string MSBuildPath => _args.MSBuildPath;
-            internal string DotnetToolPath => _args.DotnetPath;
             internal string OutputPath => _args.OutputPath;
             internal string IntermediateOutputPath => _args.IntermediateOutputPath;
             internal string NuGetPackagesPath => _args.NuGetPackagesPath;
@@ -44,27 +43,18 @@ namespace SignTool
                 Console.WriteLine("Generated project file");
                 Console.WriteLine(content);
 
-                string fileName;
-                var commandLine = new StringBuilder();
+                string fileName = MSBuildPath;
+                var commandLine = $@"/v:m ""{buildFilePath}""";
 
-                if (MSBuildPath != null)
+                if (!_args.Test)
                 {
-                    fileName = MSBuildPath;
-                    commandLine.Append("/v:m ");
+                    Console.WriteLine($"{fileName} {commandLine}");
                 }
-                else
-                {
-                    fileName = DotnetToolPath;
-                    commandLine.Append("msbuild ");
-                }
-
-                commandLine.Append($@"""{buildFilePath}"" ");
-                Console.WriteLine($"{fileName} {commandLine.ToString()}");
 
                 var startInfo = new ProcessStartInfo()
                 {
                     FileName = fileName,
-                    Arguments = commandLine.ToString(),
+                    Arguments = commandLine,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     WorkingDirectory = AppPath,
