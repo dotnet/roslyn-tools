@@ -10,6 +10,12 @@ The goals are
 - be modular and flexible, not all repos need all features; let the repo choose subset of features to import
 - unify common operations and structure across repos
 
+Repos currently using the toolset:
+- http://github.com/dotnet/interactive-window
+- http://github.com/dotnet/symreader-portable
+- http://github.com/dotnet/symreader-converter
+- http://github.com/dotnet/roslyn-debug
+
 The toolset has following requirements on the repo layout.
 
 ### Single build output
