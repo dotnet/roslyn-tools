@@ -1,6 +1,6 @@
 ﻿# Description
 
-RepoToolset is a set of msbuild props and targets files that provide build features needed across repos, such as CI integration, packaging, testing, and signing.
+RepoToolset is a set of msbuild props and targets files that provide build features needed across repos, such as CI integration, packaging, testing, and signing via Microbuild.
 
 The goals are 
 - to reduce the amount of copies of same or similar props, targets and scripts across repos
