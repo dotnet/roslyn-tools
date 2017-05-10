@@ -1,4 +1,4 @@
-﻿#r "System.Xml.Linq"
+#r "System.Xml.Linq"
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -81,7 +81,8 @@ var PreReleaseOnlyPackages = new HashSet<string>
     "LocateVS",
     "ModifyVsixManifest",
     "SignTool",
-    "VsixExpInstaller"
+    "VsixExpInstaller",
+    "DownloadRoslynVsixes"
 };
 
 // Create an empty directory to be used in NuGet pack
