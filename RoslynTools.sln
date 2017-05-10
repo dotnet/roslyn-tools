@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26005.1
+VisualStudioVersion = 15.0.26507.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7C921001-EF26-441B-98E2-F88AA90FFBAF}"
 EndProject
@@ -39,6 +39,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{C0E7FE5B-10C1-414A-B54F-DA182205053F}"
 	ProjectSection(SolutionItems) = preProject
 		src\NuGet\BuildNuGets.csx = src\NuGet\BuildNuGets.csx
+		src\NuGet\DownloadRoslynVsixes.nuspec = src\NuGet\DownloadRoslynVsixes.nuspec
 		src\NuGet\LocateVS.nuspec = src\NuGet\LocateVS.nuspec
 		src\NuGet\ModifyVsixManifest.nuspec = src\NuGet\ModifyVsixManifest.nuspec
 		src\NuGet\SignTool.nuspec = src\NuGet\SignTool.nuspec
@@ -82,6 +83,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VsixExpInstaller", "VsixExp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VsixExpInstaller", "src\VSIXExpInstaller\VSIXExpInstaller\VsixExpInstaller.csproj", "{55DFEADF-E80C-4F0D-957F-93A1B66C585E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DownloadRoslynVsixes", "DownloadRoslynVsixes", "{9C33BF6A-98B0-4590-93A2-D83F78DF47D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DownloadRoslynVsixes", "src\DownloadRoslynVsixes\DownloadRoslynVsixes.csproj", "{5697E050-FAC5-4026-8CAE-8D851C7A95C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,6 +113,10 @@ Global
 		{55DFEADF-E80C-4F0D-957F-93A1B66C585E}.Debug|Any CPU.Build.0 = Debug|x86
 		{55DFEADF-E80C-4F0D-957F-93A1B66C585E}.Release|Any CPU.ActiveCfg = Release|x86
 		{55DFEADF-E80C-4F0D-957F-93A1B66C585E}.Release|Any CPU.Build.0 = Release|x86
+		{5697E050-FAC5-4026-8CAE-8D851C7A95C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5697E050-FAC5-4026-8CAE-8D851C7A95C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5697E050-FAC5-4026-8CAE-8D851C7A95C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5697E050-FAC5-4026-8CAE-8D851C7A95C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -129,5 +138,7 @@ Global
 		{98F8C3C0-B47E-43CA-9399-C179B4AE728D} = {7C921001-EF26-441B-98E2-F88AA90FFBAF}
 		{6B58AE05-69DD-434E-9C92-F7B49043F09C} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
 		{55DFEADF-E80C-4F0D-957F-93A1B66C585E} = {6B58AE05-69DD-434E-9C92-F7B49043F09C}
+		{9C33BF6A-98B0-4590-93A2-D83F78DF47D2} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
+		{5697E050-FAC5-4026-8CAE-8D851C7A95C3} = {9C33BF6A-98B0-4590-93A2-D83F78DF47D2}
 	EndGlobalSection
 EndGlobal

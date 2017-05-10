@@ -1,4 +1,4 @@
-﻿{
+{
   "sign": [
     {
       "certificate": "Microsoft402",
@@ -7,7 +7,8 @@
         "LocateVS\\LocateVS.dll",
         "ModifyVsixManifest\\ModifyVsixManifest.exe",
         "SignTool\\SignTool.exe",
-        "VSIXExpInstaller\\VSIXExpInstaller.exe"
+        "VSIXExpInstaller\\VSIXExpInstaller.exe",
+        "DownloadRoslynVsixes\\DownloadRoslynVsixes.exe"
       ]
     }
   ]
