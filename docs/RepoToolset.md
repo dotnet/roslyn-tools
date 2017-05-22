@@ -12,6 +12,7 @@ The goals are
 
 Repos currently using the toolset:
 - http://github.com/dotnet/interactive-window
+- http://github.com/dotnet/symreader
 - http://github.com/dotnet/symreader-portable
 - http://github.com/dotnet/symreader-converter
 - http://github.com/dotnet/metadata-tools
