@@ -2,6 +2,7 @@
 <Project>  
   <Import Project="StrongName.targets"/>
   <Import Project="GenerateInternalsVisibleTo.targets" />
+  <Import Project="GenerateResxSource.targets" />
   <Import Project="Test.targets"/>
 
   <!-- Workaround for https://github.com/Microsoft/msbuild/issues/1310 -->
@@ -14,4 +15,11 @@
       <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
     </PropertyGroup>
   </Target>
+
+  <!-- 
+    By default the SDK sets RootNamespace to the name of the project. Clear it here to avoid prefixing our namespaces.
+  -->
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.vbproj' OR '$(Language)' == 'VB' OR '$(ProjectLanguage)' == 'VB'">
+    <RootNamespace />
+  </PropertyGroup>
 </Project>
