@@ -37,8 +37,8 @@ artifacts
        $(MSBuildProjectName)_$(TargetFramework)_$(TestArchitecture).xml
     VSSetup
        $(VsixPackageId).json
+       $(VsixPackageId).vsmand
        $(MSBuildProjectName).vsix
-       $(MSBuildProjectName).vsmand
     tmp
   log
 ```
