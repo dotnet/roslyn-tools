@@ -15,7 +15,7 @@ Repos currently using the toolset:
 - http://github.com/dotnet/symreader
 - http://github.com/dotnet/symreader-portable
 - http://github.com/dotnet/symreader-converter
-- https://github.com/dotnet/symstore
+- http://github.com/dotnet/symstore
 - http://github.com/dotnet/metadata-tools
 - http://github.com/dotnet/roslyn-analyzers
 - http://github.com/dotnet/roslyn-debug
