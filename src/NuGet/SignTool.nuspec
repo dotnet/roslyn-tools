@@ -22,7 +22,8 @@
     <file src="SignTool\System.Reflection.Metadata.dll" target="tools" />
     <file src="SignTool\LocateVS.dll" target="tools" />
     <file src="SignTool\Microsoft.VisualStudio.Setup.Configuration.Interop.dll" target="tools" />    
-    <file src="SignTool\x86\Microsoft.VisualStudio.Setup.Configuration.Native.dll" target="tools\x86" />
+    <file src="SignTool\x86\*" target="tools\x86" />
+    <file src="SignTool\x64\*" target="tools\x64" />
     <file src="$thirdPartyNoticesPath$" target="" />
   </files>
 </package>
