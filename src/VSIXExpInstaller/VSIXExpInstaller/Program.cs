@@ -16,40 +16,6 @@ namespace VsixExpInstaller
     {
         private const string ExtensionManagerCollectionPath = "ExtensionManager";
 
-        private static readonly Comparer<IInstalledExtension> InstalledExtensionComparer = Comparer<IInstalledExtension>.Create((left, right) =>
-        {
-            if (left.References.Count() == 0)
-            {
-                // When left.References.Count() is zero, then we have two scenarios:
-                //    * right.References.Count() is zero, and the order of the two components doesn't matter, so we return 0
-                //    * right.References.Count() is not zero, which means it should be uninstalled after left, so we return -1
-                return right.References.Count() == 0 ? 0 : -1;
-            }
-            else if (right.References.Count() == 0)
-            {
-                // When left.References.Count() is not zero, but right.References.Count() is, then we have one scenario:
-                //    * right should be uninstalled before left, so we return 1
-                return 1;
-            }
-
-            if (left.References.Any((extensionReference) => extensionReference.Identifier == right.Header.Identifier))
-            {
-                // When left.References contains right, then we have one scenario:
-                //    * left is dependent on right, which means it must be uninstalled afterwards, so we return 1
-                return 1;
-            }
-            else if (right.References.Any((extensionReference) => extensionReference.Identifier == left.Header.Identifier))
-            {
-                // When right.References contains left, then we have one scenario:
-                //    * right is dependent on left, which means it must be uninstalled afterwards, so we return -1
-                return -1;
-            }
-
-            // Finally, if both projects contain references, but neither depends on the other, we have one scenario:
-            //    * left and right are independent of each other, and the order of the two components doesn't matter, so we return 0
-            return 0;
-        });
-
         private static string ExtractArg(List<string> args, string argName)
         {
             for (var i = 0; i < args.Count; i++)
@@ -208,6 +174,40 @@ namespace VsixExpInstaller
                 // Move all of this into a local method so that it only causes the assembly loads after the resolver has been hooked up
                 void RunProgram()
                 {
+                    var installedExtensionComparer = Comparer<IInstalledExtension>.Create((left, right) =>
+                    {
+                        if (left.References.Count() == 0)
+                        {
+                            // When left.References.Count() is zero, then we have two scenarios:
+                            //    * right.References.Count() is zero, and the order of the two components doesn't matter, so we return 0
+                            //    * right.References.Count() is not zero, which means it should be uninstalled after left, so we return -1
+                            return right.References.Count() == 0 ? 0 : -1;
+                        }
+                        else if (right.References.Count() == 0)
+                        {
+                            // When left.References.Count() is not zero, but right.References.Count() is, then we have one scenario:
+                            //    * right should be uninstalled before left, so we return 1
+                            return 1;
+                        }
+
+                        if (left.References.Any((extensionReference) => extensionReference.Identifier == right.Header.Identifier))
+                        {
+                            // When left.References contains right, then we have one scenario:
+                            //    * left is dependent on right, which means it must be uninstalled afterwards, so we return 1
+                            return 1;
+                        }
+                        else if (right.References.Any((extensionReference) => extensionReference.Identifier == left.Header.Identifier))
+                        {
+                            // When right.References contains left, then we have one scenario:
+                            //    * right is dependent on left, which means it must be uninstalled afterwards, so we return -1
+                            return -1;
+                        }
+
+                        // Finally, if both projects contain references, but neither depends on the other, we have one scenario:
+                        //    * left and right are independent of each other, and the order of the two components doesn't matter, so we return 0
+                        return 0;
+                    });
+
                     using (var settingsManager = ExternalSettingsManager.CreateForApplication(devenvPath, rootSuffix))
                     {
                         ExtensionManagerService extensionManagerService = null;
@@ -357,7 +357,7 @@ namespace VsixExpInstaller
                             // We only want extensions which are not installed per machine and we want them sorted by their dependencies.
                             var installedExtensions = extensionManagerService.GetInstalledExtensions()
                                                                              .Where((installedExtension) => !IsInstalledGlobally(installedExtension))
-                                                                             .OrderBy((installedExtension) => installedExtension, InstalledExtensionComparer);
+                                                                             .OrderBy((installedExtension) => installedExtension, installedExtensionComparer);
 
                             foreach (var installedExtension in installedExtensions)
                             {
