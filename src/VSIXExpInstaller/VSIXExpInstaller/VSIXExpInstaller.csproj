@@ -9,7 +9,7 @@
     <OutputType>Exe</OutputType>
     <PlatformTarget>x86</PlatformTarget>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <CopyNuGetImplementations>false</CopyNuGetImplementations>
+    <CopyNuGetImplementations>true</CopyNuGetImplementations>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
   </PropertyGroup>

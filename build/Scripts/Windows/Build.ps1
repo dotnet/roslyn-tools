@@ -21,6 +21,7 @@ Param(
   [string] $target = "Build",
   [string] $toolsetVersion = "2.0.0-rc2-61205-04",
   [string] $testFilter = "*.UnitTests.dll",
+  [string] $vsVersion = "15",
   [string] $xUnitVersion = "2.2.0-beta4-build3444"
 )
 
@@ -128,7 +129,7 @@ function Locate-MSBuildPath {
   $requiredPackageIds += "Microsoft.VisualStudio.Component.VSSDK"
 
   Add-Type -path $locateVsApi
-  $visualStudioInstallationPath = [LocateVS.Instance]::GetInstallPath($msbuildVersion, $requiredPackageIds)
+  $visualStudioInstallationPath = [LocateVS.Instance]::GetInstallPath($vsVersion, $requiredPackageIds)
 
   $msbuildPath = Join-Path -path $visualStudioInstallationPath -childPath "MSBuild\$msbuildVersion\Bin"
   return Resolve-Path -path $msbuildPath
@@ -475,6 +476,7 @@ function Print-Help {
   Write-Host -object "  Target                  - [String] - Specifies the build target. Defaults to 'Build'."
   Write-Host -object "  TestFilter              - [String] - Specifies the test filter. Defaults to '*.UnitTests.dll'."
   Write-Host -object "  ToolsetVersion          - [String] - Specifies the CSI version. Defaults to '2.0.0-rc2-61110-03'."
+  Write-Host -object "  VSVersion               - [String] - Specifies the VS version. Defaults to '15'."
   Write-Host -object "  xUnitVersion            - [String] - Specifies the xUnit version. Defaults to '2.2.0-beta4-build3444'."
   Write-Host -object ""
   Write-Host -object "  ClearPackageCache       - [Switch] - Indicates local package cache should be cleared before restore."

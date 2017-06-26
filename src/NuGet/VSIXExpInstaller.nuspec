@@ -18,6 +18,7 @@
   <files>
     <file src="VSIXExpInstaller\VSIXExpInstaller.exe" target="tools" />
     <file src="VSIXExpInstaller\VSIXExpInstaller.exe.config" target="tools" />
+    <file src="VSIXExpInstaller\System.ValueTuple.dll" target="tools" />
     <file src="$thirdPartyNoticesPath$" target="" />
   </files>
 </package>
