@@ -1,4 +1,6 @@
-﻿using System;
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,14 +8,49 @@ using System.Reflection;
 using System.Security.Principal;
 using Microsoft.VisualStudio.ExtensionManager;
 using Microsoft.VisualStudio.Settings;
+using System.Diagnostics;
 
 namespace VsixExpInstaller
 {
     public class Program
     {
-        const string ExtensionManagerCollectionPath = "ExtensionManager";
+        private const string ExtensionManagerCollectionPath = "ExtensionManager";
 
-        static string ExtractArg(List<string> args, string argName)
+        private static readonly Comparer<IInstalledExtension> InstalledExtensionComparer = Comparer<IInstalledExtension>.Create((left, right) =>
+        {
+            if (left.References.Count() == 0)
+            {
+                // When left.References.Count() is zero, then we have two scenarios:
+                //    * right.References.Count() is zero, and the order of the two components doesn't matter, so we return 0
+                //    * right.References.Count() is not zero, which means it should be uninstalled after left, so we return -1
+                return right.References.Count() == 0 ? 0 : -1;
+            }
+            else if (right.References.Count() == 0)
+            {
+                // When left.References.Count() is not zero, but right.References.Count() is, then we have one scenario:
+                //    * right should be uninstalled before left, so we return 1
+                return 1;
+            }
+
+            if (left.References.Any((extensionReference) => extensionReference.Identifier == right.Header.Identifier))
+            {
+                // When left.References contains right, then we have one scenario:
+                //    * left is dependent on right, which means it must be uninstalled afterwards, so we return 1
+                return 1;
+            }
+            else if (right.References.Any((extensionReference) => extensionReference.Identifier == left.Header.Identifier))
+            {
+                // When right.References contains left, then we have one scenario:
+                //    * right is dependent on left, which means it must be uninstalled afterwards, so we return -1
+                return -1;
+            }
+
+            // Finally, if both projects contain references, but neither depends on the other, we have one scenario:
+            //    * left and right are independent of each other, and the order of the two components doesn't matter, so we return 0
+            return 0;
+        });
+
+        private static string ExtractArg(List<string> args, string argName)
         {
             for (var i = 0; i < args.Count; i++)
             {
@@ -29,7 +66,7 @@ namespace VsixExpInstaller
             return null;
         }
 
-        static bool FindArg(List<string> args, string argName)
+        private static bool FindArg(List<string> args, string argName)
         {
             for (var i = 0; i < args.Count; i++)
             {
@@ -44,57 +81,10 @@ namespace VsixExpInstaller
             return false;
         }
 
-        static void PrintUsage()
+        private static void PrintUsage()
         {
             Console.WriteLine("Usage: VSIXExpInstaller [/rootSuffix:suffix] [/u] [/uninstallAll] [/vsInstallDir:vsInstallDir] <vsix>");
             Console.WriteLine("Suffix is Exp by default.");
-        }
-
-        static void UninstallAll(ExtensionManagerService service)
-        {
-            // We only want extensions which are not installed per machine and we want them sorted by their dependencies.
-            var installedExtensions = service.GetInstalledExtensions()
-                                             .Where((installedExtension) => !installedExtension.InstalledPerMachine)
-                                             .OrderBy((installedExtension) => installedExtension,
-                                                      Comparer<IInstalledExtension>.Create((left, right) =>
-                                                      {
-                                                          if (left.References.Count() == 0)
-                                                          {
-                                                              // When left.References.Count() is zero, then we have two scenarios:
-                                                              //    * right.References.Count() is zero, and the order of the two components doesn't matter, so we return 0
-                                                              //    * right.References.Count() is not zero, which means it should be uninstalled after left, so we return -1
-                                                              return right.References.Count() == 0 ? 0 : -1;
-                                                          }
-                                                          else if (right.References.Count() == 0)
-                                                          {
-                                                              // When left.References.Count() is not zero, but right.References.Count() is, then we have one scenario:
-                                                              //    * right should be uninstalled before left, so we return 1
-                                                              return 1;
-                                                          }
-
-                                                          if (left.References.Any((extensionReference) => extensionReference.Identifier == right.Header.Identifier))
-                                                          {
-                                                              // When left.References contains right, then we have one scenario:
-                                                              //    * left is dependent on right, which means it must be uninstalled afterwards, so we return 1
-                                                              return 1;
-                                                          }
-                                                          else if (right.References.Any((extensionReference) => extensionReference.Identifier == left.Header.Identifier))
-                                                          {
-                                                              // When right.References contains left, then we have one scenario:
-                                                              //    * right is dependent on left, which means it must be uninstalled afterwards, so we return -1
-                                                              return -1;
-                                                          }
-
-                                                          // Finally, if both projects contain references, but neither depends on the other, we have one scenario:
-                                                          //    * left and right are independent of each other, and the order of the two components doesn't matter, so we return 0
-                                                          return 0;
-                                                      }));
-
-            foreach (var installedExtension in installedExtensions)
-            {
-                Console.WriteLine("  Uninstalling {0}... ", installedExtension.Header.Name);
-                service.Uninstall(installedExtension);
-            }
         }
 
         private static string GetDevenvPath(string vsInstallDir)
@@ -122,10 +112,10 @@ namespace VsixExpInstaller
             }
         }
 
-        private static void RemoveExtensionFromPendingDeletions(WritableSettingsStore settingsStore, IExtensionHeader vsixToInstallHeader)
+        private static void RemoveExtensionFromPendingDeletions(WritableSettingsStore settingsStore, IExtensionHeader extensionHeader)
         {
             const string PendingDeletionsCollectionPath = ExtensionManagerCollectionPath + @"\PendingDeletions";
-            var vsixToDeleteProperty = $"{vsixToInstallHeader.Identifier},{vsixToInstallHeader.Version}";
+            var vsixToDeleteProperty = $"{extensionHeader.Identifier},{extensionHeader.Version}";
 
             if (settingsStore.CollectionExists(PendingDeletionsCollectionPath) &&
                 settingsStore.PropertyExists(PendingDeletionsCollectionPath, vsixToDeleteProperty))
@@ -177,7 +167,7 @@ namespace VsixExpInstaller
                 return 1;
             }
 
-            string vsixPath = uninstallAll ? string.Empty : argList[0];
+            string extensionPath = uninstallAll ? string.Empty : argList[0];
             string devenvPath;
 
             try
@@ -206,6 +196,13 @@ namespace VsixExpInstaller
                     return null;
                 };
 
+                Console.WriteLine(Environment.CommandLine);
+
+                if (IsRunningAsAdmin())
+                {
+                    Console.WriteLine("  Running as Admin.");
+                }
+
                 RunProgram();
 
                 // Move all of this into a local method so that it only causes the assembly loads after the resolver has been hooked up
@@ -221,90 +218,59 @@ namespace VsixExpInstaller
 
                             if (uninstallAll)
                             {
-                                Console.WriteLine("Uninstalling all... ");
-                                UninstallAll(extensionManagerService);
+                                Console.WriteLine("  Uninstalling all local extensions...");
+                                UninstallAll();
                             }
                             else
                             {
                                 var extensionManager = (IVsExtensionManager)(extensionManagerService);
-                                var vsixToInstall = extensionManager.CreateInstallableExtension(vsixPath);
-                                var vsixToInstallHeader = vsixToInstall.Header;
+                                var installableExtension = extensionManager.CreateInstallableExtension(extensionPath);
 
-                                var foundBefore = extensionManagerService.TryGetInstalledExtension(vsixToInstallHeader.Identifier, out var installedVsixBefore);
-                                var installedGloballyBefore = foundBefore && installedVsixBefore.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
+                                var status = GetInstallStatus(installableExtension.Header);
 
                                 if (uninstall)
                                 {
-                                    if (foundBefore && !installedGloballyBefore)
+                                    if (status.installed)
                                     {
-                                        Console.WriteLine("Uninstalling {0}... ", vsixPath);
-                                        extensionManagerService.Uninstall(installedVsixBefore);
+                                        if (status.installedGlobally)
+                                        {
+                                            Console.WriteLine("  Skipping uninstall for global extension: '{0}'", extensionPath);
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("  Uninstalling local extension: '{0}'", extensionPath);
+                                            Uninstall(status.installedExtension);
+                                        }
                                     }
                                     else
                                     {
-                                        Console.WriteLine("Nothing to uninstall... ");
+                                        Console.WriteLine("  Nothing to uninstall...");
                                     }
                                 }
                                 else
                                 {
-                                    if (foundBefore && installedGloballyBefore && (vsixToInstallHeader.Version < installedVsixBefore.Header.Version))
+                                    if (status.installed && status.installedGlobally && (installableExtension.Header.Version < status.installedExtension.Header.Version))
                                     {
-                                        throw new Exception($"The version you are attempting to install ({vsixToInstallHeader.Version}) has a version that is less than the one installed globally ({installedVsixBefore.Header.Version}).");
+                                        throw new Exception($"The version you are attempting to install ({installableExtension.Header.Version}) has a version that is less than the one installed globally ({status.installedExtension.Header.Version}).");
                                     }
-                                    else if (foundBefore && !installedGloballyBefore)
+                                    else if (status.installed)
                                     {
-                                        Console.WriteLine("Updating {0}... ", vsixPath);
-                                        extensionManagerService.Uninstall(installedVsixBefore);
+                                        if (status.installedGlobally)
+                                        {
+                                            Console.WriteLine("  Installing local extension over global extension: '{0}' over '{1}'", extensionPath, status.installedExtension.InstallPath);
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("  Updating local extension: '{0}'", extensionPath);
+                                            Uninstall(status.installedExtension);
+                                        }
                                     } 
                                     else
                                     {
-                                        Console.WriteLine("Installing {0}... ", vsixPath);
+                                        Console.WriteLine("  Installing local extension: '{0}'", extensionPath);
                                     }
 
-                                    extensionManagerService.Install(vsixToInstall, perMachine: false);
-                                    var settingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
-
-                                    EnableLoadingAllExtensions(settingsStore);
-                                    RemoveExtensionFromPendingDeletions(settingsStore, vsixToInstallHeader);
-                                    UpdateLastExtensionsChange(settingsStore);
-
-                                    // Recreate the extensionManagerService to force the extension cache to recreate
-                                    extensionManagerService?.Close();
-                                    extensionManagerService = new ExtensionManagerService(settingsManager);
-
-                                    var foundAfter = extensionManagerService.TryGetInstalledExtension(vsixToInstallHeader.Identifier, out var installedVsixAfter);
-                                    var installedGloballyAfter = foundAfter && installedVsixAfter.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
-
-                                    if (uninstall && foundAfter)
-                                    {
-                                        if (installedGloballyBefore && installedGloballyAfter)
-                                        {
-                                            throw new Exception($"The extension failed to uninstall. It is still installed globally.");
-                                        }
-                                        else if (!installedGloballyBefore && installedGloballyAfter)
-                                        {
-                                            Console.WriteLine("The local extension was succesfully uninstalled. However, the global extension is still installed.");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("The extension was succesfully uninstalled.");
-                                        }
-                                    }
-                                    else if (!uninstall)
-                                    {
-                                        if (!foundAfter)
-                                        {
-                                            throw new Exception($"The extension failed to install. It could not be located.");
-                                        }
-                                        else if (installedVsixAfter.Header.Version != vsixToInstallHeader.Version)
-                                        {
-                                            throw new Exception("The extension failed to install. The located version does not match the expected version.");
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("The extension was succesfully installed.");
-                                        }
-                                    }
+                                    Install(installableExtension);
                                 }
                             }
                         }
@@ -315,6 +281,90 @@ namespace VsixExpInstaller
                         }
 
                         Console.WriteLine("Done!");
+
+                        bool IsInstalledGlobally(IInstalledExtension installedExtension)
+                        {
+                            return installedExtension.InstalledPerMachine || installedExtension.InstallPath.StartsWith(vsInstallDir, StringComparison.OrdinalIgnoreCase);
+                        }
+
+                        (bool installed, bool installedGlobally, IInstalledExtension installedExtension) GetInstallStatus(IExtensionHeader extensionHeader)
+                        {
+                            var installed = extensionManagerService.TryGetInstalledExtension(extensionHeader.Identifier, out var installedExtension);
+                            var installedGlobally = installed && IsInstalledGlobally(installedExtension);
+                            return (installed, installedGlobally, installedExtension);
+                        }
+
+                        void Install(IInstallableExtension installableExtension)
+                        {
+                            extensionManagerService.Install(installableExtension, perMachine: false);
+                            var settingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
+
+                            EnableLoadingAllExtensions(settingsStore);
+                            RemoveExtensionFromPendingDeletions(settingsStore, installableExtension.Header);
+                            UpdateLastExtensionsChange(settingsStore);
+
+                            // Recreate the extensionManagerService to force the extension cache to recreate
+                            extensionManagerService?.Close();
+                            extensionManagerService = new ExtensionManagerService(settingsManager);
+
+                            var status = GetInstallStatus(installableExtension.Header);
+
+                            if (!status.installed)
+                            {
+                                throw new Exception($"The extension failed to install. It could not be located.");
+                            }
+                            else if (status.installedExtension.Header.Version != installableExtension.Header.Version)
+                            {
+                                throw new Exception("The extension failed to install. The located version does not match the expected version.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("    The local extension was succesfully installed.");
+                            }
+                        }
+
+                        void Uninstall(IInstalledExtension installedExtension)
+                        {
+                            extensionManagerService.Uninstall(installedExtension);
+
+                            // Recreate the extensionManagerService to force the extension cache to recreate
+                            extensionManagerService?.Close();
+                            extensionManagerService = new ExtensionManagerService(settingsManager);
+
+                            var status = GetInstallStatus(installedExtension.Header);
+
+                            if (status.installed)
+                            {
+                                var wasInstalledGlobally = IsInstalledGlobally(installedExtension);
+
+                                if (wasInstalledGlobally && status.installedGlobally)
+                                {
+                                    // We should never hit this case, as we shouldn't be passing in gobally installed extensions
+                                    throw new Exception($"The global extension failed to uninstall.");
+                                }
+
+                                Debug.Assert(!wasInstalledGlobally && status.installedGlobally);
+                                Console.WriteLine("    The local extension was succesfully uninstalled. A global extension still exists: '{0}'", status.installedExtension.InstallPath);
+                            }
+                            else
+                            {
+                                Console.WriteLine("    The local extension was succesfully uninstalled.");
+                            }
+                        }
+
+                        void UninstallAll()
+                        {
+                            // We only want extensions which are not installed per machine and we want them sorted by their dependencies.
+                            var installedExtensions = extensionManagerService.GetInstalledExtensions()
+                                                                             .Where((installedExtension) => !IsInstalledGlobally(installedExtension))
+                                                                             .OrderBy((installedExtension) => installedExtension, InstalledExtensionComparer);
+
+                            foreach (var installedExtension in installedExtensions)
+                            {
+                                Console.WriteLine("    Uninstalling local extension: '{0}'", installedExtension.InstallPath);
+                                Uninstall(installedExtension);
+                            }
+                        }
                     }
                 }
             }
