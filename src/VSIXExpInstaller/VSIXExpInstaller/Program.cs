@@ -234,11 +234,11 @@ namespace VsixExpInstaller
                                     {
                                         if (status.installedGlobally)
                                         {
-                                            Console.WriteLine("  Skipping uninstall for global extension: '{0}'", extensionPath);
+                                            Console.WriteLine($"  Skipping uninstall for global extension: '{status.installedExtension.InstallPath}'");
                                         }
                                         else
                                         {
-                                            Console.WriteLine("  Uninstalling local extension: '{0}'", extensionPath);
+                                            Console.WriteLine($"  Uninstalling local extension: '{status.installedExtension.InstallPath}'");
                                             Uninstall(status.installedExtension);
                                         }
                                     }
@@ -249,25 +249,29 @@ namespace VsixExpInstaller
                                 }
                                 else
                                 {
-                                    if (status.installed && status.installedGlobally && (installableExtension.Header.Version < status.installedExtension.Header.Version))
-                                    {
-                                        throw new Exception($"The version you are attempting to install ({installableExtension.Header.Version}) has a version that is less than the one installed globally ({status.installedExtension.Header.Version}).");
-                                    }
-                                    else if (status.installed)
+                                    if (status.installed)
                                     {
                                         if (status.installedGlobally)
                                         {
-                                            Console.WriteLine("  Installing local extension over global extension: '{0}' over '{1}'", extensionPath, status.installedExtension.InstallPath);
+                                            if (installableExtension.Header.Version < status.installedExtension.Header.Version)
+                                            {
+                                                throw new Exception($"The version you are attempting to install ({installableExtension.Header.Version}) has a version that is less than the one installed globally ({status.installedExtension.Header.Version}).");
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine($"  Installing local extension ({extensionPath}) over global extension ({status.installedExtension.InstallPath})");
+                                            }
                                         }
                                         else
                                         {
-                                            Console.WriteLine("  Updating local extension: '{0}'", extensionPath);
+                                            Console.WriteLine($"  Updating local extension ({status.installedExtension.InstallPath}) to '{extensionPath}'");
                                             Uninstall(status.installedExtension);
                                         }
-                                    } 
+                                        
+                                    }
                                     else
                                     {
-                                        Console.WriteLine("  Installing local extension: '{0}'", extensionPath);
+                                        Console.WriteLine($"  Installing local extension: '{extensionPath}'");
                                     }
 
                                     Install(installableExtension);
@@ -315,7 +319,7 @@ namespace VsixExpInstaller
                             }
                             else if (status.installedExtension.Header.Version != installableExtension.Header.Version)
                             {
-                                throw new Exception("The extension failed to install. The located version does not match the expected version.");
+                                throw new Exception($"The extension failed to install. The located version ({status.installedExtension.Header.Version}) does not match the expected version ({installableExtension.Header.Version}).");
                             }
                             else
                             {
@@ -337,14 +341,28 @@ namespace VsixExpInstaller
                             {
                                 var wasInstalledGlobally = IsInstalledGlobally(installedExtension);
 
-                                if (wasInstalledGlobally && status.installedGlobally)
+                                if (wasInstalledGlobally)
                                 {
                                     // We should never hit this case, as we shouldn't be passing in gobally installed extensions
-                                    throw new Exception($"The global extension failed to uninstall.");
-                                }
 
-                                Debug.Assert(!wasInstalledGlobally && status.installedGlobally);
-                                Console.WriteLine("    The local extension was succesfully uninstalled. A global extension still exists: '{0}'", status.installedExtension.InstallPath);
+                                    if (status.installedGlobally)
+                                    {
+                                        throw new Exception("The global extension failed to uninstall.");
+                                    }
+                                    else
+                                    {
+                                        // This should be impossible even if we tried to uninstall a global extension...
+                                        throw new Exception($"The global extension was uninstalled. A local extension still exists: '{status.installedExtension.InstallPath}'");
+                                    }
+                                }
+                                else if (status.installedGlobally)
+                                {
+                                    Console.WriteLine($"    The local extension was succesfully uninstalled. A global extension still exists: '{status.installedExtension.InstallPath}'");
+                                }
+                                else
+                                {
+                                    throw new Exception("The local extension failed to uninstall.");
+                                }
                             }
                             else
                             {
@@ -361,7 +379,7 @@ namespace VsixExpInstaller
 
                             foreach (var installedExtension in installedExtensions)
                             {
-                                Console.WriteLine("    Uninstalling local extension: '{0}'", installedExtension.InstallPath);
+                                Console.WriteLine($"    Uninstalling local extension: '{installedExtension.InstallPath}'");
                                 Uninstall(installedExtension);
                             }
                         }
