@@ -321,9 +321,13 @@ namespace VsixExpInstaller
                             {
                                 throw new Exception($"The extension failed to install. The located version ({status.installedExtension.Header.Version}) does not match the expected version ({installableExtension.Header.Version}).");
                             }
+                            else if (status.installedGlobally)
+                            {
+                                Console.WriteLine($"    The extension was succesfully installed globally: '{status.installedExtension.InstallPath}'");
+                            }
                             else
                             {
-                                Console.WriteLine("    The local extension was succesfully installed.");
+                                Console.WriteLine($"    The extension was succesfully installed locally: '{status.installedExtension.InstallPath}'");
                             }
                         }
 
