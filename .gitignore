@@ -14,6 +14,7 @@
 *.nuget.props
 *.nuget.targets
 NuGet.exe
+nuget.exe
 [Pp]ackages/
 
 ###############################################################################
