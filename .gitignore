@@ -13,7 +13,7 @@
 *.lock.json
 *.nuget.props
 *.nuget.targets
-NuGet.exe
+[Nn]u[Gg]et.exe
 [Pp]ackages/
 
 ###############################################################################
