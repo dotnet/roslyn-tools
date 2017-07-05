@@ -57,7 +57,7 @@ namespace VsixExpInstaller
 
         private static void PrintUsage()
         {
-            Console.WriteLine("Usage: VSIXExpInstaller [/rootSuffix:suffix] [/skipIfNewerInstalled] [/u] [/uninstallAll] [/vsInstallDir:vsInstallDir] <vsix>");
+            Console.WriteLine("Usage: VSIXExpInstaller [/rootSuffix:suffix] [/skipIfEqualOrNewerInstalled] [/u] [/uninstallAll] [/vsInstallDir:vsInstallDir] <vsix>");
             Console.WriteLine("Suffix is Exp by default.");
         }
 
@@ -129,7 +129,7 @@ namespace VsixExpInstaller
             var argList = new List<string>(args);
 
             var rootSuffix = ExtractArg(argList, "rootSuffix") ?? "Exp";
-            var skipIfNewerInstalled = FindArg(argList, "skipIfNewerInstalled");
+            var skipIfEqualOrNewerInstalled = FindArg(argList, "skipIfEqualOrNewerInstalled");
             var uninstall = FindArg(argList, "u");
             var uninstallAll = FindArg(argList, "uninstallAll");
             var printHelp = FindArg(argList, "?") || FindArg(argList, "h") || FindArg(argList, "help");
@@ -261,9 +261,9 @@ namespace VsixExpInstaller
                                 {
                                     if (status.installed)
                                     {
-                                        var installedVersionIsNewer = installableExtension.Header.Version < status.installedExtension.Header.Version;
+                                        var installedVersionIsEqualOrNewer = installableExtension.Header.Version < status.installedExtension.Header.Version;
 
-                                        if (installedVersionIsNewer && skipIfNewerInstalled)
+                                        if (installedVersionIsEqualOrNewer && skipIfEqualOrNewerInstalled)
                                         {
                                             Environment.ExitCode = INSTALL_SKIPPED_EXCEPTION_CODE;
                                             throw new Exception($"Skipping install of version ({installableExtension.Header.Version}), which is older than the one currently installed ({status.installedExtension.Header.Version}).");
@@ -271,7 +271,7 @@ namespace VsixExpInstaller
 
                                         if (status.installedGlobally)
                                         {
-                                            if (installedVersionIsNewer)
+                                            if (installedVersionIsEqualOrNewer)
                                             {
                                                 Environment.ExitCode = GLOBAL_VERSION_NEWER_EXCEPTION_CODE;
                                                 throw new Exception($"The version you are attempting to install ({installableExtension.Header.Version}) has a version that is less than the one installed globally ({status.installedExtension.Header.Version}).");
