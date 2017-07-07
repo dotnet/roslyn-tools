@@ -13,7 +13,7 @@ namespace VsixExpInstaller
 {
     public class Program
     {
-        private const int INSTALL_SKIPPED_EXCEPTION_CODE = 1;
+        private const int INSTALL_OR_UNINSTALL_SKIPPED_EXCEPTION_CODE = 1;
         private const int GLOBAL_VERSION_NEWER_EXCEPTION_CODE = -1;
         private const int INSTALL_FAILED_NOTFOUND_EXCEPTION_CODE = -2;
         private const int INSTALL_FAILED_VERSION_EXCEPTION_CODE = -3;
@@ -237,11 +237,18 @@ namespace VsixExpInstaller
                                 var installableExtension = extensionManager.CreateInstallableExtension(extensionPath);
 
                                 var status = GetInstallStatus(installableExtension.Header);
+                                var installedVersionIsEqualOrNewer = installableExtension.Header.Version < status.installedExtension.Header.Version;
 
                                 if (uninstall)
                                 {
                                     if (status.installed)
                                     {
+                                        if (installedVersionIsEqualOrNewer && skipIfEqualOrNewerInstalled)
+                                        {
+                                            Environment.ExitCode = INSTALL_OR_UNINSTALL_SKIPPED_EXCEPTION_CODE;
+                                            throw new Exception($"Skipping uninstall of version ({status.installedExtension.Header.Version}), which is newer than the one supplied on the command line ({installableExtension.Header.Version}).");
+                                        }
+
                                         if (status.installedGlobally)
                                         {
                                             Console.WriteLine($"  Skipping uninstall for global extension: '{status.installedExtension.InstallPath}'");
@@ -261,11 +268,9 @@ namespace VsixExpInstaller
                                 {
                                     if (status.installed)
                                     {
-                                        var installedVersionIsEqualOrNewer = installableExtension.Header.Version < status.installedExtension.Header.Version;
-
                                         if (installedVersionIsEqualOrNewer && skipIfEqualOrNewerInstalled)
                                         {
-                                            Environment.ExitCode = INSTALL_SKIPPED_EXCEPTION_CODE;
+                                            Environment.ExitCode = INSTALL_OR_UNINSTALL_SKIPPED_EXCEPTION_CODE;
                                             throw new Exception($"Skipping install of version ({installableExtension.Header.Version}), which is older than the one currently installed ({status.installedExtension.Header.Version}).");
                                         }
 
