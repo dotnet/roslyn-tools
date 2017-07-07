@@ -237,7 +237,7 @@ namespace VsixExpInstaller
                                 var installableExtension = extensionManager.CreateInstallableExtension(extensionPath);
 
                                 var status = GetInstallStatus(installableExtension.Header);
-                                var installedVersionIsEqualOrNewer = installableExtension.Header.Version < status.installedExtension.Header.Version;
+                                var installedVersionIsEqualOrNewer = installableExtension.Header.Version < status.installedExtension?.Header.Version;
 
                                 if (uninstall)
                                 {
