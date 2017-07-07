@@ -246,7 +246,7 @@ namespace VsixExpInstaller
                                         if (installedVersionIsEqualOrNewer && skipIfEqualOrNewerInstalled)
                                         {
                                             Environment.ExitCode = INSTALL_OR_UNINSTALL_SKIPPED_EXCEPTION_CODE;
-                                            throw new Exception($"Skipping uninstall of version ({status.installedExtension.Header.Version}), which is newer than the one supplied on the command line ({installableExtension.Header.Version}).");
+                                            throw new Exception($"Skipping uninstall of version ({status.installedExtension.Header.Version}), which is equal to or newer than the one supplied on the command line ({installableExtension.Header.Version}).");
                                         }
 
                                         if (status.installedGlobally)
