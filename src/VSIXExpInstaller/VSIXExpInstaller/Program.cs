@@ -8,12 +8,20 @@ using System.Reflection;
 using System.Security.Principal;
 using Microsoft.VisualStudio.ExtensionManager;
 using Microsoft.VisualStudio.Settings;
-using System.Diagnostics;
 
 namespace VsixExpInstaller
 {
     public class Program
     {
+        private const int INSTALL_OR_UNINSTALL_SKIPPED_EXCEPTION_CODE = 1;
+        private const int GLOBAL_VERSION_NEWER_EXCEPTION_CODE = -1;
+        private const int INSTALL_FAILED_NOTFOUND_EXCEPTION_CODE = -2;
+        private const int INSTALL_FAILED_VERSION_EXCEPTION_CODE = -3;
+        private const int GLOBAL_UNINSTALL_FAILED_EXCEPTION_CODE = -4;
+        private const int LOCAL_UNINSTALL_FAILED_EXCEPTION_CODE = -5;
+        private const int E_ACCESSDENIED = -2147024891; // 0x80070005
+        private const int MANAGED_EXCEPTION_CODE_V4 = -532462766; // 0xE0434352
+
         private const string ExtensionManagerCollectionPath = "ExtensionManager";
 
         private static string ExtractArg(List<string> args, string argName)
@@ -49,7 +57,7 @@ namespace VsixExpInstaller
 
         private static void PrintUsage()
         {
-            Console.WriteLine("Usage: VSIXExpInstaller [/rootSuffix:suffix] [/u] [/uninstallAll] [/vsInstallDir:vsInstallDir] <vsix>");
+            Console.WriteLine("Usage: VSIXExpInstaller [/rootSuffix:suffix] [/skipIfEqualOrNewerInstalled] [/u] [/uninstallAll] [/vsInstallDir:vsInstallDir] <vsix>");
             Console.WriteLine("Suffix is Exp by default.");
         }
 
@@ -57,6 +65,7 @@ namespace VsixExpInstaller
         {
             if (string.IsNullOrWhiteSpace(vsInstallDir))
             {
+                Environment.ExitCode = E_ACCESSDENIED;
                 throw new InvalidOperationException("VSIXExpInstaller needs to be run from the Developer Command Prompt or have VsInstallDir passed in as an argument.");
             }
 
@@ -120,6 +129,7 @@ namespace VsixExpInstaller
             var argList = new List<string>(args);
 
             var rootSuffix = ExtractArg(argList, "rootSuffix") ?? "Exp";
+            var skipIfEqualOrNewerInstalled = FindArg(argList, "skipIfEqualOrNewerInstalled");
             var uninstall = FindArg(argList, "u");
             var uninstallAll = FindArg(argList, "uninstallAll");
             var printHelp = FindArg(argList, "?") || FindArg(argList, "h") || FindArg(argList, "help");
@@ -227,11 +237,18 @@ namespace VsixExpInstaller
                                 var installableExtension = extensionManager.CreateInstallableExtension(extensionPath);
 
                                 var status = GetInstallStatus(installableExtension.Header);
+                                var installedVersionIsEqualOrNewer = installableExtension.Header.Version < status.installedExtension?.Header.Version;
 
                                 if (uninstall)
                                 {
                                     if (status.installed)
                                     {
+                                        if (installedVersionIsEqualOrNewer && skipIfEqualOrNewerInstalled)
+                                        {
+                                            Environment.ExitCode = INSTALL_OR_UNINSTALL_SKIPPED_EXCEPTION_CODE;
+                                            throw new Exception($"Skipping uninstall of version ({status.installedExtension.Header.Version}), which is equal to or newer than the one supplied on the command line ({installableExtension.Header.Version}).");
+                                        }
+
                                         if (status.installedGlobally)
                                         {
                                             Console.WriteLine($"  Skipping uninstall for global extension: '{status.installedExtension.InstallPath}'");
@@ -251,10 +268,17 @@ namespace VsixExpInstaller
                                 {
                                     if (status.installed)
                                     {
+                                        if (installedVersionIsEqualOrNewer && skipIfEqualOrNewerInstalled)
+                                        {
+                                            Environment.ExitCode = INSTALL_OR_UNINSTALL_SKIPPED_EXCEPTION_CODE;
+                                            throw new Exception($"Skipping install of version ({installableExtension.Header.Version}), which is older than the one currently installed ({status.installedExtension.Header.Version}).");
+                                        }
+
                                         if (status.installedGlobally)
                                         {
-                                            if (installableExtension.Header.Version < status.installedExtension.Header.Version)
+                                            if (installedVersionIsEqualOrNewer)
                                             {
+                                                Environment.ExitCode = GLOBAL_VERSION_NEWER_EXCEPTION_CODE;
                                                 throw new Exception($"The version you are attempting to install ({installableExtension.Header.Version}) has a version that is less than the one installed globally ({status.installedExtension.Header.Version}).");
                                             }
                                             else
@@ -283,8 +307,6 @@ namespace VsixExpInstaller
                             extensionManagerService?.Close();
                             extensionManagerService = null;
                         }
-
-                        Console.WriteLine("Done!");
 
                         bool IsInstalledGlobally(IInstalledExtension installedExtension)
                         {
@@ -315,10 +337,12 @@ namespace VsixExpInstaller
 
                             if (!status.installed)
                             {
+                                Environment.ExitCode = INSTALL_FAILED_NOTFOUND_EXCEPTION_CODE;
                                 throw new Exception($"The extension failed to install. It could not be located.");
                             }
                             else if (status.installedExtension.Header.Version != installableExtension.Header.Version)
                             {
+                                Environment.ExitCode = INSTALL_FAILED_VERSION_EXCEPTION_CODE;
                                 throw new Exception($"The extension failed to install. The located version ({status.installedExtension.Header.Version}) does not match the expected version ({installableExtension.Header.Version}).");
                             }
                             else if (status.installedGlobally)
@@ -351,11 +375,13 @@ namespace VsixExpInstaller
 
                                     if (status.installedGlobally)
                                     {
+                                        Environment.ExitCode = GLOBAL_UNINSTALL_FAILED_EXCEPTION_CODE;
                                         throw new Exception("The global extension failed to uninstall.");
                                     }
                                     else
                                     {
                                         // This should be impossible even if we tried to uninstall a global extension...
+                                        Environment.ExitCode = LOCAL_UNINSTALL_FAILED_EXCEPTION_CODE;
                                         throw new Exception($"The global extension was uninstalled. A local extension still exists: '{status.installedExtension.InstallPath}'");
                                     }
                                 }
@@ -392,12 +418,22 @@ namespace VsixExpInstaller
             }
             catch (Exception e)
             {
-                string message = e.GetType().Name + ": " + e.Message + Environment.NewLine + e.ToString();
-                Console.Error.WriteLine(message);
-                return 2;
+                if (Environment.ExitCode == 0)
+                {
+                    Environment.ExitCode = MANAGED_EXCEPTION_CODE_V4;
+                }
+
+                if (Environment.ExitCode < 0)
+                {
+                    Console.Error.WriteLine(e);
+                }
+                else
+                {
+                    Console.WriteLine("  " + e.Message);
+                }
             }
 
-            return 0;
+            return Environment.ExitCode;
         }
     }
 }
