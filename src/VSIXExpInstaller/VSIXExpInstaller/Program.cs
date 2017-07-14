@@ -20,7 +20,6 @@ namespace VsixExpInstaller
         private const int GLOBAL_UNINSTALL_FAILED_EXCEPTION_CODE = -4;
         private const int LOCAL_UNINSTALL_FAILED_EXCEPTION_CODE = -5;
         private const int E_ACCESSDENIED = -2147024891; // 0x80070005
-        private const int MANAGED_EXCEPTION_CODE_V4 = -532462766; // 0xE0434352
 
         private const string ExtensionManagerCollectionPath = "ExtensionManager";
 
@@ -416,13 +415,8 @@ namespace VsixExpInstaller
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (Environment.ExitCode != 0)
             {
-                if (Environment.ExitCode == 0)
-                {
-                    Environment.ExitCode = MANAGED_EXCEPTION_CODE_V4;
-                }
-
                 if (Environment.ExitCode < 0)
                 {
                     Console.Error.WriteLine(e);
