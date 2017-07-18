@@ -268,7 +268,7 @@ Use ```SwrProperty``` and ```SwrFile``` items to define a property that will be 
 
 For example,
 
-```
+```xml
 <Project Sdk="Microsoft.NET.Sdk">
    <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
