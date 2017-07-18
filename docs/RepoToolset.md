@@ -38,6 +38,7 @@ artifacts
       $(MSBuildProjectName).$(PackageVersion).nupkg
     TestResults
       $(MSBuildProjectName)_$(TargetFramework)_$(TestArchitecture).xml
+      $(MSBuildProjectName)_$(TargetFramework)_$(TestArchitecture).log
     VSSetup
       Insertion
         $(VsixPackageId).json
@@ -55,7 +56,19 @@ artifacts
   toolset
 ```
 
-Having a common output directory structure makes it possible to unify microbuild definitions. 
+Having a common output directory structure makes it possible to unify MicroBuild definitions. 
+
+| directory         | description |
+|-------------------|-------------|
+| bin               | Build output of each project. |
+| obj               | Intermediate directory for each project. |
+| packages          | NuGet packages produced by all projects in the repo. |
+| VSSetup           | Packages produced by VSIX projects in the repo. These packages are experimental and can be used for dogfooding.
+| VSSetup/Insertion | Willow manifests and VSIXes to be inserted into VS.
+| VSSetup.obj       | Temp files produced by VSIX build. |
+| log               | Build binary log and other logs. |
+| tmp               | Temp files generated during build. |
+| toolset           | Files generated during toolset restore. |
 
 ### Sign Tool configuration
 SignToolData.json file is present in the repo and describes how build outputs should be signed.
@@ -101,38 +114,40 @@ See [DefaultVersions](https://github.com/dotnet/roslyn-tools/blob/master/src/Rep
 Directory.Build.props in the repo root that imports Versions.props file and defines variables: 
 
 ```xml
-<!-- NuGet package root -->
-<NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == ''">$(NUGET_PACKAGES)</NuGetPackageRoot>
-<NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' AND '$(OS)' == 'Windows_NT'">$(UserProfile)\.nuget\packages\</NuGetPackageRoot>
-<NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' AND '$(OS)' != 'Windows_NT'">$([System.Environment]::GetFolderPath(SpecialFolder.Personal))\.nuget\packages\</NuGetPackageRoot>
-<NuGetPackageRoot Condition="!HasTrailingSlash('$(NuGetPackageRoot)')">$(NuGetPackageRoot)\</NuGetPackageRoot>
+<Import Project="build\NuGet.props"/>
+<Import Project="build\Versions.props"/>
 
-<!-- Root of the repository -->
-<RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\'))</RepoRoot>
+<PropertyGroup>
+  <!-- Root of the repository -->
+  <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\'))</RepoRoot>
 
-<!-- Full path to SignToolData.json -->
-<SignToolDataPath>$(RepoRoot)build\SignToolData.json</SignToolDataPath>
+  <!-- Full path to SignToolData.json -->
+  <SignToolDataPath>$(RepoRoot)build\SignToolData.json</SignToolDataPath>
 
-<!-- Full path to Versions.props -->
-<VersionsPropsPath>$(RepoRoot)build\Versions.props</VersionsPropsPath>
+  <!-- Full path to Versions.props -->
+  <VersionsPropsPath>$(RepoRoot)build\Versions.props</VersionsPropsPath>
 
-<!-- Repository and project URLs (used in nuget packages) -->
-<RepositoryUrl>https://github.com/dotnet/symreader-converter</RepositoryUrl>
-<PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+  <!-- Not required, but useful: allows easy importing of props/targets files from RepoToolset -->
+  <RepoToolsetDir>$(NuGetPackageRoot)RoslynTools.Microsoft.RepoToolset\$(RoslynToolsMicrosoftRepoToolsetVersion)\tools\</RepoToolsetDir>
 
-<!-- Not required, but useful: allows easy importing of props/targets files from RepoToolset -->
-<RepoToolsetDir>$(NuGetPackageRoot)RoslynTools.Microsoft.RepoToolset\$(RoslynToolsMicrosoftRepoToolsetVersion)\tools\</RepoToolsetDir>
+  <!-- Repository and project URLs (used in nuget packages) -->
+  <RepositoryUrl>https://github.com/dotnet/symreader-converter</RepositoryUrl>
+  <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+  
+  <!-- Public keys used by InternalsVisibleTo project items -->
+  <MoqPublicKey>00240000048000009400...</MoqPublicKey> 
+</PropertyGroup>
 ```
 
-### Sources
-Projects are located under ```src``` directory under root repo, in any subdirectory structure appropriate for the repo.
+### Source Projects
+Projects are located under ```src``` directory under root repo, in any subdirectory structure appropriate for the repo. 
 
 Projects shall be standard dotnet SDK based projects. No project level customization is required, that is a project created via ```dotnet new``` will work just fine without further modifications.
 
-Test project file names shall end with "UnitTest", e.g. "MyProject.UnitTest.csproj".  
+#### Conventions
 
-> Due to a [bug](https://github.com/Microsoft/msbuild/issues/1721) in msbuild targets each project file that targets multiple frameworks is currently required to import ```src\Directory.Build.targets``` file manually at its end:
-> ```<Import Project="..\Directory.Build.targets" Condition="'$(TargetFramework)' == ''"/>```
+- Unit test project file names shall end with ".UnitTest", e.g. "MyProject.UnitTest.csproj".  
+- Integration test project file names shall end with ".IntegrationTest", e.g. "MyProject.IntegrationTest.vbproj".
 
 Source directory ```src``` shall contain ```Directory.Build.props``` and ```Directory.Build.targets``` files like so:
 
@@ -161,6 +176,10 @@ Source directory ```src``` shall contain ```Directory.Build.props``` and ```Dire
 </Project>
 ```
 
+### Other Projects
+
+It might be useful to create other top-level directories containing projects for projects that are not standard C#/VB/F# projects. For example, projects that aggregate outputs of multiple projects into a single NuGet package or Willow component. These projects should also be included in the main solution so that the build driver includes them in build process, but their ```Directory.Build.*``` settings are gonna be different from source projects. Hence the separate root directory.
+
 ### Default build scripts
 
 The RepoToolset provides a build driver ```$(RepoToolsetDir)Build.proj```. 
@@ -173,56 +192,50 @@ It is recommended to add the following ```build.proj``` to the repo that invokes
     Optional parameters:
       SolutionPath     Path to the solution to build
       Configuration    Build configuration: "Debug", "Release", etc.
-      CIBuild        "true" if building on CI server
+      CIBuild          "true" if building on CI server
       Restore          "true" to restore toolset and solution
       Build            "true" to build solution
+      Rebuild          "true" to rebuild solution
+      Deploy           "true" to deploy assets (e.g. VSIXes) built in this repo
+      DeployDeps       "true" to deploy assets (e.g. VSIXes) this repo depeends on.
       Test             "true" to run tests
+      IntegrationTest  "true" to run integration tests
       Sign             "true" to sign built binaries
-      Pack             "true" to build nuget and Visual Studio Setup packages
+      Pack             "true" to build NuGet packages
+      Properties        List of properties to pass to each build phase ("Name=Value;Name=Value;...")
   -->
   <PropertyGroup>
-    <SolutionPath Condition="'$(SolutionPath)' == ''">$(MSBuildThisFileDirectory)MyMainSolution.sln</SolutionPath>
+    <SolutionPath Condition="'$(SolutionPath)' == ''">$(MSBuildThisFileDirectory)..\MyMainSolution.sln</SolutionPath>
   </PropertyGroup>
 
   <!-- Import the repo root props -->
   <Import Project="Directory.build.props"/>
   
+  
   <Target Name="Build">
-    <!-- Restore toolset packages, including RepoToolset --> 
-    <MSBuild Projects="Toolset.proj" Targets="Restore" Condition="'$(Restore)' == 'true'"/>
+    <!-- Restore RepoToolset package and potential non-nuget dependencies (such as VSIX components) --> 
+    <MSBuild Projects="Toolset.proj"
+             Targets="Restore"
+             Properties="BaseIntermediateOutputPath=$(MSBuildThisFileDirectory)..\artifacts\toolset\;ExcludeRestorePackageImports=true;DeployDeps=$(DeployDeps)" 
+             Condition="'$(Restore)' == 'true'"/>
 
     <!-- Invoke the RepoToolset build driver -->
-    <MSBuild Projects="$(RepoToolsetDir)Build.proj" 
-             Properties="SolutionPath=$(SolutionPath);Configuration=$(Configuration);CIBuild=$(CIBuild);Restore=$(Restore);Build=$(Build);Test=$(Test);Sign=$(Sign);Pack=$(Pack)" />
+        <MSBuild Projects="$(RepoToolsetDir)Build.proj"
+                 Properties="SolutionPath=$(SolutionPath);Configuration=$(Configuration);CIBuild=$(CIBuild);Restore=$(Restore);Build=$(Build);Rebuild=$(Rebuild);Deploy=$(Deploy);Test=$(Test);IntegrationTest=$(IntegrationTest);Sign=$(Sign);Pack=$(Pack);Properties=$(Properties)" />
   </Target>
 </Project>
 ```
 
-Example of ```Toolset.proj``` that lists all toolset-level packages required by the repo:
+Example of default ```Toolset.proj```:
 
 ```xml
-<Project>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
-    <!-- Output dir for restore artifacts -->
-    <BaseIntermediateOutputPath>$(MSBuildThisProjectDirectory)..\..\artifacts\Toolset</BaseIntermediateOutputPath>
   </PropertyGroup>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <ItemGroup>
     <PackageReference Include="RoslynTools.Microsoft.RepoToolset" Version="$(RoslynToolsMicrosoftRepoToolsetVersion)" />
-    <PackageReference Include="RoslynTools.Microsoft.SignTool" Version="$(RoslynToolsMicrosoftSignToolVersion)" />
-    <PackageReference Include="MicroBuild.Core" Version="$(MicroBuildCoreVersion)" />
-    <PackageReference Include="MicroBuild.Core.Sentinel" Version="1.0.0" />
-    <PackageReference Include="MicroBuild.Plugins.SwixBuild" Version="$(MicroBuildPluginsSwixBuildVersion)" />
-    <PackageReference Include="Microsoft.Net.Compilers" Version="$(ToolsetCompilerPackageVersion)" />
-    
-    <!-- When using desktop msbuild driver -->
-    <PackageReference Include="xunit.runner.console" Version="$(XUnitRunnerConsoleVersion)" />
-
-    <!-- When using dotnet cli driver -->
-    <PackageReference Include="RoslynTools.Microsoft.XUnitLogger" Version="$(RoslynToolsMicrosoftXUnitLoggerVersion)" />
   </ItemGroup>
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
 ```
 
