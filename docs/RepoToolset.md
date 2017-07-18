@@ -144,10 +144,11 @@ Projects are located under ```src``` directory under root repo, in any subdirect
 
 Projects shall be standard dotnet SDK based projects. No project level customization is required, that is a project created via ```dotnet new``` will work just fine without further modifications.
 
-#### Conventions
+#### Conventions used by the toolset
 
-- Unit test project file names shall end with ".UnitTest", e.g. "MyProject.UnitTest.csproj".  
-- Integration test project file names shall end with ".IntegrationTest", e.g. "MyProject.IntegrationTest.vbproj".
+- Unit test project file names shall end with ```.UnitTest```, e.g. ```MyProject.UnitTest.csproj```. 
+- Integration test project file names shall end with ```.IntegrationTest```, e.g. ```MyProject.IntegrationTest.vbproj```.
+- If ```source.extension.vsixmanifest``` is present next to the project file the project is by default considered to be a VSIX producing project.
 
 Source directory ```src``` shall contain ```Directory.Build.props``` and ```Directory.Build.targets``` files like so:
 
@@ -184,7 +185,7 @@ It might be useful to create other top-level directories containing projects for
 
 The RepoToolset provides a build driver ```$(RepoToolsetDir)Build.proj```. 
 
-It is recommended to add the following ```build.proj``` to the repo that invokes the driver. This example assumes ```build.proj``` located in the repo root along with ```MyMainSolution.sln``` that contains all projects of the repo.
+It is recommended to add the following ```build.proj``` to the repo that invokes the driver. This example assumes ```build.proj``` located in the repo root along with ```MyMainSolution.sln``` in the root directory that contains all projects of the repo. projects that are not included in this solution won't participate in build.
 
 ```xml
 <Project DefaultTargets="Build" TreatAsLocalProperty="SolutionPath">
@@ -210,8 +211,7 @@ It is recommended to add the following ```build.proj``` to the repo that invokes
 
   <!-- Import the repo root props -->
   <Import Project="Directory.build.props"/>
-  
-  
+    
   <Target Name="Build">
     <!-- Restore RepoToolset package and potential non-nuget dependencies (such as VSIX components) --> 
     <MSBuild Projects="Toolset.proj"
@@ -239,28 +239,70 @@ Example of common ```Toolset.proj```:
 </Project>
 ```
 
-### Building VSIX packages and Visual Studio Setup components
+### Building VSIX packages
 
-Set ```VisualStudioDeploymentRootSuffix``` property to specify the root suffix of the VS hive to deploy to.
+Building Visual Studio components is an opt-in feature of the RepoToolset. Property ```UsingToolVSSDK``` needs to be set to ```true``` in the ```Versions.props``` file (or in root Directory.Build.props).
 
-Import .props and .targets files to each project building a VSIX:
+Set ```VSSDKTargetPlatformRegRootSuffix``` property to specify the root suffix of the VS hive to deploy to.
 
-```xml
-  <Import Project="$(RepoToolsetDir)VisualStudio.props"/>
+If ```source.extension.vsixmanifest``` is present next to a project file the project is by default considered to be a VSIX producing project. 
+A package reference to ```Microsoft.VSSDK.BuildTools``` is automatically added to such project. 
+A project that needs ```Microsoft.VSSDK.BuildTools``` for generating pkgdef file needs to include the PackageReference explicitly.
+
+RepoToolset include build target for generating VS Template VSIXes. Adding ```VSTemplate``` items to project will trigger the target.
+
+```source.extension.vsixmanifest``` shall sepcify ```Experimental="true"``` attribute in ```Installation``` section. The experimental flag will be stripped from VSIXes inserted into Visual Studio.
+
+VSIX packages are built to ```VSSetup``` directory.
+
+### Visual Studio Insertion components
+
+To include the output VSIX of a project in Visual Studio Insertion, set the ```VisualStudioInsertionComponent``` property.
+Multiple VSIXes can specify the same component name, in which case their manifests will be merged into a single insertion unit.
+
+The Visual Studio insertion manifests and VSIXes are generated during Pack task into ```VSSetup\Insertion``` directory, where they are picked by by MicroBuild VSTS publishing task during official builds.
+
+RepoToolset also enables building VS Setup Components from .swr files (as opposed to components comprised of one or more VSIXes).
+
+Use ```SwrProperty``` and ```SwrFile``` items to define a property that will be substituted in .swr files for given value and the set of .swr files, respectively.
+
+For example,
+
+```
+<Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+    <TargetFramework>net46</TargetFramework>
+    <VisualStudioInsertionComponent>Microsoft.VisualStudio.ProjectSystem.Managed</VisualStudioInsertionComponent>
+  </PropertyGroup>
+  <ItemGroup>
+    <SwrProperty Include="Version=$(VsixVersion)" />
+    <SwrProperty Include="VisualStudioXamlRulesDir=$(VisualStudioXamlRulesDir)" />
+  </ItemGroup>
+  <ItemGroup>
+    <SwrFile Include="*.swr" />
+  </ItemGroup>
+</Project>
 ```
 
-```xml
-  <Import Project="$(RepoToolsetDir)VisualStudio.targets"/>
+Where .swr file is:
+
 ```
+use vs
 
-To include the VSIX in Visual Studio setup component that is inserted into Visual Studio by MicroBuild, set the following properties:
+package name=Microsoft.VisualStudio.ProjectSystem.Managed.CommonFiles
+        version=$(Version)
 
-```xml
-    <VsixPackageId>{Package ID as specified in .vsixmanifest file}</VsixPackageId>
-    <VisualStudioSetupComponent>{VS setup component name to include the VSIX in}</VisualStudioSetupComponent>
+vs.localizedResources
+  vs.localizedResource language=en-us
+                       title="Microsoft VisualStudio Managed Project System Common Files"
+                       description="Microsoft VisualStudio ProjectSystem for C#/VB(Managed) Projects"
+
+folder "InstallDir:MSBuild\Microsoft\VisualStudio\Managed"
+  file source="$(VisualStudioXamlRulesDir)Microsoft.CSharp.DesignTime.targets"
+  file source="$(VisualStudioXamlRulesDir)Microsoft.VisualBasic.DesignTime.targets"
+  file source="$(VisualStudioXamlRulesDir)Microsoft.FSharp.DesignTime.targets"
+  file source="$(VisualStudioXamlRulesDir)Microsoft.Managed.DesignTime.targets"
 ```
-
-The Visual Studio setup package will be built by Pack task.
 
 ### Main build script (OS Specific)
 
