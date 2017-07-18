@@ -226,7 +226,7 @@ It is recommended to add the following ```build.proj``` to the repo that invokes
 </Project>
 ```
 
-Example of default ```Toolset.proj```:
+Example of common ```Toolset.proj```:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
