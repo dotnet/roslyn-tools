@@ -1,14 +1,15 @@
 ﻿# Description
 
-RepoToolset is a set of msbuild props and targets files that provide build features needed across repos, such as CI integration, packaging, testing, and signing via Microbuild.
+RepoToolset is a set of msbuild props and targets files that provide build features used across repos, such as CI integration, packaging, VSIX and VS setup authoring, testing, and signing via Microbuild.
 
 The goals are 
-- to reduce the amount of copies of same or similar props, targets and scripts across repos
-- enable cross-platform build that relies on dotnet cli, which is expected to be downloaded during restore, as well as destkop msbuild based build
+- to reduce the number of copies of the same or similar props, targets and script files across repos
+- enable cross-platform build that relies on a standalone dotnet cli (downloaded during restore) as well as desktop msbuild based build
 - no dependency on software installed on the machine when using dotnet cli
 - be as close to the latest shipping dotnet SDK as possible, with minimal overrides and tweaks
 - be modular and flexible, not all repos need all features; let the repo choose subset of features to import
 - unify common operations and structure across repos
+- abstract away peculiarities of VSSDK and MicroBuild that are not compatible with dotnet SDK
 
 Repos currently using the toolset:
 - http://github.com/dotnet/interactive-window
@@ -30,19 +31,28 @@ The RepoToolset defines the following output structure:
 artifacts
   $(Configuration)
     bin
-       $(MSBuildProjectName)
+      $(MSBuildProjectName)
     obj
-       $(MSBuildProjectName)
+      $(MSBuildProjectName)
     packages
-       $(MSBuildProjectName).$(PackageVersion).nupkg
+      $(MSBuildProjectName).$(PackageVersion).nupkg
     TestResults
-       $(MSBuildProjectName)_$(TargetFramework)_$(TestArchitecture).xml
+      $(MSBuildProjectName)_$(TargetFramework)_$(TestArchitecture).xml
     VSSetup
-       $(VsixPackageId).json
-       $(VsixPackageId).vsmand
-       $(MSBuildProjectName).vsix
+      Insertion
+        $(VsixPackageId).json
+        $(VsixPackageId).vsmand
+        $(VsixContainerName).vsix
+        $(VisualStudioInsertionComponent).vsman
+         
+      $(VsixPackageId).json
+      $(VsixContainerName).vsix
+    VSSetup.obj
+      $(VisualStudioInsertionComponent)
+    log
+      Build.binlog
     tmp
-  log
+  toolset
 ```
 
 Having a common output directory structure makes it possible to unify microbuild definitions. 
@@ -50,7 +60,7 @@ Having a common output directory structure makes it possible to unify microbuild
 ### Sign Tool configuration
 SignToolData.json file is present in the repo and describes how build outputs should be signed.
 
-### A single file listing component versions
+### A single file listing component versions and used tools
 Versions.props file is present in the repo and defines versions of all dependencies used in the repository as well as version of the components produced by the repo build.
 
 ```xml
@@ -61,24 +71,31 @@ Versions.props file is present in the repo and defines versions of all dependenc
     <!-- Package pre-release suffix not including build number -->
     <PreReleaseVersionLabel>rc2</PreReleaseVersionLabel>
   
-    <!-- Toolset and dependency package versions -->
-    <RoslynToolsMicrosoftRepoToolsetVersion>1.0.0-alpha5</RoslynToolsMicrosoftRepoToolsetVersion>
-    <RoslynToolsMicrosoftXUnitLoggerVersion>1.0.0-alpha1</RoslynToolsMicrosoftXUnitLoggerVersion>
-    <RoslynToolsMicrosoftSignToolVersion>0.3.1-beta</RoslynToolsMicrosoftSignToolVersion>
-    <MicroBuildCoreVersion>0.2.0</MicroBuildCoreVersion>
-    <MicroBuildPluginsSwixBuildVersion>1.0.101</MicroBuildPluginsSwixBuildVersion>
-    <ToolsetCompilerPackageVersion>2.0.0-rc4</ToolsetCompilerPackageVersion>
-    <XUnitVersion>2.2.0-beta4-build3444</XUnitVersion>
-
+    <!-- Opt-in repo features -->
+    <UsingToolVSSDK>true</UsingToolVSSDK>
+    <UsingToolIbcOptimization>true</UsingToolIbcOptimization>
+  
+    <!-- RepoToolset package version -->
+    <RoslynToolsMicrosoftRepoToolsetVersion>1.0.0-alpha27</RoslynToolsMicrosoftRepoToolsetVersion>
+    
     <!-- Tool versions when using dotnet cli build driver -->
     <DotNetCliVersion>1.0.0-rc4-004777</DotNetCliVersion>
 
     <!-- Tool versions when using desktop msbuild driver -->
     <VSWhereVersion>1.0.47</VSWhereVersion>
-    <XUnitRunnerConsoleVersion>2.2.0-beta4-build3444</XUnitRunnerConsoleVersion>
+    
+    <!-- Versions of other dependencies -->
+    <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
+    <MoqVersion>4.2.1402.2112</MoqVersion>
 </PropertyGroup>
 </Project>
 ```
+
+The toolset defines a set of tools (or features) that each repo can opt into or opt out. Since different repos have different needs the set of tools that will be imported from the toolset can be controlled by ```UsignTool{tool-name}``` properties, where *tool-name* is e.g. ```Xliff```, ```SourceLink```, ```XUnit```, ```VSSDK```, ```IbcOptimization```, etc. These properties shall be set in the Versions.props file. 
+
+The toolset also defines default versions for various tools and dependencies, such as MicroBuild, XUnit, VSSDK, etc. These defaukts can be overrridden in the Versions.props file.
+
+See [DefaultVersions](https://github.com/dotnet/roslyn-tools/blob/master/src/RepoToolset/DefaultVersions.props]) for a list of *UsingTool* properties and default versions.
 
 ### Root build properties
 Directory.Build.props in the repo root that imports Versions.props file and defines variables: 
