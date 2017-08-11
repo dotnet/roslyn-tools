@@ -37,8 +37,7 @@ artifacts
     packages
       $(MSBuildProjectName).$(PackageVersion).nupkg
     TestResults
-      $(MSBuildProjectName)_$(TargetFramework)_$(TestArchitecture).xml
-      $(MSBuildProjectName)_$(TargetFramework)_$(TestArchitecture).log
+      $(MSBuildProjectName)_$(TargetFramework)_$(TestArchitecture).(xml|html|log|error.log)
     VSSetup
       Insertion
         $(VsixPackageId).json
