@@ -12,6 +12,7 @@ The goals are
 - abstract away peculiarities of VSSDK and MicroBuild that are not compatible with dotnet SDK
 
 Repos currently using the toolset:
+- http://github.com/dotnet/project-system
 - http://github.com/dotnet/interactive-window
 - http://github.com/dotnet/symreader
 - http://github.com/dotnet/symreader-portable
