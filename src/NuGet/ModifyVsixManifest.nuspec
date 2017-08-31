@@ -1,4 +1,4 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>RoslynTools.Microsoft.ModifyVsixManifest</id>
@@ -16,6 +16,8 @@
   </metadata>
   <files>
     <file src="ModifyVsixManifest\ModifyVsixManifest.exe" target="tools" />
+    <file src="ModifyVsixManifest\Newtonsoft.Json.dll" target="tools" />
+    <file src="ModifyVsixManifest\System.ValueTuple.dll" target="tools" />
     <file src="$thirdPartyNoticesPath$" target="" />
   </files>
 </package>
