@@ -295,7 +295,7 @@ package name=Microsoft.VisualStudio.ProjectSystem.Managed.CommonFiles
 vs.localizedResources
   vs.localizedResource language=en-us
                        title="Microsoft VisualStudio Managed Project System Common Files"
-                       description="Microsoft VisualStudio ProjectSystem for C#/VB(Managed) Projects"
+                       description="Microsoft VisualStudio ProjectSystem for C#/VB/F#(Managed) Projects"
 
 folder "InstallDir:MSBuild\Microsoft\VisualStudio\Managed"
   file source="$(VisualStudioXamlRulesDir)Microsoft.CSharp.DesignTime.targets"

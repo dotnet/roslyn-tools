@@ -72,7 +72,7 @@
           Inputs="$(MSBuildThisFileFullPath)"
           Outputs="$(GeneratedAssemblyInfoFile)"
           DependsOnTargets="PrepareForBuild"
-          Condition="('$(Language)' == 'C#' or '$(Language)' == 'VB') and '$(OS)' == 'Windows_NT' ">
+          Condition="('$(Language)' == 'C#' or '$(Language)' == 'VB' or '$(Language)' == 'F#') and '$(OS)' == 'Windows_NT' ">
 
     <WriteCodeFragment AssemblyAttributes="@(AssemblyVersionAttribute)"
                        Language="$(Language)"
