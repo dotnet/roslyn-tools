@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -122,9 +122,10 @@ namespace SignTool
         internal static void PrintUsage()
         {
             var usage =
-@"SignTool.exe [-test] [-intermediateOutputPath <path>] [-msbuildPath <path>] [-nugetPackagesPath <path>] [-config <path>] outputPath
+@"SignTool.exe [-test] [-testSign] [-intermediateOutputPath <path>] [-msbuildPath <path>] [-nugetPackagesPath <path>] [-config <path>] outputPath
 
 test: Run tool without actually modifying any state.
+testSign: The binaries will be test signed. The default is to real sign.
 outputPath: Directory containing the binaries.
 intermediateOutputPath: Directory containing intermediate output.  Default is (outputpath\..\Obj).
 nugetPackagesPath: Path containing downloaded NuGet packages.
@@ -147,6 +148,7 @@ config: Path to SignToolData.json. Default build\config\SignToolData.json.
             string nugetPackagesPath = null;
             string configFile = null;
             var test = false;
+            var testSign = false;
 
             var i = 0;
 
@@ -157,6 +159,10 @@ config: Path to SignToolData.json. Default build\config\SignToolData.json.
                 {
                     case "-test":
                         test = true;
+                        i++;
+                        break;
+                    case "-testsign":
+                        testSign = true;
                         i++;
                         break;
                     case "-intermediateoutputpath":
@@ -234,7 +240,8 @@ config: Path to SignToolData.json. Default build\config\SignToolData.json.
                 nugetPackagesPath: nugetPackagesPath,
                 appPath: AppContext.BaseDirectory,
                 configFile: configFile,
-                test: test);
+                test: test,
+                testSign: testSign);
             return true;
         }
 
