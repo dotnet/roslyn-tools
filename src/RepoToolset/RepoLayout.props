@@ -1,11 +1,22 @@
-﻿<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
 <Project>
   <!--
      Properties describing the layout of the repo.
   -->
-  
+
   <PropertyGroup>
-    <DotNetRoot>$(RepoRoot).dotnet\</DotNetRoot>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Respect environment variable for the .NET install directory if set; otherwise, use the current default location -->
+    <DotNetRoot Condition="'$(DotNetRoot)' == ''">$(DOTNET_INSTALL_DIR)</DotNetRoot>
+    <DotNetRoot Condition="'$(DotNetRoot)' == ''">$(RepoRoot).dotnet\</DotNetRoot>
+    <DotNetRoot Condition="!HasTrailingSlash('$(DotNetRoot)')">$(DotNetRoot)\</DotNetRoot>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <DotNetTool>$(DotNetRoot)dotnet.exe</DotNetTool>
     <ArtifactsDir>$(RepoRoot)artifacts\</ArtifactsDir>
     <ArtifactsToolsetDir>$(ArtifactsDir)toolset\</ArtifactsToolsetDir>
@@ -21,4 +32,5 @@
     <VisualStudioSetupInsertionPath>$(VisualStudioSetupOutputPath)Insertion\</VisualStudioSetupInsertionPath>
     <VisualStudioSetupIntermediateOutputPath>$(ArtifactsConfigurationDir)VSSetup.obj\</VisualStudioSetupIntermediateOutputPath>
   </PropertyGroup>
+
 </Project>
