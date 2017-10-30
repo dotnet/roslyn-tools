@@ -16,14 +16,10 @@
     <tags>$tags$</tags>
   </metadata>
   <files>
-    <file src="SignTool\SignTool.exe" target="tools" />
-    <file src="SignTool\Newtonsoft.Json.dll" target="tools" />
-    <file src="SignTool\System.Collections.Immutable.dll" target="tools" />
-    <file src="SignTool\System.Reflection.Metadata.dll" target="tools" />
-    <file src="SignTool\LocateVS.dll" target="tools" />
-    <file src="SignTool\Microsoft.VisualStudio.Setup.Configuration.Interop.dll" target="tools" />    
-    <file src="SignTool\x86\*" target="tools\x86" />
-    <file src="SignTool\x64\*" target="tools\x64" />
+    <file src="SignTool\net461\SignTool.exe" target="tools" />
+    <file src="SignTool\net461\*.dll" target="tools" />
+    <file src="SignTool\net461\x86\*" target="tools\x86" />
+    <file src="SignTool\net461\x64\*" target="tools\x64" />
     <file src="$thirdPartyNoticesPath$" target="" />
   </files>
 </package>
