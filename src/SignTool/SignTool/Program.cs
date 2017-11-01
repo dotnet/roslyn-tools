@@ -7,31 +7,45 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Newtonsoft.Json;
 
 namespace SignTool
 {
     internal static class Program
     {
-        internal static void Main(string[] args)
+        internal const int ExitSuccess = 0;
+        internal const int ExitFailure = 1;
+
+        internal static int Main(string[] args)
         {
             SignToolArgs signToolArgs;
             if (!ParseCommandLineArguments(StandardHost.Instance, args, out signToolArgs))
             {
                 PrintUsage();
-                Environment.Exit(1);
+                return ExitFailure;
             }
 
             if (!signToolArgs.Test && !File.Exists(signToolArgs.MSBuildPath))
             {
                 Console.WriteLine($"Unable to locate MSBuild at the path '{signToolArgs.MSBuildPath}'.");
-                Environment.Exit(1);
+                return ExitFailure;
             }
 
             var signTool = SignToolFactory.Create(signToolArgs);
             var batchData = ReadConfigFile(signToolArgs.OutputPath, signToolArgs.ConfigFile);
             var util = new BatchSignUtil(signTool, batchData);
-            util.Go();
+            try
+            {
+                return util.Go(Console.Out) ? ExitSuccess : ExitFailure;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected exception: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                return 1;
+            }
         }
 
         internal static BatchSignInput ReadConfigFile(string outputPath, string configFile)
@@ -41,7 +55,7 @@ namespace SignTool
                 BatchSignInput batchData;
                 if (!TryReadConfigFile(Console.Out, file, outputPath, out batchData))
                 {
-                    Environment.Exit(1);
+                    Environment.Exit(ExitFailure);
                 }
 
                 return batchData;
@@ -87,6 +101,9 @@ namespace SignTool
         /// </summary>
         private static List<string> ExpandFileList(string outputPath, IEnumerable<string> relativeFileNames, ref bool allGood)
         {
+            var directoryInfo = new DirectoryInfo(outputPath);
+            var matchDir = new DirectoryInfoWrapper(directoryInfo);
+
             var list = new List<string>();
             foreach (var relativeFileName in relativeFileNames)
             {
@@ -96,18 +113,18 @@ namespace SignTool
                     continue;
                 }
 
-                var fullName = Path.Combine(outputPath, relativeFileName);
                 try
                 {
-                    var expandedNameList = PathUtil.ExpandDirectoryGlob(fullName);
-                    if (expandedNameList.Count == 0)
+                    var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+                    matcher.AddInclude(relativeFileName);
+                    var result = matcher.Execute(matchDir);
+                    if (!result.HasMatches)
                     {
                         Console.WriteLine($"The glob {relativeFileName} expanded to 0 entries");
-                        allGood = false;
                         continue;
                     }
 
-                    list.AddRange(expandedNameList);
+                    list.AddRange(result.Files.Select(x => PathUtil.NormalizeSeparators(x.Path)));
                 }
                 catch (Exception ex)
                 {
