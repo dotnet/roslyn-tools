@@ -21,6 +21,7 @@ Repos currently using the toolset:
 - http://github.com/dotnet/metadata-tools
 - http://github.com/dotnet/roslyn-analyzers
 - http://github.com/dotnet/roslyn-debug
+- https://github.com/dotnet/roslyn-sdk
 
 The toolset has following requirements on the repo layout.
 
