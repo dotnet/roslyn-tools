@@ -20,8 +20,8 @@ Repos currently using the toolset:
 - http://github.com/dotnet/symstore
 - http://github.com/dotnet/metadata-tools
 - http://github.com/dotnet/roslyn-analyzers
-- http://github.com/dotnet/roslyn-debug
-- https://github.com/dotnet/roslyn-sdk
+- http://github.com/dotnet/roslyn-debug (private)
+- http://github.com/dotnet/roslyn-sdk (private)
 
 The toolset has following requirements on the repo layout.
 
