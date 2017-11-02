@@ -8,7 +8,7 @@
     </dependencies>
     <language>en-US</language>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
-    <version>1.0.0-alpha49</version>
+    <version>1.0.0-alpha50</version>
     <authors>Microsoft</authors>
     <licenseUrl>http://go.microsoft.com/fwlink/?LinkId=529443</licenseUrl>
     <tags>Repository Toolset MSBuild SDK</tags>
