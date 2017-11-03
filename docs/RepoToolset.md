@@ -120,7 +120,7 @@ Directory.Build.props in the repo root that imports Versions.props file and defi
 
 <PropertyGroup>
   <!-- Root of the repository -->
-  <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\'))</RepoRoot>
+  <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
 
   <!-- Full path to SignToolData.json -->
   <SignToolDataPath>$(RepoRoot)build\SignToolData.json</SignToolDataPath>
@@ -186,45 +186,33 @@ It might be useful to create other top-level directories containing projects for
 
 The RepoToolset provides a build driver ```$(RepoToolsetDir)Build.proj```. 
 
-It is recommended to add the following ```build.proj``` to the repo that invokes the driver. This example assumes ```build.proj``` located in the repo root along with ```MyMainSolution.sln``` in the root directory that contains all projects of the repo. projects that are not included in this solution won't participate in build.
+Example of PowerShell script invoking the build:
 
-```xml
-<Project DefaultTargets="Build" TreatAsLocalProperty="SolutionPath">
-  <!--
-    Optional parameters:
-      SolutionPath     Path to the solution to build
-      Configuration    Build configuration: "Debug", "Release", etc.
-      CIBuild          "true" if building on CI server
-      Restore          "true" to restore toolset and solution
-      Build            "true" to build solution
-      Rebuild          "true" to rebuild solution
-      Deploy           "true" to deploy assets (e.g. VSIXes) built in this repo
-      DeployDeps       "true" to deploy assets (e.g. VSIXes) this repo depeends on.
-      Test             "true" to run tests
-      IntegrationTest  "true" to run integration tests
-      Sign             "true" to sign built binaries
-      Pack             "true" to build NuGet packages
-      Properties        List of properties to pass to each build phase ("Name=Value;Name=Value;...")
-  -->
-  <PropertyGroup>
-    <SolutionPath Condition="'$(SolutionPath)' == ''">$(MSBuildThisFileDirectory)..\MyMainSolution.sln</SolutionPath>
-  </PropertyGroup>
+```PowerShell
+#
+# Installs the RepoToolset
+#
+function InstallToolset {
+  if (!(Test-Path $ToolsetBuildProj)) {
+    & $DotNetExe msbuild Toolset.proj /t:restore /m /nologo /clp:Summary /warnaserror /v:$verbosity /p:NuGetPackageRoot=$NuGetPackageRoot /p:BaseIntermediateOutputPath=$ToolsetDir /p:ExcludeRestorePackageImports=true
+  }
+}
 
-  <!-- Import the repo root props -->
-  <Import Project="Directory.build.props"/>
-    
-  <Target Name="Build">
-    <!-- Restore RepoToolset package and potential non-nuget dependencies (such as VSIX components) --> 
-    <MSBuild Projects="Toolset.proj"
-             Targets="Restore"
-             Properties="BaseIntermediateOutputPath=$(MSBuildThisFileDirectory)..\artifacts\toolset\;ExcludeRestorePackageImports=true;DeployDeps=$(DeployDeps)" 
-             Condition="'$(Restore)' == 'true'"/>
-
-    <!-- Invoke the RepoToolset build driver -->
-        <MSBuild Projects="$(RepoToolsetDir)Build.proj"
-                 Properties="SolutionPath=$(SolutionPath);Configuration=$(Configuration);CIBuild=$(CIBuild);Restore=$(Restore);Build=$(Build);Rebuild=$(Rebuild);Deploy=$(Deploy);Test=$(Test);IntegrationTest=$(IntegrationTest);Sign=$(Sign);Pack=$(Pack);Properties=$(Properties)" />
-  </Target>
-</Project>
+#
+# Invokes the build driver.
+#
+function Build {
+  if ($ci -or $log) {
+    Create-Directory($logDir)
+    $logCmd = "/bl:" + (Join-Path $LogDir "Build.binlog")
+  } else {
+    $logCmd = ""
+  }
+ 
+  $ToolsetBuildProj = Join-Path $NuGetPackageRoot "RoslynTools.Microsoft.RepoToolset\$ToolsetVersion\tools\Build.proj"
+ 
+  & $DotNetExe msbuild $ToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity $logCmd /p:SolutionPath=$solution /p:Configuration=$configuration /p:SolutionPath=$solution /p:Restore=$restore /p:Build=$build /p:Rebuild=$rebuild /p:Test=$test /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci /p:NuGetPackageRoot=$NuGetPackageRoot $properties
+}
 ```
 
 Example of common ```Toolset.proj```:
