@@ -5,11 +5,18 @@ RepoToolset is a set of msbuild props and targets files that provide build featu
 The goals are 
 - to reduce the number of copies of the same or similar props, targets and script files across repos
 - enable cross-platform build that relies on a standalone dotnet cli (downloaded during restore) as well as desktop msbuild based build
-- no dependency on software installed on the machine when using dotnet cli
+- no dependency on software installed on the machine when using _dotnet cli_
 - be as close to the latest shipping dotnet SDK as possible, with minimal overrides and tweaks
 - be modular and flexible, not all repos need all features; let the repo choose subset of features to import
 - unify common operations and structure across repos
-- abstract away peculiarities of VSSDK and MicroBuild that are not compatible with dotnet SDK
+- unify VSTS build definitions used to produce official builds
+
+The toolset has three kinds of features and helpers:
+- Workarounds for dotnet SDK bugs.
+  Will be removed once the bugs are fixed in the product.
+- Abstraction of peculiarities of VSSDK and VS insertion process that are not compatible with dotnet SDK.
+- Common conventions applicable to all repos using the toolset.
+- Infrastructure required for Jenkins, MicroBuild, PipeBuild and build from source.
 
 Repos currently using the toolset:
 - http://github.com/dotnet/project-system
@@ -22,6 +29,7 @@ Repos currently using the toolset:
 - http://github.com/dotnet/roslyn-analyzers
 - http://github.com/dotnet/roslyn-debug (private)
 - http://github.com/dotnet/roslyn-sdk (private)
+- http://github.com/dotnet/dotnet-cli-archiver
 
 The toolset has following requirements on the repo layout.
 
@@ -101,7 +109,17 @@ Versions.props file is present in the repo and defines versions of all dependenc
     <!-- Versions of other dependencies -->
     <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
     <MoqVersion>4.2.1402.2112</MoqVersion>
-</PropertyGroup>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <!-- Feeds to use to restore dependent packages from. -->  
+    <RestoreSources>
+      $(RestoreSources);
+      https://dotnet.myget.org/F/msbuild/api/v3/index.json;
+      https://dotnet.myget.org/F/nuget-build/api/v3/index.json;
+      https://dotnet.myget.org/F/roslyn-analyzers/api/v3/index.json;
+    </RestoreSources>
+  </PropertyGroup>
 </Project>
 ```
 
@@ -147,8 +165,8 @@ Projects shall be standard dotnet SDK based projects. No project level customiza
 
 #### Conventions used by the toolset
 
-- Unit test project file names shall end with ```.UnitTest```, e.g. ```MyProject.UnitTest.csproj```. 
-- Integration test project file names shall end with ```.IntegrationTest```, e.g. ```MyProject.IntegrationTest.vbproj```.
+- Unit test project file names shall end with ```.UnitTests``` or ```.Tests```, e.g. ```MyProject.UnitTests.csproj``` or ```MyProject.Tests.csproj```. 
+- Integration test project file names shall end with ```.IntegrationTest```, e.g. ```MyProject.IntegrationTests.vbproj```.
 - If ```source.extension.vsixmanifest``` is present next to the project file the project is by default considered to be a VSIX producing project.
 
 Source directory ```src``` shall contain ```Directory.Build.props``` and ```Directory.Build.targets``` files like so:
@@ -194,7 +212,7 @@ Example of PowerShell script invoking the build:
 #
 function InstallToolset {
   if (!(Test-Path $ToolsetBuildProj)) {
-    & $DotNetExe msbuild Toolset.proj /t:restore /m /nologo /clp:Summary /warnaserror /v:$verbosity /p:NuGetPackageRoot=$NuGetPackageRoot /p:BaseIntermediateOutputPath=$ToolsetDir /p:ExcludeRestorePackageImports=true
+    & $DotNetExe msbuild Toolset.proj /t:restore /m /nologo /clp:None /warnaserror /v:quiet /p:NuGetPackageRoot=$NuGetPackageRoot /p:BaseIntermediateOutputPath=$ToolsetDir /p:ExcludeRestorePackageImports=true
   }
 }
 
@@ -214,6 +232,7 @@ Example of common ```Toolset.proj```:
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
+    <RestoreSources>https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json</RestoreSources>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="RoslynTools.Microsoft.RepoToolset" Version="$(RoslynToolsMicrosoftRepoToolsetVersion)" />
