@@ -11,12 +11,12 @@ The goals are
 - unify common operations and structure across repos
 - unify VSTS build definitions used to produce official builds
 
-The toolset has three kinds of features and helpers:
-- Workarounds for dotnet SDK bugs.
-  Will be removed once the bugs are fixed in the product.
-- Abstraction of peculiarities of VSSDK and VS insertion process that are not compatible with dotnet SDK.
+The toolset has four kinds of features and helpers:
 - Common conventions applicable to all repos using the toolset.
-- Infrastructure required for Jenkins, MicroBuild, PipeBuild and build from source.
+- Infrastructure required for Jenkins, MicroBuild, orchestrated build and build from source.
+- Workarounds for bugs in shipping tools (dotnet SDK, VS SDK, msbuild, VS, NuGet client, etc.).
+  Will be removed once the bugs are fixed in the product and the toolset moves to the new version of the tool.
+- Abstraction of peculiarities of VSSDK and VS insertion process that are not compatible with dotnet SDK.
 
 Repos currently using the toolset:
 - http://github.com/dotnet/project-system
