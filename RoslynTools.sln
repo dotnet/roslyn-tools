@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26507.0
+VisualStudioVersion = 15.0.27110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7C921001-EF26-441B-98E2-F88AA90FFBAF}"
 EndProject
@@ -64,11 +64,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SignTool", "SignTool", "{4E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ModifyVsixManifest", "ModifyVsixManifest", "{BE8F47C2-8B57-4837-8E20-9D11A3D329C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignTool", "src\SignTool\SignTool\SignTool.csproj", "{3DA711E1-055F-4352-A5E1-F9169C86A20F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignTool", "src\SignTool\SignTool\SignTool.csproj", "{3DA711E1-055F-4352-A5E1-F9169C86A20F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModifyVsixManifest", "src\ModifyVsixManifest\ModifyVsixManifest\ModifyVsixManifest.csproj", "{C2D10BD8-726A-4A75-B7AD-18EB25ED768A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignToolTests", "src\SignTool\SignToolTests\SignToolTests.csproj", "{AB372697-8CAA-433F-AEC1-10A122FBB4EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignToolTests", "src\SignTool\SignToolTests\SignToolTests.csproj", "{AB372697-8CAA-433F-AEC1-10A122FBB4EE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LocateVS", "LocateVS", "{4928B2EE-0924-4627-90EE-B834442026DF}"
 EndProject
@@ -86,6 +86,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DownloadRoslynVsixes", "DownloadRoslynVsixes", "{9C33BF6A-98B0-4590-93A2-D83F78DF47D2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DownloadRoslynVsixes", "src\DownloadRoslynVsixes\DownloadRoslynVsixes.csproj", "{5697E050-FAC5-4026-8CAE-8D851C7A95C3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RoslynInsertionTool", "RoslynInsertionTool", "{13C56D4A-F3C6-4065-A47D-34D495BF31F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SingleThreadSynchronizationContext", "src\RoslynInsertionTool\SingleThreadSynchronizationContext\SingleThreadSynchronizationContext.csproj", "{591660D0-4BF6-4E63-8B45-F097D8BE406A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncProcess", "src\RoslynInsertionTool\AsyncProcess\AsyncProcess.csproj", "{E080C01A-F3FB-435C-A860-C7AE0CCCB6DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoslynInsertionTool", "src\RoslynInsertionTool\RoslynInsertionTool\RoslynInsertionTool.csproj", "{12C793BB-73C8-4057-9F69-0796317E5690}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoslynInsertionTool.CommandLine", "src\RoslynInsertionTool\RoslynInsertionTool.Commandline\RoslynInsertionTool.CommandLine.csproj", "{165B58E7-F2E8-4FB6-95C5-BC5BDD73FFE7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -117,6 +127,22 @@ Global
 		{5697E050-FAC5-4026-8CAE-8D851C7A95C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5697E050-FAC5-4026-8CAE-8D851C7A95C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5697E050-FAC5-4026-8CAE-8D851C7A95C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{591660D0-4BF6-4E63-8B45-F097D8BE406A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{591660D0-4BF6-4E63-8B45-F097D8BE406A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{591660D0-4BF6-4E63-8B45-F097D8BE406A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{591660D0-4BF6-4E63-8B45-F097D8BE406A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E080C01A-F3FB-435C-A860-C7AE0CCCB6DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E080C01A-F3FB-435C-A860-C7AE0CCCB6DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E080C01A-F3FB-435C-A860-C7AE0CCCB6DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E080C01A-F3FB-435C-A860-C7AE0CCCB6DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12C793BB-73C8-4057-9F69-0796317E5690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12C793BB-73C8-4057-9F69-0796317E5690}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12C793BB-73C8-4057-9F69-0796317E5690}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12C793BB-73C8-4057-9F69-0796317E5690}.Release|Any CPU.Build.0 = Release|Any CPU
+		{165B58E7-F2E8-4FB6-95C5-BC5BDD73FFE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{165B58E7-F2E8-4FB6-95C5-BC5BDD73FFE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{165B58E7-F2E8-4FB6-95C5-BC5BDD73FFE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{165B58E7-F2E8-4FB6-95C5-BC5BDD73FFE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -140,5 +166,13 @@ Global
 		{55DFEADF-E80C-4F0D-957F-93A1B66C585E} = {6B58AE05-69DD-434E-9C92-F7B49043F09C}
 		{9C33BF6A-98B0-4590-93A2-D83F78DF47D2} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
 		{5697E050-FAC5-4026-8CAE-8D851C7A95C3} = {9C33BF6A-98B0-4590-93A2-D83F78DF47D2}
+		{13C56D4A-F3C6-4065-A47D-34D495BF31F2} = {1063E05B-16CB-434C-9F91-A1710B4AAAB8}
+		{591660D0-4BF6-4E63-8B45-F097D8BE406A} = {13C56D4A-F3C6-4065-A47D-34D495BF31F2}
+		{E080C01A-F3FB-435C-A860-C7AE0CCCB6DE} = {13C56D4A-F3C6-4065-A47D-34D495BF31F2}
+		{12C793BB-73C8-4057-9F69-0796317E5690} = {13C56D4A-F3C6-4065-A47D-34D495BF31F2}
+		{165B58E7-F2E8-4FB6-95C5-BC5BDD73FFE7} = {13C56D4A-F3C6-4065-A47D-34D495BF31F2}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {98B7CD9F-4612-4860-A77B-BF42FA745B1C}
 	EndGlobalSection
 EndGlobal

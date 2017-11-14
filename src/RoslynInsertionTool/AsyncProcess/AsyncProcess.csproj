@@ -1,20 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\..\Open\build\Targets\Settings.props" />
+  <Import Project="..\..\..\build\Targets\VSL.Settings.targets" />
   <PropertyGroup>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ProjectGuid>{E080C01A-F3FB-435C-A860-C7AE0CCCB6DE}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>AsyncProcess</RootNamespace>
     <AssemblyName>AsyncProcess</AssemblyName>
+    <ProjectGuid>{E080C01A-F3FB-435C-A860-C7AE0CCCB6DE}</ProjectGuid>
+    <RootNamespace>AsyncProcess</RootNamespace>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-    <RuntimeIdentifiers>win7</RuntimeIdentifiers>
-    <SignAssembly>false</SignAssembly>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'" />
   <ItemGroup>
     <Compile Include="AsyncProcess.cs" />
     <Compile Include="ProcessFailureException.cs" />
@@ -23,5 +17,5 @@
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
-  <Import Project="..\..\..\..\..\Open\build\Targets\Imports.targets" />
+  <Import Project="..\..\..\build\Targets\VSL.Imports.targets" />
 </Project>
