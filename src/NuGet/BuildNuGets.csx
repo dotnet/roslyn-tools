@@ -82,7 +82,8 @@ var PreReleaseOnlyPackages = new HashSet<string>
     "ModifyVsixManifest",
     "SignTool",
     "VsixExpInstaller",
-    "DownloadRoslynVsixes"
+    "DownloadRoslynVsixes",
+    "RoslynInsertionTool"
 };
 
 // Create an empty directory to be used in NuGet pack

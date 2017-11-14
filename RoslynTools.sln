@@ -42,6 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{C0E7FE5B
 		src\NuGet\DownloadRoslynVsixes.nuspec = src\NuGet\DownloadRoslynVsixes.nuspec
 		src\NuGet\LocateVS.nuspec = src\NuGet\LocateVS.nuspec
 		src\NuGet\ModifyVsixManifest.nuspec = src\NuGet\ModifyVsixManifest.nuspec
+		src\NuGet\RoslynInsertionTool.nuspec = src\NuGet\RoslynInsertionTool.nuspec
 		src\NuGet\SignTool.nuspec = src\NuGet\SignTool.nuspec
 		src\NuGet\VSIXExpInstaller.nuspec = src\NuGet\VSIXExpInstaller.nuspec
 	EndProjectSection
