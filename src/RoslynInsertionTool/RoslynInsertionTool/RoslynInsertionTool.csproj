@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\..\..\Open\build\Targets\Settings.props" />
+  <PropertyGroup>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ProjectGuid>{12C793BB-73C8-4057-9F69-0796317E5690}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Roslyn.Insertion</RootNamespace>
+    <AssemblyName>RoslynInsertionTool</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <RuntimeIdentifiers>win7</RuntimeIdentifiers>
+    <SignAssembly>false</SignAssembly>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'" />
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Xml.Linq" />
+    <PackageReference Include="LibGit2Sharp">
+      <Version>$(LibGit2SharpVersion)</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client">
+      <Version>5.2.3</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core">
+      <Version>5.2.3</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory">
+      <Version>$(MicrosoftIdentityModelClientsActiveDirectoryVersion)</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.TeamFoundationServer.Client">
+      <Version>15.103.0-preview</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient">
+      <Version>15.103.0-preview</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Services.Client">
+      <Version>15.103.0-preview</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient">
+      <Version>15.103.0-preview</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.WindowsAzure.ConfigurationManager">
+      <Version>3.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>$(NewtonsoftJsonFixedVersion)</Version>
+    </PackageReference>
+    <PackageReference Include="NLog">
+      <Version>4.4.0-betaV15</Version>
+    </PackageReference>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt">
+      <Version>$(SystemIdentityModelTokensJwtVersion)</Version>
+    </PackageReference>
+    <PackageReference Include="System.IO.Compression.ZipFile">
+      <Version>$(SystemIOCompressionZipFileVersion)</Version>
+    </PackageReference>
+    <PackageReference Include="WindowsAzure.ServiceBus">
+      <Version>3.3.2</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Components.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="PackageInfo.cs" />
+    <Compile Include="VersionExtensions.cs" />
+    <Compile Include="VersionsUpdater.cs" />
+    <Compile Include="SemanticVersion.cs" />
+    <Compile Include="BuildVersion.cs" />
+    <Compile Include="CoreXT.cs" />
+    <Compile Include="EnumExtensions.cs" />
+    <Compile Include="RoslynInsertionTool.cs" />
+    <Compile Include="RoslynInsertionTool.AssemblyVersions.cs" />
+    <Compile Include="RoslynInsertionTool.Git.cs" />
+    <Compile Include="RoslynInsertionTool.Packages.cs" />
+    <Compile Include="RoslynInsertionTool.RazzleBuild.cs" />
+    <Compile Include="RoslynInsertionTool.UpdateFiles.cs" />
+    <Compile Include="RoslynInsertionTool.VisualStudioTeamServices.cs" />
+    <Compile Include="RoslynInsertionToolOptions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AsyncProcess\AsyncProcess.csproj">
+      <Project>{e080c01a-f3fb-435c-a860-c7ae0cccb6de}</Project>
+      <Name>AsyncProcess</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <Import Project="..\..\..\..\..\Open\build\Targets\Imports.targets" />
+</Project>
