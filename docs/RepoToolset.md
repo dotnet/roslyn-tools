@@ -30,7 +30,7 @@ Repos currently using the toolset:
 - http://github.com/dotnet/roslyn-debug (private)
 - http://github.com/dotnet/roslyn-sdk (private)
 - http://github.com/dotnet/dotnet-cli-archiver
-- http://github.com/dotnet/sdk
+- [http://github.com/dotnet/sdk](http://github.com/dotnet/sdk/tree/dev/release/2.0)
 
 The toolset has following requirements on the repo layout.
 
