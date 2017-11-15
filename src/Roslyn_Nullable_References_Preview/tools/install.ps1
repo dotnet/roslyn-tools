@@ -122,7 +122,7 @@ function Deploy-VsixViaTool() {
         "vsix\Roslyn.VisualStudio.InteractiveComponents.vsix",
         "vsix\ExpressionEvaluatorPackage.vsix")
 
-    Write-Host "Installing all Roslyn VSIX"
+    Write-Host "Installing all Roslyn VSIXes"
     foreach ($e in $all) {
         $name = $e
         $filePath = "`"$((Resolve-Path $e).Path)`""

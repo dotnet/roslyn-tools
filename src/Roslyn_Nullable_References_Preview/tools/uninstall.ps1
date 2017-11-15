@@ -122,12 +122,12 @@ function Uninstall-VsixViaTool() {
         "vsix\Roslyn.VisualStudio.Setup.vsix",
         "vsix\Roslyn.Compilers.Extension.vsix")
 
-    Write-Host "Installing all Roslyn VSIX"
+    Write-Host "Un-Installing all Roslyn VSIXes"
     foreach ($e in $all) {
         $name = $e
         $filePath = "`"$((Resolve-Path $e).Path)`""
         $fullArg = "$baseArgs $filePath"
-        Write-Host "`tInstalling $name"
+        Write-Host "`tUn-Installing $name"
         Exec-Console $vsixExe $fullArg
     }
 }
