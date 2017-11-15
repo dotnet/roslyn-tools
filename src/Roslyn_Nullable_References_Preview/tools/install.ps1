@@ -5,7 +5,7 @@ $ErrorActionPreference="Stop"
 # Deploy our core VSIX libraries to Visual Studio via the Roslyn VSIX tool.  This is an alternative to
 # deploying at build time.
 function Deploy-VsixViaTool() {
-    $vsixExe = (Resolve-Path "tools\vsixexpinstaller\VsixExpInstaller.exe").Path
+    $vsixExe = Join-Path $PSScriptRoot "vsixexpinstaller\VsixExpInstaller.exe"
     $vsixExe = "`"$vsixExe`""
     $both = Get-VisualStudioDirAndId
     $vsDir = $both[0].Trim("\")
@@ -32,6 +32,11 @@ function Deploy-VsixViaTool() {
 
 try {
     . (Join-Path $PSScriptRoot "utils.ps1")
+
+    if (Test-Process "devenv") {
+        Write-Host "Please shut down all instances of Visual Studio before running"
+        exit 1
+    }
 
     Deploy-VsixViaTool
     exit 0

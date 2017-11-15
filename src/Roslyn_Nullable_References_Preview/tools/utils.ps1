@@ -75,7 +75,7 @@ function Exec-Console([string]$command, [string]$commandArgs) {
 # Get the directory and instance ID of the first Visual Studio version which
 # meets our minimal requirements for the Roslyn repo.
 function Get-VisualStudioDirAndId() {
-    $vswhere = "tools\vswhere\vswhere.exe"
+    $vswhere = Join-Path $PSScriptRoot "vswhere\vswhere.exe"
     $output = Exec-Command $vswhere "-prerelease -requires Microsoft.Component.MSBuild -format json" | Out-String
     $j = ConvertFrom-Json $output
     foreach ($obj in $j) {
@@ -100,3 +100,9 @@ function Get-VisualStudioDirAndId() {
 
     throw "Could not find a suitable Visual Studio Version"
 }
+
+function Test-Process([string]$processName) {
+    $all = Get-Process $processName -ErrorAction SilentlyContinue
+    return $all -ne $null
+}
+
