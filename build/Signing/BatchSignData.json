@@ -11,5 +11,9 @@
         "DownloadRoslynVsixes\\DownloadRoslynVsixes.exe"
       ]
     }
+  ],
+
+  "exclude": [
+    "RoslynInsertionTool.CommandLine\\RIT.exe"
   ]
 }

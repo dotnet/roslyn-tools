@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\build\Targets\VSL.Settings.targets" />
+  <PropertyGroup>
+    <AssemblyName>AsyncProcess</AssemblyName>
+    <ProjectGuid>{E080C01A-F3FB-435C-A860-C7AE0CCCB6DE}</ProjectGuid>
+    <RootNamespace>AsyncProcess</RootNamespace>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AsyncProcess.cs" />
+    <Compile Include="ProcessFailureException.cs" />
+    <Compile Include="ProcessOutput.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <Import Project="..\..\..\build\Targets\VSL.Imports.targets" />
+</Project>
