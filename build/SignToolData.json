@@ -1,0 +1,13 @@
+{
+  "sign": [
+    {
+      "certificate": "Microsoft402",
+      "strongName": "MsSharedLib72",
+      "values": [
+        "bin/ModifyVsixManifest/net46/ModifyVsixManifest.exe",
+        "bin/SignTool/net461/SignTool.exe",
+        "bin/VSIXExpInstaller/net46/VSIXExpInstaller.exe"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net46</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <PlatformTarget>x86</PlatformTarget>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <CopyNuGetImplementations>true</CopyNuGetImplementations>
+    
+    <!-- Using an explicit nuspec file since NuGet Pack target currently doesn't support including dependencies in tools packages -->
+    <IsPackable>true</IsPackable>
+    <NuspecFile>VSIXExpInstaller.nuspec</NuspecFile>
+    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
+    <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Microsoft.VisualStudio.ExtensionEngine">
+      <HintPath>$(VS150COMNTOOLS)\..\IDE\Microsoft.VisualStudio.ExtensionEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ExtensionManager">
+      <HintPath>$(VS150COMNTOOLS)\..\IDE\PrivateAssemblies\Microsoft.VisualStudio.ExtensionManager.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ExtensionManager.Implementation">
+      <HintPath>$(VS150COMNTOOLS)\..\IDE\PrivateAssemblies\Microsoft.VisualStudio.ExtensionManager.Implementation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.RegDetour">
+      <HintPath>$(VS150COMNTOOLS)\..\IDE\Microsoft.VisualStudio.RegDetour.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Setup">
+      <HintPath>$(VS150COMNTOOLS)\..\IDE\PrivateAssemblies\Microsoft.VisualStudio.Setup.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Setup.Common">
+      <HintPath>$(VS150COMNTOOLS)\..\IDE\PrivateAssemblies\Microsoft.VisualStudio.Setup.Common.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Setup.Engine">
+      <HintPath>$(VS150COMNTOOLS)\..\IDE\PrivateAssemblies\Microsoft.VisualStudio.Setup.Engine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Build.Utilities.Core">
+      <HintPath>$(VS150COMNTOOLS)\..\..\MSBuild\15.0\Bin\Microsoft.Build.Utilities.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Settings.15.0">
+      <HintPath>$(VS150COMNTOOLS)\..\IDE\Microsoft.VisualStudio.Settings.15.0.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.15.0">
+      <HintPath>$(VS150COMNTOOLS)\..\IDE\PublicAssemblies\Microsoft.VisualStudio.Shell.15.0.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
+    <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
+    <PackageReference Include="System.ValueTuple" Version="$(SystemValueTupleVersion)" />
+    <PackageReference Include="EnvDTE" Version="$(EnvDTEVersion)" />
+    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Interop.10.0.DesignTime" Version="$(MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion)" />
+    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Interop.11.0.DesignTime" Version="$(MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion)" />
+  </ItemGroup>
+</Project>

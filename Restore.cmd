@@ -1,1 +1,3 @@
-@call %~dp0build.cmd -skipBuild -skipTest -skipPackage %*
+@echo off
+powershell -ExecutionPolicy ByPass %~dp0build\Build.ps1 -restore %*
+exit /b %ErrorLevel%

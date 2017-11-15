@@ -1,0 +1,55 @@
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>RoslynInsertionTool</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net46</TargetFramework>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Prefer32Bit>false</Prefer32Bit>
+
+    <!-- Using an explicit nuspec file since NuGet Pack target currently doesn't support including dependencies in tools packages -->
+    <IsPackable>true</IsPackable>
+    <NuspecFile>RIT.nuspec</NuspecFile>
+    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
+    <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Threading" />
+    <Reference Include="System.Web" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Colorful.Console" Version="1.0.5" />
+    <PackageReference Include="LibGit2Sharp" Version="0.22.0" />
+    <PackageReference Include="Microsoft.Azure.KeyVault" Version="2.0.6" />
+    <PackageReference Include="Mono.Options" Version="5.3.0.1" />
+    <PackageReference Include="NLog.Config" Version="4.3.6.1" />
+    <PackageReference Include="NLog.Schema" Version="4.3.6.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cyberlarge.flf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="NLog.xsd" />
+    <None Include="Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AsyncProcess\AsyncProcess.csproj" />
+    <ProjectReference Include="..\RoslynInsertionTool\RoslynInsertionTool.csproj" />
+    <ProjectReference Include="..\SingleThreadSynchronizationContext\SingleThreadSynchronizationContext.csproj" />
+  </ItemGroup>
+</Project>

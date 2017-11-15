@@ -1,0 +1,18 @@
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project>
+  <Import Project="..\..\Directory.Build.targets" />
+  
+  <!--
+    TODO:
+    Disabele signing and override RepoToolset target that validates signing related settings.
+    This is necessary since Mono.Options isn't signed. RepoToolset requires all assemblies to have strong name.
+    Remove dependency on Mono.Options and delete this file.
+  -->
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+    <DelaySign>false</DelaySign>
+    <PublicSign>false</PublicSign>
+  </PropertyGroup>
+  
+  <Target Name="VerifyBuildFlags"/>
+</Project>
