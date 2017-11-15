@@ -20,11 +20,11 @@ function Exec-CommandCore([string]$command, [string]$commandArgs, [switch]$useCo
 
     $finished = $false
     try {
-        if (-not $useConsole) { 
-            # The OutputDataReceived event doesn't fire as events are sent by the 
+        if (-not $useConsole) {
+            # The OutputDataReceived event doesn't fire as events are sent by the
             # process in powershell.  Possibly due to subtlties of how Powershell
             # manages the thread pool that I'm not aware of.  Using blocking
-            # reading here as an alternative which is fine since this blocks 
+            # reading here as an alternative which is fine since this blocks
             # on completion already.
             $out = $process.StandardOutput
             while (-not $out.EndOfStream) {
@@ -33,13 +33,13 @@ function Exec-CommandCore([string]$command, [string]$commandArgs, [switch]$useCo
             }
         }
 
-        while (-not $process.WaitForExit(100)) { 
+        while (-not $process.WaitForExit(100)) {
             # Non-blocking loop done to allow ctr-c interrupts
         }
 
         $finished = $true
-        if ($process.ExitCode -ne 0) { 
-            throw "Command failed to execute: $command $commandArgs" 
+        if ($process.ExitCode -ne 0) {
+            throw "Command failed to execute: $command $commandArgs"
         }
     }
     finally {
@@ -51,20 +51,20 @@ function Exec-CommandCore([string]$command, [string]$commandArgs, [switch]$useCo
     }
 }
 
-# Handy function for executing a windows command which needs to go through 
-# windows command line parsing.  
+# Handy function for executing a windows command which needs to go through
+# windows command line parsing.
 #
-# Use this when the command arguments are stored in a variable.  Particularly 
+# Use this when the command arguments are stored in a variable.  Particularly
 # when the variable needs reparsing by the windows command line. Example:
 #
 #   $args = "/p:ManualBuild=true Test.proj"
 #   Exec-Command $msbuild $args
-# 
+#
 function Exec-Command([string]$command, [string]$commandArgs) {
     Exec-CommandCore -command $command -commandArgs $commandargs -useConsole:$false
 }
 
-# Functions exactly like Exec-Command but lets the process re-use the current 
+# Functions exactly like Exec-Command but lets the process re-use the current
 # console. This means items like colored output will function correctly.
 #
 # In general this command should be used in place of
@@ -75,19 +75,19 @@ function Exec-Console([string]$command, [string]$commandArgs) {
 }
 
 
-# Get the directory and instance ID of the first Visual Studio version which 
+# Get the directory and instance ID of the first Visual Studio version which
 # meets our minimal requirements for the Roslyn repo.
 function Get-VisualStudioDirAndId() {
     $vswhere = "tools\vswhere\vswhere.exe"
     $output = Exec-Command $vswhere "-prerelease -requires Microsoft.Component.MSBuild -format json" | Out-String
     $j = ConvertFrom-Json $output
-    foreach ($obj in $j) { 
+    foreach ($obj in $j) {
 
         # Need to be using at least Visual Studio 15.2 in order to have the appropriate
-        # set of SDK fixes. Parsing the installationName is the only place where this is 
+        # set of SDK fixes. Parsing the installationName is the only place where this is
         # recorded in that form.
         $name = $obj.installationName
-        if ($name -match "VisualStudio(Preview)?/([\d.]+)(\+|-).*") { 
+        if ($name -match "VisualStudio(Preview)?/([\d.]+)(\+|-).*") {
             $minVersion = New-Object System.Version "15.3.0"
             $version = New-Object System.Version $matches[2]
             if ($version -ge $minVersion) {
@@ -104,10 +104,11 @@ function Get-VisualStudioDirAndId() {
     throw "Could not find a suitable Visual Studio Version"
 }
 
-# Deploy our core VSIX libraries to Visual Studio via the Roslyn VSIX tool.  This is an alternative to 
+# Deploy our core VSIX libraries to Visual Studio via the Roslyn VSIX tool.  This is an alternative to
 # deploying at build time.
-function Uninstall-VsixViaTool() { 
+function Uninstall-VsixViaTool() {
     $vsixExe = (Resolve-Path "tools\vsixexpinstaller\VsixExpInstaller.exe").Path
+    $vsixExe = "`"$vsixExe`""
     $both = Get-VisualStudioDirAndId
     $vsDir = $both[0].Trim("\")
     $vsId = $both[1]
@@ -124,7 +125,7 @@ function Uninstall-VsixViaTool() {
     Write-Host "Installing all Roslyn VSIX"
     foreach ($e in $all) {
         $name = $e
-        $filePath = (Resolve-Path $e).Path
+        $filePath = "`"$((Resolve-Path $e).Path)`""
         $fullArg = "$baseArgs $filePath"
         Write-Host "`tInstalling $name"
         Exec-Console $vsixExe $fullArg
