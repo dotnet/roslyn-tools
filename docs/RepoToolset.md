@@ -167,7 +167,7 @@ Projects shall be standard dotnet SDK based projects. No project level customiza
 #### Conventions used by the toolset
 
 - Unit test project file names shall end with ```.UnitTests``` or ```.Tests```, e.g. ```MyProject.UnitTests.csproj``` or ```MyProject.Tests.csproj```. 
-- Integration test project file names shall end with ```.IntegrationTest```, e.g. ```MyProject.IntegrationTests.vbproj```.
+- Integration test project file names shall end with ```.IntegrationTests```, e.g. ```MyProject.IntegrationTests.vbproj```.
 - If ```source.extension.vsixmanifest``` is present next to the project file the project is by default considered to be a VSIX producing project.
 
 Source directory ```src``` shall contain ```Directory.Build.props``` and ```Directory.Build.targets``` files like so:
