@@ -126,7 +126,7 @@ Versions.props file is present in the repo and defines versions of all dependenc
 
 The toolset defines a set of tools (or features) that each repo can opt into or opt out. Since different repos have different needs the set of tools that will be imported from the toolset can be controlled by ```UsingTool{tool-name}``` properties, where *tool-name* is e.g. ```Xliff```, ```SourceLink```, ```XUnit```, ```VSSDK```, ```IbcOptimization```, etc. These properties shall be set in the Versions.props file. 
 
-The toolset also defines default versions for various tools and dependencies, such as MicroBuild, XUnit, VSSDK, etc. These defaults can be overrridden in the Versions.props file.
+The toolset also defines default versions for various tools and dependencies, such as MicroBuild, XUnit, VSSDK, etc. These defaults can be overridden in the Versions.props file.
 
 See [DefaultVersions](https://github.com/dotnet/roslyn-tools/blob/master/src/RepoToolset/DefaultVersions.props]) for a list of *UsingTool* properties and default versions.
 
