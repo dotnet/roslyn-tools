@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27121.1
@@ -35,10 +35,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGetRepack", "src\NuGetRep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetRepack.Tests", "src\NuGetRepack.Tests\NuGetRepack.Tests.csproj", "{E381AF44-46B0-45D5-9CA8-A838CA1DA53E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0CBA4AF6-52CB-4F44-9175-9548D1381080}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompilerPerfTests", "src\CompilerPerfTests\CompilerPerfTests.csproj", "{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0EAEBB0A-EE12-4929-8B0A-6953B0E852F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -85,6 +93,18 @@ Global
 		{E381AF44-46B0-45D5-9CA8-A838CA1DA53E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E381AF44-46B0-45D5-9CA8-A838CA1DA53E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E381AF44-46B0-45D5-9CA8-A838CA1DA53E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}.Debug|x64.ActiveCfg = Debug|x64
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}.Debug|x64.Build.0 = Debug|x64
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}.Debug|x86.ActiveCfg = Debug|x86
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}.Debug|x86.Build.0 = Debug|x86
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}.Release|x64.ActiveCfg = Release|x64
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}.Release|x64.Build.0 = Release|x64
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}.Release|x86.ActiveCfg = Release|x86
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -101,6 +121,7 @@ Global
 		{6AC77B45-4E1F-48D0-B53F-FBD5CB193F99} = {54B3835F-17DD-4749-B40D-1533BD81D36C}
 		{DA82E3ED-FF80-4AB0-86E1-72E8029BBED4} = {732A897A-76AE-41E3-A7E4-55F16C1D56EB}
 		{E381AF44-46B0-45D5-9CA8-A838CA1DA53E} = {732A897A-76AE-41E3-A7E4-55F16C1D56EB}
+		{EA1E25DA-BFC2-409D-A059-EF3D3F3C7224} = {0CBA4AF6-52CB-4F44-9175-9548D1381080}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {738CC66D-49E2-4B21-835F-94170D22A29D}

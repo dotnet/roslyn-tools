@@ -28,11 +28,6 @@
     -->
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
 
-    <!--
-      Only generate runtimeconfig.json files for .exes of net core apps. It's unnecessary in desktop projects.
-    -->
-    <GenerateRuntimeConfigurationFiles Condition="'$(TargetFramework)' != 'netcoreapp1.1' and '$(TargetFramework)' != 'netcoreapp2.0'">false</GenerateRuntimeConfigurationFiles>
-
     <!-- Enable IOperation analyzers -->
     <Features>IOperation,$(Features)</Features>
 
