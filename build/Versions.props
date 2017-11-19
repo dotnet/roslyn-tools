@@ -8,6 +8,7 @@
     <!-- Toolset -->
     <RoslynToolsMicrosoftRepoToolsetVersion>1.0.0-alpha54</RoslynToolsMicrosoftRepoToolsetVersion>
     <DotNetCliVersion>2.0.2</DotNetCliVersion>
+    <VSWhere>2.1.4</VSWhere>
 
     <!-- CoreFX -->
     <SystemCollectionsImmutableVersion>1.3.1</SystemCollectionsImmutableVersion>
