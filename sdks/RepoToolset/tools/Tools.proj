@@ -10,7 +10,7 @@
     <_RestoreSources Include="https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json"/>
     <_RestoreSources Include="https://dotnet.myget.org/F/symreader-converter/api/v3/index.json"
                      Condition="'$(UsingToolPdbConverter)' == 'true' and $(MicrosoftDiaSymReaderPdb2PdbVersion.Contains('-'))"/>
-    <_RestoreSources Include="https://dotnetfeed.blob.core.windows.net/dotnet-core/packages/index.json"
+    <_RestoreSources Include="https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json"
                      Condition="'$(UsingPipeBuildPublishing)' == 'true'" />
   </ItemGroup>
   <PropertyGroup>
