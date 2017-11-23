@@ -14,9 +14,11 @@
     Deploy            "true" to deploy assets (e.g. VSIXes)
     Test              "true" to run tests
     IntegrationTest   "true" to run integration tests
-    Sign              "true" to sign built binaries
     Pack              "true" to build NuGet packages and VS insertion manifests
+    Sign              "true" to sign built binaries
     SignType          "real" to send binaries to signing service, "test" to only validate signing configuration.
+    OrchestrationConfigFile 
+                      Path to output Json for orchestrated-type signing (produce manifest that can be consumed later.)
   -->
 
   <!-- 
@@ -171,7 +173,7 @@
       Sign artifacts.
     -->
     <MSBuild Projects="Sign.proj"
-             Properties="$(_CommonProps);RealSign=$(RealSign);DirectoryBuildPropsPath=$(DirectoryBuildPropsPath)"
+             Properties="$(_CommonProps);RealSign=$(RealSign);DirectoryBuildPropsPath=$(DirectoryBuildPropsPath);OrchestrationConfigFile=$(OrchestrationConfigFile)"
              Targets="Sign"
              Condition="'$(Sign)' == 'true'"/>
 

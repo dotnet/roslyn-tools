@@ -4,6 +4,12 @@
     Required parameters:
       DirectoryBuildPropsPath       Path to the Directory.Build.props file in the repo root.
       RealSign                      "true" to send binaries to the signing service, "false" to only validate signing configuration.
+
+    Optional parameters:
+      OrchestrationConfigFile       If specified, output a manifest similar to SignToolData.json but with checksums of all relevant files included 
+                                    for reassembly later when only zip archives are available.
+      OrchestrationMode             "true" if the input manifest is an orchestration manifest, false otherwise.  Will attempt to unpack all zips
+                                    provided and match on checksums for any missing files.
   -->
 
   <Import Project="$(DirectoryBuildPropsPath)" Condition="Exists('$(DirectoryBuildPropsPath)')"/>
@@ -19,6 +25,8 @@
     </Exec>
 
     <ItemGroup>
+      <SignToolArgs Condition="'$(OrchestrationMode)' == 'true'" Include='-orchestrationmode' />
+      <SignToolArgs Condition="'$(OrchestrationConfigFile)' != ''" Include='-orchestrationconfigfile "$(OrchestrationConfigFile)"' />      
       <SignToolArgs Include='-nugetPackagesPath "$(NuGetPackageRoot)\"' />
       <SignToolArgs Include='-intermediateOutputPath "$(ArtifactsObjDir)\"' />
       <SignToolArgs Include='-config "$(SignToolDataPath)"' />
@@ -29,4 +37,5 @@
     
     <Exec Command="$(NuGetPackageRoot)roslyntools.microsoft.signtool\$(RoslynToolsMicrosoftSignToolVersion)\tools\SignTool.exe @(SignToolArgs, ' ')" />
   </Target>
+  
 </Project>
