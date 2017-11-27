@@ -1,0 +1,42 @@
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NuGetRepack\NuGetRepack.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.IO.Compression" Version="$(SystemIOCompressionVersion)" />
+    <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\A.1.0.0-beta-12345-01.nupkg">
+      <LogicalName>A.1.0.0-beta-12345-01.nupkg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\B.1.0.0-beta-12345-01.nupkg">
+      <LogicalName>B.1.0.0-beta-12345-01.nupkg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\C.1.0.0-beta-12345-01.nupkg">
+      <LogicalName>C.1.0.0-beta-12345-01.nupkg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\A.1.0.0-beta.nupkg">
+      <LogicalName>A.1.0.0-beta.nupkg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\B.1.0.0-beta.nupkg">
+      <LogicalName>B.1.0.0-beta.nupkg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\C.1.0.0-beta.nupkg">
+      <LogicalName>C.1.0.0-beta.nupkg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\A.1.0.0.nupkg">
+      <LogicalName>A.1.0.0.nupkg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\B.1.0.0.nupkg">
+      <LogicalName>B.1.0.0.nupkg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\C.1.0.0.nupkg">
+      <LogicalName>C.1.0.0.nupkg</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>
