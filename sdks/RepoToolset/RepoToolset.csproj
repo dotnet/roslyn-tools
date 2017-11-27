@@ -8,4 +8,8 @@
     <NuspecBasePath>$(MSBuildProjectDirectory)\tools</NuspecBasePath>
     <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- Show .*proj files in solution explorer, which are excluded by default -->
+    <None Include="tools\*.*proj" />
+  </ItemGroup>
 </Project>
