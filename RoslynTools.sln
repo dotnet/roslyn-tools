@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27116.0
+VisualStudioVersion = 15.0.27121.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModifyVsixManifest", "src\ModifyVsixManifest\ModifyVsixManifest.csproj", "{0EAEBB0A-EE12-4929-8B0A-6953B0E852F9}"
 EndProject
@@ -31,7 +31,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VsixTools", "VsixTools", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGetTools", "NuGetTools", "{732A897A-76AE-41E3-A7E4-55F16C1D56EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetRepack", "src\NuGetRepack\NuGetRepack.csproj", "{DA82E3ED-FF80-4AB0-86E1-72E8029BBED4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGetRepack", "src\NuGetRepack\NuGetRepack.csproj", "{DA82E3ED-FF80-4AB0-86E1-72E8029BBED4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetRepack.Tests", "src\NuGetRepack.Tests\NuGetRepack.Tests.csproj", "{E381AF44-46B0-45D5-9CA8-A838CA1DA53E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,6 +81,10 @@ Global
 		{DA82E3ED-FF80-4AB0-86E1-72E8029BBED4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA82E3ED-FF80-4AB0-86E1-72E8029BBED4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA82E3ED-FF80-4AB0-86E1-72E8029BBED4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E381AF44-46B0-45D5-9CA8-A838CA1DA53E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E381AF44-46B0-45D5-9CA8-A838CA1DA53E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E381AF44-46B0-45D5-9CA8-A838CA1DA53E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E381AF44-46B0-45D5-9CA8-A838CA1DA53E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -94,6 +100,7 @@ Global
 		{5B5D5620-AEAE-4F87-9905-9620D580FE32} = {54B3835F-17DD-4749-B40D-1533BD81D36C}
 		{6AC77B45-4E1F-48D0-B53F-FBD5CB193F99} = {54B3835F-17DD-4749-B40D-1533BD81D36C}
 		{DA82E3ED-FF80-4AB0-86E1-72E8029BBED4} = {732A897A-76AE-41E3-A7E4-55F16C1D56EB}
+		{E381AF44-46B0-45D5-9CA8-A838CA1DA53E} = {732A897A-76AE-41E3-A7E4-55F16C1D56EB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {738CC66D-49E2-4B21-835F-94170D22A29D}
