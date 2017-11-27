@@ -6,7 +6,7 @@
     <PreReleaseVersionLabel>beta</PreReleaseVersionLabel>
     
     <!-- Toolset -->
-    <RoslynToolsMicrosoftRepoToolsetVersion>1.0.0-alpha54</RoslynToolsMicrosoftRepoToolsetVersion>
+    <RoslynToolsMicrosoftRepoToolsetVersion>1.0.0-alpha58</RoslynToolsMicrosoftRepoToolsetVersion>
     <DotNetCliVersion>2.0.2</DotNetCliVersion>
     <VSWhereVersion>2.1.4</VSWhereVersion>
 

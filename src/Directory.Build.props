@@ -5,7 +5,13 @@
 
   <PropertyGroup>
     <LangVersion>Latest</LangVersion>
-    <DebugType>embedded</DebugType>
+
+    <!-- 
+      TODO: Can't use embedded PDBs with LUT:
+      https://github.com/dotnet/testimpact/issues/1877 
+    -->
+    <DebugType Condition="'$(BuildingForLiveUnitTesting)' != 'true'">embedded</DebugType>
+    
     <PublishOutputToSymStore>false</PublishOutputToSymStore>
   </PropertyGroup>
 </Project>
