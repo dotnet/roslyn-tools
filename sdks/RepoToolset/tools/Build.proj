@@ -30,7 +30,6 @@
     PB_PublishBlobFeedKey  {''|string}                    Account key.
     
     PB_SigningOrchestrationConfig  {''|string}            Path to output Json for orchestrated-type signing (produce manifest that can be consumed later.)
-    PB_SigningOrchestrationMode    {''|'true'|'false'}    Set 'true' to have SignTool use manifests as provided above.
   -->
   <PropertyGroup>
     <RealSign>false</RealSign>
@@ -174,7 +173,7 @@
       Sign artifacts.
     -->
     <MSBuild Projects="Sign.proj"
-             Properties="$(_CommonProps);RealSign=$(RealSign);DirectoryBuildPropsPath=$(DirectoryBuildPropsPath);OutputConfigFile=$(PB_SigningOrchestrationConfig);OrchestrationMode=$(PB_SigningOrchestrationMode)"
+             Properties="$(_CommonProps);RealSign=$(RealSign);DirectoryBuildPropsPath=$(DirectoryBuildPropsPath);OutputConfigFile=$(PB_SigningOrchestrationConfig)"
              Targets="Sign"
              Condition="'$(Sign)' == 'true'"/>
 
