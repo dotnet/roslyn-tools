@@ -85,6 +85,13 @@
     </PropertyGroup>
   </Target>
 
+  <!--
+    Workaround for a race condition https://github.com/Microsoft/msbuild/issues/1479.
+  -->
+  <PropertyGroup>
+    <TargetFrameworkMonikerAssemblyAttributesPath>$(IntermediateOutputPath)$(TargetFrameworkMoniker).AssemblyAttributes$(DefaultLanguageSourceExtension)</TargetFrameworkMonikerAssemblyAttributesPath>
+  </PropertyGroup>
+
   <!-- Portable PDBs are not included by default -->
   <PropertyGroup Condition="'$(DebugType)' == 'portable'">
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
