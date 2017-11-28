@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace SignTool
 {
     internal struct SignToolArgs
@@ -16,6 +10,7 @@ namespace SignTool
         internal string ConfigFile { get; }
         internal bool Test { get; }
         internal bool TestSign { get; }
+        internal string OrchestrationManifestPath { get; }
 
         internal SignToolArgs(
             string outputPath,
@@ -25,7 +20,9 @@ namespace SignTool
             string nugetPackagesPath,
             string configFile,
             bool test,
-            bool testSign)
+            bool testSign,
+            string orchestrationManifestPath
+            )
         {
             OutputPath = outputPath;
             IntermediateOutputPath = intermediateOutputPath;
@@ -35,6 +32,7 @@ namespace SignTool
             ConfigFile = configFile;
             Test = test;
             TestSign = testSign;
+            OrchestrationManifestPath = orchestrationManifestPath;
         }
     }
 }

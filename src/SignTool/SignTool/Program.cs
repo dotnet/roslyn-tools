@@ -2,14 +2,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SignTool.Json;
 
 namespace SignTool
 {
@@ -20,8 +19,7 @@ namespace SignTool
 
         internal static int Main(string[] args)
         {
-            SignToolArgs signToolArgs;
-            if (!ParseCommandLineArguments(StandardHost.Instance, args, out signToolArgs))
+            if (!ParseCommandLineArguments(StandardHost.Instance, args, out SignToolArgs signToolArgs))
             {
                 PrintUsage();
                 return ExitFailure;
@@ -33,9 +31,24 @@ namespace SignTool
                 return ExitFailure;
             }
 
+            BatchSignInput batchData;
             var signTool = SignToolFactory.Create(signToolArgs);
-            var batchData = ReadConfigFile(signToolArgs.OutputPath, signToolArgs.ConfigFile);
-            var util = new BatchSignUtil(signTool, batchData);
+            string configFileKind = GetConfigFileKind(signToolArgs.ConfigFile);
+
+            switch (configFileKind.ToLower())
+            {
+                case "default":
+                    batchData = ReadConfigFile(signToolArgs.OutputPath, signToolArgs.ConfigFile);
+                    break;
+                case "orchestration":
+                    batchData = ReadOrchestrationConfigFile(signToolArgs.OutputPath, signToolArgs.ConfigFile);
+                    break;
+                default:
+                    Console.WriteLine($"Don't know how to deal with manifest kind '{configFileKind}'");
+                    return 1;
+            }
+
+            var util = new BatchSignUtil(signTool, batchData, signToolArgs.OrchestrationManifestPath);
             try
             {
                 return util.Go(Console.Out) ? ExitSuccess : ExitFailure;
@@ -52,12 +65,10 @@ namespace SignTool
         {
             using (var file = File.OpenText(configFile))
             {
-                BatchSignInput batchData;
-                if (!TryReadConfigFile(Console.Out, file, outputPath, out batchData))
+                if (!TryReadConfigFile(Console.Out, file, outputPath, out BatchSignInput batchData))
                 {
                     Environment.Exit(ExitFailure);
                 }
-
                 return batchData;
             }
         }
@@ -91,13 +102,64 @@ namespace SignTool
                 return false;
             }
 
-            batchData = new BatchSignInput(outputPath, map, fileJson.ExcludeList ?? Array.Empty<string>());
+            batchData = new BatchSignInput(outputPath, map, fileJson.ExcludeList ?? Array.Empty<string>(), fileJson.PublishUrl ?? "unset");
             return true;
         }
 
+        internal static BatchSignInput ReadOrchestrationConfigFile(string outputPath, string configFile)
+        {
+            using (var file = File.OpenText(configFile))
+            {
+                if (!TryReadOrchestrationConfigFile(Console.Out, file, outputPath, out BatchSignInput batchData))
+                {
+                    Environment.Exit(ExitFailure);
+                }
+                return batchData;
+            }
+        }
+
+        internal static bool TryReadOrchestrationConfigFile(TextWriter output, TextReader configReader, string outputPath, out BatchSignInput batchData)
+        {
+            var serializer = new JsonSerializer();
+            var fileJson = (Json.OrchestratedFileJson)serializer.Deserialize(configReader, typeof(Json.OrchestratedFileJson));
+            var map = new Dictionary<FileSignDataEntry, SignInfo>();
+            // For now, a given json file will be assumed to serialize to one place and we'll throw otherwise
+            string publishUrl = (from OrchestratedFileSignData entry in fileJson.SignList
+                                 from FileSignDataEntry fileToSign in entry.FileList
+                                 select fileToSign.PublishToFeedUrl).Distinct().Single();
+            var allGood = true;
+            foreach (var item in fileJson.SignList)
+            {
+                var data = new SignInfo(certificate: item.Certificate, strongName: item.StrongName);
+                
+                foreach (FileSignDataEntry entry in item.FileList)
+                {
+                    if (map.ContainsKey(entry))
+                    {
+                        Console.WriteLine($"Duplicate signing info entry for: {entry.FilePath}");
+                        allGood = false;
+                    }
+                    else
+                    {
+                        map.Add(entry, data);
+                    }
+                }
+            }
+
+            if (!allGood)
+            {
+                batchData = null;
+                return false;
+            }
+
+            batchData = new BatchSignInput(outputPath, map, fileJson.ExcludeList ?? Array.Empty<string>(), publishUrl );
+            return true;
+        }
+
+
         /// <summary>
-        /// The files to sign section supports globbing. The only caveat is that globs must expand to match at least a 
-        /// single file else an error occurs. This function will expand those globas as necessary.
+        /// The 'files to sign' section supports globbing. The only caveat is that globs must expand to match at least a 
+        /// single file else an error occurs. This function will expand those globs as necessary.
         /// </summary>
         private static List<string> ExpandFileList(string outputPath, IEnumerable<string> relativeFileNames, ref bool allGood)
         {
@@ -147,7 +209,8 @@ outputPath: Directory containing the binaries.
 intermediateOutputPath: Directory containing intermediate output.  Default is (outputpath\..\Obj).
 nugetPackagesPath: Path containing downloaded NuGet packages.
 msbuildPath: Path to MSBuild.exe to use as signing mechanism.
-config: Path to SignToolData.json. Default build\config\SignToolData.json.
+config: Path to SignToolData.json. Default: build\config\SignToolData.json.
+outputConfig: Run tool to produce an orchestration json file with specified name.  This will contain SHA256 hashes of files for verification to consume later.
 ";
             Console.WriteLine(usage);
         }
@@ -157,13 +220,14 @@ config: Path to SignToolData.json. Default build\config\SignToolData.json.
             string[] args,
             out SignToolArgs signToolArgs)
         {
-            signToolArgs = default(SignToolArgs);
+            signToolArgs = default;
 
             string intermediateOutputPath = null;
             string outputPath = null;
             string msbuildPath = null;
             string nugetPackagesPath = null;
             string configFile = null;
+            string outputConfigFile = null;
             var test = false;
             var testSign = false;
 
@@ -205,6 +269,13 @@ config: Path to SignToolData.json. Default build\config\SignToolData.json.
                         {
                             return false;
                         }
+                        break;
+                    case "-outputconfig":
+                        if (!ParsePathOption(args, ref i, current, out outputConfigFile))
+                        {
+                            return false;
+                        }
+                        outputConfigFile = outputConfigFile.TrimEnd('\"').TrimStart('\"');
                         break;
                     default:
                         Console.Error.WriteLine($"Unrecognized option {current}");
@@ -256,7 +327,8 @@ config: Path to SignToolData.json. Default build\config\SignToolData.json.
                 appPath: AppContext.BaseDirectory,
                 configFile: configFile,
                 test: test,
-                testSign: testSign);
+                testSign: testSign,
+                orchestrationManifestPath: outputConfigFile);
             return true;
         }
 
@@ -287,8 +359,14 @@ config: Path to SignToolData.json. Default build\config\SignToolData.json.
 
                 current = Path.GetDirectoryName(current);
             }
-
             return null;
+        }
+
+        private static string GetConfigFileKind(string path)
+        {
+            JObject configFile = JObject.Parse(File.ReadAllText(path));
+            var kind = configFile["kind"]?.Value<string>();
+            return string.IsNullOrEmpty(kind) ? "default" : kind;
         }
     }
 }
