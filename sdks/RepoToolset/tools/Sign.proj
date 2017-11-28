@@ -6,8 +6,8 @@
       RealSign                      "true" to send binaries to the signing service, "false" to only validate signing configuration.
 
     Optional parameters:
-      OutputConfigFile              If specified, output a manifest similar to SignToolData.json but with checksums of all relevant files included 
-                                    for reassembly later when only zip archives are available.  If this file is later used as the '-config' file, 
+      OutputConfigFile              If specified, output a manifest similar to SignToolData.json but with checksums of all relevant files included
+                                    for reassembly later when only zip archives are available.  If this file is later used as the '-config' file,
                                     SignTool will attempt to unpack all zips provided and match on checksums for any missing files.
   -->
 
@@ -16,24 +16,22 @@
   <Import Project="DefaultVersions.props" />
 
   <Target Name="Sign">
-    <Exec Command='"$(MSBuildProjectDirectory)\vswhere.exe" -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild'
-          Condition="'$(RealSign)' == 'true'"
-          ConsoleToMsBuild="true"
-          StandardErrorImportance="high">
-      <Output TaskParameter="ConsoleOutput" PropertyName="_VsInstallDir" />
-    </Exec>
+    <PropertyGroup>
+      <_MSBuildPath Condition="'$(_MSBuildPath)' == ''">$(DotNetTool)</_MSBuildPath>
+      <_MSBuildPath Condition="'$(_MSBuildPath)' == ''">$(MSBuildBinPath)\MSBuild.exe</_MSBuildPath>
+    </PropertyGroup>
 
     <ItemGroup>
-      <SignToolArgs Include='-outputconfig "$(OutputConfigFile)"' Condition="'$(OutputConfigFile)' != ''" />      
+      <SignToolArgs Include='-outputconfig "$(OutputConfigFile)"' Condition="'$(OutputConfigFile)' != ''" />
       <SignToolArgs Include='-nugetPackagesPath "$(NuGetPackageRoot)\"' />
       <SignToolArgs Include='-intermediateOutputPath "$(ArtifactsObjDir)\"' />
       <SignToolArgs Include='-config "$(SignToolDataPath)"' />
       <SignToolArgs Include='-test' Condition="'$(RealSign)' != 'true'" />
-      <SignToolArgs Include='-msbuildpath "$(_VsInstallDir)\MSBuild\15.0\Bin\msbuild.exe"' Condition="'$(RealSign)' == 'true'"/>
+      <SignToolArgs Include='-msbuildpath "$(_MSBuildPath)"' Condition="'$(RealSign)' == 'true'" />
       <SignToolArgs Include='"$(ArtifactsConfigurationDir)\"' />
     </ItemGroup>
-    
+
     <Exec Command="$(NuGetPackageRoot)roslyntools.microsoft.signtool\$(RoslynToolsMicrosoftSignToolVersion)\tools\SignTool.exe @(SignToolArgs, ' ')" />
   </Target>
-  
+
 </Project>
