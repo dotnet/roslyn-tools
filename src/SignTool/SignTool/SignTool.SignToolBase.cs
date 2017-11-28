@@ -46,6 +46,11 @@ namespace SignTool
                 string fileName = MSBuildPath;
                 var commandLine = $@"/v:m ""{buildFilePath}""";
 
+                if (Path.GetFileNameWithoutExtension(fileName).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
+                {
+                    commandLine = $"build {commandLine}";
+                }
+
                 if (!_args.Test)
                 {
                     textWriter.WriteLine($"{fileName} {commandLine}");
