@@ -11,7 +11,6 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Parameters;
 using BenchmarkDotNet.Running;
-using Mono.Options;
 
 namespace Perf
 {
@@ -38,8 +37,33 @@ namespace Perf
             var roslynDir = Path.GetFullPath(
                 Path.Combine(AppContext.BaseDirectory, "../../../../../../roslyn"));
 
-            var optionSet = new OptionSet()
-                .Add("--roslynDir=", "Path to roslyn repo", p => roslynDir = Path.GetFullPath(p));
+            try
+            {
+                int i = 0;
+                while (i < args.Length)
+                {
+                    var arg = args[i++];
+
+                    string ReadVar() => (i < args.Length)
+                        ? args[i++]
+                        : throw new InvalidDataException($"Expected value for \"{arg}\"");
+
+                    switch (arg)
+                    {
+                        case "--roslynDir":
+                            roslynDir = Path.GetFullPath(ReadVar());
+                            break;
+
+                        default:
+                            throw new InvalidDataException("Unexpected option " + arg);
+                    }
+                }
+            }
+            catch (InvalidDataException e)
+            {
+                Console.Error.WriteLine(e.Message);
+                return 1;
+            }
 
             var config = new EndToEndRoslynConfig(
                 Path.Combine(roslynDir, "Binaries/Release/Exes/csc/netcoreapp2.0/csc.dll"));
