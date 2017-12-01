@@ -33,7 +33,7 @@
       <SignToolArgs Include='"$(ArtifactsConfigurationDir)\"' />
     </ItemGroup>
     
-    <Exec Command="$(NuGetPackageRoot)roslyntools.microsoft.signtool\$(RoslynToolsMicrosoftSignToolVersion)\tools\SignTool.exe @(SignToolArgs, ' ')" />
+    <Exec Command="$(NuGetPackageRoot)roslyntools.signtool\$(RoslynToolsSignToolVersion)\tools\SignTool.exe @(SignToolArgs, ' ')" />
   </Target>
-  
+
 </Project>

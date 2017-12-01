@@ -18,12 +18,12 @@
     <RestoreSources>@(_RestoreSources)</RestoreSources>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="RoslynTools.Microsoft.SignTool" Version="$(RoslynToolsMicrosoftSignToolVersion)" />
-    <PackageReference Include="MicroBuild.Plugins.SwixBuild" Version="$(MicroBuildPluginsSwixBuildVersion)" Condition="'$(UsingToolVSSDK)' == 'true'" />
-    <PackageReference Include="RoslynTools.Microsoft.ModifyVsixManifest" Version="$(RoslynToolsMicrosoftModifyVsixManifestVersion)" Condition="'$(UsingToolVSSDK)' == 'true'" />
     <PackageReference Include="MicroBuild.Core" Version="$(MicroBuildCoreVersion)" />
     <PackageReference Include="MicroBuild.Core.Sentinel" Version="1.0.0" />
+    <PackageReference Include="MicroBuild.Plugins.SwixBuild" Version="$(MicroBuildPluginsSwixBuildVersion)" Condition="'$(UsingToolVSSDK)' == 'true'" />
     <PackageReference Include="Microsoft.DiaSymReader.Pdb2Pdb" Version="$(MicrosoftDiaSymReaderPdb2PdbVersion)" Condition="'$(UsingToolPdbConverter)' == 'true'" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" Condition="'$(UsingPipeBuildPublishing)' == 'true'" />
+    <PackageReference Include="RoslynTools.SignTool" Version="$(RoslynToolsSignToolVersion)" />
+    <PackageReference Include="RoslynTools.ModifyVsixManifest" Version="$(RoslynToolsModifyVsixManifestVersion)" Condition="'$(UsingToolVSSDK)' == 'true'" />
   </ItemGroup>
 </Project>

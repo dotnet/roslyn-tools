@@ -8,35 +8,71 @@
   
   <PropertyGroup>
     <SourceLink>$(IntermediateOutputPath)$(MSBuildProjectName).sourcelink.json</SourceLink>
-    
-    <!-- Override SourceLinkRoot if DeterministicSourceRoot is set, otherwise use RepoRoot as a default value -->
-    <SourceLinkRoot Condition="'$(DeterministicSourceRoot)' != ''">$(DeterministicSourceRoot)</SourceLinkRoot>
-    <SourceLinkRoot Condition="'$(SourceLinkRoot)' == ''">$(RepoRoot)</SourceLinkRoot>
   </PropertyGroup>
-  
-  <Target Name="GenerateSourceLinkFile"
-          Outputs="$(SourceLink)"
-          DependsOnTargets="PrepareForBuild"
-          BeforeTargets="CoreCompile">
 
+  <Target Name="_CalculateSourceLinkRoots">
     <Error Text="GitHeadSha has invalid value: '$(GitHeadSha)'" Condition="'$(GitHeadSha.Length)' != '40'" />
-    <Error Text="SourceLinkRoot must end with a slash or backslash: '$(SourceLinkRoot)'" Condition="!HasTrailingSlash('$(SourceLinkRoot)')"/>
 
     <PropertyGroup>
-      <_EscapedSourceLinkRoot>$(SourceLinkRoot.Replace('\', '\\').Replace('"', '\"'))</_EscapedSourceLinkRoot>
-      
-      <_EscapedUrl>$(RepositoryRawUrl)</_EscapedUrl>
-      <_EscapedUrl Condition="'$(_EscapedUrl)' == '' and $(RepositoryUrl.StartsWith('https://github.com/'))">https://raw.githubusercontent.com/$(RepositoryUrl.SubString(19))</_EscapedUrl>
-      <_EscapedUrl Condition="'$(_EscapedUrl)' == '' and $(RepositoryUrl.StartsWith('http://github.com/'))">https://raw.githubusercontent.com/$(RepositoryUrl.SubString(18))</_EscapedUrl>
-      <_EscapedUrl>$(_EscapedUrl.TrimEnd('/').Replace('\', '\\').Replace('"', '\"'))</_EscapedUrl>
+      <_RepositoryRawUrl>$(RepositoryRawUrl)</_RepositoryRawUrl>
+      <_RepositoryRawUrl Condition="'$(_RepositoryRawUrl)' == '' and $(RepositoryUrl.StartsWith('https://github.com/'))">https://raw.githubusercontent.com/$(RepositoryUrl.SubString(19))</_RepositoryRawUrl>
+      <_RepositoryRawUrl Condition="'$(_RepositoryRawUrl)' == '' and $(RepositoryUrl.StartsWith('http://github.com/'))">https://raw.githubusercontent.com/$(RepositoryUrl.SubString(18))</_RepositoryRawUrl>
     </PropertyGroup>
 
-    <Error Text="RepositoryRawUrl is empty and RepositoryUrl is not a well-known public repository URL: '$(RepositoryUrl)'"
-           Condition="'$(_EscapedUrl)' == ''" />
+    <Error Text="RepositoryRawUrl is empty and RepositoryUrl is not a well-known public repository URL: '$(RepositoryUrl)'" Condition="'$(_RepositoryRawUrl)' == ''" />
+   
+    <!-- 
+      Map explicitly specified source roots first, so they are not overridden by the RepoRoot mapping.
+      Scenario: Source packages restored in packages directory below RepoRoot should be mapped 
+      to their respective RawUrls, not to the RepoRoot URL.
+    -->
+    <ItemGroup>
+      <_SourceLinkRoot Include="@(SourceRoot)">
+        <Path Condition="'$(DeterministicSourceRoot)' == ''">%(SourceRoot.Identity)</Path>
+        <Path Condition="'$(DeterministicSourceRoot)' != ''">/_%(SourceRoot.UniqueName)/</Path>
+      </_SourceLinkRoot>
+    </ItemGroup>
 
+    <ItemGroup>
+      <_SourceLinkRoot Include="$(RepoRoot)">
+        <RawUrl>$(_RepositoryRawUrl.TrimEnd('/'))/$(GitHeadSha)</RawUrl>
+        <Path Condition="'$(DeterministicSourceRoot)' == ''">$(RepoRoot)</Path>
+        <Path Condition="'$(DeterministicSourceRoot)' != ''">$(DeterministicSourceRoot)</Path>
+      </_SourceLinkRoot>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CalculateSourceLinkMappings"
+          Inputs="*%(_SourceLinkRoot.Identity)"
+          Outputs="*%(_SourceLinkRoot.Identity)">
+    
+    <Error Text="SourceRoot.Identity must end with a slash or backslash: '%(_SourceLinkRoot.Path)'" Condition="!HasTrailingSlash('%(_SourceLinkRoot.Path)')"/>
+    
+    <PropertyGroup>
+      <_JsonEscapedPath>%(_SourceLinkRoot.Path)</_JsonEscapedPath>
+      <_JsonEscapedPath>$(_JsonEscapedPath.Replace('\', '\\').Replace('"', '\"'))</_JsonEscapedPath>
+      
+      <_JsonEscapedUrl>%(_SourceLinkRoot.RawUrl)</_JsonEscapedUrl>
+      <_JsonEscapedUrl>$(_JsonEscapedUrl.TrimEnd('/').Replace('\', '\\').Replace('"', '\"'))</_JsonEscapedUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_SourceLinkMapping Include='"$(_JsonEscapedPath)*":"$(_JsonEscapedUrl)/*"' />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateSourceLinkFile"
+          Outputs="$(SourceLink)"
+          DependsOnTargets="PrepareForBuild;_CalculateSourceLinkRoots;_CalculateSourceLinkMappings"
+          BeforeTargets="CoreCompile">
+
+    <PropertyGroup>
+      <_Value>@(_SourceLinkMapping, ',')</_Value>
+    </PropertyGroup>
+    
     <WriteLinesToFile
       File="$(SourceLink)" 
-      Lines='{"documents":{"$(_EscapedSourceLinkRoot)*":"$(_EscapedUrl)/$(GitHeadSha)/*"}}'
+      Lines='{"documents":{$(_Value)}}'
       Overwrite="true">
     </WriteLinesToFile>
 
