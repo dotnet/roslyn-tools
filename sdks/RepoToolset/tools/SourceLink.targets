@@ -21,18 +21,23 @@
 
     <Error Text="RepositoryRawUrl is empty and RepositoryUrl is not a well-known public repository URL: '$(RepositoryUrl)'" Condition="'$(_RepositoryRawUrl)' == ''" />
    
+    <!-- 
+      Map explicitly specified source roots first, so they are not overridden by the RepoRoot mapping.
+      Scenario: Source packages restored in packages directory below RepoRoot should be mapped 
+      to their respective RawUrls, not to the RepoRoot URL.
+    -->
+    <ItemGroup>
+      <_SourceLinkRoot Include="@(SourceRoot)">
+        <Path Condition="'$(DeterministicSourceRoot)' == ''">%(SourceRoot.Identity)</Path>
+        <Path Condition="'$(DeterministicSourceRoot)' != ''">/_%(SourceRoot.UniqueName)/</Path>
+      </_SourceLinkRoot>
+    </ItemGroup>
+
     <ItemGroup>
       <_SourceLinkRoot Include="$(RepoRoot)">
         <RawUrl>$(_RepositoryRawUrl.TrimEnd('/'))/$(GitHeadSha)</RawUrl>
         <Path Condition="'$(DeterministicSourceRoot)' == ''">$(RepoRoot)</Path>
         <Path Condition="'$(DeterministicSourceRoot)' != ''">$(DeterministicSourceRoot)</Path>
-      </_SourceLinkRoot>
-    </ItemGroup>
-
-    <ItemGroup>
-      <_SourceLinkRoot Include="@(SourceRoot)">
-        <Path Condition="'$(DeterministicSourceRoot)' == ''">%(SourceRoot.Identity)</Path>
-        <Path Condition="'$(DeterministicSourceRoot)' != ''">/_%(SourceRoot.UniqueName)/</Path>
       </_SourceLinkRoot>
     </ItemGroup>
   </Target>
