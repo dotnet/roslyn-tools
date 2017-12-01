@@ -20,6 +20,9 @@
     <EmbeddedResource Include="Resources\C.1.0.0-beta-12345-01.nupkg">
       <LogicalName>C.1.0.0-beta-12345-01.nupkg</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\D.1.0.0-beta-12345-01.nupkg">
+      <LogicalName>D.1.0.0-beta-12345-01.nupkg</LogicalName>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\A.1.0.0-beta.nupkg">
       <LogicalName>A.1.0.0-beta.nupkg</LogicalName>
     </EmbeddedResource>
@@ -29,6 +32,9 @@
     <EmbeddedResource Include="Resources\C.1.0.0-beta.nupkg">
       <LogicalName>C.1.0.0-beta.nupkg</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\D.1.0.0-beta.nupkg">
+      <LogicalName>D.1.0.0-beta.nupkg</LogicalName>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\A.1.0.0.nupkg">
       <LogicalName>A.1.0.0.nupkg</LogicalName>
     </EmbeddedResource>
@@ -37,6 +43,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\C.1.0.0.nupkg">
       <LogicalName>C.1.0.0.nupkg</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\D.1.0.0.nupkg">
+      <LogicalName>D.1.0.0.nupkg</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 </Project>
