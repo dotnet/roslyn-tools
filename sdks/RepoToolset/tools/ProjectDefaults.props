@@ -21,16 +21,6 @@
     <!-- By default do not build nuget package for a project. Project may override. -->
     <IsPackable>false</IsPackable>
 
-    <!--
-      NuGet.Build.Tasks.Pack.targets sets the default value of Description property to "Setup Description",
-      which causes GenerateAssemblyInfo to generate AssemblyDescription("Setup Description") attribute.
-      https://github.com/Microsoft/msbuild/issues/2202
-    -->
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-
-    <!-- Enable IOperation analyzers -->
-    <Features>IOperation,$(Features)</Features>
-
     <!-- 
       Official build:
        - Build standalone Portable PDBs to reduce the size of the binaries.
@@ -71,6 +61,7 @@
     <Language Condition="'$(MSBuildProjectExtension)' == '.csproj'">C#</Language>
     <Language Condition="'$(MSBuildProjectExtension)' == '.vbproj'">VB</Language>
     <Language Condition="'$(MSBuildProjectExtension)' == '.fsproj'">F#</Language>
+    <Language Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">C++</Language>
   </PropertyGroup>
 
   <!--

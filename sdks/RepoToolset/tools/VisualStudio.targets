@@ -133,7 +133,7 @@
     <Copy SourceFiles="@(_FinalizeInsertionVsixFilesInputs)" DestinationFolder="$(VisualStudioSetupInsertionPath)" />
 
     <PropertyGroup>
-      <_ModifyVsixManifestToolExe>$(NuGetPackageRoot)roslyntools.microsoft.modifyvsixmanifest\$(RoslynToolsMicrosoftModifyVsixManifestVersion)\tools\ModifyVsixManifest.exe</_ModifyVsixManifestToolExe>
+      <_ModifyVsixManifestToolExe>$(NuGetPackageRoot)roslyntools.modifyvsixmanifest\$(RoslynToolsModifyVsixManifestVersion)\tools\ModifyVsixManifest.exe</_ModifyVsixManifestToolExe>
       <_ModifyVsixManifestArgs>--remove=//x:PackageManifest/x:Installation/@Experimental --add-attribute=//x:PackageManifest/x:Installation;SystemComponent;true</_ModifyVsixManifestArgs>
     </PropertyGroup>
 
