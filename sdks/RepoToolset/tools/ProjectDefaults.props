@@ -48,9 +48,6 @@
       If set must end with a directory separator.
       
       If unset the PathMap need to be set explicitly to facilitate full determinism.
-      
-      The path can't be just a single '/' due to bug in Roslyn compilers:
-      https://github.com/dotnet/roslyn/issues/22815
     -->
     <DeterministicSourceRoot Condition="'$(CIBuild)' == 'true'">/_/</DeterministicSourceRoot>
 
