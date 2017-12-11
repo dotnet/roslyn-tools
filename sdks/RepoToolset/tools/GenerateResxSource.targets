@@ -12,11 +12,13 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <Target Name="GenerateResxSource"
+  <UsingTask TaskName="RoslynTools.GenerateResxSource" AssemblyFile="$(RoslynToolsBuildTasksAssembly)" />
+
+  <Target Name="_GenerateResxSource"
           BeforeTargets="CoreCompile"
           DependsOnTargets="PrepareResourceNames;
                             GetEmbeddedResourcesWithSourceGeneration;
-                            BatchGenerateResxSource">
+                            _BatchGenerateResxSource">
     <ItemGroup>
       <GeneratedResxSource Include="@(EmbeddedResourceSG->'%(SourceOutputPath)')" />
       <FileWrites Include="@(GeneratedResxSource)" />
@@ -24,7 +26,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="CustomizeResourceNames"
+  <Target Name="_CustomizeResourceNames"
           BeforeTargets="PrepareResourceNames">
     <ItemGroup>
       <EmbeddedResource>
@@ -33,11 +35,14 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="BatchGenerateResxSource"
+  <Target Name="_BatchGenerateResxSource"
           Inputs="@(EmbeddedResourceSG)"
           Outputs="%(EmbeddedResourceSG.SourceOutputPath)">
 
-    <Exec Command='"$(ToolsetCompilerPackageDir)tools\csi.exe" "$(MSBuildThisFileDirectory)GenerateResxSource.csx" "$(Language)" "%(EmbeddedResourceSG.FullPath)" "%(EmbeddedResourceSG.ManifestResourceName)" "%(EmbeddedResourceSG.SourceOutputPath)"' />
+    <GenerateResxSource Language="$(Language)"
+                        ResourceFile="%(EmbeddedResourceSG.FullPath)"
+                        ResourceName="%(EmbeddedResourceSG.ManifestResourceName)"
+                        OutputPath="%(EmbeddedResourceSG.SourceOutputPath)" />
   </Target>
 
   <Target Name="GetEmbeddedResourcesWithSourceGeneration">
