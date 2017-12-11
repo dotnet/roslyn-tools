@@ -89,10 +89,11 @@
       <_RestoreToolsProps Include="BaseIntermediateOutputPath=$(ArtifactsToolsetDir)Common"/>
       <_RestoreToolsProps Include="ExcludeRestorePackageImports=true"/>
       <_RestoreToolsProps Include="UsingToolVSSDK=$(UsingToolVSSDK)"/>
-      <_RestoreToolsProps Include="RoslynToolsSignToolVersion=$(RoslynToolsSignToolVersion)"/>
       <_RestoreToolsProps Include="MicroBuildPluginsSwixBuildVersion=$(MicroBuildPluginsSwixBuildVersion)"/>
       <_RestoreToolsProps Include="MicroBuildCoreVersion=$(MicroBuildCoreVersion)"/>
+      <_RestoreToolsProps Include="RoslynToolsBuildTasksVersion=$(RoslynToolsBuildTasksVersion)"/>
       <_RestoreToolsProps Include="RoslynToolsModifyVsixManifestVersion=$(RoslynToolsModifyVsixManifestVersion)"/>
+      <_RestoreToolsProps Include="RoslynToolsSignToolVersion=$(RoslynToolsSignToolVersion)"/>
       <_RestoreToolsProps Include="MicrosoftDiaSymReaderPdb2PdbVersion=$(MicrosoftDiaSymReaderPdb2PdbVersion)"/>
       <_RestoreToolsProps Include="UsingToolPdbConverter=$(UsingToolPdbConverter)"/>
       <_RestoreToolsProps Include="ExternalRestoreSources=$(PB_RestoreSource)" Condition="'$(PB_RestoreSource)' != ''"/>

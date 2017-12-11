@@ -19,4 +19,8 @@
   <Import Project="XUnit.props" Condition="'$(UsingToolXUnit)' == 'true' and ('$(IsUnitTestProject)' == 'true' or '$(IsIntegrationTestProject)' == 'true')"/>
   <Import Project="VisualStudio.props" Condition="'$(UsingToolVSSDK)' == 'true'"/>
 
+  <PropertyGroup>
+    <RoslynToolsBuildTasksAssembly>$(NuGetPackageRoot)roslyntools.buildtasks\$(RoslynToolsBuildTasksVersion)\tools\RoslynTools.BuildTasks.dll</RoslynToolsBuildTasksAssembly>
+  </PropertyGroup>
+
 </Project>
