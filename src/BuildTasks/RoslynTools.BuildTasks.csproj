@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <Description>RoslynTools build tasks</Description>
+    <PackageTags>RoslynTools msbuild task</PackageTags>
+    <IsTool>true</IsTool>
+
+    <!-- Using an explicit nuspec file since NuGet Pack target currently doesn't support including dependencies in tools packages -->
+    <IsPackable>true</IsPackable>
+    <NuspecFile>RoslynTools.BuildTasks.nuspec</NuspecFile>
+    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
+    <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Net.Http" Version="$(SystemNetHttpVersion)" />
+    <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" />
+  </ItemGroup>
+</Project>
