@@ -1,4 +1,4 @@
-﻿<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
 <Project DefaultTargets="Execute" TreatAsLocalProperty="Sign;Test;IntegrationTest">
   <!--
   
@@ -38,6 +38,7 @@
     <SignToolDataPath Condition="'$(SignToolDataPath)' == ''">$(RepoRoot)build\SignToolData.json</SignToolDataPath>
   </PropertyGroup>
 
+  <Import Project="BuildTasks.props"/>
   <Import Project="RepoLayout.props"/>
 
   <!-- 
