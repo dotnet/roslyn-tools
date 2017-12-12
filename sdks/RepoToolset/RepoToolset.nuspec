@@ -1,4 +1,4 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>RoslynTools.RepoToolset</id>
@@ -19,5 +19,6 @@
   </metadata>
   <files>
     <file src="*.*" target="tools" />
+    <file src="$ArtifactsBinDir$RoslynTools.BuildTasks\netstandard1.3\*.*" target="tools" />
   </files>
 </package>

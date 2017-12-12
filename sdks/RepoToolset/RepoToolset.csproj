@@ -4,8 +4,11 @@
     <TargetFramework>netstandard1.3</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IsPackable>true</IsPackable>
-    <NuspecFile>RepoToolset.nuspec</NuspecFile>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <NuspecBasePath>$(MSBuildProjectDirectory)\tools</NuspecBasePath>
-    <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
+    <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright);ArtifactsBinDir=$(ArtifactsBinDir)</NuspecProperties>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\BuildTasks\RoslynTools.BuildTasks.csproj" />
+  </ItemGroup>
 </Project>
