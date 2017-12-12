@@ -4,6 +4,7 @@
 
   <!--
     Sets versions of packages used by the toolset unless they were already specified by the repo.
+    Version.props shall be imported prior this file.
   -->
 
   <PropertyGroup>
@@ -31,7 +32,6 @@
     <MicrosoftNETTestSdkVersion Condition="'$(MicrosoftNETTestSdkVersion)' == ''">15.6.0-dev</MicrosoftNETTestSdkVersion>
     <MicrosoftVSSDKBuildToolsVersion Condition="'$(MicrosoftVSSDKBuildToolsVersion)' == ''">15.1.192</MicrosoftVSSDKBuildToolsVersion>
     <MicrosoftDiaSymReaderPdb2PdbVersion Condition="'$(MicrosoftDiaSymReaderPdb2PdbVersion)' == ''">1.1.0-beta1-62318-01</MicrosoftDiaSymReaderPdb2PdbVersion>
-    <RoslynToolsBuildTasksVersion Condition="'$(RoslynToolsBuildTasksVersion)' == ''">1.0.0-beta-62411-01</RoslynToolsBuildTasksVersion>
     <RoslynToolsModifyVsixManifestVersion Condition="'$(RoslynToolsModifyVsixManifestVersion)' == ''">1.0.0-beta-62327-02</RoslynToolsModifyVsixManifestVersion>
     <RoslynToolsSignToolVersion Condition="'$(RoslynToolsSignToolVersion)' == ''">1.0.0-beta-62327-02</RoslynToolsSignToolVersion>
     <XliffTasksVersion Condition="'$(XliffTasksVersion)' == ''">0.2.0-beta-000053</XliffTasksVersion>
@@ -41,14 +41,9 @@
     <MicrosoftDotNetBuildTasksFeedVersion Condition="'$(MicrosoftDotNetBuildTasksFeedVersion)' == ''">2.1.0-prerelease-02221-02</MicrosoftDotNetBuildTasksFeedVersion>
   </PropertyGroup>
 
-  <!--
-    External version overrides.
-  -->
-  <PropertyGroup>
-    <DotNetPackageVersionPropsPath Condition="'$(DotNetPackageVersionPropsPath)' == '' and '$(PB_PackageVersionPropsUrl)' != ''">$(ArtifactsToolsetDir)PackageVersionOverrides.props</DotNetPackageVersionPropsPath>
-  </PropertyGroup>
-
+  <!-- Version overrides -->
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
+  <Import Project="$(FixedVersionsPropsPath)" Condition="'$(FixedVersionsPropsPath)' != ''"/>
 
   <PropertyGroup>
     <RestoreSources>$(RestoreSources);https://api.nuget.org/v3/index.json</RestoreSources>

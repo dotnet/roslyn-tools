@@ -3,33 +3,53 @@
   <!--
   
   Required parameters:
-    SolutionPath      Path to the solution to build
-  
-  Optional parameters:
-    Configuration     Build configuration: "Debug", "Release", etc.
-    CIBuild           "true" when building on CI server
-    Restore           "true" to restore toolset and solution
-    Build             "true" to build solution
-    Rebuild           "true" to rebuild solution
-    Deploy            "true" to deploy assets (e.g. VSIXes)
-    Test              "true" to run tests
-    IntegrationTest   "true" to run integration tests
-    Pack              "true" to build NuGet packages and VS insertion manifests
-    Sign              "true" to sign built binaries
-    SignType          "real" to send binaries to signing service, "test" to only validate signing configuration.
+    SolutionPath                    Path to the solution to build.
+                                    
+  Optional parameters:              
+    Configuration                   Build configuration: "Debug", "Release", etc.
+    RepoRoot                        Repository root, defaults to the directory containing the solution.
+    
+    VersionsPropsPath               Versions.props path, defaults to $(RepoRoot)build\Versions.props.
+    FixedVersionsPropsPath          FixedVersions.props path, defaults to $(RepoRoot)build\FixedVersions.props.
+    DotNetPackageVersionPropsPath   Package version overrides.
+                                    
+    CIBuild                         "true" when building on CI server
+    Restore                         "true" to restore toolset and solution
+    QuietRestore                    "true" to suppress Restore output.
+    Build                           "true" to build solution
+    Rebuild                         "true" to rebuild solution
+    Deploy                          "true" to deploy assets (e.g. VSIXes)
+    Test                            "true" to run tests
+    IntegrationTest                 "true" to run integration tests
+    Pack                            "true" to build NuGet packages and VS insertion manifests
+    Sign                            "true" to sign built binaries
+    SignType                        "real" to send binaries to signing service, "test" to only validate signing configuration.
+    SignToolDataPath                SignToolData.json path.
   -->
 
+  <!--
+    Default values. 
+  -->
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <RepoRoot Condition="'$(RepoRoot)' == ''">$([System.IO.Path]::GetDirectoryName('$(SolutionPath)'))\</RepoRoot>
+    <VersionsPropsPath Condition="'$(VersionsPropsPath)' == ''">$(RepoRoot)build\Versions.props</VersionsPropsPath>
+    <FixedVersionsPropsPath Condition="'$(FixedVersionsPropsPath)' == '' and Exists('$(RepoRoot)build\FixedVersions.props')">$(RepoRoot)build\FixedVersions.props</FixedVersionsPropsPath>
+    <SignToolDataPath Condition="'$(SignToolDataPath)' == ''">$(RepoRoot)build\SignToolData.json</SignToolDataPath>
+  </PropertyGroup>
+
+  <Import Project="RepoLayout.props"/>
+
   <!-- 
-    PipeBuild overrides:
+    Orchestrated build environment overrides:
     
-    PB_SignType            {''|'public'|'real'|'test'}    Disables signing if set to a value other than 'real' 
-    PB_SkipTests           {''|'true'|'false'}            Disables tests if set to 'true'.
-    PB_RestoreSource       {''|URL}                       URL of pipe build package feed.
-    PB_PublishType         {''|store1-store2-...-storeN}  List of stores where to publish assets to.
-    PB_PublishBlobFeedUrl  {''|URL}                       Target feed URL.
-    PB_PublishBlobFeedKey  {''|string}                    Account key.
-    
-    PB_SigningOrchestrationConfig  {''|string}            Path to output Json for orchestrated-type signing (produce manifest that can be consumed later.)
+    PB_SignType                    {''|'public'|'real'|'test'}    Disables signing if set to a value other than 'real' 
+    PB_SkipTests                   {''|'true'|'false'}            Disables tests if set to 'true'.
+    PB_RestoreSource               {''|URL}                       URL of pipe build package feed.
+    PB_PublishType                 {''|store1-store2-...-storeN}  List of stores where to publish assets to.
+    PB_PublishBlobFeedUrl          {''|URL}                       Target feed URL.
+    PB_PublishBlobFeedKey          {''|string}                    Account key.
+    PB_SigningOrchestrationConfig  {''|string}                    Path to output Json for orchestrated-type signing (produce manifest that can be consumed later.)
   -->
   <PropertyGroup>
     <RealSign>false</RealSign>
@@ -41,33 +61,23 @@
 
     <_PipeBuildPublishing>false</_PipeBuildPublishing>
     <_PipeBuildPublishing Condition="$(PB_PublishType.Contains('blob'))">true</_PipeBuildPublishing>
+
+    <_PackageVersionOverridesPath Condition="'$(PB_PackageVersionPropsUrl)' != ''">$(ArtifactsToolsetDir)PackageVersionOverrides.props</_PackageVersionOverridesPath>
+    <DotNetPackageVersionPropsPath Condition="'$(DotNetPackageVersionPropsPath)' == ''">$(_PackageVersionOverridesPath)</DotNetPackageVersionPropsPath>
   </PropertyGroup>
 
-  <!-- 
-    Import Directory.Build.props file next to or above the solution file.
-    We expect this file to define dependency versions, NuGetPackageRoot and SignToolDataPath.
-  -->
-  <PropertyGroup>
-    <_DirectoryBuildPropsFile>Directory.Build.props</_DirectoryBuildPropsFile>
-    <_DirectoryBuildPropsBasePath>$([MSBuild]::GetDirectoryNameOfFileAbove('$(SolutionPath)', '$(_DirectoryBuildPropsFile)'))</_DirectoryBuildPropsBasePath>
-    <DirectoryBuildPropsPath>$([System.IO.Path]::Combine('$(_DirectoryBuildPropsBasePath)', '$(_DirectoryBuildPropsFile)'))</DirectoryBuildPropsPath>
-  </PropertyGroup>
-
-  <Import Project="$(DirectoryBuildPropsPath)" Condition="Exists('$(DirectoryBuildPropsPath)')"/>
-  <Import Project="RepoLayout.props"/>
-  <Import Project="DefaultVersions.props"/>
+  <UsingTask TaskName="RoslynTools.DownloadFile" AssemblyFile="RoslynTools.BuildTasks.dll" />
+  <UsingTask TaskName="RoslynTools.RewriteOrchestratedBuildPackageVersions" AssemblyFile="RoslynTools.BuildTasks.dll" />
 
   <Target Name="Execute">
     <PropertyGroup>
       <_MSBuildCmd Condition="'$(MSBuildRuntimeType)' != 'Core'">"$(MSBuildBinPath)\MSBuild.exe" /nodeReuse:false</_MSBuildCmd>
       <_MSBuildCmd Condition="'$(MSBuildRuntimeType)' == 'Core'">"$(DotNetTool)" msbuild</_MSBuildCmd>
     </PropertyGroup>
-    
-    <PropertyGroup>
-      <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
 
+    <PropertyGroup>
       <_QuietRestore>false</_QuietRestore>
-      <_QuietRestore Condition="'$(CIBuild)' != 'true' and '$(RepoToolsetQuietRestore)' == 'true'">true</_QuietRestore>
+      <_QuietRestore Condition="'$(CIBuild)' != 'true' and '$(QuietRestore)' == 'true'">true</_QuietRestore>
     </PropertyGroup>
 
     <ItemGroup>
@@ -82,28 +92,23 @@
     <ItemGroup>
       <_CommonProps Include="Configuration=$(Configuration)"/>
       <_CommonProps Include="CIBuild=$(CIBuild)"/>
+      <_CommonProps Include="RepoRoot=$(RepoRoot)"/>
+      <_CommonProps Include="VersionsPropsPath=$(VersionsPropsPath)"/>
+      <_CommonProps Include="FixedVersionsPropsPath=$(FixedVersionsPropsPath)" Condition="'$(FixedVersionsPropsPath)' != ''"/>
+      <_CommonProps Include="DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)"/>
     </ItemGroup>
 
     <ItemGroup>
       <_RestoreToolsProps Include="@(_CommonProps)"/>
       <_RestoreToolsProps Include="BaseIntermediateOutputPath=$(ArtifactsToolsetDir)Common"/>
       <_RestoreToolsProps Include="ExcludeRestorePackageImports=true"/>
-      <_RestoreToolsProps Include="UsingToolVSSDK=$(UsingToolVSSDK)"/>
-      <_RestoreToolsProps Include="MicroBuildPluginsSwixBuildVersion=$(MicroBuildPluginsSwixBuildVersion)"/>
-      <_RestoreToolsProps Include="MicroBuildCoreVersion=$(MicroBuildCoreVersion)"/>
-      <_RestoreToolsProps Include="RoslynToolsBuildTasksVersion=$(RoslynToolsBuildTasksVersion)"/>
-      <_RestoreToolsProps Include="RoslynToolsModifyVsixManifestVersion=$(RoslynToolsModifyVsixManifestVersion)"/>
-      <_RestoreToolsProps Include="RoslynToolsSignToolVersion=$(RoslynToolsSignToolVersion)"/>
-      <_RestoreToolsProps Include="MicrosoftDiaSymReaderPdb2PdbVersion=$(MicrosoftDiaSymReaderPdb2PdbVersion)"/>
-      <_RestoreToolsProps Include="UsingToolPdbConverter=$(UsingToolPdbConverter)"/>
-      <_RestoreToolsProps Include="ExternalRestoreSources=$(PB_RestoreSource)" Condition="'$(PB_RestoreSource)' != ''"/>
       <_RestoreToolsProps Include="UsingPipeBuildPublishing=$(_PipeBuildPublishing)"/>
-      <_RestoreToolsProps Include="MicrosoftDotNetBuildTasksFeedVersion=$(MicrosoftDotNetBuildTasksFeedVersion)"/>
+      <_RestoreToolsProps Include="ExternalRestoreSources=$(PB_RestoreSource)" Condition="'$(PB_RestoreSource)' != ''"/>
     </ItemGroup>
 
     <ItemGroup>
       <_SolutionBuildProps Include="@(_CommonProps)"/>
-      <_SolutionBuildProps Include="__DeployProjectOutput=$(Deploy)"/>
+      <_SolutionBuildProps Include="__DeployProjectOutput=$(Deploy)" Condition="'$(Deploy)' != ''"/>
       <_SolutionBuildProps Include="__ExternalRestoreSources=$(PB_RestoreSource)" Condition="'$(PB_RestoreSource)' != ''"/>
     </ItemGroup>
 
@@ -116,6 +121,17 @@
       <_SolutionBuildPropsCmdLine>@(_SolutionBuildPropsArgs, ' ')</_SolutionBuildPropsCmdLine>
       <_RestoreToolsPropsCmdLine>@(_RestoreToolsPropArgs, ' ')</_RestoreToolsPropsCmdLine>
     </PropertyGroup>
+
+    <!-- Download version overrides. -->
+    <DownloadFile Uri="$(PB_PackageVersionPropsUrl)" 
+                  DestinationPath="$(_PackageVersionOverridesPath)" 
+                  Condition="'$(Restore)' == 'true' and '$(PB_PackageVersionPropsUrl)' != ''"
+                  Overwrite="true"
+                  Retries="3" />
+
+    <!-- Replace -PackageVersion with -Version -->
+    <RewriteOrchestratedBuildPackageVersions File="$(_PackageVersionOverridesPath)" 
+                                             Condition="'$(Restore)' == 'true' and '$(PB_PackageVersionPropsUrl)' != ''" />
 
     <!--
       Workaround for https://github.com/NuGet/Home/issues/4695.
@@ -174,7 +190,7 @@
       Sign artifacts.
     -->
     <MSBuild Projects="Sign.proj"
-             Properties="$(_CommonProps);RealSign=$(RealSign);DirectoryBuildPropsPath=$(DirectoryBuildPropsPath);OutputConfigFile=$(PB_SigningOrchestrationConfig)"
+             Properties="@(_CommonProps);RealSign=$(RealSign);ConfigFile=$(SignToolDataPath);OutputConfigFile=$(PB_SigningOrchestrationConfig)"
              Targets="Sign"
              Condition="'$(Sign)' == 'true'"/>
 
@@ -188,12 +204,12 @@
       Hence we need to run this task after both signing.
     -->
     <MSBuild Projects="VisualStudio.Insertion.proj"
-             Properties="$(_CommonProps);DirectoryBuildPropsPath=$(DirectoryBuildPropsPath)"
+             Properties="@(_CommonProps)"
              Targets="Pack"
              Condition="'$(Pack)' == 'true' and '$(UsingToolVSSDK)' == 'true'"/>
 
     <MSBuild Projects="PipeBuild.Publish.proj"
-             Properties="$(_CommonProps);DirectoryBuildPropsPath=$(DirectoryBuildPropsPath);ExpectedFeedUrl=$(PB_PublishBlobFeedUrl);AccountKey=$(PB_PublishBlobFeedKey)"
+             Properties="@(_CommonProps);ExpectedFeedUrl=$(PB_PublishBlobFeedUrl);AccountKey=$(PB_PublishBlobFeedKey)"
              Targets="Publish"
              Condition="$(_PipeBuildPublishing)"/>
   </Target>
