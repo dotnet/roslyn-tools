@@ -47,6 +47,7 @@
     PB_SignType                    {''|'public'|'real'|'test'}    Disables signing if set to a value other than 'real' 
     PB_SkipTests                   {''|'true'|'false'}            Disables tests if set to 'true'.
     PB_RestoreSource               {''|URL}                       URL of pipe build package feed.
+    PB_PackageVersionPropsUrl      {''|URL}                       URL of package version overrides props file.
     PB_PublishType                 {''|store1-store2-...-storeN}  List of stores where to publish assets to.
     PB_PublishBlobFeedUrl          {''|URL}                       Target feed URL.
     PB_PublishBlobFeedKey          {''|string}                    Account key.
