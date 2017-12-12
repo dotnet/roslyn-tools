@@ -2,12 +2,11 @@
 <Project>
   <!--
     Required parameters:
-      DirectoryBuildPropsPath              Path to the Directory.Build.props file in the repo root.
+      VersionsPropsPath             Version.props path. 
+      FixedVersionsPropsPath        FixedVersions.props path.
   -->
 
-  <Import Project="$(DirectoryBuildPropsPath)" Condition="Exists('$(DirectoryBuildPropsPath)')"/>
-  <Import Project="DefaultVersions.props"/>
-  <Import Project="RepoLayout.props" />
+  <Import Project="BuildStep.props" />
 
   <ItemGroup>
     <_StubFiles Include="$(VisualStudioSetupIntermediateOutputPath)**\*.stub"/>

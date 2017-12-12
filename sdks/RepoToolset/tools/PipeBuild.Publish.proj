@@ -2,15 +2,14 @@
 <Project DefaultTargets="Publish">
   <!--
     Required variables:
-      DirectoryBuildPropsPath    Path to the Directory.Build.props file in the repo root.
+      VersionsPropsPath          Versions.props path. 
+      FixedVersionsPropsPath     FixedVersions.props path. 
       ExpectedFeedUrl            Target feed URL.
       AccountKey                 Account key.
   -->
 
-  <Import Project="$(DirectoryBuildPropsPath)" Condition="Exists('$(DirectoryBuildPropsPath)')"/>
-  <Import Project="RepoLayout.props" />
-  <Import Project="DefaultVersions.props" />
-  
+  <Import Project="BuildStep.props" />
+
   <Import Project="$(NuGetPackageRoot)microsoft.dotnet.build.tasks.feed\$(MicrosoftDotNetBuildTasksFeedVersion)\build\Microsoft.DotNet.Build.Tasks.Feed.targets" />
 
   <ItemGroup>

@@ -2,7 +2,9 @@
 <Project DefaultTargets="Sign">
   <!--
     Required parameters:
-      DirectoryBuildPropsPath       Path to the Directory.Build.props file in the repo root.
+      VersionsPropsPath             Versions.props path. 
+      FixedVersionsPropsPath        FixedVersions.props path.
+      ConfigFile                    SigntToolData.json path.
       RealSign                      "true" to send binaries to the signing service, "false" to only validate signing configuration.
 
     Optional parameters:
@@ -11,9 +13,7 @@
                                     SignTool will attempt to unpack all zips provided and match on checksums for any missing files.
   -->
 
-  <Import Project="$(DirectoryBuildPropsPath)" Condition="Exists('$(DirectoryBuildPropsPath)')"/>
-  <Import Project="RepoLayout.props" />
-  <Import Project="DefaultVersions.props" />
+  <Import Project="BuildStep.props" />
 
   <Target Name="Sign">
     <Exec Command='"$(MSBuildProjectDirectory)\vswhere.exe" -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild'
@@ -27,7 +27,7 @@
       <SignToolArgs Include='-outputconfig "$(OutputConfigFile)"' Condition="'$(OutputConfigFile)' != ''" />      
       <SignToolArgs Include='-nugetPackagesPath "$(NuGetPackageRoot)\"' />
       <SignToolArgs Include='-intermediateOutputPath "$(ArtifactsObjDir)\"' />
-      <SignToolArgs Include='-config "$(SignToolDataPath)"' />
+      <SignToolArgs Include='-config "$(ConfigFile)"' />
       <SignToolArgs Include='-test' Condition="'$(RealSign)' != 'true'" />
       <SignToolArgs Include='-msbuildpath "$(_VsInstallDir)\MSBuild\15.0\Bin\msbuild.exe"' Condition="'$(RealSign)' == 'true'"/>
       <SignToolArgs Include='"$(ArtifactsConfigurationDir)\"' />
