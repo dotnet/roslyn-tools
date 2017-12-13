@@ -32,10 +32,13 @@
   -->
   <PropertyGroup>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+
     <RepoRoot Condition="'$(RepoRoot)' == ''">$([System.IO.Path]::GetDirectoryName('$(SolutionPath)'))\</RepoRoot>
-    <VersionsPropsPath Condition="'$(VersionsPropsPath)' == ''">$(RepoRoot)build\Versions.props</VersionsPropsPath>
-    <FixedVersionsPropsPath Condition="'$(FixedVersionsPropsPath)' == '' and Exists('$(RepoRoot)build\FixedVersions.props')">$(RepoRoot)build\FixedVersions.props</FixedVersionsPropsPath>
-    <SignToolDataPath Condition="'$(SignToolDataPath)' == ''">$(RepoRoot)build\SignToolData.json</SignToolDataPath>
+    <_NormalizedRepoRoot>$([System.IO.Path]::GetFullPath('$(RepoRoot)'))</_NormalizedRepoRoot>
+
+    <VersionsPropsPath Condition="'$(VersionsPropsPath)' == ''">$(_NormalizedRepoRoot)build\Versions.props</VersionsPropsPath>
+    <FixedVersionsPropsPath Condition="'$(FixedVersionsPropsPath)' == '' and Exists('$(_NormalizedRepoRoot)build\FixedVersions.props')">$(_NormalizedRepoRoot)build\FixedVersions.props</FixedVersionsPropsPath>
+    <SignToolDataPath Condition="'$(SignToolDataPath)' == ''">$(_NormalizedRepoRoot)build\SignToolData.json</SignToolDataPath>
   </PropertyGroup>
 
   <Import Project="BuildTasks.props"/>
@@ -94,7 +97,7 @@
     <ItemGroup>
       <_CommonProps Include="Configuration=$(Configuration)"/>
       <_CommonProps Include="CIBuild=$(CIBuild)"/>
-      <_CommonProps Include="RepoRoot=$(RepoRoot)"/>
+      <_CommonProps Include="RepoRoot=$(_NormalizedRepoRoot)"/>
       <_CommonProps Include="VersionsPropsPath=$(VersionsPropsPath)"/>
       <_CommonProps Include="FixedVersionsPropsPath=$(FixedVersionsPropsPath)" Condition="'$(FixedVersionsPropsPath)' != ''"/>
       <_CommonProps Include="DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)"/>

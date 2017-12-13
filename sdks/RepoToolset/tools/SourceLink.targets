@@ -36,7 +36,7 @@
     <ItemGroup>
       <_SourceLinkRoot Include="$(RepoRoot)">
         <RawUrl>$(_RepositoryRawUrl.TrimEnd('/'))/$(GitHeadSha)</RawUrl>
-        <Path Condition="'$(DeterministicSourceRoot)' == ''">$(RepoRoot)</Path>
+        <Path Condition="'$(DeterministicSourceRoot)' == ''">$([System.IO.Path]::GetFullPath('$(RepoRoot)'))</Path>
         <Path Condition="'$(DeterministicSourceRoot)' != ''">$(DeterministicSourceRoot)</Path>
       </_SourceLinkRoot>
     </ItemGroup>
