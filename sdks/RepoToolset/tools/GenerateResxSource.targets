@@ -13,11 +13,18 @@
   </PropertyGroup>
 
   <UsingTask TaskName="RoslynTools.GenerateResxSource" AssemblyFile="$(RoslynToolsBuildTasksAssembly)" />
+  
+  <!-- Set the Generator metadata so that VS triggers design-time build whenever the .resx file is saved -->
+  <ItemGroup>
+    <EmbeddedResource Update="@(EmbeddedResource)">
+      <Generator Condition="'%(GenerateSource)' == 'true'">MSBuild:_GenerateResxSource</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
 
   <Target Name="_GenerateResxSource"
           BeforeTargets="CoreCompile"
           DependsOnTargets="PrepareResourceNames;
-                            GetEmbeddedResourcesWithSourceGeneration;
+                            _GetEmbeddedResourcesWithSourceGeneration;
                             _BatchGenerateResxSource">
     <ItemGroup>
       <GeneratedResxSource Include="@(EmbeddedResourceSG->'%(SourceOutputPath)')" />
@@ -45,7 +52,7 @@
                         OutputPath="%(EmbeddedResourceSG.SourceOutputPath)" />
   </Target>
 
-  <Target Name="GetEmbeddedResourcesWithSourceGeneration">
+  <Target Name="_GetEmbeddedResourcesWithSourceGeneration">
     <PropertyGroup>
       <_EmbeddedResourceSourceExtension Condition="'$(Language)' == 'C#'">cs</_EmbeddedResourceSourceExtension>
       <_EmbeddedResourceSourceExtension Condition="'$(Language)' == 'VB'">vb</_EmbeddedResourceSourceExtension>
