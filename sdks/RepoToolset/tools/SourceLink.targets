@@ -7,7 +7,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <SourceLink>$(IntermediateOutputPath)$(MSBuildProjectName).sourcelink.json</SourceLink>
+    <SourceLink Condition="'$(DebugType)' != 'none'">$(IntermediateOutputPath)$(MSBuildProjectName).sourcelink.json</SourceLink>
   </PropertyGroup>
 
   <Target Name="_CalculateSourceLinkRoots">
@@ -64,7 +64,8 @@
   <Target Name="GenerateSourceLinkFile"
           Outputs="$(SourceLink)"
           DependsOnTargets="PrepareForBuild;_CalculateSourceLinkRoots;_CalculateSourceLinkMappings"
-          BeforeTargets="CoreCompile">
+          BeforeTargets="CoreCompile"
+          Condition="'$(SourceLink)' != ''">
 
     <PropertyGroup>
       <_Value>@(_SourceLinkMapping, ',')</_Value>
