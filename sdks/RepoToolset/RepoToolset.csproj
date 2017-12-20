@@ -9,6 +9,10 @@
     <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright);ArtifactsBinDir=$(ArtifactsBinDir)</NuspecProperties>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Show .*proj files in solution explorer, which are excluded by default -->
+    <None Include="tools\*.*proj" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\BuildTasks\RoslynTools.BuildTasks.csproj" />
   </ItemGroup>
 </Project>
