@@ -19,7 +19,7 @@
   <PropertyGroup>
     <DotNetTool>$(DotNetRoot)dotnet</DotNetTool>
     <DotNetTool Condition="'$(OS)' == 'Windows_NT'">$(DotNetTool).exe</DotNetTool>
-    <ArtifactsDir>$(RepoRoot)artifacts\</ArtifactsDir>
+    <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$(RepoRoot)artifacts\</ArtifactsDir>
     <ArtifactsToolsetDir>$(ArtifactsDir)toolset\</ArtifactsToolsetDir>
     <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
     <ArtifactsBinDir>$(ArtifactsConfigurationDir)bin\</ArtifactsBinDir>
