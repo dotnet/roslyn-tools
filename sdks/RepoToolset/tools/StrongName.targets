@@ -45,6 +45,7 @@
         <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)AspNet.snk</AssemblyOriginatorKeyFile>
         <PublicKey>$(MicrosoftAspNetPublicKey)</PublicKey>
         <PublicKeyToken>adb9793829ddae60</PublicKeyToken>
+        <PublicSign>false</PublicSign> <!-- The MicrosoftAspNet strong name key is a full key -->
       </PropertyGroup>
     </When>
   </Choose>
