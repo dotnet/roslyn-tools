@@ -8,12 +8,13 @@
       where BuildNumberFiveDigitDateStamp is mmmdd (such as 60615) and BuildNumberBuildOfTheDay is nn (which represents the nth build
       started that day). So the first build of the day, 20160615.1, will produce something similar to BuildNumberFiveDigitDateStamp: 60615,
       BuildNumberBuildOfTheDayPadded: 01;and the 12th build of the day, 20160615.12, will produce BuildNumberFiveDigitDateStamp: 60615, BuildNumberBuildOfTheDay: 12
+
       Additionally, in order ensure the value fits in the 16-bit PE header fields, we will only take the last five digits of the BuildNumber, so
       in the case of 20160615, we will set BuildNumberFiveDigitDateStamp to 60615. Further, if this would result in a number like 71201 or 81201, we
       decrement the year and add 12 to the month to extend the time. -->
     <_BuildNumberFiveDigitDateStamp>$([MSBuild]::Subtract($(BuildNumber.Split($([System.Convert]::ToString(`.`).ToCharArray())).GetValue($([System.Convert]::ToInt32(0)))), 20100000))</_BuildNumberFiveDigitDateStamp>
-    <_BuildNumberFiveDigitDateStampYearsToOffset>$([System.Math]::Max($([System.Convert]::ToInt32($([MSBuild]::Subtract($([MSBuild]::Divide($(BuildNumberFiveDigitDateStamp), 10000)), 6)))), $([System.Convert]::ToInt32(0))))</_BuildNumberFiveDigitDateStampYearsToOffset>
-    <_BuildNumberFiveDigitDateStamp>$([MSBuild]::Subtract($([System.Convert]::ToInt32($(BuildNumberFiveDigitDateStamp))), $([MSBuild]::Multiply($(_BuildNumberFiveDigitDateStampYearsToOffset), 8800))))</_BuildNumberFiveDigitDateStamp>
+    <_BuildNumberFiveDigitDateStampYearsToOffset>$([System.Math]::Max($([System.Convert]::ToInt32($([MSBuild]::Subtract($([MSBuild]::Divide($(_BuildNumberFiveDigitDateStamp), 10000)), 6)))), 0))</_BuildNumberFiveDigitDateStampYearsToOffset>
+    <_BuildNumberFiveDigitDateStamp>$([MSBuild]::Subtract($([System.Convert]::ToInt32($(_BuildNumberFiveDigitDateStamp))), $([MSBuild]::Multiply($(_BuildNumberFiveDigitDateStampYearsToOffset), 8800))))</_BuildNumberFiveDigitDateStamp>
     <_BuildNumberBuildOfTheDayPadded>$(BuildNumber.Split($([System.Convert]::ToString(`.`).ToCharArray())).GetValue($([System.Convert]::ToInt32(1))).PadLeft($([System.Convert]::ToInt32(2)), $([System.Convert]::ToChar(`0`))))</_BuildNumberBuildOfTheDayPadded>
     <Version>$(VersionBase)</Version>
     <Version Condition="'$(PreReleaseVersionLabel)' != ''">$(Version)-$(PreReleaseVersionLabel)-$(_BuildNumberFiveDigitDateStamp)-$(_BuildNumberBuildOfTheDayPadded)</Version>
@@ -25,12 +26,12 @@
   <PropertyGroup>
     <LangVersion>Latest</LangVersion>
 
-    <!-- 
+    <!--
       TODO: Can't use embedded PDBs with LUT:
-      https://github.com/dotnet/testimpact/issues/1877 
+      https://github.com/dotnet/testimpact/issues/1877
     -->
     <DebugType Condition="'$(BuildingForLiveUnitTesting)' != 'true'">embedded</DebugType>
-    
+
     <PublishOutputToSymStore>false</PublishOutputToSymStore>
   </PropertyGroup>
 </Project>
