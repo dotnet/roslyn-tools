@@ -211,7 +211,7 @@
     <MSBuild Projects="VisualStudio.Insertion.proj"
              Properties="@(_CommonProps)"
              Targets="Pack"
-             Condition="'$(Pack)' == 'true' and '$(UsingToolVSSDK)' == 'true'"/>
+             Condition="'$(Pack)' == 'true'"/>
 
     <MSBuild Projects="PipeBuild.Publish.proj"
              Properties="@(_CommonProps);ExpectedFeedUrl=$(PB_PublishBlobFeedUrl);AccountKey=$(PB_PublishBlobFeedKey)"
