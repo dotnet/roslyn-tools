@@ -12,7 +12,7 @@ namespace Roslyn.Tools.NuGet.Repack
 {
     internal static class VersionUpdater
     {
-        private const string NuspecXmlns = "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd";
+        private const string DefaultNuspecXmlns = "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd";
 
         private sealed class PackageInfo
         {
@@ -24,6 +24,7 @@ namespace Roslyn.Tools.NuGet.Repack
 
             public Stream SpecificationStream { get; }
             public XDocument SpecificationXml { get; }
+            public string NuspecXmlns { get; }
 
             public PackageInfo(
                 Package package,
@@ -32,7 +33,8 @@ namespace Roslyn.Tools.NuGet.Repack
                 SemanticVersion newVersion,
                 string tempPathOpt,
                 Stream specificationStream,
-                XDocument specificationXml)
+                XDocument specificationXml,
+                string nuspecXmlns)
             {
                 SpecificationStream = specificationStream;
                 SpecificationXml = specificationXml;
@@ -41,6 +43,7 @@ namespace Roslyn.Tools.NuGet.Repack
                 TempPathOpt = tempPathOpt;
                 OldVersion = oldVersion;
                 NewVersion = newVersion;
+                NuspecXmlns = nuspecXmlns;
             }
         }
 
@@ -112,6 +115,7 @@ namespace Roslyn.Tools.NuGet.Repack
                 {
                     SemanticVersion packageVersion = null;
                     SemanticVersion newPackageVersion = null;
+                    string nuspecXmlns = DefaultNuspecXmlns;
 
                     foreach (var part in package.GetParts())
                     {
@@ -123,19 +127,27 @@ namespace Roslyn.Tools.NuGet.Repack
                             nuspecStream = part.GetStream(FileMode.Open, readOnly ? FileAccess.Read : FileAccess.ReadWrite);
                             nuspecXml = XDocument.Load(nuspecStream);
 
-                            var metadata = nuspecXml.Element(XName.Get("package", NuspecXmlns))?.Element(XName.Get("metadata", NuspecXmlns));
+                            if (nuspecXml.Root.HasAttributes)
+                            {
+                                var xmlNsAttribute = nuspecXml.Root.Attributes("xmlns").SingleOrDefault();
+                                if (xmlNsAttribute != null)
+                                {
+                                    nuspecXmlns = xmlNsAttribute.Value;
+                                }
+                            }
+                            var metadata = nuspecXml.Element(XName.Get("package", nuspecXmlns))?.Element(XName.Get("metadata", nuspecXmlns));
                             if (metadata == null)
                             {
                                 throw new InvalidDataException($"'{packagePath}' has invalid nuspec: missing 'metadata' element");
                             }
 
-                            packageId = metadata.Element(XName.Get("id", NuspecXmlns))?.Value;
+                            packageId = metadata.Element(XName.Get("id", nuspecXmlns))?.Value;
                             if (packageId == null)
                             {
                                 throw new InvalidDataException($"'{packagePath}' has invalid nuspec: missing 'id' element");
                             }
 
-                            var versionElement = metadata.Element(XName.Get("version", NuspecXmlns));
+                            var versionElement = metadata.Element(XName.Get("version", nuspecXmlns));
                             string packageVersionStr = versionElement?.Value;
                             if (packageVersionStr == null)
                             {
@@ -181,7 +193,7 @@ namespace Roslyn.Tools.NuGet.Repack
                         package.PackageProperties.Version = newPackageVersion.ToNormalizedString();
                     }
                     
-                    packageInfo = new PackageInfo(package, packageId, packageVersion, newPackageVersion, tempPathOpt, nuspecStream, nuspecXml);
+                    packageInfo = new PackageInfo(package, packageId, packageVersion, newPackageVersion, tempPathOpt, nuspecStream, nuspecXml, nuspecXmlns);
                 }
                 finally
                 {
@@ -215,10 +227,10 @@ namespace Roslyn.Tools.NuGet.Repack
             foreach (var package in packages.Values)
             {
                 var dependencies = package.SpecificationXml.
-                    Element(XName.Get("package", NuspecXmlns))?.
-                    Element(XName.Get("metadata", NuspecXmlns))?.
-                    Element(XName.Get("dependencies", NuspecXmlns))?.
-                    Descendants(XName.Get("dependency", NuspecXmlns)) ?? Array.Empty<XElement>();
+                    Element(XName.Get("package", package.NuspecXmlns))?.
+                    Element(XName.Get("metadata", package.NuspecXmlns))?.
+                    Element(XName.Get("dependencies", package.NuspecXmlns))?.
+                    Descendants(XName.Get("dependency", package.NuspecXmlns)) ?? Array.Empty<XElement>();
 
                 foreach (var dependency in dependencies)
                 {

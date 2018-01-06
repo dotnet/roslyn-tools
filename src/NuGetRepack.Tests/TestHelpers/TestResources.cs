@@ -17,6 +17,10 @@ namespace TestResources
         private static byte[] s_C;
         public static byte[] C => ResourceLoader.GetOrCreateResource(ref s_C, NameC);
         public const string NameC = nameof(C) + "." + Version + ".nupkg";
+
+        private static byte[] s_D;
+        public static byte[] D => ResourceLoader.GetOrCreateResource(ref s_D, NameD);
+        public const string NameD = nameof(D) + "." + Version + ".nupkg";
     }
 
     public static class PreReleasePackages
@@ -34,6 +38,10 @@ namespace TestResources
         private static byte[] s_C;
         public static byte[] C => ResourceLoader.GetOrCreateResource(ref s_C, NameC);
         public const string NameC = nameof(C) + "." + Version + ".nupkg";
+
+        private static byte[] s_D;
+        public static byte[] D => ResourceLoader.GetOrCreateResource(ref s_D, NameD);
+        public const string NameD = nameof(D) + "." + Version + ".nupkg";
     }
 
     public static class DailyBuildPackages
@@ -51,5 +59,9 @@ namespace TestResources
         private static byte[] s_C;
         public static byte[] C => ResourceLoader.GetOrCreateResource(ref s_C, NameC);
         public const string NameC = nameof(C) + "." + Version + ".nupkg";
+
+        private static byte[] s_D;
+        public static byte[] D => ResourceLoader.GetOrCreateResource(ref s_D, NameD);
+        public const string NameD = nameof(D) + "." + Version + ".nupkg";
     }
 }

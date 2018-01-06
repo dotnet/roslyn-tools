@@ -57,7 +57,21 @@ namespace Roslyn.Tools.NuGet.Repack
                                 throw new InvalidDataException($"Unrecognized option: '{arg}'");
                             }
 
-                            packages.Add(arg);
+                            if (Directory.Exists(arg))
+                            {
+                                foreach (var file in Directory.GetFiles(arg))
+                                {
+                                    if (file.EndsWith(".nupkg"))
+                                    {
+                                        packages.Add(file);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                packages.Add(arg);
+                            }
+
                             break;
                     }
                 }

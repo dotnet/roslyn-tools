@@ -54,29 +54,34 @@ namespace NuGetRepack.Tests
             var dir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(dir);
 
-            string a_daily, b_daily, c_daily;
+            string a_daily, b_daily, c_daily, d_daily;
             File.WriteAllBytes(a_daily = Path.Combine(dir, TestResources.DailyBuildPackages.NameA), TestResources.DailyBuildPackages.A);
             File.WriteAllBytes(b_daily = Path.Combine(dir, TestResources.DailyBuildPackages.NameB), TestResources.DailyBuildPackages.B);
             File.WriteAllBytes(c_daily = Path.Combine(dir, TestResources.DailyBuildPackages.NameC), TestResources.DailyBuildPackages.C);
+            File.WriteAllBytes(d_daily = Path.Combine(dir, TestResources.DailyBuildPackages.NameD), TestResources.DailyBuildPackages.D);
 
             var a_pre = Path.Combine(dir, TestResources.PreReleasePackages.NameA);
             var b_pre = Path.Combine(dir, TestResources.PreReleasePackages.NameB);
             var c_pre = Path.Combine(dir, TestResources.PreReleasePackages.NameC);
+            var d_pre = Path.Combine(dir, TestResources.PreReleasePackages.NameD);
 
             var a_rel = Path.Combine(dir, TestResources.ReleasePackages.NameA);
             var b_rel = Path.Combine(dir, TestResources.ReleasePackages.NameB);
             var c_rel = Path.Combine(dir, TestResources.ReleasePackages.NameC);
+            var d_rel = Path.Combine(dir, TestResources.ReleasePackages.NameD);
 
-            VersionUpdater.Run(new[] { a_daily, b_daily, c_daily }, dir, release: true);
-            VersionUpdater.Run(new[] { a_daily, b_daily, c_daily }, dir, release: false);
+            VersionUpdater.Run(new[] { a_daily, b_daily, c_daily, d_daily }, dir, release: true);
+            VersionUpdater.Run(new[] { a_daily, b_daily, c_daily, d_daily }, dir, release: false);
 
             AssertPackagesEqual(TestResources.ReleasePackages.A, File.ReadAllBytes(a_rel));
             AssertPackagesEqual(TestResources.ReleasePackages.B, File.ReadAllBytes(b_rel));
             AssertPackagesEqual(TestResources.ReleasePackages.C, File.ReadAllBytes(c_rel));
+            AssertPackagesEqual(TestResources.ReleasePackages.D, File.ReadAllBytes(d_rel));
 
             AssertPackagesEqual(TestResources.PreReleasePackages.A, File.ReadAllBytes(a_pre));
             AssertPackagesEqual(TestResources.PreReleasePackages.B, File.ReadAllBytes(b_pre));
             AssertPackagesEqual(TestResources.PreReleasePackages.C, File.ReadAllBytes(c_pre));
+            AssertPackagesEqual(TestResources.PreReleasePackages.D, File.ReadAllBytes(d_pre));
 
             Directory.Delete(dir, recursive: true);
         }
