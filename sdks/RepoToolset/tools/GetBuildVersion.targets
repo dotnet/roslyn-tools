@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project>
+  
+  <!-- Returns the current build version. Used in .vsixmanifests to substitute our build version into them.
+      This target is defined in its own file so that it can be conditionally defined.  This is so it is
+      possible to avoid conflicts with https://github.com/AArnott/Nerdbank.GitVersioning, which also
+      defines a GetBuildVersion target.
+  -->
+  <Target Name="GetBuildVersion" Outputs="$(VsixVersion)" />
+
+</Project>

@@ -243,7 +243,15 @@
     <GetVsixSourceItemsDependsOn>$(GetVsixSourceItemsDependsOn);_GetVsixTemplateItems</GetVsixSourceItemsDependsOn>
   </PropertyGroup>
 
-  <!-- Returns the current build version. Used in .vsixmanifests to substitute our build version into them -->
-  <Target Name="GetBuildVersion" Outputs="$(VsixVersion)" />
+  <!-- Conditionally import a .targets file with the GetBuildVersion target in it.
+      This target is defined in its own file so that it can be conditionally defined.  This is so it is
+      possible to avoid conflicts with https://github.com/AArnott/Nerdbank.GitVersioning, which also
+      defines a GetBuildVersion target.
+  -->
+
+  <PropertyGroup>
+    <DefineGetBuildVersionTargetForVsix Condition="'$(DefineGetBuildVersionTargetForVsix)' == ''">true</DefineGetBuildVersionTargetForVsix>
+  </PropertyGroup>
+  <Import Project="GetBuildVersion.targets" Condition="'$(DefineGetBuildVersionTargetForVsix)' == 'true'"/>
 
 </Project>
