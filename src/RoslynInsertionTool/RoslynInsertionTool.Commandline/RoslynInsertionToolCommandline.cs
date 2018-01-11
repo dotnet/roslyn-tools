@@ -6,12 +6,18 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Configuration;
+
 using Microsoft.Azure.KeyVault;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+
 using Mono.Options;
+
 using NLog;
+
 using Roslyn.Insertion;
+
 using RoslynInsertionTool;
+
 using static Roslyn.Insertion.RoslynInsertionTool;
 
 partial class RoslynInsertionToolCommandline
