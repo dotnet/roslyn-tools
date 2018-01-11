@@ -146,7 +146,7 @@ namespace Roslyn.Insertion
             var attribute = GetVersionAttribute(packageInfo);
             if (attribute == null)
             {
-                version = default(SemanticVersion);
+                version = default;
                 return false;
             }
 
