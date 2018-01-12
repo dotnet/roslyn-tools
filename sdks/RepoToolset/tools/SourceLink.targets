@@ -2,6 +2,8 @@
 <!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
 <Project>
 
+  <UsingTask TaskName="RoslynTools.BuildTasks.GenerateSourceLinkFile" AssemblyFile="$(RoslynToolsBuildTasksAssembly)"/>
+  
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
@@ -9,73 +11,24 @@
   <PropertyGroup>
     <SourceLink Condition="'$(DebugType)' != 'none'">$(IntermediateOutputPath)$(MSBuildProjectName).sourcelink.json</SourceLink>
   </PropertyGroup>
-
-  <Target Name="_CalculateSourceLinkRoots">
-    <Error Text="GitHeadSha has invalid value: '$(GitHeadSha)'" Condition="'$(GitHeadSha.Length)' != '40'" />
-
-    <PropertyGroup>
-      <_RepositoryRawUrl>$(RepositoryRawUrl)</_RepositoryRawUrl>
-      <_RepositoryRawUrl Condition="'$(_RepositoryRawUrl)' == '' and $(RepositoryUrl.StartsWith('https://github.com/'))">https://raw.githubusercontent.com/$(RepositoryUrl.SubString(19))</_RepositoryRawUrl>
-      <_RepositoryRawUrl Condition="'$(_RepositoryRawUrl)' == '' and $(RepositoryUrl.StartsWith('http://github.com/'))">https://raw.githubusercontent.com/$(RepositoryUrl.SubString(18))</_RepositoryRawUrl>
-    </PropertyGroup>
-
-    <Error Text="RepositoryRawUrl is empty and RepositoryUrl is not a well-known public repository URL: '$(RepositoryUrl)'" Condition="'$(_RepositoryRawUrl)' == ''" />
-   
+    
     <!-- 
-      Map explicitly specified source roots first, so they are not overridden by the RepoRoot mapping.
-      Scenario: Source packages restored in packages directory below RepoRoot should be mapped 
-      to their respective RawUrls, not to the RepoRoot URL.
-    -->
-    <ItemGroup>
-      <_SourceLinkRoot Include="@(SourceRoot)">
-        <Path Condition="'$(DeterministicSourceRoot)' == ''">%(SourceRoot.Identity)</Path>
-        <Path Condition="'$(DeterministicSourceRoot)' != ''">/_%(SourceRoot.UniqueName)/</Path>
-      </_SourceLinkRoot>
-    </ItemGroup>
-
-    <ItemGroup>
-      <_SourceLinkRoot Include="$(RepoRoot)">
-        <RawUrl>$(_RepositoryRawUrl.TrimEnd('/'))/$(GitHeadSha)</RawUrl>
-        <Path Condition="'$(DeterministicSourceRoot)' == ''">$([System.IO.Path]::GetFullPath('$(RepoRoot)'))</Path>
-        <Path Condition="'$(DeterministicSourceRoot)' != ''">$(DeterministicSourceRoot)</Path>
-      </_SourceLinkRoot>
-    </ItemGroup>
+    Fills in SourceLinkUrl metadata on SourceRoot items that don't have it yet.
+  -->
+  <Target Name="InitializeSourceLinkUrl"
+          DependsOnTargets="InitializeSourceRoot;$(InitializeSourceLinkUrlDependsOn)">
   </Target>
 
-  <Target Name="_CalculateSourceLinkMappings"
-          Inputs="*%(_SourceLinkRoot.Identity)"
-          Outputs="*%(_SourceLinkRoot.Identity)">
-    
-    <Error Text="SourceRoot.Identity must end with a slash or backslash: '%(_SourceLinkRoot.Path)'" Condition="!HasTrailingSlash('%(_SourceLinkRoot.Path)')"/>
-    
-    <PropertyGroup>
-      <_JsonEscapedPath>%(_SourceLinkRoot.Path)</_JsonEscapedPath>
-      <_JsonEscapedPath>$(_JsonEscapedPath.Replace('\', '\\').Replace('"', '\"'))</_JsonEscapedPath>
-      
-      <_JsonEscapedUrl>%(_SourceLinkRoot.RawUrl)</_JsonEscapedUrl>
-      <_JsonEscapedUrl>$(_JsonEscapedUrl.TrimEnd('/').Replace('\', '\\').Replace('"', '\"'))</_JsonEscapedUrl>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <_SourceLinkMapping Include='"$(_JsonEscapedPath)*":"$(_JsonEscapedUrl)/*"' />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="GenerateSourceLinkFile"
-          Outputs="$(SourceLink)"
-          DependsOnTargets="PrepareForBuild;_CalculateSourceLinkRoots;_CalculateSourceLinkMappings"
+  <!-- 
+    Generates source link file.
+  -->
+  <Target Name="_GenerateSourceLinkFile"
+          DependsOnTargets="InitializeSourceLinkUrl"
           BeforeTargets="CoreCompile"
+          Outputs="$(SourceLink)"
           Condition="'$(SourceLink)' != ''">
 
-    <PropertyGroup>
-      <_Value>@(_SourceLinkMapping, ',')</_Value>
-    </PropertyGroup>
-    
-    <WriteLinesToFile
-      File="$(SourceLink)" 
-      Lines='{"documents":{$(_Value)}}'
-      Overwrite="true">
-    </WriteLinesToFile>
+    <GenerateSourceLinkFile SourceRoots="@(SourceRoot)" OutputFile="$(SourceLink)" />
 
     <ItemGroup>
       <FileWrites Include="$(SourceLink)" />

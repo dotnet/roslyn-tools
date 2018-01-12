@@ -96,24 +96,4 @@
   <PropertyGroup Condition="'$(DebugType)' == 'portable'">
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
-
-  <!-- 
-    Override PathMap if DeterministicSourceRoot is set.
-  -->
-  <Target Name="_SetPathMap"
-          BeforeTargets="CoreCompile"
-          Condition="'$(DeterministicSourceRoot)' != ''">
-
-    <!-- 
-      We should quote the paths to avoid misinterpreting ',' and '=' in them as separators, 
-      but quoting doesn't currently work (see https://github.com/dotnet/roslyn/issues/22835).
-    -->
-    <PropertyGroup>
-      <PathMap>$(RepoRoot)=$(DeterministicSourceRoot)</PathMap>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'@(SourceRoot)' != ''">
-      <PathMap>$(PathMap),@(SourceRoot->'%(Identity)=/_%(UniqueName)/', ',')</PathMap>
-    </PropertyGroup>
-  </Target>
 </Project>
