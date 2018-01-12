@@ -106,17 +106,18 @@ namespace Roslyn.Insertion
 
                 var coreXT = CoreXT.Load(GetAbsolutePathForEnlistment());
 
-                // ************** Update Nuget Packages For Branch************************
                 if (Options.InsertCoreXTPackages)
                 {
+                   // ************** Update Nuget Packages For Branch************************
                     cancellationToken.ThrowIfCancellationRequested();
                     Log.Info($"Updating Nuget Packages");
-                    retainBuild |= UpdatePackages(
-                        newPackageFiles,
+                    bool success = false;
+                    (success, newPackageFiles) = UpdatePackages(
                         buildVersion,
                         coreXT,
                         GetPackagesDirPath(buildVersion),
                         cancellationToken);
+                    retainBuild |= success;
 
                     // ************ Update .corext\Configs\default.config ********************
                     cancellationToken.ThrowIfCancellationRequested();
