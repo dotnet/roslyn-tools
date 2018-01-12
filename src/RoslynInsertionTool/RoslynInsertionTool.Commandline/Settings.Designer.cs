@@ -8,21 +8,21 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace RoslynInsertionTool {
-    
-    
+namespace Roslyn.Insertion {
+
+
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.3.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
-        
+
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
-        
+
         public static Settings Default {
             get {
                 return defaultInstance;
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("vslsnap@microsoft.com")]
@@ -31,7 +31,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["UserName"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("https://devdiv.visualstudio.com/DefaultCollection")]
@@ -40,7 +40,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["VSTSUrl"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("DevDiv")]
@@ -49,7 +49,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["TFSProjectName"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("\\\\cpvsbuild\\drops\\Roslyn")]
@@ -58,7 +58,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["RoslynDropPath"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("dev/vslsnap/insertions/")]
@@ -67,7 +67,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["NewBranchName"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("mlinfraswat@microsoft.com")]
@@ -76,7 +76,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["MailRecipient"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("smtphost")]
@@ -85,7 +85,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["EmailServerName"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Roslyn-Signed")]
@@ -94,7 +94,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["RoslynBuildQueueName"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Release")]
@@ -103,7 +103,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["RoslynBuildConfig"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("C:\\VS")]
@@ -112,7 +112,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["EnlistmentPath"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -121,7 +121,7 @@ namespace RoslynInsertionTool {
                 return ((bool)(this["InsertCoreXTPackages"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -130,7 +130,7 @@ namespace RoslynInsertionTool {
                 return ((bool)(this["InsertDevDivSourceFiles"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -139,7 +139,7 @@ namespace RoslynInsertionTool {
                 return ((bool)(this["InsertWillowPackages"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Roslyn")]
@@ -148,7 +148,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["InsertionName"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -157,7 +157,7 @@ namespace RoslynInsertionTool {
                 return ((bool)(this["RetainInsertedBuild"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("https://roslyninfra.vault.azure.net:443")]
@@ -166,7 +166,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["KeyVaultUrl"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("vslsnap-vso-auth-token")]
@@ -175,7 +175,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["VsoSecretName"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1950a258-227b-4e31-a9cf-717495945fc2")]
@@ -184,7 +184,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["ApplicationId"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
@@ -193,7 +193,7 @@ namespace RoslynInsertionTool {
                 return ((bool)(this["QueueValidationBuild"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("DD-VS-VAL-VSALL (dev15 efforts)")]
@@ -202,7 +202,7 @@ namespace RoslynInsertionTool {
                 return ((string)(this["ValidationBuildQueueName"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -211,7 +211,7 @@ namespace RoslynInsertionTool {
                 return ((bool)(this["RunDDRITsInValidation"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
