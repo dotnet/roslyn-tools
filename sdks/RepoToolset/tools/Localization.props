@@ -13,6 +13,11 @@
 
   <PropertyGroup>
     <UpdateXlfOnBuild Condition="'$(CIBuild)' != 'true'">true</UpdateXlfOnBuild>
+
+    <!-- Use Satellite assembly generation task from Microsoft.NET.Sdk even when building with
+         full Framework MSBuild.  This will support public signing, is deterministic, and always
+         generates them as AnyCPU. -->
+    <GenerateSatelliteAssembliesForCore Condition="'$(GenerateSatelliteAssembliesForCore)' == ''">true</GenerateSatelliteAssembliesForCore>
   </PropertyGroup>
 
   <ItemGroup>
