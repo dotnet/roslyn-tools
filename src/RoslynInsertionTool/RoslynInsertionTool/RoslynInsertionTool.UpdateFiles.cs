@@ -15,10 +15,24 @@ namespace Roslyn.Insertion
             return Path.Combine(GetBuildDirectory(version), "DevDivInsertionFiles", relativePath);
         }
 
-        internal static string GetDevDivPackagesDirPath(BuildVersion version)
+        internal static string GetPackagesDirPath(BuildVersion version)
         {
             // For example: "\\cpvsbuild\drops\Roslyn\Roslyn-Master-Signed-Release\20160315.3\DevDivPackages"
-            return Path.Combine(GetBuildDirectory(version), "DevDivPackages");
+            var devDivPackagesPath = Path.Combine(GetBuildDirectory(version), "DevDivPackages");
+            if (File.Exists(devDivPackagesPath))
+            {
+                return devDivPackagesPath;
+            }
+
+            // For example: "\\cpvsbuild\drops\Roslyn\Roslyn-Project-System\DotNet-Project-System\20180111.1\packages"
+            var packagesPath = Path.Combine(GetBuildDirectory(version), "packages");
+            if (File.Exists(packagesPath))
+            {
+                return packagesPath;
+            }
+
+            Log.Error($"Unable to find packages path,  tried '{devDivPackagesPath}' and '{packagesPath}'");
+            throw new Exception("Unable to find packages directory");
         }
 
         internal static string GetBuildDirectory(BuildVersion version)

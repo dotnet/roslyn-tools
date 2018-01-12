@@ -115,7 +115,7 @@ namespace Roslyn.Insertion
                         newPackageFiles,
                         buildVersion,
                         coreXT,
-                        GetDevDivPackagesDirPath(buildVersion),
+                        GetPackagesDirPath(buildVersion),
                         cancellationToken);
 
                     // ************ Update .corext\Configs\default.config ********************
@@ -333,7 +333,7 @@ namespace Roslyn.Insertion
         {
             Log.Info("Updating toolset compiler package");
 
-            var packagesDir = GetDevDivPackagesDirPath(buildVersion);
+            var packagesDir = GetPackagesDirPath(buildVersion);
             var toolsetPackagePath = Directory.EnumerateFiles(packagesDir,
                 $"{PackageInfo.RoslynToolsetPackageName}*.nupkg",
                 SearchOption.AllDirectories).Single();
