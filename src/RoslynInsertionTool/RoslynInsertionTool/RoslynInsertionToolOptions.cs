@@ -13,13 +13,13 @@ namespace Roslyn.Insertion
             string username,
             string password,
             string visualStudioBranchName,
-            string roslynBuildQueueName,
-            string roslynBranchName,
-            string roslynBuildConfig,
+            string githubBuildQueueName,
+            string githubBranchName,
+            string githubBuildConfig,
             string vstsUri,
             string tfsProjectName,
             string newBranchName,
-            string roslynDropPath,
+            string githubBuildDropPath,
             string specificbuild,
             string emailServerName,
             string mailRecipient,
@@ -39,13 +39,13 @@ namespace Roslyn.Insertion
             Username = username;
             Password = password;
             VisualStudioBranchName = visualStudioBranchName;
-            RoslynBuildQueueName = roslynBuildQueueName;
-            RoslynBranchName = roslynBranchName;
-            RoslynBuildConfig = roslynBuildConfig;
+            GithubBuildQueueName = githubBuildQueueName;
+            GithubBranchName = githubBranchName;
+            GithubBuildConfig = githubBuildConfig;
             VSTSUri = vstsUri;
             TFSProjectName = tfsProjectName;
             NewBranchName = newBranchName;
-            RoslynDropPath = roslynDropPath;
+            GithubBuildDropPath = githubBuildDropPath;
             SpecificBuild = specificbuild;
             EmailServerName = emailServerName;
             MailRecipient = mailRecipient;
@@ -69,13 +69,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -99,13 +99,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -129,13 +129,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -159,13 +159,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -189,13 +189,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -218,13 +218,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -246,13 +246,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -275,13 +275,13 @@ namespace Roslyn.Insertion
                 username: username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -305,13 +305,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -335,13 +335,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: visualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -358,20 +358,20 @@ namespace Roslyn.Insertion
                 partitionsToBuild: PartitionsToBuild);
         }
 
-        public RoslynInsertionToolOptions WithRoslynBuildQueueName(string roslynBuildQueueName)
+        public RoslynInsertionToolOptions WithGithubBuildQueueName(string githubBuildQueueName)
         {
             return new RoslynInsertionToolOptions(
                 enlistmentPath: EnlistmentPath,
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: roslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: githubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -388,20 +388,20 @@ namespace Roslyn.Insertion
                 partitionsToBuild: PartitionsToBuild);
         }
 
-        public RoslynInsertionToolOptions WithRoslynBranchName(string roslynBranchName)
+        public RoslynInsertionToolOptions WithGitHubBranchName(string githubBranchName)
         {
             return new RoslynInsertionToolOptions(
                 enlistmentPath: EnlistmentPath,
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: roslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: githubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -418,20 +418,20 @@ namespace Roslyn.Insertion
                 partitionsToBuild: PartitionsToBuild);
         }
 
-        public RoslynInsertionToolOptions WithRoslynBuildConfig(string roslynBuildConfig)
+        public RoslynInsertionToolOptions WithGithubBuildConfig(string githubBuildConfig)
         {
             return new RoslynInsertionToolOptions(
                 enlistmentPath: EnlistmentPath,
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: roslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: githubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -455,13 +455,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: vstsUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -485,13 +485,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: tfsProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -515,13 +515,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: newBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -538,20 +538,20 @@ namespace Roslyn.Insertion
                 partitionsToBuild: PartitionsToBuild);
         }
 
-        public RoslynInsertionToolOptions WithRoslynDropPath(string roslynDropPath)
+        public RoslynInsertionToolOptions WithGithubBuildDropPath(string githubBuildDropPath)
         {
             return new RoslynInsertionToolOptions(
                 enlistmentPath: EnlistmentPath,
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: roslynDropPath,
+                githubBuildDropPath: githubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -575,13 +575,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: specificbuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -605,13 +605,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: emailServerName,
                 mailRecipient: MailRecipient,
@@ -635,13 +635,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: mailRecipient,
@@ -665,13 +665,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -695,13 +695,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -725,13 +725,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -755,13 +755,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -785,13 +785,13 @@ namespace Roslyn.Insertion
                 username: Username,
                 password: Password,
                 visualStudioBranchName: VisualStudioBranchName,
-                roslynBuildQueueName: RoslynBuildQueueName,
-                roslynBranchName: RoslynBranchName,
-                roslynBuildConfig: RoslynBuildConfig,
+                githubBuildQueueName: GithubBuildQueueName,
+                githubBranchName: GithubBranchName,
+                githubBuildConfig: GithubBuildConfig,
                 vstsUri: VSTSUri,
                 tfsProjectName: TFSProjectName,
                 newBranchName: NewBranchName,
-                roslynDropPath: RoslynDropPath,
+                githubBuildDropPath: GithubBuildDropPath,
                 specificbuild: SpecificBuild,
                 emailServerName: EmailServerName,
                 mailRecipient: MailRecipient,
@@ -816,11 +816,11 @@ namespace Roslyn.Insertion
 
         public string VisualStudioBranchName { get; }
 
-        public string RoslynBuildQueueName { get; }
+        public string GithubBuildQueueName { get; }
 
-        public string RoslynBranchName { get; }
+        public string GithubBranchName { get; }
 
-        public string RoslynBuildConfig { get; }
+        public string GithubBuildConfig { get; }
 
         public string VSTSUri { get; }
 
@@ -828,7 +828,7 @@ namespace Roslyn.Insertion
 
         public string NewBranchName { get; }
 
-        public string RoslynDropPath { get; }
+        public string GithubBuildDropPath { get; }
 
         public string SpecificBuild { get; }
 
@@ -863,12 +863,12 @@ namespace Roslyn.Insertion
             !string.IsNullOrEmpty(Username) &&
             !string.IsNullOrEmpty(Password) &&
             !string.IsNullOrEmpty(VisualStudioBranchName) &&
-            !string.IsNullOrEmpty(RoslynBuildQueueName) &&
-            !string.IsNullOrEmpty(RoslynBranchName) &&
-            !string.IsNullOrEmpty(RoslynBuildConfig) &&
+            !string.IsNullOrEmpty(GithubBuildQueueName) &&
+            !string.IsNullOrEmpty(GithubBranchName) &&
+            !string.IsNullOrEmpty(GithubBuildConfig) &&
             !string.IsNullOrEmpty(VSTSUri) &&
             !string.IsNullOrEmpty(TFSProjectName) &&
-            !string.IsNullOrEmpty(RoslynDropPath);
+            !string.IsNullOrEmpty(GithubBuildDropPath);
 
         public string ValidationErrors
         {
@@ -895,19 +895,19 @@ namespace Roslyn.Insertion
                     builder.AppendLine($"{nameof(VisualStudioBranchName).ToLowerInvariant()} is required");
                 }
 
-                if (string.IsNullOrEmpty(RoslynBuildQueueName))
+                if (string.IsNullOrEmpty(GithubBuildQueueName))
                 {
-                    builder.AppendLine($"{nameof(RoslynBuildQueueName).ToLowerInvariant()} is required");
+                    builder.AppendLine($"{nameof(GithubBuildQueueName).ToLowerInvariant()} is required");
                 }
 
-                if (string.IsNullOrEmpty(RoslynBranchName))
+                if (string.IsNullOrEmpty(GithubBranchName))
                 {
-                    builder.AppendLine($"{nameof(RoslynBranchName).ToLowerInvariant()} is required");
+                    builder.AppendLine($"{nameof(GithubBranchName).ToLowerInvariant()} is required");
                 }
 
-                if (string.IsNullOrEmpty(RoslynBuildConfig))
+                if (string.IsNullOrEmpty(GithubBuildConfig))
                 {
-                    builder.AppendLine($"{nameof(RoslynBuildConfig).ToLowerInvariant()} is required");
+                    builder.AppendLine($"{nameof(GithubBuildConfig).ToLowerInvariant()} is required");
                 }
 
                 if (string.IsNullOrEmpty(VSTSUri))
@@ -920,9 +920,9 @@ namespace Roslyn.Insertion
                     builder.AppendLine($"{nameof(TFSProjectName).ToLowerInvariant()} is required");
                 }
 
-                if (string.IsNullOrEmpty(RoslynDropPath))
+                if (string.IsNullOrEmpty(GithubBuildDropPath))
                 {
-                    builder.AppendLine($"{nameof(RoslynDropPath).ToLowerInvariant()} is required");
+                    builder.AppendLine($"{nameof(GithubBuildDropPath).ToLowerInvariant()} is required");
                 }
 
                 return builder.ToString();

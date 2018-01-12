@@ -73,7 +73,7 @@ namespace Roslyn.Insertion
                 if (string.IsNullOrEmpty(Options.SpecificBuild))
                 {
                     newestBuild = await GetLatestBuildAsync(cancellationToken);
-                    roslynBuildVersion = BuildVersion.FromTfsBuildNumber(newestBuild.BuildNumber, Options.RoslynBuildQueueName);
+                    roslynBuildVersion = BuildVersion.FromTfsBuildNumber(newestBuild.BuildNumber, Options.GithubBuildQueueName);
                 }
                 else
                 {
@@ -393,7 +393,7 @@ namespace Roslyn.Insertion
                 {
                     if (pullRequest != null)
                     {
-                        mailMessage.Subject = $"{Options.InsertionName} insertion from {Options.RoslynBuildQueueName}/{Options.RoslynBranchName}/{Options.RoslynBuildConfig} into {Options.VisualStudioBranchName} SUCCEEDED";
+                        mailMessage.Subject = $"{Options.InsertionName} insertion from {Options.GithubBuildQueueName}/{Options.GithubBranchName}/{Options.GithubBuildConfig} into {Options.VisualStudioBranchName} SUCCEEDED";
                         mailMessage.SubjectEncoding = Encoding.UTF8;
                         mailMessage.IsBodyHtml = true;
                         mailMessage.Body = GetHTMLSuccessMessage(pullRequest, newPackageFiles);
@@ -403,7 +403,7 @@ namespace Roslyn.Insertion
                     {
                         var insertionStatus = isInsertionCancelled ? "CANCELLED" : "FAILED";
 
-                        mailMessage.Subject = $"{Options.InsertionName} insertion from {Options.RoslynBuildQueueName}/{Options.RoslynBranchName}/{Options.RoslynBuildConfig} into {Options.VisualStudioBranchName} {insertionStatus}";
+                        mailMessage.Subject = $"{Options.InsertionName} insertion from {Options.GithubBuildQueueName}/{Options.GithubBranchName}/{Options.GithubBuildConfig} into {Options.VisualStudioBranchName} {insertionStatus}";
                         mailMessage.SubjectEncoding = Encoding.UTF8;
                         mailMessage.Body = $"Review attached log for details";
                     }
