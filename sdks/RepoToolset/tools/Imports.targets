@@ -20,6 +20,7 @@
   <Import Project="GenerateInternalsVisibleTo.targets" />
   <Import Project="GenerateResxSource.targets" />
   <Import Project="Workarounds.targets"/>
+  <Import Project="RepositoryInfo.targets"/>
 
   <Import Project="SourceLink.targets" Condition="'$(EnableSourceLink)' == 'true' and '$(GitHeadSha)' != ''"/>
   <Import Project="XUnit.targets" Condition="'$(UsingToolXUnit)' == 'true'"/>

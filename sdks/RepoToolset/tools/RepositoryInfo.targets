@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project>
+
+  <UsingTask TaskName="RoslynTools.BuildTasks.MapSourceRoots" AssemblyFile="$(RoslynToolsBuildTasksAssembly)"/>
+
+  <PropertyGroup>
+    <InitializeSourceRootDependsOn>$(InitializeSourceRootDependsOn);_InitializeSourceRootFromSourceControl</InitializeSourceRootDependsOn>
+  </PropertyGroup>
+
+  <!-- To be replaced by a Microsoft.Build.Tasks.Git and SourceLink.GitHub packages. -->
+  <Target Name="_InitializeSourceRootFromSourceControl">
+    <Error Text="GitHeadSha has invalid value: '$(GitHeadSha)'" Condition="'$(GitHeadSha.Length)' != '40'" />
+
+    <PropertyGroup>
+      <_RepositoryRawUrl>$(RepositoryRawUrl)</_RepositoryRawUrl>
+      <_RepositoryRawUrl Condition="'$(_RepositoryRawUrl)' == '' and $(RepositoryUrl.StartsWith('https://github.com/'))">https://raw.githubusercontent.com/$(RepositoryUrl.SubString(19))</_RepositoryRawUrl>
+      <_RepositoryRawUrl Condition="'$(_RepositoryRawUrl)' == '' and $(RepositoryUrl.StartsWith('http://github.com/'))">https://raw.githubusercontent.com/$(RepositoryUrl.SubString(18))</_RepositoryRawUrl>
+    </PropertyGroup>
+
+    <Error Text="RepositoryRawUrl is empty and RepositoryUrl is not a well-known public repository URL: '$(RepositoryUrl)'" Condition="'$(_RepositoryRawUrl)' == ''" />
+   
+    <!-- Older source packages use RawUrl that doesn't include '/*' suffix instead of SourceLinkUrl -->
+    <ItemGroup>
+      <SourceRoot Update="@(SourceRoot)">
+        <SourceLinkUrl Condition="'%(SourceRoot.SourceLinkUrl)' == '' and '%(SourceRoot.RawUrl)' != ''">%(SourceRoot.RawUrl)/*</SourceLinkUrl>
+      </SourceRoot>
+    </ItemGroup>
+
+    <ItemGroup>
+      <SourceRoot Include="$([System.IO.Path]::GetFullPath('$(RepoRoot)'))">
+        <SourceControl>Git</SourceControl>
+        <SourceLinkUrl>$(_RepositoryRawUrl.TrimEnd('/'))/$(GitHeadSha)/*</SourceLinkUrl>
+      </SourceRoot>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ==========
+    SourceRoot
+    ==========
+    
+    All source files of the project are expected to be located under one of the directories specified by SourceRoot item group.
+    Include the final backslash in the path.
+  -->
+
+  <!-- Virtual with base call before overridden implementation. -->
+  <Target Name="InitializeSourceRoot"
+          DependsOnTargets="$(InitializeSourceRootDependsOn)">
+    <ItemGroup>
+      <_InvalidSourceRoot Include="@(SourceRoot)" Condition="!HasTrailingSlash('%(SourceRoot.Identity)')" />
+    </ItemGroup>
+
+    <Error Text="SourceRoot paths are required to end with a slash or backslash: @(_InvalidSourceRoot, ', ')"
+           Condition="'@(_InvalidSourceRoot)' != ''" />
+
+    <!--
+      Assign top-level source roots a deterministic path (MappedPath metadata).
+    -->
+    
+    <ItemGroup Condition="'@(_MappedSourceRoot)' != ''">
+      <_MappedSourceRoot Remove="@(_MappedSourceRoot)" />
+    </ItemGroup>
+
+    <MapSourceRoots SourceRoots="@(SourceRoot)" Condition="'$(DeterministicSourcePaths)' == 'true'">
+      <Output TaskParameter="MappedSourceRoots" ItemName="_MappedSourceRoot" />
+    </MapSourceRoots>
+
+    <ItemGroup Condition="'$(DeterministicSourcePaths)' == 'true'">
+      <SourceRoot Remove="@(SourceRoot)" />
+      <SourceRoot Include="@(_MappedSourceRoot)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- 
+    =======
+    PathMap
+    =======
+    
+    If DeterministicSourcePaths is true adds mapping for all source roots to PathMap.
+    
+    This target requires SourceRoot to be initialized in order to calculate the PathMap.
+    If SourceRoot is empty an error is reported if DeterministicSourcePaths has been explicitly set to true by the project.
+    If DeterministicSourcePaths has been set to true in Common.props the target is skipped, to avoid breaking existing projects.
+  -->
+
+  <PropertyGroup>
+    <!-- 
+      Unless specified otherwise enable deterministic source root (PathMap) when building deterministically on CI server, but not for local builds.
+      In order for the debugger to find source files when debugging a locally built binary the PDB must contain original, unmapped local paths.
+    -->
+    <_DeterministicSourcePathsOriginal>$(DeterministicSourcePaths)</_DeterministicSourcePathsOriginal>
+    <DeterministicSourcePaths Condition="'$(DeterministicSourcePaths)' == '' and '$(Deterministic)' == 'true' and '$(CIBuild)' != ''">true</DeterministicSourcePaths>
+  </PropertyGroup>
+
+  <Target Name="_SetPathMapFromSourceRoots"
+          DependsOnTargets="InitializeSourceRoot"
+          BeforeTargets="CoreCompile"
+          Condition="'$(DeterministicSourcePaths)' == 'true'">
+   
+    <ItemGroup>
+      <_TopLevelSourceRoot Include="@(SourceRoot)" Condition="'%(SourceRoot.NestedRoot)' == ''"/>
+    </ItemGroup>
+
+    <Error Text="SourceRoot must contain top-level source roots when DeterministicSourcePaths is true"
+           Condition="'@(_TopLevelSourceRoot)' == '' and '$(_DeterministicSourcePathsOriginal)' == 'true'" />
+    
+    <PropertyGroup Condition="'@(_TopLevelSourceRoot)' != ''">
+      <!-- TODO: Report error/warning if /pathmap doesn't cover all emitted source paths: https://github.com/dotnet/roslyn/issues/23969 -->
+      
+      <!-- TODO: PathMap should accept and ignore empty mapping: https://github.com/dotnet/roslyn/issues/23523-->
+      <PathMap Condition="'$(PathMap)' != ''">$(PathMap),</PathMap>
+      
+      <!--
+        TODO: quote the paths to avoid misinterpreting ',' and '=' in them as separators, 
+        but quoting doesn't currently work (see https://github.com/dotnet/roslyn/issues/22835).
+      -->
+      <PathMap>$(PathMap)@(_TopLevelSourceRoot->'%(Identity)=%(MappedPath)', ',')</PathMap>
+    </PropertyGroup>
+  </Target>
+
+</Project>

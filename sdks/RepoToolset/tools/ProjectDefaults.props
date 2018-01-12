@@ -40,17 +40,6 @@
     <DebugType>portable</DebugType>
     <DebugType Condition="'$(OfficialBuild)' != 'true' and '$(BuildingForLiveUnitTesting)' != 'true'">embedded</DebugType>
 
-    <!--
-      The source root path used for deterministic normalization of source paths.
-      
-      If set the value is used in PathMap to instruct the compiler to normalize source paths 
-      emitted to the binary and PDB and as a root for Source Link mapping.
-      If set must end with a directory separator.
-      
-      If unset the PathMap need to be set explicitly to facilitate full determinism.
-    -->
-    <DeterministicSourceRoot Condition="'$(CIBuild)' == 'true'">/_/</DeterministicSourceRoot>
-
     <EnableSourceLink Condition="'$(CIBuild)' == 'true'">true</EnableSourceLink>
   </PropertyGroup>
 
@@ -137,7 +126,7 @@
     <When Condition="'$(Language)' == 'F#'">
       <PropertyGroup>
         <!-- F# compiler doesn't support PathMap (see https://github.com/Microsoft/visualfsharp/issues/3812) -->
-        <DeterministicSourceRoot></DeterministicSourceRoot>
+        <DeterministicSourcePaths>false</DeterministicSourcePaths>
       </PropertyGroup>
     </When>
   </Choose>
