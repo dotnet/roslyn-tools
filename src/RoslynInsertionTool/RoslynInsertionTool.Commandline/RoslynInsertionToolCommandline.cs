@@ -40,6 +40,7 @@ partial class RoslynInsertionToolCommandline
             .WithEmailServerName(settings.EmailServerName)
             .WithMailRecipient(settings.MailRecipient)
             .WithInsertCoreXTPackages(settings.InsertCoreXTPackages)
+            .WithUpdateCoreXTLLibraries(settings.UpdateCoreXTLibraries)
             .WithInsertDevDivSourceFiles(settings.InsertDevDivSourceFiles)
             .WithInsertWillowPackages(settings.InsertWillowPackages)
             .WithInsertionName(settings.InsertionName)
@@ -134,6 +135,11 @@ partial class RoslynInsertionToolCommandline
                 "ic=|insertcorextpackages=",
                 $"Defaults to \"{options.InsertCoreXTPackages}\".",
                 insertCoreXTPackages => options = options.WithInsertCoreXTPackages(bool.Parse(insertCoreXTPackages))
+            },
+            {
+                "uc=|updatecorextlibraries=",
+                $"Updates a props file used by CoreXT for generating links to library paths. Defaults to \"{options.UpdateCoreXTLibraries}\".",
+                updateCoreXTLibraries => options = options.WithUpdateCoreXTLLibraries(bool.Parse(updateCoreXTLibraries))
             },
             {
                 "id=|insertdevdivsourcefiles=",

@@ -89,6 +89,21 @@ namespace Roslyn.Insertion
                     : GetLatestAndCreateBranch(cancellationToken);
                 shouldRollBackGitChanges = branch != null;
 
+                if (Options.UpdateCoreXTLibraries)
+                {
+                    // ************** Update paths to CoreFX libraries ************************
+                    cancellationToken.ThrowIfCancellationRequested();
+                    Log.Info($"Update paths to CoreFX libraries");
+                    if (!await TryUpdateFileAsync(
+                        Path.Combine("ProductData", "ContractAssemblies.props"),
+                        buildVersion,
+                        onlyCopyIfFileDoesNotExistAtDestination: false,
+                        cancellationToken: cancellationToken))
+                    {
+                        return;
+                    }
+                }
+
                 var coreXT = CoreXT.Load(GetAbsolutePathForEnlistment());
 
                 // ************** Update Nuget Packages For Branch************************
@@ -230,7 +245,7 @@ namespace Roslyn.Insertion
                         Log.Error("Unable to create a validation build: no pull request.");
                         return;
                     }
- 
+
                     string buildUrl;
                     int buildId;
                     try
