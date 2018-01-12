@@ -16,8 +16,6 @@ using NLog;
 
 using Roslyn.Insertion;
 
-using RoslynInsertionTool;
-
 using static Roslyn.Insertion.RoslynInsertionTool;
 
 partial class RoslynInsertionToolCommandline
