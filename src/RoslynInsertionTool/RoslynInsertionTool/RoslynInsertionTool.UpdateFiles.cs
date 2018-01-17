@@ -24,17 +24,17 @@ namespace Roslyn.Insertion
         internal static string GetBuildDirectory(BuildVersion version)
         {
             // used for local testing:
-            if (Options.RoslynDropPath.EndsWith(@"Binaries\Debug", StringComparison.OrdinalIgnoreCase) ||
-                Options.RoslynDropPath.EndsWith(@"Binaries\Release", StringComparison.OrdinalIgnoreCase))
+            if (Options.BuildDropPath.EndsWith(@"Binaries\Debug", StringComparison.OrdinalIgnoreCase) ||
+                Options.BuildDropPath.EndsWith(@"Binaries\Release", StringComparison.OrdinalIgnoreCase))
             {
-                return Options.RoslynDropPath;
+                return Options.BuildDropPath;
             }
 
             return Path.Combine(
-                Options.RoslynDropPath,
-                Options.RoslynBuildQueueName,
-                Path.GetFileName(Options.RoslynBranchName), // The folder under Roslyn-Signed is just the last component of the name
-                Options.RoslynBuildConfig,
+                Options.BuildDropPath,
+                Options.BuildQueueName,
+                Path.GetFileName(Options.BranchName), // The folder under BranchName is just the last component of the name
+                Options.BuildConfig,
                 version.ToString());
         }
 

@@ -64,7 +64,7 @@ namespace Roslyn.Insertion
                 // ********************** Get Last Insertion *****************************
                 cancellationToken.ThrowIfCancellationRequested();
 
-                BuildVersion roslynBuildVersion;
+                BuildVersion buildVersion;
                 Build newestBuild;
                 bool retainBuild = false;
                 // Get the version from TFS build queue, e.g. Roslyn-Master-Signed-Release.
@@ -73,12 +73,12 @@ namespace Roslyn.Insertion
                 if (string.IsNullOrEmpty(Options.SpecificBuild))
                 {
                     newestBuild = await GetLatestBuildAsync(cancellationToken);
-                    roslynBuildVersion = BuildVersion.FromTfsBuildNumber(newestBuild.BuildNumber, Options.RoslynBuildQueueName);
+                    buildVersion = BuildVersion.FromTfsBuildNumber(newestBuild.BuildNumber, Options.BuildQueueName);
                 }
                 else
                 {
-                    roslynBuildVersion = BuildVersion.FromString(Options.SpecificBuild);
-                    newestBuild = await GetSpecificBuildAsync(roslynBuildVersion, cancellationToken);
+                    buildVersion = BuildVersion.FromString(Options.SpecificBuild);
+                    newestBuild = await GetSpecificBuildAsync(buildVersion, cancellationToken);
                 }
 
                 // ****************** Get Latest and Create Branch ***********************
@@ -98,9 +98,9 @@ namespace Roslyn.Insertion
                     Log.Info($"Updating Nuget Packages");
                     retainBuild |= UpdatePackages(
                         newPackageFiles,
-                        roslynBuildVersion,
+                        buildVersion,
                         coreXT,
-                        GetDevDivPackagesDirPath(roslynBuildVersion),
+                        GetDevDivPackagesDirPath(buildVersion),
                         cancellationToken);
 
                     // ************ Update .corext\Configs\default.config ********************
@@ -113,7 +113,7 @@ namespace Roslyn.Insertion
                     Log.Info($"Update paths to CoreFX libraries");
                     if (!await TryUpdateFileAsync(
                         Path.Combine("ProductData", "ContractAssemblies.props"),
-                        roslynBuildVersion,
+                        buildVersion,
                         onlyCopyIfFileDoesNotExistAtDestination: false,
                         cancellationToken: cancellationToken))
                     {
@@ -123,7 +123,7 @@ namespace Roslyn.Insertion
                     // ************** Update assembly versions ************************
                     cancellationToken.ThrowIfCancellationRequested();
                     Log.Info($"Updating assembly versions");
-                    UpdateAssemblyVersions(roslynBuildVersion);
+                    UpdateAssemblyVersions(buildVersion);
 
                     // if we got this far then we definitely need to retain this build
                     retainBuild = true;
@@ -132,7 +132,7 @@ namespace Roslyn.Insertion
                 // *********** Update toolset ********************
                 if (Options.InsertToolset)
                 {
-                    UpdateToolsetPackage(roslynBuildVersion, cancellationToken);
+                    UpdateToolsetPackage(buildVersion, cancellationToken);
                     retainBuild = true;
                 }
 
@@ -193,8 +193,8 @@ namespace Roslyn.Insertion
                     Log.Info($"Create Pull Request");
                     try
                     {
-                        PushChanges(branch, roslynBuildVersion, cancellationToken);
-                        pullRequest = await CreatePullRequestAsync(branch.FriendlyName, $"Updating {Options.InsertionName} to {roslynBuildVersion}", cancellationToken);
+                        PushChanges(branch, buildVersion, cancellationToken);
+                        pullRequest = await CreatePullRequestAsync(branch.FriendlyName, $"Updating {Options.InsertionName} to {buildVersion}", cancellationToken);
                         shouldRollBackGitChanges = false;
                     }
                     catch (EmptyCommitException ecx)
@@ -313,12 +313,12 @@ namespace Roslyn.Insertion
         }
 
         private static void UpdateToolsetPackage(
-            BuildVersion roslynBuildVersion,
+            BuildVersion buildVersion,
             CancellationToken cancellationToken)
         {
             Log.Info("Updating toolset compiler package");
 
-            var packagesDir = GetDevDivPackagesDirPath(roslynBuildVersion);
+            var packagesDir = GetDevDivPackagesDirPath(buildVersion);
             var toolsetPackagePath = Directory.EnumerateFiles(packagesDir,
                 $"{PackageInfo.RoslynToolsetPackageName}*.nupkg",
                 SearchOption.AllDirectories).Single();
@@ -332,7 +332,7 @@ namespace Roslyn.Insertion
                 throw new Exception("Toolset package is not installed in this enlistment");
             }
 
-            UpdatePackage(previousPackageVersion, roslynBuildVersion, coreXT, package);
+            UpdatePackage(previousPackageVersion, buildVersion, coreXT, package);
 
             // Update .corext/Configs/default.config
             cancellationToken.ThrowIfCancellationRequested();
@@ -393,7 +393,7 @@ namespace Roslyn.Insertion
                 {
                     if (pullRequest != null)
                     {
-                        mailMessage.Subject = $"{Options.InsertionName} insertion from {Options.RoslynBuildQueueName}/{Options.RoslynBranchName}/{Options.RoslynBuildConfig} into {Options.VisualStudioBranchName} SUCCEEDED";
+                        mailMessage.Subject = $"{Options.InsertionName} insertion from {Options.BuildQueueName}/{Options.BranchName}/{Options.BuildConfig} into {Options.VisualStudioBranchName} SUCCEEDED";
                         mailMessage.SubjectEncoding = Encoding.UTF8;
                         mailMessage.IsBodyHtml = true;
                         mailMessage.Body = GetHTMLSuccessMessage(pullRequest, newPackageFiles);
@@ -403,7 +403,7 @@ namespace Roslyn.Insertion
                     {
                         var insertionStatus = isInsertionCancelled ? "CANCELLED" : "FAILED";
 
-                        mailMessage.Subject = $"{Options.InsertionName} insertion from {Options.RoslynBuildQueueName}/{Options.RoslynBranchName}/{Options.RoslynBuildConfig} into {Options.VisualStudioBranchName} {insertionStatus}";
+                        mailMessage.Subject = $"{Options.InsertionName} insertion from {Options.BuildQueueName}/{Options.BranchName}/{Options.BuildConfig} into {Options.VisualStudioBranchName} {insertionStatus}";
                         mailMessage.SubjectEncoding = Encoding.UTF8;
                         mailMessage.Body = $"Review attached log for details";
                     }

@@ -11,7 +11,7 @@
     <Setting Name="TFSProjectName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">DevDiv</Value>
     </Setting>
-    <Setting Name="RoslynDropPath" Type="System.String" Scope="Application">
+    <Setting Name="BuildDropPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">\\cpvsbuild\drops\Roslyn</Value>
     </Setting>
     <Setting Name="NewBranchName" Type="System.String" Scope="Application">
@@ -23,10 +23,10 @@
     <Setting Name="EmailServerName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">smtphost</Value>
     </Setting>
-    <Setting Name="RoslynBuildQueueName" Type="System.String" Scope="Application">
+    <Setting Name="BuildQueueName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Roslyn-Signed</Value>
     </Setting>
-    <Setting Name="RoslynBuildConfig" Type="System.String" Scope="Application">
+    <Setting Name="BuildConfig" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Release</Value>
     </Setting>
     <Setting Name="EnlistmentPath" Type="System.String" Scope="Application">
