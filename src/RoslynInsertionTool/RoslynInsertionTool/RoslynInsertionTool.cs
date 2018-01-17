@@ -89,19 +89,35 @@ namespace Roslyn.Insertion
                     : GetLatestAndCreateBranch(cancellationToken);
                 shouldRollBackGitChanges = branch != null;
 
+                if (Options.UpdateCoreXTLibraries)
+                {
+                    // ************** Update paths to CoreFX libraries ************************
+                    cancellationToken.ThrowIfCancellationRequested();
+                    Log.Info($"Update paths to CoreFX libraries");
+                    if (!await TryUpdateFileAsync(
+                        Path.Combine("ProductData", "ContractAssemblies.props"),
+                        buildVersion,
+                        onlyCopyIfFileDoesNotExistAtDestination: false,
+                        cancellationToken: cancellationToken))
+                    {
+                        return;
+                    }
+                }
+
                 var coreXT = CoreXT.Load(GetAbsolutePathForEnlistment());
 
-                // ************** Update Nuget Packages For Branch************************
                 if (Options.InsertCoreXTPackages)
                 {
+                   // ************** Update Nuget Packages For Branch************************
                     cancellationToken.ThrowIfCancellationRequested();
                     Log.Info($"Updating Nuget Packages");
-                    retainBuild |= UpdatePackages(
-                        newPackageFiles,
+                    bool success = false;
+                    (success, newPackageFiles) = UpdatePackages(
                         buildVersion,
                         coreXT,
-                        GetDevDivPackagesDirPath(buildVersion),
+                        GetPackagesDirPath(buildVersion),
                         cancellationToken);
+                    retainBuild |= success;
 
                     // ************ Update .corext\Configs\default.config ********************
                     cancellationToken.ThrowIfCancellationRequested();
@@ -230,7 +246,7 @@ namespace Roslyn.Insertion
                         Log.Error("Unable to create a validation build: no pull request.");
                         return;
                     }
- 
+
                     string buildUrl;
                     int buildId;
                     try
@@ -318,7 +334,7 @@ namespace Roslyn.Insertion
         {
             Log.Info("Updating toolset compiler package");
 
-            var packagesDir = GetDevDivPackagesDirPath(buildVersion);
+            var packagesDir = GetPackagesDirPath(buildVersion);
             var toolsetPackagePath = Directory.EnumerateFiles(packagesDir,
                 $"{PackageInfo.RoslynToolsetPackageName}*.nupkg",
                 SearchOption.AllDirectories).Single();

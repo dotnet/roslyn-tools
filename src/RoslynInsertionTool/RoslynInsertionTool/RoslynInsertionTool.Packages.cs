@@ -25,14 +25,14 @@ namespace Roslyn.Insertion
         /// <summary>
         /// Updates the specified NuGet packages.  Returns `true` if the package was successfully updated.
         /// </summary>
-        private static bool UpdatePackages(
-            List<string> newPackageFiles,
+        private static (bool success, List<string> newPackageFiles) UpdatePackages(
             BuildVersion buildVersion,
             CoreXT coreXT,
             string packagesDir,
             CancellationToken cancellationToken)
         {
             bool shouldRetainBuild = false;
+            var newPackageFiles = new List<string>();
 
             // All CoreXT packages we insert:
             var packagePaths = Directory.EnumerateFiles(packagesDir, "*.nupkg", SearchOption.AllDirectories);
@@ -66,7 +66,7 @@ namespace Roslyn.Insertion
                 UpdatePackage(previousPackageVersion, buildVersion, coreXT, package);
             }
 
-            return shouldRetainBuild;
+            return (shouldRetainBuild, newPackageFiles);
         }
 
         private static void UpdatePackage(
