@@ -27,7 +27,7 @@ namespace Roslyn.Insertion
         /// </summary>
         private static bool UpdatePackages(
             List<string> newPackageFiles,
-            BuildVersion roslynBuildVersion,
+            BuildVersion buildVersion,
             CoreXT coreXT,
             string packagesDir,
             CancellationToken cancellationToken)
@@ -63,7 +63,7 @@ namespace Roslyn.Insertion
                     continue;
                 }
 
-                UpdatePackage(previousPackageVersion, roslynBuildVersion, coreXT, package);
+                UpdatePackage(previousPackageVersion, buildVersion, coreXT, package);
             }
 
             return shouldRetainBuild;
@@ -71,7 +71,7 @@ namespace Roslyn.Insertion
 
         private static void UpdatePackage(
             SemanticVersion previousPackageVersion,
-            BuildVersion roslynBuildVersion,
+            BuildVersion buildVersion,
             CoreXT coreXT,
             PackageInfo package)
         {
@@ -89,12 +89,12 @@ namespace Roslyn.Insertion
 
             if (package.IsRoslyn)
             {
-                var buildVersion = package.Version.GetSuffixBuildVersion();
+                var packageBuildVersion = package.Version.GetSuffixBuildVersion();
 
-                if (buildVersion.Build != roslynBuildVersion.FiveDigitBuildNumber ||
-                    buildVersion.Revision != roslynBuildVersion.Revision)
+                if (packageBuildVersion.Build != buildVersion.FiveDigitBuildNumber ||
+                    packageBuildVersion.Revision != buildVersion.Revision)
                 {
-                    throw new InvalidOperationException($"Roslyn package version '{package.Version}' inconsistent with build version '{roslynBuildVersion}'");
+                    throw new InvalidOperationException($"Package version for '{package.PackageName}:{package.Version}' inconsistent with build version '{buildVersion}'");
                 }
             }
 

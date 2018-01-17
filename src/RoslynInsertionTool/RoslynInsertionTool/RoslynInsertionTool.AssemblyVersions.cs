@@ -9,11 +9,11 @@ namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
-        private static void UpdateAssemblyVersions(BuildVersion roslynBuildVersion)
+        private static void UpdateAssemblyVersions(BuildVersion buildVersion)
         {
             var versionsUpdater = new VersionsUpdater(Log, GetAbsolutePathForEnlistment(), WarningMessages);
 
-            foreach (var nameAndVersion in ReadAssemblyVersions(GetDevDivInsertionFilePath(roslynBuildVersion, "DependentAssemblyVersions.csv")))
+            foreach (var nameAndVersion in ReadAssemblyVersions(GetDevDivInsertionFilePath(buildVersion, "DependentAssemblyVersions.csv")))
             {
                 versionsUpdater.UpdateComponentVersion(nameAndVersion.Key, nameAndVersion.Value);
             }

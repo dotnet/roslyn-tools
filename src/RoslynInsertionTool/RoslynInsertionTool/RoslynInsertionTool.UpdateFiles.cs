@@ -33,7 +33,7 @@ namespace Roslyn.Insertion
             return Path.Combine(
                 Options.GithubBuildDropPath,
                 Options.GithubBuildQueueName,
-                Path.GetFileName(Options.GithubBranchName), // The folder under Roslyn-Signed is just the last component of the name
+                Path.GetFileName(Options.GithubBranchName), // The folder under GithubBranchName is just the last component of the name
                 Options.GithubBuildConfig,
                 version.ToString());
         }
