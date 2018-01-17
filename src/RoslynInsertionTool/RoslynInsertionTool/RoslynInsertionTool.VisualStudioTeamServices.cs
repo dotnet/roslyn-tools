@@ -54,9 +54,9 @@ namespace Roslyn.Insertion
         private static async Task<Build> GetLatestPassedBuildAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Log.Trace($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.GithubBuildQueueName}");
+            Log.Trace($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.BuildQueueName}");
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
-            var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.GithubBuildQueueName);
+            var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
             var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, BuildResult.Succeeded);
             return (from build in builds
                     orderby build.FinishTime descending
@@ -65,8 +65,8 @@ namespace Roslyn.Insertion
 
         private static async Task<IEnumerable<Build>> GetBuildsFromTFSAsync(BuildHttpClient buildClient, List<BuildDefinitionReference> definitions, CancellationToken cancellationToken, BuildResult? resultFilter = default(BuildResult))
         {
-            IEnumerable<Build> builds = await GetBuildsFromTFSByBranchAsync(buildClient, definitions, Options.GithubBranchName, resultFilter, cancellationToken);
-            builds = builds.Concat(await GetBuildsFromTFSByBranchAsync(buildClient, definitions, "refs/heads/" + Options.GithubBranchName, resultFilter, cancellationToken));
+            IEnumerable<Build> builds = await GetBuildsFromTFSByBranchAsync(buildClient, definitions, Options.BranchName, resultFilter, cancellationToken);
+            builds = builds.Concat(await GetBuildsFromTFSByBranchAsync(buildClient, definitions, "refs/heads/" + Options.BranchName, resultFilter, cancellationToken));
             return builds;
         }
 
@@ -93,12 +93,12 @@ namespace Roslyn.Insertion
             }
             catch (Exception ex)
             {
-                throw new IOException($"Unable to get latest build for '{Options.GithubBuildQueueName}' from project '{Options.TFSProjectName}' in '{Options.VSTSUri}': {ex.Message}");
+                throw new IOException($"Unable to get latest build for '{Options.BuildQueueName}' from project '{Options.TFSProjectName}' in '{Options.VSTSUri}': {ex.Message}");
             }
 
             if (newestBuild == null)
             {
-                throw new IOException($"Unable to get latest build for '{Options.GithubBuildQueueName}' from project '{Options.TFSProjectName}' in '{Options.VSTSUri}'");
+                throw new IOException($"Unable to get latest build for '{Options.BuildQueueName}' from project '{Options.TFSProjectName}' in '{Options.VSTSUri}'");
             }
 
             // ********************* Get New Build Version****************************
@@ -191,12 +191,12 @@ namespace Roslyn.Insertion
         private static async Task<Build> GetSpecificBuildAsync(BuildVersion version, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Log.Trace($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.GithubBuildQueueName}");
+            Log.Trace($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.BuildQueueName}");
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
-            var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.GithubBuildQueueName);
+            var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
             var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken);
             return (from build in builds
-                    where version == BuildVersion.FromTfsBuildNumber(build.BuildNumber, Options.GithubBuildQueueName)
+                    where version == BuildVersion.FromTfsBuildNumber(build.BuildNumber, Options.BuildQueueName)
                     orderby build.FinishTime descending
                     select build).FirstOrDefault();
         }

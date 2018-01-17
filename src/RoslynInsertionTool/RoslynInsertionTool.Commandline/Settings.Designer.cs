@@ -53,7 +53,7 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("\\\\cpvsbuild\\drops\\Roslyn")]
-        public string GithubBuildDropPath {
+        public string BuildDropPath {
             get {
                 return ((string)(this["GithubBuildDropPath"]));
             }
@@ -89,7 +89,7 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Roslyn-Signed")]
-        public string GithubBuildQueueName {
+        public string BuildQueueName {
             get {
                 return ((string)(this["GithubBuildQueueName"]));
             }
@@ -98,7 +98,7 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Release")]
-        public string GithubBuildConfig {
+        public string BuildConfig {
             get {
                 return ((string)(this["GithubBuildConfig"]));
             }

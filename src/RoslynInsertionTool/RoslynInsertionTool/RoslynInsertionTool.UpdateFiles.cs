@@ -24,17 +24,17 @@ namespace Roslyn.Insertion
         internal static string GetBuildDirectory(BuildVersion version)
         {
             // used for local testing:
-            if (Options.GithubBuildDropPath.EndsWith(@"Binaries\Debug", StringComparison.OrdinalIgnoreCase) ||
-                Options.GithubBuildDropPath.EndsWith(@"Binaries\Release", StringComparison.OrdinalIgnoreCase))
+            if (Options.BuildDropPath.EndsWith(@"Binaries\Debug", StringComparison.OrdinalIgnoreCase) ||
+                Options.BuildDropPath.EndsWith(@"Binaries\Release", StringComparison.OrdinalIgnoreCase))
             {
-                return Options.GithubBuildDropPath;
+                return Options.BuildDropPath;
             }
 
             return Path.Combine(
-                Options.GithubBuildDropPath,
-                Options.GithubBuildQueueName,
-                Path.GetFileName(Options.GithubBranchName), // The folder under GithubBranchName is just the last component of the name
-                Options.GithubBuildConfig,
+                Options.BuildDropPath,
+                Options.BuildQueueName,
+                Path.GetFileName(Options.BranchName), // The folder under BranchName is just the last component of the name
+                Options.BuildConfig,
                 version.ToString());
         }
 

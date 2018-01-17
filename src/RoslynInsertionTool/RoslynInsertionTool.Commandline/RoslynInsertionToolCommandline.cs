@@ -31,11 +31,11 @@ partial class RoslynInsertionToolCommandline
         var options = new RoslynInsertionToolOptions()
             .WithUsername(settings.UserName)
             .WithVSTSUrl(settings.VSTSUrl)
-            .WithGithubBuildQueueName(settings.GithubBuildQueueName)
-            .WithGithubBuildConfig(settings.GithubBuildConfig)
+            .WithBuildQueueName(settings.BuildQueueName)
+            .WithBuildConfig(settings.BuildConfig)
             .WithEnlistmentPath(settings.EnlistmentPath)
             .WithTFSProjectName(settings.TFSProjectName)
-            .WithGithubBuildDropPath(settings.GithubBuildDropPath)
+            .WithBuildDropPath(settings.BuildDropPath)
             .WithNewBranchName(settings.NewBranchName)
             .WithEmailServerName(settings.EmailServerName)
             .WithMailRecipient(settings.MailRecipient)
@@ -86,14 +86,14 @@ partial class RoslynInsertionToolCommandline
                 visualStudioBranchName => options = options.WithVisualStudioBranchName(visualStudioBranchName)
             },
             {
-                "gbn=|githubranchname=",
-                "The github branch we are inserting *from*.",
-                githubBranchName => options = options.WithGitHubBranchName(githubBranchName)
+                "bn=|branchname=",
+                "The branch we are inserting *from*.",
+                branchName => options = options.WithbranchName(branchName)
             },
             {
-                "gbq=|githubbuildqueue=",
-                $"The name of the build queue producing signed bits you wish to insert. Defaults to \"{options.GithubBuildQueueName}\".",
-                githubBuildQueueName => options = options.WithGithubBuildQueueName(githubBuildQueueName)
+                "bq=|buildqueue=",
+                $"The name of the build queue producing signed bits you wish to insert. Defaults to \"{options.BuildQueueName}\".",
+                buildQueueName => options = options.WithBuildQueueName(buildQueueName)
             },
             {
                 "vstsurl=",
@@ -111,9 +111,9 @@ partial class RoslynInsertionToolCommandline
                 newBranchName => options = options.WithNewBranchName(newBranchName)
             },
             {
-                "gdp=|githubdroppath=",
-                $"Location where the signed binaries are dropped. Will use this path in combination with **githubranchname** to find signed binaries, unless the path ends with ```Binaries\\Debug``` or ```Binaries\\Release``` (for local testing purposes only). Defaults to \"{options.GithubBuildDropPath}\".",
-                roslynDropPath => options = options.WithGithubBuildDropPath(roslynDropPath)
+                "dp=|droppath=",
+                $"Location where the signed binaries are dropped. Will use this path in combination with **branchname** to find signed binaries, unless the path ends with ```Binaries\\Debug``` or ```Binaries\\Release``` (for local testing purposes only). Defaults to \"{options.BuildDropPath}\".",
+                dropPath => options = options.WithBuildDropPath(dropPath)
             },
             {
                 "sb=|specificbuild=",
