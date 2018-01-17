@@ -247,32 +247,13 @@ namespace Roslyn.Insertion
                         return;
                     }
 
-                    string buildUrl;
-                    int buildId;
                     try
                     {
-                        var build = await QueueValidationBuildAsync(pullRequest.SourceRefName);
-                        buildId = build.Id;
-                        var buildWebLink = (ReferenceLink)build.Links.Links["web"];
-                        buildUrl = buildWebLink.Href;
-                        Log.Info($"Created build {buildUrl}");
+                        await QueueBuildPolicy(pullRequest, "VAL build with DDRITs and RPS");
                     }
                     catch (Exception ex)
                     {
                         Log.Error($"Unable to create a validation build for '{pullRequest.SourceRefName}'");
-                        Log.Error(ex);
-                        return;
-                    }
-
-                    try
-                    {
-                        string commentContent = $"Validation build: [{buildId}]({buildUrl})";
-                        var commentThread = await CreateGitPullRequestCommentThread(pullRequest.PullRequestId, commentContent);
-                        Log.Info($"Added comment '{commentContent} to the pull request'");
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"Unable to add comment to PR about validation build");
                         Log.Error(ex);
                         return;
                     }

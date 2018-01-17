@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.Client;
+using Microsoft.TeamFoundation.Policy.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
 
@@ -106,66 +108,63 @@ namespace Roslyn.Insertion
             return newestBuild;
         }
 
-        private static async Task<Build> QueueValidationBuildAsync(string branchName)
+        // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
+        private static async Task QueueBuildPolicy(GitPullRequest pullRequest, string buildPolicy)
         {
-            var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
+            WaitForMergeComplete(pullRequest);
 
-            // There may be "draft" copies of changes to the build we care about hanging around.
-            // We only want the one that is currently deployed (that is, with DefinitionQuality.Definition).
-            var definitionReference = (await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.ValidationBuildQueueName))
-                .Where(def => def.DefinitionQuality == DefinitionQuality.Definition)
-                .Single();
-            var definition = await buildClient.GetDefinitionAsync(project: Options.TFSProjectName, definitionId: definitionReference.Id);
-
-            var parameters = CreateValidationBuildParameters(definition.Variables);
-
-            return await buildClient.QueueBuildAsync(
-                new Build()
-                {
-                    Definition = definitionReference,
-                    SourceBranch = branchName,
-                    Parameters = parameters,
-                    Project = definitionReference.Project
-                });
-        }
-
-        /// <remarks>
-        /// Overridable build parameters have default values. However, you either need to provide
-        /// all or none of these parameters. If you only provide some, the others won't be defined
-        /// at all--even though they have default values.
-        /// Here we take the set of build variables and extract out the names and defaults for the
-        /// overridable ones, change the values for a couple we care about, and then render them
-        /// back to a JSON object that we can pass to the VSO API for creating new builds.
-        /// </remarks>
-        private static string CreateValidationBuildParameters(IDictionary<string, BuildDefinitionVariable> variables)
-        {
-            string GetVariableValue(KeyValuePair<string, BuildDefinitionVariable> variable)
+            var policyClient = ProjectCollection.GetClient<PolicyHttpClient>();
+            var repository = pullRequest.Repository;
+            var timeout = TimeSpan.FromSeconds(30);
+            var stopwatch = Stopwatch.StartNew();
+            while (true)
             {
-                switch (variable.Key)
+                var evaluations = await policyClient.GetPolicyEvaluationsAsync(repository.ProjectReference.Id, $"vstfs:///CodeReview/CodeReviewId/{repository.ProjectReference.Id}/{pullRequest.PullRequestId}");
+                var evaluation = evaluations.FirstOrDefault(x =>
                 {
-                    case "EnableDDRITS":
-                        return Options.RunDDRITsInValidation.ToString();
-                    case "EnableRPS":
-                        return Options.RunRPSInValidation.ToString();
-                    default:
-                        return variable.Value.Value;
+                    if (x.Configuration.Type.DisplayName.Equals("Build", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var policyName = x.Configuration.Settings["displayName"];
+                        if (policyName != null)
+                        {
+                            return policyName.ToString().Equals(buildPolicy, StringComparison.OrdinalIgnoreCase);
+                        }
+                    }
+
+                    return false;
+                });
+
+                if (evaluation != null)
+                {
+                    await policyClient.RequeuePolicyEvaluationAsync(repository.ProjectReference.Id, evaluation.EvaluationId);
+                    Log.Info($"Started '{buildPolicy}' build policy on {pullRequest.Description}");
+                    break;
+                }
+
+                if (stopwatch.Elapsed > timeout)
+                {
+                    throw new ArgumentException($"Cannot find a '{buildPolicy}' build policy in {pullRequest.Description}.");
                 }
             }
+        }
 
-            using (var stringWriter = new StringWriter())
-            using (var jsonWriter = new JsonTextWriter(stringWriter) { QuoteName = true, CloseOutput = false })
+        private static void WaitForMergeComplete(GitPullRequest pullRequest)
+        {
+            Log.Info($"Waiting for {pullRequest.Description} to complete its merge.");
+
+            var timeLimit = TimeSpan.FromMinutes(5);
+            var stopwatch = Stopwatch.StartNew();
+            while (pullRequest.MergeStatus == PullRequestAsyncStatus.NotSet || pullRequest.MergeStatus == PullRequestAsyncStatus.Queued)
             {
-                jsonWriter.WriteStartObject();
-
-                foreach (var variable in variables.Where(v => v.Value.AllowOverride))
+                if (pullRequest.MergeStatus == PullRequestAsyncStatus.Conflicts || pullRequest.MergeStatus == PullRequestAsyncStatus.Failure || pullRequest.MergeStatus == PullRequestAsyncStatus.RejectedByPolicy)
                 {
-                    jsonWriter.WritePropertyName(variable.Key);
-                    jsonWriter.WriteValue(GetVariableValue(variable));
+                    throw new InvalidOperationException($"Merge operation did not succeed.");
                 }
 
-                jsonWriter.WriteEndObject();
-
-                return stringWriter.ToString();
+                if (stopwatch.Elapsed > timeLimit)
+                {
+                    throw new TimeoutException($"Waiting for {pullRequest.Description} to complete its merge failed.");
+                }
             }
         }
 
@@ -173,8 +172,8 @@ namespace Roslyn.Insertion
         {
             var gitClient = ProjectCollection.GetClient<GitHttpClient>();
             return await gitClient.CreateThreadAsync(new GitPullRequestCommentThread
-                {
-                    Comments = new List<GitPullRequestComment>
+            {
+                Comments = new List<GitPullRequestComment>
                                    {
                                        new GitPullRequestComment()
                                        {
@@ -182,7 +181,7 @@ namespace Roslyn.Insertion
                                            Content = commentContent
                                        }
                                    }
-                },
+            },
                 project: Options.TFSProjectName,
                 repositoryId: "VS",
                 pullRequestId: pullRequestId);
