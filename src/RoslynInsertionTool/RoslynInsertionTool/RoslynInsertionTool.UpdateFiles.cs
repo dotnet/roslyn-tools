@@ -31,8 +31,7 @@ namespace Roslyn.Insertion
                 return packagesPath;
             }
 
-            Log.Error($"Unable to find packages path,  tried '{devDivPackagesPath}' and '{packagesPath}'");
-            throw new Exception("Unable to find packages directory");
+            throw new InvalidOperationException($"Unable to find packages path,  tried '{devDivPackagesPath}' and '{packagesPath}'");
         }
 
         internal static string GetBuildDirectory(BuildVersion version)
