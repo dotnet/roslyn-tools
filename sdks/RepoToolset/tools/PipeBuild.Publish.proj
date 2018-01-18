@@ -2,8 +2,8 @@
 <Project DefaultTargets="Publish">
   <!--
     Required variables:
-      VersionsPropsPath          Versions.props path. 
-      FixedVersionsPropsPath     FixedVersions.props path. 
+      VersionsPropsPath          Versions.props path.
+      FixedVersionsPropsPath     FixedVersions.props path.
       ExpectedFeedUrl            Target feed URL.
       AccountKey                 Account key.
   -->
@@ -23,7 +23,11 @@
   <Target Name="Publish">
     <PushToBlobFeed ExpectedFeedUrl="$(ExpectedFeedUrl)"
                     AccountKey="$(AccountKey)"
-                    ItemsToPush="@(ItemsToPush)" />
+                    ItemsToPush="@(ItemsToPush)"
+                    ManifestName="$(BUILD_REPOSITORY_NAME)"
+                    ManifestBranch="$(BUILD_SOURCEBRANCH)"
+                    ManifestBuildId="$(BUILD_BUILDNUMBER)"
+                    ManifestCommit="$(BUILD_SOURCEVERSION)" />
   </Target>
 
 </Project>
