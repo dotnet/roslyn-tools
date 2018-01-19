@@ -55,7 +55,7 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.DefaultSettingValueAttribute("\\\\cpvsbuild\\drops\\Roslyn")]
         public string BuildDropPath {
             get {
-                return ((string)(this["GithubBuildDropPath"]));
+                return ((string)(this["BuildDropPath"]));
             }
         }
 
@@ -91,7 +91,7 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.DefaultSettingValueAttribute("Roslyn-Signed")]
         public string BuildQueueName {
             get {
-                return ((string)(this["GithubBuildQueueName"]));
+                return ((string)(this["BuildQueueName"]));
             }
         }
 
@@ -100,7 +100,7 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.DefaultSettingValueAttribute("Release")]
         public string BuildConfig {
             get {
-                return ((string)(this["GithubBuildConfig"]));
+                return ((string)(this["BuildConfig"]));
             }
         }
 
