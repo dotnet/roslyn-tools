@@ -19,14 +19,14 @@ namespace Roslyn.Insertion
         {
             // For example: "\\cpvsbuild\drops\Roslyn\Roslyn-Master-Signed-Release\20160315.3\DevDivPackages"
             var devDivPackagesPath = Path.Combine(GetBuildDirectory(version), "DevDivPackages");
-            if (File.Exists(devDivPackagesPath))
+            if (Directory.Exists(devDivPackagesPath))
             {
                 return devDivPackagesPath;
             }
 
             // For example: "\\cpvsbuild\drops\Roslyn\Roslyn-Project-System\DotNet-Project-System\20180111.1\packages"
             var packagesPath = Path.Combine(GetBuildDirectory(version), "packages");
-            if (File.Exists(packagesPath))
+            if (Directory.Exists(packagesPath))
             {
                 return packagesPath;
             }
