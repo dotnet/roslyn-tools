@@ -111,8 +111,6 @@ namespace Roslyn.Insertion
         // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
         private static async Task QueueBuildPolicy(GitPullRequest pullRequest, string buildPolicy)
         {
-            WaitForMergeComplete(pullRequest);
-
             var policyClient = ProjectCollection.GetClient<PolicyHttpClient>();
             var repository = pullRequest.Repository;
             var timeout = TimeSpan.FromSeconds(30);
@@ -144,26 +142,6 @@ namespace Roslyn.Insertion
                 if (stopwatch.Elapsed > timeout)
                 {
                     throw new ArgumentException($"Cannot find a '{buildPolicy}' build policy in {pullRequest.Description}.");
-                }
-            }
-        }
-
-        private static void WaitForMergeComplete(GitPullRequest pullRequest)
-        {
-            Log.Info($"Waiting for {pullRequest.Description} to complete its merge.");
-
-            var timeLimit = TimeSpan.FromMinutes(5);
-            var stopwatch = Stopwatch.StartNew();
-            while (pullRequest.MergeStatus == PullRequestAsyncStatus.NotSet || pullRequest.MergeStatus == PullRequestAsyncStatus.Queued)
-            {
-                if (pullRequest.MergeStatus == PullRequestAsyncStatus.Conflicts || pullRequest.MergeStatus == PullRequestAsyncStatus.Failure || pullRequest.MergeStatus == PullRequestAsyncStatus.RejectedByPolicy)
-                {
-                    throw new InvalidOperationException($"Merge operation did not succeed.");
-                }
-
-                if (stopwatch.Elapsed > timeLimit)
-                {
-                    throw new TimeoutException($"Waiting for {pullRequest.Description} to complete its merge failed.");
                 }
             }
         }
