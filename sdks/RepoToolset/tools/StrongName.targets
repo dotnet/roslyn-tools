@@ -19,7 +19,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(SignAssembly)' != 'false'">
     <DelaySign>false</DelaySign>
     <PublicSign>true</PublicSign>
   </PropertyGroup>
@@ -51,7 +51,7 @@
   </Choose>
 
   <!-- Full signing is not currently supported on non-Windows -->
-  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT' and '$(SignAssembly)' != 'false'">
     <PublicSign>true</PublicSign>
   </PropertyGroup>
 
