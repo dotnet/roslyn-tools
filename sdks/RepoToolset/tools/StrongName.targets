@@ -19,7 +19,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(SignAssembly)' != 'false'">
     <DelaySign>false</DelaySign>
     <PublicSign>true</PublicSign>
   </PropertyGroup>
@@ -56,9 +56,8 @@
   </PropertyGroup>
 
   <Target Name="VerifyBuildFlags">
-    <Error Condition="'$(SignAssembly)' != 'true'"
-           Text="SignAssembly must be true" />
-    <Error Condition="'$(PublicKey)' == '' or '$(PublicKeyToken)' == '' or '$(AssemblyOriginatorKeyFile)' == ''"
+    <Error Condition="'$(SignAssembly)' != 'false' and
+                      ('$(PublicKey)' == '' or '$(PublicKeyToken)' == '' or '$(AssemblyOriginatorKeyFile)' == '')"
            Text="PublicKey, PublicKeyToken and AssemblyOriginatorKeyFile must be specified" />
   </Target>
 
