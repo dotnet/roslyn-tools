@@ -50,11 +50,6 @@
     </When>
   </Choose>
 
-  <!-- Full signing is not currently supported on non-Windows -->
-  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-    <PublicSign>true</PublicSign>
-  </PropertyGroup>
-
   <!-- Build Flag Verification -->
   <PropertyGroup>
     <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);VerifyBuildFlags</PrepareForBuildDependsOn>
