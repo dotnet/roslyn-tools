@@ -40,6 +40,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CompilerPerfTests", "src\Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoslynTools.BuildTasks", "src\BuildTasks\RoslynTools.BuildTasks.csproj", "{995A02BA-FDE6-46E2-9983-2FAA299676DD}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GithubMergeTool", "src\GithubMergeTool\GithubMergeTool.csproj", "{07654D94-CC36-452B-9B5E-F156F9B0D5A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -206,6 +208,18 @@ Global
 		{995A02BA-FDE6-46E2-9983-2FAA299676DD}.Release|x64.Build.0 = Release|Any CPU
 		{995A02BA-FDE6-46E2-9983-2FAA299676DD}.Release|x86.ActiveCfg = Release|Any CPU
 		{995A02BA-FDE6-46E2-9983-2FAA299676DD}.Release|x86.Build.0 = Release|Any CPU
+		{07654D94-CC36-452B-9B5E-F156F9B0D5A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07654D94-CC36-452B-9B5E-F156F9B0D5A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07654D94-CC36-452B-9B5E-F156F9B0D5A5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{07654D94-CC36-452B-9B5E-F156F9B0D5A5}.Debug|x64.Build.0 = Debug|Any CPU
+		{07654D94-CC36-452B-9B5E-F156F9B0D5A5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{07654D94-CC36-452B-9B5E-F156F9B0D5A5}.Debug|x86.Build.0 = Debug|Any CPU
+		{07654D94-CC36-452B-9B5E-F156F9B0D5A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07654D94-CC36-452B-9B5E-F156F9B0D5A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07654D94-CC36-452B-9B5E-F156F9B0D5A5}.Release|x64.ActiveCfg = Release|Any CPU
+		{07654D94-CC36-452B-9B5E-F156F9B0D5A5}.Release|x64.Build.0 = Release|Any CPU
+		{07654D94-CC36-452B-9B5E-F156F9B0D5A5}.Release|x86.ActiveCfg = Release|Any CPU
+		{07654D94-CC36-452B-9B5E-F156F9B0D5A5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
