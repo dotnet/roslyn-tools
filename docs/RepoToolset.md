@@ -20,6 +20,7 @@ The toolset has four kinds of features and helpers:
 
 Repos currently using the toolset:
 - http://github.com/dotnet/project-system
+- https://github.com/dotnet/project-system-tools
 - http://github.com/dotnet/interactive-window
 - http://github.com/dotnet/symreader
 - http://github.com/dotnet/symreader-portable
