@@ -20,7 +20,7 @@ The toolset has four kinds of features and helpers:
 
 Repos currently using the toolset:
 - http://github.com/dotnet/project-system
-- https://github.com/dotnet/project-system-tools
+- http://github.com/dotnet/project-system-tools
 - http://github.com/dotnet/interactive-window
 - http://github.com/dotnet/symreader
 - http://github.com/dotnet/symreader-portable
@@ -31,7 +31,8 @@ Repos currently using the toolset:
 - http://github.com/dotnet/roslyn-debug (private)
 - http://github.com/dotnet/roslyn-sdk (private)
 - http://github.com/dotnet/dotnet-cli-archiver
-- [http://github.com/dotnet/sdk](http://github.com/dotnet/sdk/tree/dev/release/2.0)
+- http://github.com/dotnet/sdk
+- http://github.com/Microsoft/msbuild
 
 The toolset has following requirements on the repo layout.
 
