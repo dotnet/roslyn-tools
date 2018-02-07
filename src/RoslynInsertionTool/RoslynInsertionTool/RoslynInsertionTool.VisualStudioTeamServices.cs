@@ -63,8 +63,9 @@ namespace Roslyn.Insertion
 
             // Get the latest build with valid artifacts.
             return (from build in builds
+                    where buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken).Result.Any(a => a.Resource != null && a.Resource.Data != null && a.Resource.Data.Contains(Options.BuildDropPath))
                     orderby build.FinishTime descending
-                    select build).FirstOrDefault((b)  => (buildClient.GetArtifactsAsync(b.Project.Id, b.Id, cancellationToken).Result.Any(a => !string.IsNullOrEmpty(a.Name) && a.Name.Contains(b.BuildNumber))));
+                    select build).FirstOrDefault();
         }
 
         private static async Task<IEnumerable<Build>> GetBuildsFromTFSAsync(BuildHttpClient buildClient, List<BuildDefinitionReference> definitions, CancellationToken cancellationToken, BuildResult? resultFilter = default(BuildResult))
