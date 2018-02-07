@@ -60,7 +60,10 @@ namespace Roslyn.Insertion
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
             var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
             var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, BuildResult.Succeeded);
+
+            // Get the latest build with valid artifacts.
             return (from build in builds
+                    where buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken).Result.Any(a => a.Resource != null && a.Resource.Data != null && a.Resource.Data.Contains(Options.BuildDropPath))
                     orderby build.FinishTime descending
                     select build).FirstOrDefault();
         }
