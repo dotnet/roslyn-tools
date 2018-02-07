@@ -57,10 +57,8 @@ namespace GithubMergeTool
             string prBranchName = $"merges/{srcBranch}-to-{destBranch}";
 
             // Check to see if there's already a PR
-            // TODO: handle pagination
-            // This handles the 100 most recent PRs, which should work for now
             HttpResponseMessage prsResponse = await _client.GetAsync(
-                $"repos/{repoOwner}/{repoName}/pulls?state=open&base={destBranch}&per_page=100&head={_username}:{prBranchName}");
+                $"repos/{repoOwner}/{repoName}/pulls?state=open&base={destBranch}&head={_username}:{prBranchName}");
             if (!prsResponse.IsSuccessStatusCode)
             {
                 return (false, prsResponse);
