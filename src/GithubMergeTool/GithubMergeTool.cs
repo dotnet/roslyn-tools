@@ -94,11 +94,31 @@ namespace GithubMergeTool
     ""sha"": ""{srcSha}""
 }}";
 
+            Console.WriteLine("Creating branch");
             response = await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/git/refs", body);
 
             if (response.StatusCode != HttpStatusCode.Created)
             {
-                return (false, response);
+                // Branch already exists. Hard reset to the new SHA
+                if (response.StatusCode == (HttpStatusCode)422)
+                {
+                    Console.WriteLine($"Resetting branch {prBranchName}");
+                    response = await _client.PostAsyncAsJson(
+                        $"repos/{repoOwner}/{repoName}/git/refs/heads/{prBranchName}",
+                        $@"
+{{
+    ""sha"": ""{srcSha}"",
+    ""force"": true
+}}");
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        return (false, response);
+                    }
+                }
+                else
+                {
+                    return (false, response);
+                }
             }
 
             const string newLine = @"
@@ -130,6 +150,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
     ""base"": ""{destBranch}""
 }}";
 
+            Console.WriteLine("Creating PR");
             response = await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/pulls", body);
 
             jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
