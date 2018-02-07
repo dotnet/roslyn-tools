@@ -16,11 +16,13 @@ namespace GithubMergeTool
         private static readonly Uri GithubBaseUri = new Uri("https://api.github.com/");
 
         private readonly HttpClient _client;
+        private readonly string _username;
 
         public GithubMergeTool(
             string username,
             string password)
         {
+            _username = username;
             var client = new HttpClient();
             client.BaseAddress = GithubBaseUri;
 
@@ -52,12 +54,13 @@ namespace GithubMergeTool
             string destBranch)
         {
             string prTitle = $"Merge {srcBranch} to {destBranch}";
+            string prBranchName = $"merges/{srcBranch}-to-{destBranch}";
 
             // Check to see if there's already a PR
             // TODO: handle pagination
             // This handles the 100 most recent PRs, which should work for now
             HttpResponseMessage prsResponse = await _client.GetAsync(
-                $"repos/{repoOwner}/{repoName}/pulls?state=open&base={destBranch}&per_page=100");
+                $"repos/{repoOwner}/{repoName}/pulls?state=open&base={destBranch}&per_page=100&head={_username}:{prBranchName}");
             if (!prsResponse.IsSuccessStatusCode)
             {
                 return (false, prsResponse);
@@ -85,9 +88,6 @@ namespace GithubMergeTool
             }
 
             var srcSha = ((JValue)jsonBody["object"]["sha"]).ToObject<string>();
-
-            // Generate a new branch name for the merge branch
-            var prBranchName = $"merges/{srcBranch}-to-{destBranch}-{DateTime.UtcNow.ToString("yyyMMdd-HHmmss")}";
 
             // Create a branch on the repo
             var body = $@"
