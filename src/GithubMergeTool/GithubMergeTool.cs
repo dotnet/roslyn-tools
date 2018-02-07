@@ -1,6 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -38,32 +39,49 @@ namespace GithubMergeTool
         /// Create a merge PR.
         /// </summary>
         /// <returns>
-        /// null if the merge PR was completed without error. Otherwise,
-        /// the response which had an error is returned. Note that a response
-        /// with an <see cref="HttpStatusCode" /> value 422 is returned if a PR
-        /// cannot be created because the <paramref name="srcBranch"/> creates
-        /// all the commits in the <paramref name="destBranch"/>.
+        /// (true, null) if the PR was created without error.
+        /// (false, null) if the PR wasn't created due to a PR already existing
+        /// or if the <paramref name="destBranch"/> contains all the commits
+        /// from <paramref name="srcBranch"/>.
+        /// (false, error response) if there was an error creating the PR.
         /// </returns>
-        public async Task<HttpResponseMessage> CreateMergePr(
+        public async Task<(bool prCreated, HttpResponseMessage error)> CreateMergePr(
             string repoOwner,
             string repoName,
             string srcBranch,
             string destBranch)
         {
+            string prTitle = $"Merge {srcBranch} to {destBranch}";
+
+            // Check to see if there's already a PR
+            // TODO: handle pagination
+            // This handles the 100 most recent PRs, which should work for now
+            HttpResponseMessage prsResponse = await _client.GetAsync(
+                $"repos/{repoOwner}/{repoName}/pulls?state=open&base={destBranch}&per_page=100");
+            if (!prsResponse.IsSuccessStatusCode)
+            {
+                return (false, prsResponse);
+            }
+
+            var prsBody = JArray.Parse(await prsResponse.Content.ReadAsStringAsync());
+            if (prsBody.Any(pr => (string)pr["title"] == prTitle))
+            {
+                return (false, null);
+            }
+
             // Get the SHA for the source branch
             var response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/git/refs/heads/{srcBranch}");
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                return response;
+                return (false, response);
             }
 
             var jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
-
             if (jsonBody.Type == JTokenType.Array)
             {
                 // Branch doesn't exist
-                return response;
+                return (false, response);
             }
 
             var srcSha = ((JValue)jsonBody["object"]["sha"]).ToObject<string>();
@@ -82,7 +100,7 @@ namespace GithubMergeTool
 
             if (response.StatusCode != HttpStatusCode.Created)
             {
-                return response;
+                return (false, response);
             }
 
             const string newLine = @"
@@ -108,7 +126,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             // Create a PR from the new branch to the dest
             body = $@"
 {{
-    ""title"": ""Merge {srcBranch} to {destBranch}"",
+    ""title"": ""{prTitle}"",
     ""body"": ""{prMessage}"",
     ""head"": ""{prBranchName}"",
     ""base"": ""{destBranch}""
@@ -123,10 +141,10 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             {
                 // Delete the pr branch if the PR was not created.
                 await _client.DeleteAsync($"repos/{repoOwner}/{repoName}/git/refs/heads/{prBranchName}");
-                return response;
+                return (false, null);
             }
 
-            return null;
+            return (true, null);
         }
     }
 }

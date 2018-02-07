@@ -1,13 +1,16 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+// README: This is a simple test script for trying out local changes.
+// Nothing in this file runs in production.
+
 #r "../../artifacts/Debug/bin/GithubMergeTool/net46/GithubMergeTool.dll"
 
 using System;
 using System.Net;
 using System.Threading.Tasks;
 
-private readonly static string GithubAuthToken = Environment.GetEnvironmentVariable("GITHUB_AUTH_TOKEN");
 private readonly static string GithubUsername = Environment.GetEnvironmentVariable("GITHUB_USERNAME");
+private readonly static string GithubAuthToken = Environment.GetEnvironmentVariable("GITHUB_AUTH_TOKEN");
 
 private static async Task MakeGithubPr(
     GithubMergeTool.GithubMergeTool gh,
@@ -38,8 +41,6 @@ private static async Task RunAsync()
 {
     // Write your test code here to test changes to the merge tool DLL
     var gh = new GithubMergeTool.GithubMergeTool(GithubUsername, GithubAuthToken);
-
-    await MakeGithubPr(gh, "agocke", "roslyn", "features/compiler", "features/ref-reassignment");
 }
 
 RunAsync().GetAwaiter().GetResult();
