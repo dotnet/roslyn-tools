@@ -18,7 +18,7 @@ The toolset has four kinds of features and helpers:
   Will be removed once the bugs are fixed in the product and the toolset moves to the new version of the tool.
 - Abstraction of peculiarities of VSSDK and VS insertion process that are not compatible with dotnet SDK.
 
-Repos currently using the toolset:
+<a name="RepoList"></a>Repos currently using the toolset:
 - http://github.com/dotnet/project-system
 - http://github.com/dotnet/project-system-tools
 - http://github.com/dotnet/interactive-window
