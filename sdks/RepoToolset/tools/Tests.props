@@ -25,8 +25,8 @@
     <IsTestProject>false</IsTestProject>
     <IsTestProject Condition="'$(IsUnitTestProject)' == 'true' or '$(IsIntegrationTestProject)' == 'true' or '$(IsPerformanceTestProject)' == 'true'">true</IsTestProject>
 
-    <!-- Disable building Integration or Performance Test projects in LUT. -->
-    <BuildForLiveUnitTesting Condition="'$(BuildForLiveUnitTesting)' == '' and ('$(IsIntegrationTestProject)' == 'true' or '$(IsPerformanceTestProject)' == 'true')">false</BuildForLiveUnitTesting>
+    <!-- Disable building Integration Test projects in LUT. -->
+    <BuildForLiveUnitTesting Condition="'$(BuildForLiveUnitTesting)' == '' and '$(IsIntegrationTestProject)' == 'true'">false</BuildForLiveUnitTesting>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
