@@ -6,11 +6,13 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
+  <!-- The 'PerformanceTest' target is only viable for repos building their own performance-test harness. -->
   <Target Name="PerformanceTest" Condition="'$(IsPerformanceTestProject)' == 'true'">
 
     <MakeDir Directories="$(ArtifactsTestResultsDir)"/>
     <Message Text="Running performance tests: $(TargetPath)" Importance="high"/>
-
+    
+    <!-- Call the repo built performance-test harness directly with the necessary parameters. -->
     <Exec Command='"$(DotNetTool)" "$(TargetPath)" $(PerformanceTestParameters)'
           LogStandardErrorAsError="false"
           WorkingDirectory="$(OutDir)"
