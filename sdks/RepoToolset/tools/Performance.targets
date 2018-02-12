@@ -11,7 +11,7 @@
     <MakeDir Directories="$(ArtifactsTestResultsDir)"/>
     <Message Text="Running performance tests: $(TargetPath)" Importance="high"/>
 
-    <Exec Command='$(DotNetTool) $(TargetPath) $(PerformanceTestParameters)'
+    <Exec Command='"$(DotNetTool)" "$(TargetPath)" $(PerformanceTestParameters)'
           LogStandardErrorAsError="false"
           WorkingDirectory="$(OutDir)"
           IgnoreExitCode="true">

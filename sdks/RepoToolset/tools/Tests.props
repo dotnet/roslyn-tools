@@ -8,7 +8,7 @@
 
   <PropertyGroup Condition="'$(IsPerformanceTestProject)' == ''">
     <IsPerformanceTestProject>false</IsPerformanceTestProject>
-    <IsPerformanceTestProject Condition="$(MSBuildProjectName.EndsWith('.PerfTests')) or $(MSBuildProjectName.EndsWith('.PerformanceTests'))">true</IsPerformanceTestProject>
+    <IsPerformanceTestProject Condition="$(MSBuildProjectName.EndsWith('.PerformanceTests'))">true</IsPerformanceTestProject>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(IsIntegrationTestProject)' == ''">

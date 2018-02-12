@@ -17,7 +17,7 @@
     <TestArchitectures Condition="'$(PlatformTarget)' == '' or '$(PlatformTarget)' == 'AnyCpu'">x64</TestArchitectures>
   </PropertyGroup>
 
-  <Target Name="Test" DependsOnTargets="$(_TestTargetName)" Condition="'$(IsUnitTestProject)' == 'true'" />
+  <Target Name="Test" DependsOnTargets="$(_TestTargetName)" Condition="'$(IsUnitTestProject)' == 'true' or '$(IsPerformanceTestProject)' == 'true'" />
   <Target Name="IntegrationTest" DependsOnTargets="$(_TestTargetName)" Condition="'$(IsIntegrationTestProject)' == 'true'" />
 
   <ItemGroup>
@@ -38,7 +38,7 @@
       <_RunOnCore Condition="$(TargetFramework.StartsWith('netcoreapp'))">true</_RunOnCore>
     </PropertyGroup>
 
-    <Error Text="Architecture specified in TestArchitectures is not supported: '$(_TestArchitecture)'" File="XUnit" 
+    <Error Text="Architecture specified in TestArchitectures is not supported: '$(_TestArchitecture)'" File="XUnit"
            Condition="'$(_TestArchitecture)' != 'x64' and ('$(_TestArchitecture)' != 'x86' or $(_RunOnCore))"/>
 
     <PropertyGroup Condition="'$(_RunOnCore)' == 'true'">
