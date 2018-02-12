@@ -1,5 +1,5 @@
 <!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
-<Project DefaultTargets="Execute" TreatAsLocalProperty="Sign;Test;IntegrationTest">
+<Project DefaultTargets="Execute" TreatAsLocalProperty="Sign;Test;IntegrationTest;PerformanceTest">
   <!--
   
   Required parameters:
@@ -21,6 +21,7 @@
     Deploy                          "true" to deploy assets (e.g. VSIXes)
     Test                            "true" to run tests
     IntegrationTest                 "true" to run integration tests
+    PerformanceTest                 "true" to run performance tests
     Pack                            "true" to build NuGet packages and VS insertion manifests
     Sign                            "true" to sign built binaries
     SignType                        "real" to send binaries to signing service, "test" to only validate signing configuration.
@@ -63,7 +64,8 @@
     <Sign Condition="'$(PB_SignType)' != '' and '$(PB_SignType)' != 'real'">false</Sign>
     <Test Condition="'$(PB_SkipTests)' == 'true'">false</Test>
     <IntegrationTest Condition="'$(PB_SkipTests)' == 'true'">false</IntegrationTest>
-
+    <PerformanceTest Condition="'$(PB_SkipTests)' == 'true'">false</PerformanceTest>
+    
     <_PipeBuildPublishing>false</_PipeBuildPublishing>
     <_PipeBuildPublishing Condition="$(PB_PublishType.Contains('blob'))">true</_PipeBuildPublishing>
 
@@ -91,6 +93,7 @@
       <!-- Deploy target is set up to chain after Build so that F5 in VS works. -->
       <_SolutionBuildTargets Include="Test" Condition="'$(Test)' == 'true'" />
       <_SolutionBuildTargets Include="IntegrationTest" Condition="'$(IntegrationTest)' == 'true'" />
+      <_SolutionBuildTargets Include="PerformanceTest" Condition="'$(PerformanceTest)' == 'true'" />
       <_SolutionBuildTargets Include="Pack" Condition="'$(Pack)' == 'true' and '$(Sign)' != 'true'" />
     </ItemGroup>
 
