@@ -10,7 +10,7 @@
   <Target Name="PerformanceTest" Condition="'$(IsPerformanceTestProject)' == 'true'">
     <PropertyGroup>
       <PerfIterations Condition="'$(PerfIterations)' == ''">10</PerfIterations>
-      <PerfOutputDirectory Condition="'$(PerfOutputDirectory)' == ''">$(ArtifactsTestResultsDir)Performance\</PerfOutputDirectory>
+      <PerfOutputDirectory Condition="'$(PerfOutputDirectory)' == ''">$(ArtifactsTestResultsDir)Performance</PerfOutputDirectory>
       <PerfCollectionType Condition="'$(PerfCollectionType)' == ''">stopwatch</PerfCollectionType>
     </PropertyGroup>
 
