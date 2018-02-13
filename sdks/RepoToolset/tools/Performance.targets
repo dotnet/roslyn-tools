@@ -25,6 +25,8 @@
 
       <Output TaskParameter="ExitCode" PropertyName="_TestErrorCode" />
     </Exec>
+
+    <Error Text="Performance tests failed: ExitCode = $(_TestErrorCode)" Condition="'$(_TestErrorCode)' != '0'" />
   </Target>
 
 </Project>
