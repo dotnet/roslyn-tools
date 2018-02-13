@@ -8,12 +8,17 @@
 
   <!-- The 'PerformanceTest' target is only viable for repos building their own performance-test harness. -->
   <Target Name="PerformanceTest" Condition="'$(IsPerformanceTestProject)' == 'true'">
+    <PropertyGroup>
+      <PerfIterations Condition="'$(PerfIterations)' == ''">10</PerfIterations>
+      <PerfOutputDirectory Condition="'$(PerfOutputDirectory)' == ''">$(ArtifactsTestResultsDir)Performance\</PerfOutputDirectory>
+      <PerfCollectionType Condition="'$(PerfCollectionType)' == ''">stopwatch</PerfCollectionType>
+    </PropertyGroup>
 
-    <MakeDir Directories="$(ArtifactsTestResultsDir)"/>
+    <MakeDir Directories="$(PerfOutputDirectory)"/>
     <Message Text="Running performance tests: $(TargetPath)" Importance="high"/>
     
     <!-- Call the repo built performance-test harness directly with the necessary parameters. -->
-    <Exec Command='"$(DotNetTool)" "$(TargetPath)" $(PerformanceTestParameters)'
+    <Exec Command='"$(DotNetTool)" "$(TargetPath)" --perf:iterations $(PerfIterations) --perf:outputdir "$(PerfOutputDirectory)" --perf:collect $(PerfCollectionType)'
           LogStandardErrorAsError="false"
           WorkingDirectory="$(OutDir)"
           IgnoreExitCode="true">
