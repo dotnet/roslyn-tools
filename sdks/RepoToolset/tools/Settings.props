@@ -20,4 +20,6 @@
   <Import Project="XUnit.props" Condition="'$(UsingToolXUnit)' == 'true' and ('$(IsUnitTestProject)' == 'true' or '$(IsIntegrationTestProject)' == 'true' or '$(IsPerformanceTestProject)' == 'true')"/>
   <Import Project="VisualStudio.props" Condition="'$(UsingToolVSSDK)' == 'true'"/>
 
+  <!-- Directory.Build.props are imported next by .NET SDK (via Common.targets) -->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 </Project>

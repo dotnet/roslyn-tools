@@ -1,5 +1,5 @@
 <!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
-<Project DefaultTargets="Execute" TreatAsLocalProperty="Sign;Test;IntegrationTest;PerformanceTest">
+<Project DefaultTargets="Execute" TreatAsLocalProperty="RepoRoot;Sign;Test;IntegrationTest;PerformanceTest">
   <!--
   
   Required parameters:
@@ -8,11 +8,9 @@
   Optional parameters:              
     Configuration                   Build configuration: "Debug", "Release", etc.
     RepoRoot                        Repository root, defaults to the directory containing the solution.
-    
-    VersionsPropsPath               Versions.props path, defaults to $(RepoRoot)build\Versions.props.
-    FixedVersionsPropsPath          FixedVersions.props path, defaults to $(RepoRoot)build\FixedVersions.props.
+
     DotNetPackageVersionPropsPath   Package version overrides.
-                                    
+
     CIBuild                         "true" when building on CI server
     Restore                         "true" to restore toolset and solution
     QuietRestore                    "true" to suppress Restore output.
@@ -25,21 +23,14 @@
     Pack                            "true" to build NuGet packages and VS insertion manifests
     Sign                            "true" to sign built binaries
     SignType                        "real" to send binaries to signing service, "test" to only validate signing configuration.
-    SignToolDataPath                SignToolData.json path.
   -->
 
   <!--
     Default values. 
   -->
   <PropertyGroup>
-    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
-
+    <RepoRoot Condition="'$(RepoRoot)' != ''">$([System.IO.Path]::GetFullPath('$(RepoRoot)\'))</RepoRoot>
     <RepoRoot Condition="'$(RepoRoot)' == ''">$([System.IO.Path]::GetDirectoryName('$(SolutionPath)'))\</RepoRoot>
-    <_NormalizedRepoRoot>$([System.IO.Path]::GetFullPath('$(RepoRoot)'))</_NormalizedRepoRoot>
-
-    <VersionsPropsPath Condition="'$(VersionsPropsPath)' == ''">$(_NormalizedRepoRoot)build\Versions.props</VersionsPropsPath>
-    <FixedVersionsPropsPath Condition="'$(FixedVersionsPropsPath)' == '' and Exists('$(_NormalizedRepoRoot)build\FixedVersions.props')">$(_NormalizedRepoRoot)build\FixedVersions.props</FixedVersionsPropsPath>
-    <SignToolDataPath Condition="'$(SignToolDataPath)' == ''">$(_NormalizedRepoRoot)build\SignToolData.json</SignToolDataPath>
   </PropertyGroup>
 
   <Import Project="BuildTasks.props"/>
@@ -100,7 +91,7 @@
     <ItemGroup>
       <_CommonProps Include="Configuration=$(Configuration)"/>
       <_CommonProps Include="CIBuild=$(CIBuild)"/>
-      <_CommonProps Include="RepoRoot=$(_NormalizedRepoRoot)"/>
+      <_CommonProps Include="RepoRoot=$(RepoRoot)"/>
       <_CommonProps Include="VersionsPropsPath=$(VersionsPropsPath)"/>
       <_CommonProps Include="FixedVersionsPropsPath=$(FixedVersionsPropsPath)" Condition="'$(FixedVersionsPropsPath)' != ''"/>
       <_CommonProps Include="DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)"/>
