@@ -11,6 +11,8 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
+  <Import Project="$(VersionsPropsPath)" />
+
   <PropertyGroup>
     <!-- Opt-out features -->
     <UsingToolXliff Condition="'$(UsingToolXliff)' == ''">true</UsingToolXliff>
