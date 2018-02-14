@@ -16,13 +16,11 @@ namespace GithubMergeTool
         private static readonly Uri GithubBaseUri = new Uri("https://api.github.com/");
 
         private readonly HttpClient _client;
-        private readonly string _username;
 
         public GithubMergeTool(
             string username,
             string password)
         {
-            _username = username;
             var client = new HttpClient();
             client.BaseAddress = GithubBaseUri;
 
@@ -58,7 +56,7 @@ namespace GithubMergeTool
 
             // Check to see if there's already a PR
             HttpResponseMessage prsResponse = await _client.GetAsync(
-                $"repos/{repoOwner}/{repoName}/pulls?state=open&base={destBranch}&head={_username}:{prBranchName}");
+                $"repos/{repoOwner}/{repoName}/pulls?state=open&base={destBranch}&head={repoOwner}:{prBranchName}");
             if (!prsResponse.IsSuccessStatusCode)
             {
                 return (false, prsResponse);
