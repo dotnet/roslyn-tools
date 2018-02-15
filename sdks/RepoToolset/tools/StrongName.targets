@@ -50,6 +50,27 @@
     </When>
   </Choose>
 
+  <!--
+    Work around https://github.com/Microsoft/msbuild/issues/1490 (lack of support for public-signing satellites) by
+    delay-signing satellite assemblies when main assembly is public-signed.
+    This workaround is needed until we can move to MSBuild 15.6.
+  -->
+  <Target Name="PrepareToDelaySignSatelliteAssemblies"
+          BeforeTargets="GenerateSatelliteAssemblies"
+          Condition="'$(MSBuildRuntimeType)' != 'Core' and '$(SignAssembly)' != 'false'">
+    <PropertyGroup>
+      <_DelaySignMainAssembly>$(DelaySign)</_DelaySignMainAssembly>
+      <DelaySign Condition="'$(PublicSign)' == 'true'">true</DelaySign>
+    </PropertyGroup>
+  </Target>
+  <Target Name="CleanupAfterDelaySigningSatelliteAssemblies"
+          AfterTargets="GenerateSatelliteAssemblies"
+          Condition="'$(MSBuildRuntimeType)' != 'Core' and '$(SignAssembly)' != 'false'">
+    <PropertyGroup>
+      <DelaySign>$(_DelaySignMainAssembly)</DelaySign>
+    </PropertyGroup>
+  </Target>
+
   <!-- Build Flag Verification -->
   <PropertyGroup>
     <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);VerifyBuildFlags</PrepareForBuildDependsOn>
