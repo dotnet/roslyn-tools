@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -15,13 +16,19 @@ using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.Policy.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
-
+using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
+using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Clients;
+using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts;
+using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
 
 namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
+        // Currently this is the only release we trigger. We can easily move this over to options when we need this configurable.
+        private const string ReleaseDefinitionName = "Roslyn";
+
         private static readonly Lazy<TfsTeamProjectCollection> LazyProjectCollection = new Lazy<Microsoft.TeamFoundation.Client.TfsTeamProjectCollection>(() =>
         {
             Log.Trace($"Creating TfsTeamProjectCollection object from {Options.VSTSUri}");
@@ -50,6 +57,8 @@ namespace Roslyn.Insertion
             return await gitClient.CreatePullRequestAsync(
                     CreatePullRequest("refs/heads/" + branchName, "refs/heads/" + Options.VisualStudioBranchName, message),
                     repository.Id,
+                    supportsIterations: null,
+                    userState: null,
                     cancellationToken);
         }
 
@@ -60,7 +69,7 @@ namespace Roslyn.Insertion
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
             var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
             var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, BuildResult.Succeeded);
-
+            
             // Get the latest build with valid artifacts.
             return (from build in builds
                     where buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken).Result.Any(a => a.Resource != null && a.Resource.Data != null && a.Resource.Data.Contains(Options.BuildDropPath))
@@ -149,25 +158,6 @@ namespace Roslyn.Insertion
             }
         }
 
-        private static async Task<GitPullRequestCommentThread> CreateGitPullRequestCommentThread(int pullRequestId, string commentContent)
-        {
-            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
-            return await gitClient.CreateThreadAsync(new GitPullRequestCommentThread
-            {
-                Comments = new List<GitPullRequestComment>
-                                   {
-                                       new GitPullRequestComment()
-                                       {
-                                           CommentType = GitPullRequestCommentType.Text,
-                                           Content = commentContent
-                                       }
-                                   }
-            },
-                project: Options.TFSProjectName,
-                repositoryId: "VS",
-                pullRequestId: pullRequestId);
-        }
-
         private static async Task<Build> GetSpecificBuildAsync(BuildVersion version, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -179,6 +169,136 @@ namespace Roslyn.Insertion
                     where version == BuildVersion.FromTfsBuildNumber(build.BuildNumber, Options.BuildQueueName)
                     orderby build.FinishTime descending
                     select build).FirstOrDefault();
+        }
+
+        private static async Task<Release> CreateReleaseAsync(Build build, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var releaseClient = ProjectCollection.GetClient<ReleaseHttpClient>();
+            
+            var releaseDefinition = (await releaseClient.GetReleaseDefinitionsAsync(Options.TFSProjectName, ReleaseDefinitionName, cancellationToken: cancellationToken)).FirstOrDefault();
+
+            if (releaseDefinition == null)
+            {
+                Log.Log(NLog.LogLevel.Error, $"Could not find a release definition with name: {ReleaseDefinitionName}");
+                return null;
+            }
+
+            var releaseMetadata = new ReleaseStartMetadata()
+            {
+                DefinitionId = releaseDefinition.Id,
+                Description = $"Automated release for {Options.BranchName} for build {build.BuildNumber}",
+                Reason = ReleaseReason.ContinuousIntegration
+            };
+
+            var artifactMetadata = new ArtifactMetadata
+            {
+                Alias = "Roslyn-Signed", // This is the alias in the Release definition.
+                InstanceReference = new Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts.BuildVersion
+                {
+                    Id = build.Id.ToString(CultureInfo.InvariantCulture),
+                    Name = build.BuildNumber
+                }
+            };
+
+            artifactMetadata.InstanceReference.SourceBranch = build.SourceBranch;
+            releaseMetadata.Artifacts = new List<ArtifactMetadata> { artifactMetadata };
+
+            return await releaseClient.CreateReleaseAsync(releaseMetadata, Options.TFSProjectName, cancellationToken: cancellationToken);
+        }
+
+        // Apparently there isn't a very nice way of waiting for a release to complete. Borrowed this piece from an internal test code.
+        private static void WaitForReleaseCompletion(Release release, TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            if (release == null)
+            {
+                throw new ArgumentNullException(nameof(release));
+            }
+
+            try
+            {
+                foreach (var env in release.Environments)
+                {
+                    WaitForReleaseEnvironmentCompletion(Options.TFSProjectName, release, env.Id, timeout, cancellationToken);
+                }
+            }
+            catch(Exception exception)
+            {
+                // Log and swallow exceptions here.
+                // These aren't as severe as to stop creating an insertion PR.
+                Log.Error(exception);
+            }
+        }
+
+        private static EnvironmentStatus WaitForReleaseEnvironmentCompletion(string projectName, Release release, int environmentId, TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            if (release == null)
+            {
+                throw new ArgumentNullException(nameof(release));
+            }
+
+            Log.Info("Waiting for release environment to complete. releaseId: {0}, environmentId: {1} in project: {2}", release.Id, environmentId, projectName);
+
+            EnvironmentStatus environmentStatus;
+            ReleaseEnvironment releaseEnvironment;
+
+            var releaseClient = ProjectCollection.GetClient<ReleaseHttpClient>();
+
+            try
+            {
+                Stopwatch watch = Stopwatch.StartNew();
+                while (true)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    Task.Delay(5 * 1000, cancellationToken).Wait();
+                    environmentStatus = GetReleaseEnvironmentStatus(projectName, release, environmentId, releaseClient, cancellationToken);
+                    if(!(environmentStatus.Equals(EnvironmentStatus.InProgress)
+                          || environmentStatus.Equals(EnvironmentStatus.Queued)
+                          || environmentStatus.Equals(EnvironmentStatus.NotStarted)
+                          || environmentStatus.Equals(EnvironmentStatus.Scheduled)))
+                    {
+                        break;
+                    }
+
+                    if (watch.Elapsed > timeout)
+                    {
+                        throw new TimeoutException($"The release could not be completed within {timeout.Minutes} minutes");
+                    }
+                }
+            }
+            finally
+            {
+                releaseEnvironment = GetReleaseEnvironment(projectName, release.Id, environmentId, releaseClient, cancellationToken);
+
+                if (releaseEnvironment.Status != EnvironmentStatus.Succeeded)
+                {
+                    Log.Error($"The release did not succeed. Take a look at {release.ReleaseDefinitionReference.Url} to find {release.Name} for more details.");
+                }
+            }
+
+            return releaseEnvironment.Status;
+        }
+
+        private static EnvironmentStatus GetReleaseEnvironmentStatus(string projectName, Release release, int environmentId, ReleaseHttpClient releaseClient, CancellationToken cancellationToken)
+        {
+            if (release == null)
+            {
+                throw new ArgumentNullException(nameof(release));
+            }
+
+            Log.Info("GetReleaseEnvironmentStatus: Getting release environment status for environmentId: {0}, ReleaseId:{1}", environmentId, release.Id);
+
+            var environment = GetReleaseEnvironment(projectName, release.Id, environmentId, releaseClient, cancellationToken);
+
+            return environment.Status;
+        }
+
+        private static ReleaseEnvironment GetReleaseEnvironment(string projectName, int releaseId, int releaseEnvironmentId, ReleaseHttpClient releaseClient, CancellationToken cancellationToken)
+        {
+            Log.Info("GetReleaseEnvironment: Getting release environment. environmentId: {0}, releaseId:{1}", releaseEnvironmentId, releaseId);
+            
+            return releaseClient.GetReleaseEnvironmentAsync(projectName, releaseId, releaseEnvironmentId, cancellationToken: cancellationToken).SyncResult();
         }
 
         private static async Task<Component[]> GetLatestComponentsAsync(Build newestBuild, CancellationToken cancellationToken)
