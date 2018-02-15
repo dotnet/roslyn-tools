@@ -30,6 +30,7 @@ The toolset has four kinds of features and helpers:
 - http://github.com/dotnet/roslyn-analyzers
 - http://github.com/dotnet/roslyn-debug (private)
 - http://github.com/dotnet/roslyn-sdk (private)
+- http://github.com/dotnet/roslyn-tools
 - http://github.com/dotnet/dotnet-cli-archiver
 - http://github.com/dotnet/sdk
 - http://github.com/Microsoft/msbuild
