@@ -19,23 +19,24 @@ The toolset has four kinds of features and helpers:
 - Abstraction of peculiarities of VSSDK and VS insertion process that are not compatible with dotnet SDK.
 
 <a name="RepoList"></a>Repos currently using the toolset:
-- http://github.com/dotnet/project-system
-- http://github.com/dotnet/project-system-tools
-- http://github.com/dotnet/interactive-window
-- http://github.com/dotnet/symreader
-- http://github.com/dotnet/symreader-portable
-- http://github.com/dotnet/symreader-converter
-- http://github.com/dotnet/symstore
-- http://github.com/dotnet/metadata-tools
-- http://github.com/dotnet/roslyn-analyzers
-- http://github.com/dotnet/roslyn-debug (private)
-- http://github.com/dotnet/roslyn-sdk (private)
-- http://github.com/dotnet/roslyn-tools
-- http://github.com/dotnet/dotnet-cli-archiver
-- http://github.com/dotnet/clicommandlineparser
-- http://github.com/dotnet/cli-migrate
-- http://github.com/dotnet/sdk
-- http://github.com/Microsoft/msbuild
+- https://github.com/dotnet/project-system
+- https://github.com/dotnet/project-system-tools
+- https://github.com/dotnet/interactive-window
+- https://github.com/dotnet/symreader
+- https://github.com/dotnet/symreader-portable
+- https://github.com/dotnet/symreader-converter
+- https://github.com/dotnet/symstore
+- https://github.com/dotnet/metadata-tools
+- https://github.com/dotnet/roslyn-analyzers
+- https://github.com/dotnet/roslyn-debug (private)
+- https://github.com/dotnet/roslyn-sdk (private)
+- https://github.com/dotnet/roslyn-tools
+- https://github.com/dotnet/dotnet-cli-archiver
+- https://github.com/dotnet/clicommandlineparser
+- https://github.com/dotnet/cli-migrate
+- https://github.com/dotnet/sdk
+- https://github.com/dotnet/xliff-tasks
+- https://github.com/Microsoft/msbuild
 
 The toolset has following requirements on the repo layout.
 
