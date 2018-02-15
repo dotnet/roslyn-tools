@@ -252,7 +252,9 @@ namespace Roslyn.Insertion
                     cancellationToken.ThrowIfCancellationRequested();
 
                     Task.Delay(5 * 1000, cancellationToken).Wait();
-                    environmentStatus = GetReleaseEnvironmentStatus(projectName, release, environmentId, releaseClient, cancellationToken);
+
+                    environmentStatus = GetReleaseEnvironment(projectName, release.Id, environmentId, releaseClient, cancellationToken).Status;
+                    
                     if(!(environmentStatus.Equals(EnvironmentStatus.InProgress)
                           || environmentStatus.Equals(EnvironmentStatus.Queued)
                           || environmentStatus.Equals(EnvironmentStatus.NotStarted)
@@ -278,20 +280,6 @@ namespace Roslyn.Insertion
             }
 
             return releaseEnvironment.Status;
-        }
-
-        private static EnvironmentStatus GetReleaseEnvironmentStatus(string projectName, Release release, int environmentId, ReleaseHttpClient releaseClient, CancellationToken cancellationToken)
-        {
-            if (release == null)
-            {
-                throw new ArgumentNullException(nameof(release));
-            }
-
-            Log.Info("GetReleaseEnvironmentStatus: Getting release environment status for environmentId: {0}, ReleaseId:{1}", environmentId, release.Id);
-
-            var environment = GetReleaseEnvironment(projectName, release.Id, environmentId, releaseClient, cancellationToken);
-
-            return environment.Status;
         }
 
         private static ReleaseEnvironment GetReleaseEnvironment(string projectName, int releaseId, int releaseEnvironmentId, ReleaseHttpClient releaseClient, CancellationToken cancellationToken)

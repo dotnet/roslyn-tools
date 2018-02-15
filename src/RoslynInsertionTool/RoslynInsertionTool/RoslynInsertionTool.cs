@@ -212,7 +212,7 @@ namespace Roslyn.Insertion
                 //    it should not be very long but this should increase when more time intesive tasks are added to the release.
                 // 2. The availability of machines to run the release on. This could be a problem at peak pool load
                 //    where getting a machine can take upto an hour or more.
-                WaitForReleaseCompletion(release, TimeSpan.FromMinutes(70), cancellationToken);
+                WaitForReleaseCompletion(release, TimeSpan.FromMinutes(10), cancellationToken);
 
                 Log.Info($"Release succesfully triggered");
 
