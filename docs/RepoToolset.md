@@ -86,11 +86,42 @@ Having a common output directory structure makes it possible to unify MicroBuild
 | tmp               | Temp files generated during build. |
 | toolset           | Files generated during toolset restore. |
 
+### SDK configuration (global.json, nuget.config)
+
+`/global.json` file is present and specifies the version of the donet and `RoslynTools.RepoToolset` SDKs.
+
+For example,
+
+```json
+{
+  "sdk": {
+    "version": "2.1.100-preview-007366"
+  },
+  "msbuild-sdks": {
+    "RoslynTools.RepoToolset": "1.0.0-beta2-62615-01"
+  }
+}
+```
+
+`/nuget.config` file is present and specifies the MyGet feed to retrieve `RoslynTools.RepoToolset` SDK from like so:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <!-- Only specify feed for RepoToolset SDK (see https://github.com/Microsoft/msbuild/issues/2982) -->
+  <packageSources>
+    <add key="roslyn-tools" value="https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json" />
+  </packageSources>
+</configuration>
+```
+
+> An improvement in SKD resolver is proposed to be able to specify the feed in `global.json` file to avoid the need for extra configuration in `nuget.config`. See https://github.com/Microsoft/msbuild/issues/2982.
+
 ### Sign Tool configuration
-SignToolData.json file is present in the repo and describes how build outputs should be signed.
+`/build/SignToolData.json` file is present in the repo and describes how build outputs should be signed.
 
 ### A single file listing component versions and used tools
-Versions.props file is present in the repo and defines versions of all dependencies used in the repository as well as version of the components produced by the repo build.
+`/build/Versions.props` file is present in the repo and defines versions of all dependencies used in the repository, the NuGet feeds they should be restored from and the version of the components produced by the repo build.
 
 ```xml
 <Project>
@@ -130,32 +161,17 @@ Versions.props file is present in the repo and defines versions of all dependenc
 </Project>
 ```
 
-The toolset defines a set of tools (or features) that each repo can opt into or opt out. Since different repos have different needs the set of tools that will be imported from the toolset can be controlled by ```UsingTool{tool-name}``` properties, where *tool-name* is e.g. ```Xliff```, ```SourceLink```, ```XUnit```, ```VSSDK```, ```IbcOptimization```, etc. These properties shall be set in the Versions.props file. 
+The toolset defines a set of tools (or features) that each repo can opt into or opt out. Since different repos have different needs the set of tools that will be imported from the toolset can be controlled by `UsingTool{tool-name}` properties, where *tool-name* is e.g. `Xliff`, `SourceLink`, `XUnit`, `VSSDK`, `IbcOptimization`, etc. These properties shall be set in the Versions.props file. 
 
 The toolset also defines default versions for various tools and dependencies, such as MicroBuild, XUnit, VSSDK, etc. These defaults can be overridden in the Versions.props file.
 
 See [DefaultVersions](https://github.com/dotnet/roslyn-tools/blob/master/src/RepoToolset/DefaultVersions.props]) for a list of *UsingTool* properties and default versions.
 
-### Root build properties
-Directory.Build.props in the repo root that imports Versions.props file and defines variables: 
+### Root build properties (optional)
+`Directory.Build.props` in the repo root may specify the `RepositoryUrl` and public keys for `InternalsVisibleTo` project items.
 
 ```xml
-<Import Project="build\NuGet.props"/>
-<Import Project="build\Versions.props"/>
-
 <PropertyGroup>
-  <!-- Root of the repository -->
-  <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
-
-  <!-- Full path to SignToolData.json -->
-  <SignToolDataPath>$(RepoRoot)build\SignToolData.json</SignToolDataPath>
-
-  <!-- Full path to Versions.props -->
-  <VersionsPropsPath>$(RepoRoot)build\Versions.props</VersionsPropsPath>
-
-  <!-- Not required, but useful: allows easy importing of props/targets files from RepoToolset -->
-  <RepoToolsetDir>$(NuGetPackageRoot)RoslynTools.Microsoft.RepoToolset\$(RoslynToolsMicrosoftRepoToolsetVersion)\tools\</RepoToolsetDir>
-
   <!-- Repository and project URLs (used in nuget packages) -->
   <RepositoryUrl>https://github.com/dotnet/symreader-converter</RepositoryUrl>
   <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
@@ -166,113 +182,53 @@ Directory.Build.props in the repo root that imports Versions.props file and defi
 ```
 
 ### Source Projects
-Projects are located under ```src``` directory under root repo, in any subdirectory structure appropriate for the repo. 
+Projects are located under `src` directory under root repo, in any subdirectory structure appropriate for the repo. 
 
-Projects shall be standard dotnet SDK based projects. No project level customization is required, that is a project created via ```dotnet new``` will work just fine without further modifications.
-
-#### Conventions used by the toolset
-
-- Unit test project file names shall end with ```.UnitTests``` or ```.Tests```, e.g. ```MyProject.UnitTests.csproj``` or ```MyProject.Tests.csproj```. 
-- Integration test project file names shall end with ```.IntegrationTests```, e.g. ```MyProject.IntegrationTests.vbproj```.
-- If ```source.extension.vsixmanifest``` is present next to the project file the project is by default considered to be a VSIX producing project.
-
-Source directory ```src``` shall contain ```Directory.Build.props``` and ```Directory.Build.targets``` files like so:
-
-#### Directory.Build.props
+Projects shall use `RoslynTools.RepoToolset` SDK like so:
 
 ```xml
-<Project>
-  <!-- Import the repo root props -->
-  <Import Project="..\Directory.Build.props"/>
-
-  <!-- Import common project settings provided by RepoToolset -->
-  <Import Project="$(RepoToolsetDir)Settings.props" />
-
-  <!-- Any property customization common to all projects in the repo --> 
+<Project Sdk="RoslynTools.RepoToolset">
+    ...
 </Project>
 ```
 
-#### Directory.Build.targets
+#### Project name conventions
 
-```xml
-<Project>
-  <!-- Import common project targets provided by RepoToolset -->
-  <Import Project="$(RepoToolsetDir)Imports.targets" />
-
-  <!-- Any target customization common to all projects in the repo --> 
-</Project>
-```
+- Unit test project file names shall end with `.UnitTests` or `.Tests`, e.g. `MyProject.UnitTests.csproj` or `MyProject.Tests.csproj`. 
+- Integration test project file names shall end with `.IntegrationTests`, e.g. `MyProject.IntegrationTests.vbproj`.
+- Performance test project file names shall end with `.PerformanceTests`, e.g. `MyProject.PerformaceTests.csproj`.
+- If `source.extension.vsixmanifest` is present next to the project file the project is by default considered to be a VSIX producing project.
 
 ### Other Projects
 
-It might be useful to create other top-level directories containing projects for projects that are not standard C#/VB/F# projects. For example, projects that aggregate outputs of multiple projects into a single NuGet package or Willow component. These projects should also be included in the main solution so that the build driver includes them in build process, but their ```Directory.Build.*``` settings are gonna be different from source projects. Hence the separate root directory.
+It might be useful to create other top-level directories containing projects that are not standard C#/VB/F# projects. For example, projects that aggregate outputs of multiple projects into a single NuGet package or Willow component. These projects should also be included in the main solution so that the build driver includes them in build process, but their `Directory.Build.*` may be different from source projects. Hence the different root directory.
 
-### Default build scripts
+### Building VSIX packages (optional)
 
-The RepoToolset provides a build driver ```$(RepoToolsetDir)Build.proj```. 
+Building Visual Studio components is an opt-in feature of the RepoToolset. Property `UsingToolVSSDK` needs to be set to `true` in the `Versions.props` file.
 
-Example of PowerShell script invoking the build:
+Set `VSSDKTargetPlatformRegRootSuffix` property to specify the root suffix of the VS hive to deploy to.
 
-```PowerShell
-#
-# Installs the RepoToolset
-#
-function InstallToolset {
-  if (!(Test-Path $ToolsetBuildProj)) {
-    & $DotNetExe msbuild Toolset.proj /t:restore /m /nologo /clp:None /warnaserror /v:quiet /p:NuGetPackageRoot=$NuGetPackageRoot /p:BaseIntermediateOutputPath=$ToolsetDir /p:ExcludeRestorePackageImports=true
-  }
-}
+If `source.extension.vsixmanifest` is present next to a project file the project is by default considered to be a VSIX producing project. 
+A package reference to `Microsoft.VSSDK.BuildTools` is automatically added to such project. 
+A project that needs `Microsoft.VSSDK.BuildTools` for generating pkgdef file needs to include the PackageReference explicitly.
 
-#
-# Invokes the build driver.
-#
-function Build { 
-  $ToolsetBuildProj = Join-Path $NuGetPackageRoot "RoslynTools.Microsoft.RepoToolset\$ToolsetVersion\tools\Build.proj"
- 
-  & $DotNetExe msbuild $ToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity /p:Configuration=$configuration /p:SolutionPath=$solution /p:Restore=$restore /p:Build=$build /p:Rebuild=$rebuild /p:Test=$test /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci /p:NuGetPackageRoot=$NuGetPackageRoot $properties
-}
-```
+RepoToolset include build target for generating VS Template VSIXes. Adding `VSTemplate` items to project will trigger the target.
 
-Example of common ```Toolset.proj```:
+`source.extension.vsixmanifest` shall sepcify `Experimental="true"` attribute in `Installation` section. The experimental flag will be stripped from VSIXes inserted into Visual Studio.
 
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
-    <RestoreSources>https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json</RestoreSources>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="RoslynTools.Microsoft.RepoToolset" Version="$(RoslynToolsMicrosoftRepoToolsetVersion)" />
-  </ItemGroup>
-</Project>
-```
+VSIX packages are built to `VSSetup` directory.
 
-### Building VSIX packages
+### Visual Studio Insertion components (optional)
 
-Building Visual Studio components is an opt-in feature of the RepoToolset. Property ```UsingToolVSSDK``` needs to be set to ```true``` in the ```Versions.props``` file (or in root Directory.Build.props).
-
-Set ```VSSDKTargetPlatformRegRootSuffix``` property to specify the root suffix of the VS hive to deploy to.
-
-If ```source.extension.vsixmanifest``` is present next to a project file the project is by default considered to be a VSIX producing project. 
-A package reference to ```Microsoft.VSSDK.BuildTools``` is automatically added to such project. 
-A project that needs ```Microsoft.VSSDK.BuildTools``` for generating pkgdef file needs to include the PackageReference explicitly.
-
-RepoToolset include build target for generating VS Template VSIXes. Adding ```VSTemplate``` items to project will trigger the target.
-
-```source.extension.vsixmanifest``` shall sepcify ```Experimental="true"``` attribute in ```Installation``` section. The experimental flag will be stripped from VSIXes inserted into Visual Studio.
-
-VSIX packages are built to ```VSSetup``` directory.
-
-### Visual Studio Insertion components
-
-To include the output VSIX of a project in Visual Studio Insertion, set the ```VisualStudioInsertionComponent``` property.
+To include the output VSIX of a project in Visual Studio Insertion, set the `VisualStudioInsertionComponent` property.
 Multiple VSIXes can specify the same component name, in which case their manifests will be merged into a single insertion unit.
 
-The Visual Studio insertion manifests and VSIXes are generated during Pack task into ```VSSetup\Insertion``` directory, where they are picked by by MicroBuild VSTS publishing task during official builds.
+The Visual Studio insertion manifests and VSIXes are generated during Pack task into `VSSetup\Insertion` directory, where they are picked by by MicroBuild VSTS publishing task during official builds.
 
 RepoToolset also enables building VS Setup Components from .swr files (as opposed to components comprised of one or more VSIXes).
 
-Use ```SwrProperty``` and ```SwrFile``` items to define a property that will be substituted in .swr files for given value and the set of .swr files, respectively.
+Use `SwrProperty` and `SwrFile` items to define a property that will be substituted in .swr files for given value and the set of .swr files, respectively.
 
 For example,
 
@@ -311,20 +267,21 @@ folder "InstallDir:MSBuild\Microsoft\VisualStudio\Managed"
   file source="$(VisualStudioXamlRulesDir)Microsoft.FSharp.DesignTime.targets"
   file source="$(VisualStudioXamlRulesDir)Microsoft.Managed.DesignTime.targets"
 ```
+### Build script (OS Specific)
 
-### Main build script (OS Specific)
+The RepoToolset provides a build driver `Build.proj`. 
 
-Used to acquire and restore dotnet cli (if not restored yet) and kick off build locally as well as from CI.
+The driver can be built from dotnet CLI or Desktop Framework msbuild. 
 
-#### build.ps1 
 Example of dotnet cli driven build:
-
 https://github.com/dotnet/symreader-converter/blob/master/build/build.ps1.
 
 Example of desktop msbuild driven build:
 https://github.com/dotnet/interactive-window/blob/master/build/build.ps1.
 
 #### CIBuild.cmd
+
+It is recommended to include `/build/CIBuild.cmd` and `/build/CIBuild.sh` in the repository and execute these scripts from Jenkins and MicroBuild to trigger CI build. The purpose of these scripts is to allow running CI build locally with the same parameters as on the CI server.
 
 ```
 @echo off
@@ -342,5 +299,5 @@ CIBuild.cmd -configuration $(BuildConfiguration)
 
 RepoToolset expects MicroBuild to set the following environment variables:
 
-- BUILD_BUILDNUMBER=yyyymmdd.nn
-- SignType="real"
+- `BUILD_BUILDNUMBER=yyyymmdd.nn`
+- `SignType="real"`
