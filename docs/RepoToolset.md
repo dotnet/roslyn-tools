@@ -134,28 +134,19 @@ For example,
     <!-- Opt-in repo features -->
     <UsingToolVSSDK>true</UsingToolVSSDK>
     <UsingToolIbcOptimization>true</UsingToolIbcOptimization>
+        
+    <!-- Opt-out repo features -->
+    <UsingToolXliff>false</UsingToolXliff>
   
-    <!-- RepoToolset package version -->
-    <RoslynToolsMicrosoftRepoToolsetVersion>1.0.0-alpha27</RoslynToolsMicrosoftRepoToolsetVersion>
-    
-    <!-- Tool versions when using dotnet cli build driver -->
-    <DotNetCliVersion>1.0.0-rc4-004777</DotNetCliVersion>
-
-    <!-- Tool versions when using desktop msbuild driver -->
-    <VSWhereVersion>1.0.47</VSWhereVersion>
-    
-    <!-- Versions of other dependencies -->
-    <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
-    <MoqVersion>4.2.1402.2112</MoqVersion>
+    <!-- Versions of other dependencies -->   
+    <MyPackageVersion>1.2.3-beta</MyPackageVersion>
   </PropertyGroup>
   
   <PropertyGroup>
     <!-- Feeds to use to restore dependent packages from. -->  
     <RestoreSources>
       $(RestoreSources);
-      https://dotnet.myget.org/F/msbuild/api/v3/index.json;
-      https://dotnet.myget.org/F/nuget-build/api/v3/index.json;
-      https://dotnet.myget.org/F/roslyn-analyzers/api/v3/index.json;
+      https://dotnet.myget.org/F/myfeed/api/v3/index.json
     </RestoreSources>
   </PropertyGroup>
 </Project>
