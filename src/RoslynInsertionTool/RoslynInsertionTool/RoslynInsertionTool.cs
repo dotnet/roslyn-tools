@@ -202,6 +202,20 @@ namespace Roslyn.Insertion
                     }
                 }
 
+                // ********************* Trigger a release *****************************
+                Log.Info($"Triggering a release for the build {newestBuild.BuildNumber}");
+
+                var release = await CreateReleaseAsync(newestBuild, cancellationToken);
+
+                // The timeout for the below wait is primarily dependent on:
+                // 1. The release task itself - Since its currently only triggering symbol archival,
+                //    it should not be very long but this should increase when more time intesive tasks are added to the release.
+                // 2. The availability of machines to run the release on. This could be a problem at peak pool load
+                //    where getting a machine can take upto an hour or more.
+                WaitForReleaseCompletion(release, TimeSpan.FromMinutes(10), cancellationToken);
+
+                Log.Info($"Release succesfully triggered");
+
                 // ********************* Create pull request *****************************
                 if (branch != null)
                 {
@@ -407,7 +421,7 @@ namespace Roslyn.Insertion
 
                     if (File.Exists(LogFilePath))
                     {
-                        mailMessage.Attachments.Add(new Attachment(LogFilePath));
+                        mailMessage.Attachments.Add(new System.Net.Mail.Attachment(LogFilePath));
                     }
 
                     mailClient.Send(mailMessage);
