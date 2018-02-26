@@ -35,6 +35,7 @@
     <PackageReference Include="RoslynTools.SignTool" Version="$(RoslynToolsSignToolVersion)" />
     <PackageReference Include="RoslynTools.ModifyVsixManifest" Version="$(RoslynToolsModifyVsixManifestVersion)" Condition="'$(UsingToolVSSDK)' == 'true'" />
 
+    <PackageReference Include="Codecov" Version="$(CodecovVersion)" Condition="'$(UsingCodecov)' == 'true'" />
     <PackageReference Include="OpenCover" Version="$(OpenCoverVersion)" Condition="'$(UsingOpenCover)' == 'true'" />
   </ItemGroup>
 </Project>

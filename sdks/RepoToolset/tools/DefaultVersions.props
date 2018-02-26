@@ -23,7 +23,8 @@
     <!-- Opt-in features -->
     <UsingToolVSSDK Condition="'$(UsingToolVSSDK)' == ''">false</UsingToolVSSDK>
     <UsingToolIbcOptimization Condition="'$(UsingToolIbcOptimization)' == ''">false</UsingToolIbcOptimization>
-    <UsingOpenCover Condition="'$(UsingOpenCover)' == ''">false</UsingOpenCover>
+    <UsingCodecov Condition="'$(UsingCodecov)' == ''">false</UsingCodecov>
+    <UsingOpenCover Condition="'$(UsingOpenCover)' == ''">$(UsingCodecov)</UsingOpenCover>
 
     <!-- Default versions -->
     <MicroBuildPluginsSwixBuildVersion Condition="'$(MicroBuildPluginsSwixBuildVersion)' == ''">1.0.147</MicroBuildPluginsSwixBuildVersion>
@@ -43,6 +44,7 @@
     <XUnitRunnerVisualStudioVersion Condition="'$(XUnitRunnerVisualStudioVersion)' == ''">$(XUnitVersion)</XUnitRunnerVisualStudioVersion>
     <MicrosoftDotNetBuildTasksFeedVersion Condition="'$(MicrosoftDotNetBuildTasksFeedVersion)' == ''">2.1.0-prerelease-02419-01</MicrosoftDotNetBuildTasksFeedVersion>
 
+    <CodecovVersion Condition="'$(CodecovVersion)' == ''">1.0.3</CodecovVersion>
     <OpenCoverVersion Condition="'$(OpenCoverVersion)' == ''">4.6.519</OpenCoverVersion>
   </PropertyGroup>
 
