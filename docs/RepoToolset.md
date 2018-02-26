@@ -101,7 +101,7 @@ Versions.props file is present in the repo and defines versions of all dependenc
     <UsingToolIbcOptimization>true</UsingToolIbcOptimization>
   
     <!-- RepoToolset package version -->
-    <RoslynToolsMicrosoftRepoToolsetVersion>1.0.0-alpha27</RoslynToolsMicrosoftRepoToolsetVersion>
+    <RoslynToolsRepoToolsetVersion>1.0.0-alpha27</RoslynToolsRepoToolsetVersion>
     
     <!-- Tool versions when using dotnet cli build driver -->
     <DotNetCliVersion>1.0.0-rc4-004777</DotNetCliVersion>
@@ -150,7 +150,7 @@ Directory.Build.props in the repo root that imports Versions.props file and defi
   <VersionsPropsPath>$(RepoRoot)build\Versions.props</VersionsPropsPath>
 
   <!-- Not required, but useful: allows easy importing of props/targets files from RepoToolset -->
-  <RepoToolsetDir>$(NuGetPackageRoot)RoslynTools.Microsoft.RepoToolset\$(RoslynToolsMicrosoftRepoToolsetVersion)\tools\</RepoToolsetDir>
+  <RepoToolsetDir>$(NuGetPackageRoot)RoslynTools.RepoToolset\$(RoslynToolsRepoToolsetVersion)\tools\</RepoToolsetDir>
 
   <!-- Repository and project URLs (used in nuget packages) -->
   <RepositoryUrl>https://github.com/dotnet/symreader-converter</RepositoryUrl>
@@ -223,7 +223,7 @@ function InstallToolset {
 # Invokes the build driver.
 #
 function Build { 
-  $ToolsetBuildProj = Join-Path $NuGetPackageRoot "RoslynTools.Microsoft.RepoToolset\$ToolsetVersion\tools\Build.proj"
+  $ToolsetBuildProj = Join-Path $NuGetPackageRoot "RoslynTools.RepoToolset\$ToolsetVersion\tools\Build.proj"
  
   & $DotNetExe msbuild $ToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity /p:Configuration=$configuration /p:SolutionPath=$solution /p:Restore=$restore /p:Build=$build /p:Rebuild=$rebuild /p:Test=$test /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci /p:NuGetPackageRoot=$NuGetPackageRoot $properties
 }
@@ -238,7 +238,7 @@ Example of common ```Toolset.proj```:
     <RestoreSources>https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json</RestoreSources>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="RoslynTools.Microsoft.RepoToolset" Version="$(RoslynToolsMicrosoftRepoToolsetVersion)" />
+    <PackageReference Include="RoslynTools.RepoToolset" Version="$(RoslynToolsRepoToolsetVersion)" />
   </ItemGroup>
 </Project>
 ```
