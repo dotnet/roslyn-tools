@@ -34,5 +34,7 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" Condition="'$(UsingPipeBuildPublishing)' == 'true'" />
     <PackageReference Include="RoslynTools.SignTool" Version="$(RoslynToolsSignToolVersion)" />
     <PackageReference Include="RoslynTools.ModifyVsixManifest" Version="$(RoslynToolsModifyVsixManifestVersion)" Condition="'$(UsingToolVSSDK)' == 'true'" />
+
+    <PackageReference Include="OpenCover" Version="$(OpenCoverVersion)" Condition="'$(UsingOpenCover)' == 'true'" />
   </ItemGroup>
 </Project>
