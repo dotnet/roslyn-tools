@@ -14,17 +14,28 @@
   <Import Project="$(NuGetPackageRoot)microsoft.dotnet.build.tasks.feed\$(MicrosoftDotNetBuildTasksFeedVersion)\build\Microsoft.DotNet.Build.Tasks.Feed.targets" />
 
   <ItemGroup>
-    <ItemsToPush Include="$(PackageOutputPath)*.nupkg" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ItemsToPush Include="$(MSBuildThisFileDirectory)artifacts\**\*.nupkg" />
+    <PackagesToPublish Include="$(PackageOutputPath)*.nupkg" />
   </ItemGroup>
 
   <Target Name="Publish">
+    <PropertyGroup>
+      <SymbolPackagesDir>$(ArtifactsTmpDir)SymbolPackages\</SymbolPackagesDir>
+    </PropertyGroup>
+
+    <!--
+      We expect the .nupkg to contain Portable PDBs. Such packages can act as symbol packages since they have the same structure.
+      We just need to rename them to *.symbols.nupkg.
+    -->
+    <ItemGroup>
+      <SymbolPackagesToPublish Include="@(PackagesToPublish->'$(SymbolPackagesDir)%(Filename).symbols.nupkg')"/>
+    </ItemGroup>
+
+    <MakeDir Directories="$(SymbolPackagesDir)" />
+    <Copy SourceFiles="@(PackagesToPublish)" DestinationFiles="@(SymbolPackagesToPublish)" />
+
     <PushToBlobFeed ExpectedFeedUrl="$(ExpectedFeedUrl)"
                     AccountKey="$(AccountKey)"
-                    ItemsToPush="@(ItemsToPush)"
+                    ItemsToPush="@(PackagesToPublish);@(SymbolPackagesToPublish)"
                     ManifestName="$(BUILD_REPOSITORY_NAME)"
                     ManifestBranch="$(BUILD_SOURCEBRANCH)"
                     ManifestBuildId="$(BUILD_BUILDNUMBER)"
