@@ -202,7 +202,7 @@
              Targets="Pack"
              Condition="'$(Pack)' == 'true'"/>
 
-    <MSBuild Projects="PipeBuild.Publish.proj"
+    <MSBuild Projects="OrchestratedBuild.Publish.proj"
              Properties="@(_CommonProps);ExpectedFeedUrl=$(PB_PublishBlobFeedUrl);AccountKey=$(PB_PublishBlobFeedKey)"
              Targets="Publish"
              Condition="$(_PipeBuildPublishing)"/>
