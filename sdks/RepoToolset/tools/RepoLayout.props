@@ -44,12 +44,18 @@
     <DotNetRoot Condition="'$(DotNetRoot)' == ''">$(RepoRoot).dotnet\</DotNetRoot>
     <DotNetRoot Condition="!HasTrailingSlash('$(DotNetRoot)')">$(DotNetRoot)\</DotNetRoot>
   </PropertyGroup>
-
+  
   <PropertyGroup>
+
     <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'global.json'))\</RepoRoot>
-    <VersionsPropsPath>$(RepoRoot)build\Versions.props</VersionsPropsPath>
-    <FixedVersionsPropsPath Condition="Exists('$(RepoRoot)build\FixedVersions.props')">$(RepoRoot)build\FixedVersions.props</FixedVersionsPropsPath>
-    <SignToolDataPath>$(RepoRoot)build\SignToolData.json</SignToolDataPath>
+
+    <!-- TODO: remove condition once all repos update their dir structure (https://github.com/dotnet/roslyn-tools/issues/177) -->
+    <_EngDir Condition="Exists('$(RepoRoot)eng')">$(RepoRoot)eng\</_EngDir>
+    <_EngDir Condition="'$(_EngDir)' == ''">$(RepoRoot)build\</_EngDir>
+
+    <VersionsPropsPath>$(_EngDir)Versions.props</VersionsPropsPath>
+    <FixedVersionsPropsPath Condition="Exists('$(RepoRoot)build\FixedVersions.props')">$(_EngDir)FixedVersions.props</FixedVersionsPropsPath>
+    <SignToolDataPath>$(_EngDir)SignToolData.json</SignToolDataPath>
 
     <DotNetTool>$(DotNetRoot)dotnet</DotNetTool>
     <DotNetTool Condition="'$(OS)' == 'Windows_NT'">$(DotNetTool).exe</DotNetTool>
