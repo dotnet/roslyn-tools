@@ -16,7 +16,7 @@
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">$([System.IO.Path]::GetFullPath('$(ArtifactsBinDir)$(OutDirName)\'))</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)</OutputPath>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$([System.IO.Path]::GetFullPath('$(ArtifactsObjDir)$(MSBuildProjectName)\'))</BaseIntermediateOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
 
 </Project>
