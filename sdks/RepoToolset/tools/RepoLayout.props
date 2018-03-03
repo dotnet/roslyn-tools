@@ -28,6 +28,8 @@
 
   <PropertyGroup>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <PlatformName Condition="'$(PlatformName)' == ''">$(Platform)</PlatformName>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -46,7 +48,6 @@
   </PropertyGroup>
   
   <PropertyGroup>
-
     <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'global.json'))\</RepoRoot>
 
     <!-- TODO: remove condition once all repos update their dir structure (https://github.com/dotnet/roslyn-tools/issues/177) -->
