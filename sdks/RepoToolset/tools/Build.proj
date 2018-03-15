@@ -7,7 +7,7 @@
                                     
   Optional parameters:              
     Configuration                   Build configuration: "Debug", "Release", etc.
-    RepoRoot                        Repository root, defaults to the directory containing the solution.
+    RepoRoot                        Repository root, defaults to the directory above (or equal to) the solution directory that contains global.json.
 
     DotNetPackageVersionPropsPath   Package version overrides.
     DotNetBuildFromSource           Building the entire stack from source with no external dependencies.
@@ -31,7 +31,7 @@
   -->
   <PropertyGroup>
     <RepoRoot Condition="'$(RepoRoot)' != ''">$([System.IO.Path]::GetFullPath('$(RepoRoot)\'))</RepoRoot>
-    <RepoRoot Condition="'$(RepoRoot)' == ''">$([System.IO.Path]::GetDirectoryName('$(SolutionPath)'))\</RepoRoot>
+    <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(SolutionPath), 'global.json'))\</RepoRoot>
   </PropertyGroup>
 
   <Import Project="BuildTasks.props"/>
