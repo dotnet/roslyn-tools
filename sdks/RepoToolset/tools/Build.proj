@@ -3,11 +3,12 @@
   <!--
   
   Required parameters:
-    SolutionPath                    Path to the solution to build.
+    Projects                        List of projects to build. Semicolon separated, may include globs.
                                     
   Optional parameters:              
     Configuration                   Build configuration: "Debug", "Release", etc.
-    RepoRoot                        Repository root, defaults to the directory above (or equal to) the solution directory that contains global.json.
+    RepoRoot                        Repository root. If not specified finds global.json in or above the directory 
+                                    of the first project specified in Projects property.
 
     DotNetPackageVersionPropsPath   Package version overrides.
     DotNetBuildFromSource           Building the entire stack from source with no external dependencies.
@@ -29,15 +30,23 @@
   <!--
     Default values. 
   -->
+  <ItemGroup>
+    <_ProjectToBuild Include="$(Projects)"/>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <_ProjectsToBuild>@(_ProjectToBuild, ';')</_ProjectsToBuild>
+  </PropertyGroup>
+
   <PropertyGroup>
     <RepoRoot Condition="'$(RepoRoot)' != ''">$([System.IO.Path]::GetFullPath('$(RepoRoot)\'))</RepoRoot>
-    <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(SolutionPath), 'global.json'))\</RepoRoot>
+    <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(_ProjectsToBuild.Split(';')[0]), 'global.json'))\</RepoRoot>
   </PropertyGroup>
 
   <Import Project="BuildTasks.props"/>
   <Import Project="RepoLayout.props"/>
 
-  <!-- 
+  <!--
     Orchestrated build environment overrides:
     
     PB_SignType                    {''|'public'|'real'|'test'}    Disables signing if set to a value other than 'real' 
@@ -155,7 +164,7 @@
     <Exec Command='$(_MSBuildCmd) "$(MSBuildProjectDirectory)\Tools.proj" /bl:"$(ArtifactsLogDir)RestoreRepoTools.binlog" /nologo /m /v:quiet /t:Restore $(_RestoreToolsPropsCmdLine)'
           Condition="'$(_RestoreTools)' == 'true' and '$(_QuietRestore)' == 'true'" StandardOutputImportance="normal" />
 
-    <Exec Command='$(_MSBuildCmd) "$(SolutionPath)" /bl:"$(ArtifactsLogDir)Restore.binlog" /nologo /m /v:quiet /t:Restore $(_SolutionBuildPropsCmdLine) /p:__BuildPhase=SolutionRestore'
+    <Exec Command='$(_MSBuildCmd) "@(_ProjectsToBuild)" /bl:"$(ArtifactsLogDir)Restore.binlog" /nologo /m /v:quiet /t:Restore $(_SolutionBuildPropsCmdLine) /p:__BuildPhase=SolutionRestore'
           Condition="'$(Restore)' == 'true' and '$(_QuietRestore)' == 'true'" StandardOutputImportance="normal" />
 
     <!--
@@ -173,7 +182,7 @@
       Note: msbuild caches the metaproject for the solution (see https://github.com/Microsoft/msbuild/issues/1695)
       We invalidate the cache by changing the value of __BuildPhase property.
     -->
-    <MSBuild Projects="$(SolutionPath)"
+    <MSBuild Projects="@(_ProjectToBuild)"
              Properties="@(_SolutionBuildProps);__BuildPhase=SolutionRestore"
              Targets="Restore"
              BuildInParallel="true"
@@ -182,7 +191,7 @@
     <!--
       Build solution.
     -->
-    <MSBuild Projects="$(SolutionPath)"
+    <MSBuild Projects="@(_ProjectToBuild)"
              Properties="@(_SolutionBuildProps);__BuildPhase=SolutionBuild"
              Targets="@(_SolutionBuildTargets)"
              BuildInParallel="true"
