@@ -25,7 +25,11 @@
   </ItemGroup>
 
   <!-- Using Inputs/Outputs just to loop over test architectures -->
-  <Target Name="InnerTest" Inputs="*%(_TestArchitectureItems.Identity)" Outputs="*%(_TestArchitectureItems.Identity)" Returns="@(_FailedTestRuns)">
+  <Target Name="InnerTest"
+          Inputs="*%(_TestArchitectureItems.Identity)"
+          Outputs="*%(_TestArchitectureItems.Identity)"
+          Returns="@(_FailedTestRuns)"
+          Condition="$(TargetFramework.StartsWith('netcoreapp')) or '$(OS)' == 'Windows_NT'">
 
     <PropertyGroup>
       <_TestArchitecture>%(_TestArchitectureItems.Identity)</_TestArchitecture>
