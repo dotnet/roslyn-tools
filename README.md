@@ -5,9 +5,10 @@ Builds are available on MyGet gallery: https://dotnet.myget.org/Gallery/roslyn-t
 
 [//]: # (Begin current test results)
 
-|          |Windows Debug|Windows Release|
-|:--------:|:-----------:|:-------------:|
-|**master**|[![Build Status](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/windows_debug/badge/icon)](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/windows_debug/)|[![Build Status](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/windows_release/badge/icon)](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/windows_release/)|
+|    | x64 Debug|x64 Release|
+|:--:|:--:|:--:|
+|**Windows**|[![Build Status](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Windows_NT_Debug/badge/icon)](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Windows_NT_Debug/)|[![Build Status](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Windows_NT_Release/badge/icon)](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Windows_NT_Release/)|
+|**Ubuntu 16.04**|[![Build Status](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Ubuntu16.04_Debug/badge/icon)](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Ubuntu16.04_Debug/)|[![Build Status](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Ubuntu16.04_Release/badge/icon)](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Ubuntu16.04_Release/)|
 
 [//]: # (End current test results)
 
