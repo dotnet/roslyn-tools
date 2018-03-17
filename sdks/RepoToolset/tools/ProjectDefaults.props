@@ -132,4 +132,8 @@
     </When>
   </Choose>
 
+  <ItemGroup Condition="'$(UsingToolNetFrameworkReferenceAssemblies)' == 'true'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNetFrameworkReferenceAssembliesVersion)" PrivateAssets="all"/>
+  </ItemGroup>
+
 </Project>
