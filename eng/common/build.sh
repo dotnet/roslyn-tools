@@ -265,9 +265,9 @@ function Build {
   fi
 
   dotnet msbuild $toolsetbuildproj /m /nologo /clp:Summary /warnaserror \
-    /v:$verbosity $logcmd /p:Configuration=$configuration /p:Projects=$solution \
+    /v:$verbosity $logcmd /p:Configuration=$configuration /p:Projects=$solution /p:RepoRoot="$reporoot" \
     /p:Restore=$restore /p:Build=$build /p:Rebuild=$rebuild /p:Deploy=$deploy /p:Test=$test /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci \
-    "/p:RestorePackagesPath=$nugetpackageroot/" "/p:NuGetPackageRoot=$nugetpackageroot/" \
+    /p:RestorePackagesPath="$nugetpackageroot/" /p:NuGetPackageRoot="$nugetpackageroot/" \
     $properties
   local lastexitcode=$?
 

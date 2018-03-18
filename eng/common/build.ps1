@@ -108,10 +108,7 @@ function InstallToolset {
 }
 
 function Build {
-  Create-Directory($logDir)
-  $logCmd = "/bl:" + (Join-Path $LogDir "Build.binlog")
-  
-  & $BuildDriver $BuildArgs $ToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity $logCmd /p:Configuration=$configuration /p:Projects=$solution /p:Restore=$restore /p:DeployDeps=$deployDeps /p:Build=$build /p:Rebuild=$rebuild /p:Deploy=$deploy /p:Test=$test /p:IntegrationTest=$integrationTest /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci /p:NuGetPackageRoot=$NuGetPackageRoot $properties
+  & $BuildDriver $BuildArgs $ToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity /bl:$Log /p:Configuration=$configuration /p:Projects=$solution /p:RepoRoot=$RepoRoot /p:Restore=$restore /p:DeployDeps=$deployDeps /p:Build=$build /p:Rebuild=$rebuild /p:Deploy=$deploy /p:Test=$test /p:IntegrationTest=$integrationTest /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci /p:NuGetPackageRoot=$NuGetPackageRoot $properties
 }
 
 function Stop-Processes() {
@@ -130,9 +127,10 @@ function Clear-NuGetCache() {
 }
 
 try {
-  $RepoRoot = Join-Path $PSScriptRoot "..\..\"
+  $RepoRoot = Join-Path $PSScriptRoot "..\.."
   $ArtifactsDir = Join-Path $RepoRoot "artifacts"
   $LogDir = Join-Path (Join-Path $ArtifactsDir $configuration) "log"
+  $Log = Join-Path $LogDir "Build.binlog"
   $TempDir = Join-Path (Join-Path $ArtifactsDir $configuration) "tmp"
   $GlobalJson = Get-Content(Join-Path $RepoRoot "global.json") | ConvertFrom-Json
   
@@ -172,7 +170,8 @@ try {
   }
 
   Create-Directory $TempDir
-
+  Create-Directory $LogDir
+  
   if ($ci) {
     $env:TEMP = $TempDir
     $env:TMP = $TempDir
