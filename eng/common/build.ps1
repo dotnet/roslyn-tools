@@ -14,7 +14,6 @@ Param(
   [switch] $pack,
   [switch] $ci,
   [switch] $prepareMachine,
-  [switch] $log,
   [switch] $help,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
@@ -22,7 +21,7 @@ Param(
 set-strictmode -version 2.0
 $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    
+
 function Print-Usage() {
     Write-Host "Common settings:"
     Write-Host "  -configuration <value>  Build configuration Debug, Release"
@@ -35,7 +34,7 @@ function Print-Usage() {
     Write-Host "  -build                  Build solution"
     Write-Host "  -rebuild                Rebuild solution"
     Write-Host "  -deploy                 Deploy built VSIXes"
-    Write-Host "  -deployDeps             Deploy dependencies (Roslyn VSIXes for integration tests)"
+    Write-Host "  -deployDeps             Deploy dependencies (e.g. VSIXes for integration tests)"
     Write-Host "  -test                   Run all unit tests in the solution"
     Write-Host "  -integrationTest        Run all integration tests in the solution"
     Write-Host "  -sign                   Sign build outputs"
@@ -45,7 +44,6 @@ function Print-Usage() {
     Write-Host "Advanced settings:"
     Write-Host "  -solution <value>       Path to solution to build"
     Write-Host "  -ci                     Set when running on CI server"
-    Write-Host "  -log                    Enable logging (by default on CI)"
     Write-Host "  -prepareMachine         Prepare machine for CI run"
     Write-Host ""
     Write-Host "Command line arguments not listed above are passed thru to msbuild."
@@ -63,14 +61,17 @@ function Create-Directory([string[]] $path) {
   }
 }
 
-function GetVersion([string] $name) {
-  foreach ($propertyGroup in $VersionsXml.Project.PropertyGroup) {
-    if (Get-Member -inputObject $propertyGroup -name $name) {
-        return $propertyGroup.$name
-    }
+function InstallDotNetCli {
+  $installScript = "$DotNetRoot\dotnet-install.ps1"
+  if (!(Test-Path $installScript)) { 
+    Create-Directory $DotNetRoot
+    Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile $installScript
   }
-
-  throw "Failed to find $name in Versions.props"
+  
+  & $installScript -Version $GlobalJson.sdk.version -InstallDir $DotNetRoot
+  if ($lastExitCode -ne 0) {
+    throw "Failed to install dotnet cli (exit code '$lastExitCode')."
+  }
 }
 
 function LocateVisualStudio {
@@ -78,16 +79,17 @@ function LocateVisualStudio {
     return Join-Path $env:VS150COMNTOOLS "..\.."
   }
 
-  $vswhereVersion = GetVersion("VSWhereVersion")
-  $vsWhereDir = Join-Path $ToolsRoot "vswhere\$vswhereVersion"
+  $vswhereVersion = $GlobalJson.vswhere.version
+  $toolsRoot = Join-Path $RepoRoot ".tools"
+  $vsWhereDir = Join-Path $toolsRoot "vswhere\$vswhereVersion"
   $vsWhereExe = Join-Path $vsWhereDir "vswhere.exe"
-  
+
   if (!(Test-Path $vsWhereExe)) {
     Create-Directory $vsWhereDir
     Write-Host "Downloading vswhere"
     Invoke-WebRequest "https://github.com/Microsoft/vswhere/releases/download/$vswhereVersion/vswhere.exe" -OutFile $vswhereExe
   }
-  
+
   $vsInstallDir = & $vsWhereExe -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild -requires Microsoft.VisualStudio.Component.VSSDK -requires Microsoft.Net.Component.4.6.TargetingPack -requires Microsoft.VisualStudio.Component.Roslyn.Compiler -requires Microsoft.VisualStudio.Component.VSSDK
 
   if (!(Test-Path $vsInstallDir)) {
@@ -99,26 +101,20 @@ function LocateVisualStudio {
 
 function InstallToolset {
   if (!(Test-Path $ToolsetBuildProj)) {
-    & $MsbuildExe $ToolsetRestoreProj /t:restore /m /nologo /clp:None /warnaserror /v:quiet /p:DeployDeps=$deployDeps /p:NuGetPackageRoot=$NuGetPackageRoot /p:BaseIntermediateOutputPath=$ToolsetDir /p:ExcludeRestorePackageImports=true
+   $proj = Join-Path $TempDir "_restore.proj"   
+   '<Project Sdk="RoslynTools.RepoToolset"><Target Name="NoOp"/></Project>' | Set-Content $proj
+    & $BuildDriver $BuildArgs $proj /t:NoOp /m /nologo /clp:None /warnaserror /v:$verbosity /p:NuGetPackageRoot=$NuGetPackageRoot /p:__ExcludeSdkImports=true
   }
 }
 
 function Build {
-  if ($ci -or $log) {
-    Create-Directory($logDir)
-    $logCmd = "/bl:" + (Join-Path $LogDir "Build.binlog")
-  } else {
-    $logCmd = ""
-  }
-
-  $nodeReuse = !$ci
-
-  & $MsbuildExe $ToolsetBuildProj /m /nologo /clp:Summary /nodeReuse:$nodeReuse /warnaserror /v:$verbosity $logCmd /p:Configuration=$configuration /p:SolutionPath=$solution /p:Restore=$restore /p:DeployDeps=$deployDeps /p:Build=$build /p:Rebuild=$rebuild /p:Deploy=$deploy /p:Test=$test /p:IntegrationTest=$integrationTest /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci /p:NuGetPackageRoot=$NuGetPackageRoot $properties
+  & $BuildDriver $BuildArgs $ToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity /bl:$Log /p:Configuration=$configuration /p:Projects=$solution /p:RepoRoot=$RepoRoot /p:Restore=$restore /p:DeployDeps=$deployDeps /p:Build=$build /p:Rebuild=$rebuild /p:Deploy=$deploy /p:Test=$test /p:IntegrationTest=$integrationTest /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci /p:NuGetPackageRoot=$NuGetPackageRoot $properties
 }
 
 function Stop-Processes() {
   Write-Host "Killing running build processes..."
   Get-Process -Name "msbuild" -ErrorAction SilentlyContinue | Stop-Process
+  Get-Process -Name "dotnet" -ErrorAction SilentlyContinue | Stop-Process
   Get-Process -Name "vbcscompiler" -ErrorAction SilentlyContinue | Stop-Process
 }
 
@@ -131,18 +127,15 @@ function Clear-NuGetCache() {
 }
 
 try {
-  $InVSEnvironment = !($env:VS150COMNTOOLS -eq $null) -and (Test-Path $env:VS150COMNTOOLS)
-  $RepoRoot = Join-Path $PSScriptRoot "..\"
-  $ToolsRoot = Join-Path $RepoRoot ".tools"
-  $ToolsetRestoreProj = Join-Path $PSScriptRoot "Toolset.proj"
+  $RepoRoot = Join-Path $PSScriptRoot "..\.."
   $ArtifactsDir = Join-Path $RepoRoot "artifacts"
-  $ToolsetDir = Join-Path $ArtifactsDir "toolset"
   $LogDir = Join-Path (Join-Path $ArtifactsDir $configuration) "log"
+  $Log = Join-Path $LogDir "Build.binlog"
   $TempDir = Join-Path (Join-Path $ArtifactsDir $configuration) "tmp"
-  [xml]$VersionsXml = Get-Content(Join-Path $PSScriptRoot "Versions.props")
-
+  $GlobalJson = Get-Content(Join-Path $RepoRoot "global.json") | ConvertFrom-Json
+  
   if ($solution -eq "") {
-    $solution = @(gci(Join-Path $RepoRoot "*.sln"))[0]
+    $solution = Join-Path $RepoRoot "*.sln"
   }
 
   if ($env:NUGET_PACKAGES -ne $null) {
@@ -151,25 +144,41 @@ try {
     $NuGetPackageRoot = Join-Path $env:UserProfile ".nuget\packages\"
   }
 
-  $ToolsetVersion = GetVersion("RoslynToolsRepoToolsetVersion")
-  $ToolsetBuildProj = Join-Path $NuGetPackageRoot "RoslynTools.RepoToolset\$ToolsetVersion\tools\Build.proj"
+  $ToolsetVersion = $GlobalJson.'msbuild-sdks'.'RoslynTools.RepoToolset'
+  $ToolsetBuildProj = Join-Path $NuGetPackageRoot "roslyntools.repotoolset\$ToolsetVersion\tools\Build.proj"
+  
+  # Presence of vswhere.version indicated the repo needs to build using VS msbuild
+  if ((Get-Member -InputObject $GlobalJson -Name "vswhere") -ne $null) {
+    $DotNetRoot = $null
+    $InVSEnvironment = !($env:VS150COMNTOOLS -eq $null) -and (Test-Path $env:VS150COMNTOOLS)
+    $vsInstallDir = LocateVisualStudio
 
-  $vsInstallDir = LocateVisualStudio
-  $MsbuildExe = Join-Path $vsInstallDir "MSBuild\15.0\Bin\msbuild.exe"
+    $BuildDriver = Join-Path $vsInstallDir "MSBuild\15.0\Bin\msbuild.exe"
+    $BuildArgs = "/nodeReuse:$(!$ci)"
 
+    if (!$InVSEnvironment) {
+      $env:VS150COMNTOOLS = Join-Path $vsInstallDir "Common7\Tools\"
+      $env:VSSDK150Install = Join-Path $vsInstallDir "VSSDK\"
+      $env:VSSDKInstall = Join-Path $vsInstallDir "VSSDK\"
+    }
+  } elseif ((Get-Member -InputObject $GlobalJson -Name "sdk") -ne $null) {
+    $DotNetRoot = Join-Path $RepoRoot ".dotnet"
+    $BuildDriver = Join-Path $DotNetRoot "dotnet.exe"    
+    $BuildArgs = "msbuild"
+  } else {
+    throw "/global.json must either specify 'sdk.version' or 'vswhere.version'."
+  }
+
+  Create-Directory $TempDir
+  Create-Directory $LogDir
+  
   if ($ci) {
-    Create-Directory $TempDir
     $env:TEMP = $TempDir
     $env:TMP = $TempDir
 
-    Write-Host "Using $MsbuildExe"
+    Write-Host "Using $BuildDriver"
   }
 
-  if (!$InVSEnvironment) {
-    $env:VS150COMNTOOLS = Join-Path $vsInstallDir "Common7\Tools\"
-    $env:VSSDK150Install = Join-Path $vsInstallDir "VSSDK\"
-    $env:VSSDKInstall = Join-Path $vsInstallDir "VSSDK\"
-  }
 
   # Preparation of a CI machine
   if ($prepareMachine) {
@@ -177,6 +186,10 @@ try {
   }
 
   if ($restore) {
+    if ($DotNetRoot -ne $null) {
+      InstallDotNetCli
+    }
+
     InstallToolset
   }
 
