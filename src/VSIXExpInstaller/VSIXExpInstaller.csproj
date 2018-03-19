@@ -6,7 +6,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <CopyNuGetImplementations>true</CopyNuGetImplementations>
-    
+
     <!-- Using an explicit nuspec file since NuGet Pack target currently doesn't support including dependencies in tools packages -->
     <IsPackable>true</IsPackable>
     <NuspecFile>VSIXExpInstaller.nuspec</NuspecFile>
@@ -42,18 +42,9 @@
       <HintPath>$(VS150COMNTOOLS)\..\IDE\PrivateAssemblies\Microsoft.VisualStudio.Setup.Engine.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.Build.Utilities.Core">
-      <HintPath>$(VS150COMNTOOLS)\..\..\MSBuild\15.0\Bin\Microsoft.Build.Utilities.Core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Settings.15.0">
-      <HintPath>$(VS150COMNTOOLS)\..\IDE\Microsoft.VisualStudio.Settings.15.0.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.15.0">
-      <HintPath>$(VS150COMNTOOLS)\..\IDE\PublicAssemblies\Microsoft.VisualStudio.Shell.15.0.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Settings.15.0" Version="$(MicrosoftVisualStudioSettings150Version)" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150Version)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
     <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
     <PackageReference Include="System.ValueTuple" Version="$(SystemValueTupleVersion)" />

@@ -20,6 +20,9 @@
     <EnvDTEVersion>8.0.0</EnvDTEVersion>
     <MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion>10.0.30319</MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion>
     <MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion>11.0.61030</MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion>
+    <MicrosoftVisualStudioShell150Version>15.0.26606</MicrosoftVisualStudioShell150Version>
+    <MicrosoftVisualStudioSettings150Version>15.0.26606</MicrosoftVisualStudioSettings150Version>
+    <MicrosoftBuildUtilitiesCoreVersion>15.1.548</MicrosoftBuildUtilitiesCoreVersion>
 
     <!-- Libs -->
     <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
@@ -31,7 +34,7 @@
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
   </PropertyGroup>
 
-  <PropertyGroup> 
+  <PropertyGroup>
     <RestoreSources>
       $(RestoreSources);
       https://www.myget.org/F/vs-devcore/api/v3/index.json
