@@ -6,7 +6,6 @@
     <IsPackable>true</IsPackable>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
-    <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright);ArtifactsBinDir=$(ArtifactsBinDir)</NuspecProperties>
   </PropertyGroup>
   <ItemGroup>
     <!-- Show .*proj files in solution explorer, which are excluded by default -->
@@ -15,4 +14,10 @@
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\BuildTasks\RoslynTools.BuildTasks.csproj" />
   </ItemGroup>
+  
+  <Target Name="_InitializeNuspecProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright);ArtifactsBinDir=$(ArtifactsBinDir)</NuspecProperties>
+    </PropertyGroup>
+  </Target>
 </Project>

@@ -18,7 +18,6 @@
     <IsPackable>true</IsPackable>
     <NuspecFile>RIT.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
-    <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -59,4 +58,10 @@
     <ProjectReference Include="..\RoslynInsertionTool\RoslynInsertionTool.csproj" />
     <ProjectReference Include="..\SingleThreadSynchronizationContext\SingleThreadSynchronizationContext.csproj" />
   </ItemGroup>
+  
+  <Target Name="_InitializeNuspecProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
+    </PropertyGroup>
+  </Target>
 </Project>

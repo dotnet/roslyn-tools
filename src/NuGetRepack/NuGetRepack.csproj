@@ -9,7 +9,6 @@
     <IsPackable>true</IsPackable>
     <NuspecFile>NuGetRepack.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
-    <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,4 +23,10 @@
   <ItemGroup>
     <InternalsVisibleTo Include="NuGetRepack.Tests" />
   </ItemGroup>
+
+  <Target Name="_InitializeNuspecProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
+    </PropertyGroup>
+  </Target>
 </Project>
