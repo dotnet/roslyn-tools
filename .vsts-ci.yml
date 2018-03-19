@@ -83,4 +83,4 @@ steps:
     ArtifactName: '$(Build.BuildNumber)'
     publishLocation: FilePath
     TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)'
-  condition: and(succeeded(), not(contains(variables['PB_PublishType'], 'blob')))
+  condition: not(contains(variables['PB_PublishType'], 'blob'))
