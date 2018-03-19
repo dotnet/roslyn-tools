@@ -48,8 +48,6 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'global.json'))\</RepoRoot>
-
     <!-- TODO: remove condition once all repos update their dir structure (https://github.com/dotnet/roslyn-tools/issues/177) -->
     <_EngDir Condition="Exists('$(RepoRoot)eng')">$(RepoRoot)eng\</_EngDir>
     <_EngDir Condition="'$(_EngDir)' == ''">$(RepoRoot)build\</_EngDir>
