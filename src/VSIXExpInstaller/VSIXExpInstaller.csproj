@@ -11,7 +11,6 @@
     <IsPackable>true</IsPackable>
     <NuspecFile>VSIXExpInstaller.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
-    <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -62,4 +61,10 @@
     <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Interop.10.0.DesignTime" Version="$(MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion)" />
     <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Interop.11.0.DesignTime" Version="$(MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion)" />
   </ItemGroup>
+
+  <Target Name="_InitializeNuspecProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
+    </PropertyGroup>
+  </Target>
 </Project>
