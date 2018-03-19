@@ -15,9 +15,9 @@ namespace Roslyn.Insertion
     {
         public string ConfigFilePath { get; }
         public string ComponentsFilePath { get; }
-        public XDocument Config { get; }        
-        private static Dictionary<string, string> ComponentToFileMap { get; set; }
-        private static Dictionary<string, JObject> ComponentFileToDocumentMap { get; set; }
+        public XDocument Config { get; }
+        private static Dictionary<string, string> ComponentToFileMap;
+        private static Dictionary<string, JObject> ComponentFileToDocumentMap;
         private static HashSet<string> dirtyFiles;
 
         #region Public Methods
@@ -69,30 +69,27 @@ namespace Roslyn.Insertion
 
         public void SaveComponents()
         {
-            if (ComponentFileToDocumentMap.Any())
+            foreach (KeyValuePair<string, JObject> kvp in ComponentFileToDocumentMap)
             {
-                foreach (KeyValuePair<string, JObject> kvp in ComponentFileToDocumentMap)
+                if (dirtyFiles.Contains(kvp.Key))
                 {
-                    if (dirtyFiles.Contains(kvp.Key))
+                    try
                     {
-                        try
+                        using (var filestream = new FileStream(kvp.Key, FileMode.Create, FileAccess.Write))
+                        using (var streamWriter = new StreamWriter(filestream))
+                        using (var writer = new JsonTextWriter(streamWriter)
                         {
-                            using (var filestream = new FileStream(kvp.Key, FileMode.Create, FileAccess.Write))
-                            using (var streamWriter = new StreamWriter(filestream))
-                            using (var writer = new JsonTextWriter(streamWriter)
-                            {
-                                CloseOutput = true,
-                                Indentation = 2,
-                                Formatting = Formatting.Indented,
-                            })
-                            {
-                                kvp.Value?.WriteTo(writer);
-                            }
-                        }
-                        catch (Exception e)
+                            CloseOutput = true,
+                            Indentation = 2,
+                            Formatting = Formatting.Indented,
+                        })
                         {
-                            throw new IOException($"Unable to save components file '{kvp.Key}'", e);
+                            kvp.Value?.WriteTo(writer);
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        throw new IOException($"Unable to save components file '{kvp.Key}'", e);
                     }
                 }
             }
@@ -188,10 +185,7 @@ namespace Roslyn.Insertion
                 componentJSON["url"] = component.Uri.ToString();
 
                 string componentFilePath = ComponentToFileMap[component.Name];
-                if(!dirtyFiles.Contains(componentFilePath))
-                {
-                    dirtyFiles.Add(componentFilePath);
-                }
+                dirtyFiles.Add(componentFilePath);
             }
         }
 
