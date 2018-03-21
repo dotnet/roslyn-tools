@@ -20,8 +20,6 @@ namespace Roslyn.Insertion
         private static Dictionary<string, JObject> ComponentFileToDocumentMap;
         private static HashSet<string> dirtyFiles;
 
-        #region Public Methods
-
         public CoreXT(string configPath, XDocument config, string componentsJSONPath)
         {
             ConfigFilePath = configPath;
@@ -189,10 +187,6 @@ namespace Roslyn.Insertion
             }
         }
 
-#endregion
-
-        #region Private Methods
-
         private static void PopulateComponentJsonMaps(string mainComponentsJsonPath, string enlistmentRoot)
         {
             var mainComponentsJsonDocument = GetJsonDocumentForComponentsFile(mainComponentsJsonPath);
@@ -288,7 +282,5 @@ namespace Roslyn.Insertion
 
             return document;
         }
-
-        #endregion
     }
 }
