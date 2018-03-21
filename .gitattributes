@@ -3,7 +3,8 @@
 #   automatically normalize line endings on check-in, and
 #   convert to Windows-style line endings on check-out
 ###############################################################################
-*           		text=auto   eol=crlf		encoding=UTF-8
+* text=auto encoding=UTF-8
+*.sh text eol=lf
 
 ###############################################################################
 # Set file behavior to:
