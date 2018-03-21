@@ -6,6 +6,8 @@
     <IsPackable>true</IsPackable>
     <NuspecFile>RoslynTools.BuildTasks.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
+
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Net.Http" Version="$(SystemNetHttpVersion)" />

@@ -12,5 +12,11 @@
     <DebugType Condition="'$(BuildingForLiveUnitTesting)' != 'true'">embedded</DebugType>
 
     <PublishOutputToSymStore>false</PublishOutputToSymStore>
+
+    <!--
+      Most projects in the repo do not participate in source build.
+      Those that do override this setting.
+    -->
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 </Project>
