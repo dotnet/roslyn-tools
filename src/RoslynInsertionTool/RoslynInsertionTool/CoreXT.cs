@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -15,14 +16,15 @@ namespace Roslyn.Insertion
         public string ConfigFilePath { get; }
         public string ComponentsFilePath { get; }
         public XDocument Config { get; }
-        public JObject Components { get; }
+        private static Dictionary<string, string> ComponentToFileMap;
+        private static Dictionary<string, JObject> ComponentFileToDocumentMap;
+        private static HashSet<string> dirtyFiles;
 
-        public CoreXT(string configPath, XDocument config, string componentsJSONPath, JObject components)
+        public CoreXT(string configPath, XDocument config, string componentsJSONPath)
         {
             ConfigFilePath = configPath;
             ComponentsFilePath = componentsJSONPath;
             Config = config;
-            Components = components;
         }
 
         public static CoreXT Load(string enlistmentRoot)
@@ -30,7 +32,9 @@ namespace Roslyn.Insertion
             var defaultConfigPath = Path.Combine(enlistmentRoot, ".corext", "Configs", "default.config");
             var componentsJSONPath = Path.Combine(enlistmentRoot, ".corext", "Configs", "components.json");
             XDocument xDocument;
-            JObject jsonDocument = null;
+            ComponentToFileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            ComponentFileToDocumentMap = new Dictionary<string, JObject>(StringComparer.OrdinalIgnoreCase);
+            dirtyFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             try
             {
@@ -44,24 +48,9 @@ namespace Roslyn.Insertion
                 throw new IOException($"Unable to load config file from '{defaultConfigPath}'", e);
             }
 
-            if (File.Exists(componentsJSONPath))
-            {
-                try
-                {
-                    using (var filestream = new FileStream(componentsJSONPath, FileMode.Open, FileAccess.ReadWrite))
-                    using (var streamReader = new StreamReader(filestream))
-                    using (var reader = new JsonTextReader(streamReader))
-                    {
-                        jsonDocument = (JObject)JToken.ReadFrom(reader);
-                    }
-                }
-                catch (Exception e)
-                {
-                    throw new IOException($"Unable to load config file from '{componentsJSONPath}'", e);
-                }
-            }
+            PopulateComponentJsonMaps(componentsJSONPath, enlistmentRoot);
 
-            return new CoreXT(defaultConfigPath, xDocument, componentsJSONPath, jsonDocument);
+            return new CoreXT(defaultConfigPath, xDocument, componentsJSONPath);
         }
 
         public void SaveConfig()
@@ -78,23 +67,29 @@ namespace Roslyn.Insertion
 
         public void SaveComponents()
         {
-            try
+            foreach (KeyValuePair<string, JObject> kvp in ComponentFileToDocumentMap)
             {
-                using (var filestream = new FileStream(ComponentsFilePath, FileMode.Create, FileAccess.Write))
-                using (var streamWriter = new StreamWriter(filestream))
-                using (var writer = new JsonTextWriter(streamWriter)
+                if (dirtyFiles.Contains(kvp.Key))
                 {
-                    CloseOutput = true,
-                    Indentation = 2,
-                    Formatting = Formatting.Indented,
-                })
-                {
-                    Components?.WriteTo(writer);
+                    try
+                    {
+                        using (var filestream = new FileStream(kvp.Key, FileMode.Create, FileAccess.Write))
+                        using (var streamWriter = new StreamWriter(filestream))
+                        using (var writer = new JsonTextWriter(streamWriter)
+                        {
+                            CloseOutput = true,
+                            Indentation = 2,
+                            Formatting = Formatting.Indented,
+                        })
+                        {
+                            kvp.Value?.WriteTo(writer);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        throw new IOException($"Unable to save components file '{kvp.Key}'", e);
+                    }
                 }
-            }
-            catch (Exception e)
-            {
-                throw new IOException($"Unable to save components file '{ComponentsFilePath}'", e);
             }
         }
 
@@ -157,30 +152,135 @@ namespace Roslyn.Insertion
         public bool TryGetComponentByName(string componentName, out Component component)
         {
             component = null;
-            if (Components != null)
+
+            JObject componentDocument = GetJsonDocumentForComponent(componentName);
+
+            if (componentDocument == null)
             {
-                var componentJSON = Components["Components"][componentName];
-                if (componentJSON == null)
-                {
-                    return false;
-                }
-                var componentFilename = (string)componentJSON["fileName"];
-                var componentUri = new Uri((string)componentJSON["url"]);
-                component = new Component(componentName, componentFilename, componentUri);
-                return true;
+                return false;
             }
 
-            return false;
+            var componentJSON = componentDocument["Components"][componentName];
+            if (componentJSON == null)
+            {
+                return false;
+            }
+
+            var componentFilename = (string)componentJSON["fileName"];
+            var componentUri = new Uri((string)componentJSON["url"]);
+            component = new Component(componentName, componentFilename, componentUri);
+            return true;
         }
 
         public void UpdateComponent(Component component)
         {
-            if (Components != null)
+            var componentDocument = GetJsonDocumentForComponent(component.Name);
+
+            if (componentDocument != null)
             {
-                var componentJSON = Components["Components"][component.Name];
-                componentJSON["fileName"] = component.Filename.ToString();
+                var componentJSON = componentDocument["Components"][component.Name];
+                componentJSON["fileName"] = component.Filename;
                 componentJSON["url"] = component.Uri.ToString();
+
+                string componentFilePath = ComponentToFileMap[component.Name];
+                dirtyFiles.Add(componentFilePath);
             }
+        }
+
+        private static void PopulateComponentJsonMaps(string mainComponentsJsonPath, string enlistmentRoot)
+        {
+            var mainComponentsJsonDocument = GetJsonDocumentForComponentsFile(mainComponentsJsonPath);
+
+            if (mainComponentsJsonDocument != null)
+            {
+                ComponentFileToDocumentMap[mainComponentsJsonPath] = mainComponentsJsonDocument;
+                PopulateComponentToFileMapForFile(mainComponentsJsonDocument, mainComponentsJsonPath);
+
+                // Process sub components.json
+                var imports = mainComponentsJsonDocument["Imports"];
+                if (imports != null)
+                {
+                    foreach (var import in imports)
+                    {
+                        string subComponentFileName = (string)import;
+
+                        if (!string.IsNullOrEmpty(subComponentFileName))
+                        {
+                            var componentsJSONPath = Path.Combine(enlistmentRoot, ".corext", "Configs", subComponentFileName);
+                            var jDoc = GetJsonDocumentForComponentsFile(componentsJSONPath);
+
+                            if (jDoc != null && !ComponentFileToDocumentMap.ContainsKey(componentsJSONPath))
+                            {
+                                ComponentFileToDocumentMap[componentsJSONPath] = jDoc;
+                                PopulateComponentToFileMapForFile(jDoc, componentsJSONPath);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void PopulateComponentToFileMapForFile(JObject jDocument, string componentsJsonFileName)
+        {
+            if (jDocument != null && !string.IsNullOrEmpty(componentsJsonFileName))
+            {
+                var jComponents = (JObject)jDocument["Components"];
+
+                if (jComponents != null)
+                {
+                    Dictionary<string, JToken> componentsMap = jComponents.ToObject<Dictionary<string, JToken>>();
+
+                    if (componentsMap != null && componentsMap.Any())
+                    {
+                        foreach (var kvp in componentsMap)
+                        {
+                            if (!ComponentToFileMap.ContainsKey(kvp.Key))
+                            {
+                                ComponentToFileMap[kvp.Key] = componentsJsonFileName;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private static JObject GetJsonDocumentForComponentsFile(string componentsJSONPath)
+        {
+            JObject jsonDocument = null;
+
+            if (File.Exists(componentsJSONPath))
+            {
+                try
+                {
+                    using (var filestream = new FileStream(componentsJSONPath, FileMode.Open, FileAccess.ReadWrite))
+                    using (var streamReader = new StreamReader(filestream))
+                    using (var reader = new JsonTextReader(streamReader))
+                    {
+                        jsonDocument = (JObject)JToken.ReadFrom(reader);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new IOException($"Unable to load file from '{componentsJSONPath}'", e);
+                }
+            }
+
+            return jsonDocument;
+        }
+
+        private JObject GetJsonDocumentForComponent(string componentName)
+        {
+            JObject document = null;
+            if (!string.IsNullOrEmpty(componentName))
+            {
+                string componentFileName;
+                if (ComponentToFileMap.TryGetValue(componentName, out componentFileName))
+                {
+                    ComponentFileToDocumentMap.TryGetValue(componentFileName, out document);
+                }
+            }
+
+            return document;
         }
     }
 }
