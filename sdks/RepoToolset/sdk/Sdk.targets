@@ -4,6 +4,12 @@
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildThisFileFullPath);$(MSBuildAllProjects)</MSBuildAllProjects>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <_SuppressAllTargets>false</_SuppressAllTargets>
+    <_SuppressAllTargets Condition="'$(DotNetBuildFromSource)' == 'true' and '$(ExcludeFromSourceBuild)' == 'true'">true</_SuppressAllTargets>
+  </PropertyGroup>
   
-  <Import Project="..\tools\Imports.targets" Condition="'$(__ExcludeSdkImports)' != 'true'" />
+  <Import Project="..\tools\Imports.targets" Condition="'$(__ExcludeSdkImports)' != 'true' and !$(_SuppressAllTargets)" />
+  <Import Project="..\tools\Empty.targets" Condition="'$(__ExcludeSdkImports)' != 'true' and $(_SuppressAllTargets)"/>
 </Project>

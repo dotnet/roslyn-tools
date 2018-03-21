@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="RoslynTools.RepoToolset">
   <PropertyGroup>
     <TargetFrameworks>net46;netcoreapp1.0</TargetFrameworks>
 
@@ -6,11 +6,18 @@
     <IsPackable>true</IsPackable>
     <NuspecFile>RoslynTools.BuildTasks.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
-    <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
+
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Net.Http" Version="$(SystemNetHttpVersion)" />
     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" />
   </ItemGroup>
+
+  <Target Name="_InitializeNuspecProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
+    </PropertyGroup>
+  </Target>
 </Project>

@@ -1,5 +1,5 @@
 <!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="RoslynTools.RepoToolset">
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
     <OutputType>Exe</OutputType>
@@ -9,7 +9,6 @@
     <IsPackable>true</IsPackable>
     <NuspecFile>ModifyVsixManifest.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
-    <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
@@ -21,4 +20,10 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
+
+  <Target Name="_InitializeNuspecProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
+    </PropertyGroup>
+  </Target>
 </Project>

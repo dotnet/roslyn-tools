@@ -1,7 +1,6 @@
 <!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
 <Project>
   <Import Project="..\Directory.Build.props"/>
-  <Import Project="$(RepoToolsetDir)Settings.props" />
 
   <PropertyGroup>
     <LangVersion>Latest</LangVersion>
@@ -13,5 +12,11 @@
     <DebugType Condition="'$(BuildingForLiveUnitTesting)' != 'true'">embedded</DebugType>
 
     <PublishOutputToSymStore>false</PublishOutputToSymStore>
+
+    <!--
+      Most projects in the repo do not participate in source build.
+      Those that do override this setting.
+    -->
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 </Project>

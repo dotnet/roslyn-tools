@@ -1,5 +1,5 @@
 <!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="RoslynTools.RepoToolset">
   <PropertyGroup>
     <RootNamespace>RoslynInsertionTool</RootNamespace>
     <OutputType>Exe</OutputType>
@@ -7,11 +7,17 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Prefer32Bit>false</Prefer32Bit>
 
+     <!--
+      TODO:
+      Disable signing. This is necessary since Mono.Options isn't signed.
+      Remove dependency on Mono.Options.
+    -->
+    <SignAssembly>false</SignAssembly>
+
     <!-- Using an explicit nuspec file since NuGet Pack target currently doesn't support including dependencies in tools packages -->
     <IsPackable>true</IsPackable>
     <NuspecFile>RIT.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
-    <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -52,4 +58,10 @@
     <ProjectReference Include="..\RoslynInsertionTool\RoslynInsertionTool.csproj" />
     <ProjectReference Include="..\SingleThreadSynchronizationContext\SingleThreadSynchronizationContext.csproj" />
   </ItemGroup>
+  
+  <Target Name="_InitializeNuspecProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
+    </PropertyGroup>
+  </Target>
 </Project>
