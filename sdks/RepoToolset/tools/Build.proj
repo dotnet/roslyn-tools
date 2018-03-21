@@ -61,7 +61,7 @@
     <RealSign>false</RealSign>
     <RealSign Condition="'$(SignType)' == 'real' or '$(PB_SignType)' == 'real'">true</RealSign>
 
-    <Sign Condition="'$(PB_SignType)' != '' and '$(PB_SignType)' != 'real'">false</Sign>
+    <Sign Condition="('$(PB_SignType)' != '' and '$(PB_SignType)' != 'real') or '$(DotNetBuildFromSource)' == 'true'">false</Sign>
     <Test Condition="'$(PB_SkipTests)' == 'true'">false</Test>
     <IntegrationTest Condition="'$(PB_SkipTests)' == 'true'">false</IntegrationTest>
     <PerformanceTest Condition="'$(PB_SkipTests)' == 'true'">false</PerformanceTest>
@@ -114,6 +114,11 @@
       <_CommonProps Include="VersionsPropsPath=$(VersionsPropsPath)"/>
       <_CommonProps Include="FixedVersionsPropsPath=$(FixedVersionsPropsPath)" Condition="'$(FixedVersionsPropsPath)' != ''"/>
       <_CommonProps Include="DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)"/>
+      <!-- 
+        When building from source we suppress restore for projects that set ExcludeFromSourceBuild=true.
+        NuGet Restore task reports a warning for such projects, which we suppress here.
+      -->
+      <_CommonProps Include="DisableWarnForInvalidRestoreProjects=true" Condition="'$(DotNetBuildFromSource)' == 'true'"/>
     </ItemGroup>
 
     <ItemGroup Condition="$(_RestoreTools)">
