@@ -52,7 +52,7 @@ namespace Roslyn.Insertion
 
             return new CoreXT(defaultConfigPath, xDocument, componentsJSONPath);
         }
-        
+
         public void SaveConfig()
         {
             try
