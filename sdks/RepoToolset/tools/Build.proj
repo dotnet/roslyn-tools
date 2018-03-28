@@ -10,7 +10,9 @@
     Configuration                   Build configuration: "Debug", "Release", etc.
 
     DotNetPackageVersionPropsPath   Package version overrides.
+    DotNetRestoreSourcePropsPath    Overrides of ResourceSources (list of NuGet feeds to download dependencies from)
     DotNetBuildFromSource           Building the entire stack from source with no external dependencies.
+    DotNetBuildOffline              Building without access to NuGet servers.
 
     CIBuild                         "true" when building on CI server
     Restore                         "true" to restore toolset and solution
@@ -79,6 +81,7 @@
   <Target Name="Execute">
     <Error Text="Property 'Projects' must be specified" Condition="'$(Projects)' == ''"/>
     <Error Text="Property 'RepoRoot' must be specified" Condition="'$(_RepoRootOriginal)' == ''"/>
+    <Error Text="File 'global.json' must exist in directory specified by RepoRoot: '$(_RepoRootOriginal)'" Condition="'$(_RepoRootOriginal)' != '' and !Exists('$(RepoRoot)global.json')"/>
 
     <PropertyGroup>
       <_MSBuildCmd Condition="'$(MSBuildRuntimeType)' != 'Core'">"$(MSBuildBinPath)\MSBuild.exe" /nodeReuse:false</_MSBuildCmd>
