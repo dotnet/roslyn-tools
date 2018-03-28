@@ -58,8 +58,8 @@
   <!-- RestoreSources overrides - defines DotNetRestoreSources variable if available -->
   <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
 
-  <!-- Force sources to DotNetRestoreSources if specified, ignore any sources set by the repo -->
-  <PropertyGroup Condition="'$(DotNetRestoreSources)' != ''">
+  <!-- Force sources to DotNetRestoreSources if building offline, discard any sources set by the repo -->
+  <PropertyGroup Condition="'$(DotNetBuildOffline)' == 'true'">
     <RestoreSources>$(DotNetRestoreSources)</RestoreSources>
   </PropertyGroup>
 
@@ -75,5 +75,7 @@
 
     <!-- Add externally defined NuGet package restore sources. This property is set by Build.proj. -->
     <RestoreSources Condition="'$(__ExternalRestoreSources)' != ''">$(__ExternalRestoreSources);$(RestoreSources)</RestoreSources>
+
+    <RestoreSources Condition="'$(DotNetRestoreSources)' != ''">$(DotNetRestoreSources);$(RestoreSources)</RestoreSources>
   </PropertyGroup>
 </Project>
