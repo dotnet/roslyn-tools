@@ -9,6 +9,7 @@
 
     Optional parameters:
       ExternalRestoreSources
+      PublishingToBlobStorage
   -->
 
   <Import Project="BuildStep.props" />
@@ -20,7 +21,7 @@
     <_RestoreSources Include="https://dotnet.myget.org/F/symreader-converter/api/v3/index.json"
                      Condition="'$(UsingToolPdbConverter)' == 'true' and $(MicrosoftDiaSymReaderPdb2PdbVersion.Contains('-'))"/>
     <_RestoreSources Include="https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json"
-                     Condition="'$(UsingPipeBuildPublishing)' == 'true'" />
+                     Condition="'$(PublishingToBlobStorage)' == 'true'" />
   </ItemGroup>
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
@@ -31,7 +32,7 @@
     <PackageReference Include="MicroBuild.Core.Sentinel" Version="1.0.0" />
     <PackageReference Include="MicroBuild.Plugins.SwixBuild" Version="$(MicroBuildPluginsSwixBuildVersion)" Condition="'$(UsingToolVSSDK)' == 'true'" />
     <PackageReference Include="Microsoft.DiaSymReader.Pdb2Pdb" Version="$(MicrosoftDiaSymReaderPdb2PdbVersion)" Condition="'$(UsingToolPdbConverter)' == 'true'" />
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" Condition="'$(UsingPipeBuildPublishing)' == 'true'" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" Condition="'$(PublishingToBlobStorage)' == 'true'" />
     <PackageReference Include="RoslynTools.SignTool" Version="$(RoslynToolsSignToolVersion)" />
     <PackageReference Include="RoslynTools.ModifyVsixManifest" Version="$(RoslynToolsModifyVsixManifestVersion)" Condition="'$(UsingToolVSSDK)' == 'true'" />
   </ItemGroup>
