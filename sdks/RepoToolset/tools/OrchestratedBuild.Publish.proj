@@ -12,29 +12,36 @@
 
   <Import Project="$(NuGetPackageRoot)microsoft.dotnet.build.tasks.feed\$(MicrosoftDotNetBuildTasksFeedVersion)\build\Microsoft.DotNet.Build.Tasks.Feed.targets" />
 
-  <ItemGroup>
-    <PackagesToPublish Include="$(PackageOutputPath)*.nupkg" />
-  </ItemGroup>
-
   <Target Name="Publish">
     <PropertyGroup>
       <SymbolPackagesDir>$(ArtifactsTmpDir)SymbolPackages\</SymbolPackagesDir>
     </PropertyGroup>
 
-    <!--
-      We expect the .nupkg to contain Portable PDBs. Such packages can act as symbol packages since they have the same structure.
-      We just need to rename them to *.symbols.nupkg.
-    -->
     <ItemGroup>
-      <SymbolPackagesToPublish Include="@(PackagesToPublish->'$(SymbolPackagesDir)%(Filename).symbols.nupkg')"/>
+      <ExistingSymbolPackages Include="$(PackageOutputPath)*.symbols.nupkg" />
+
+      <PackagesToPublish Include="$(PackageOutputPath)*.nupkg" />
+      <PackagesToPublish Remove="@(ExistingSymbolPackages)" />
+      <PackagesToPublish Update="@(PackagesToPublish)">
+        <SymbolPackageToGenerate Condition="!Exists('%(RootDir)%(Directory)%(Filename).symbols.nupkg')">$(SymbolPackagesDir)%(Filename).symbols.nupkg</SymbolPackageToGenerate>
+      </PackagesToPublish>
+
+      <SymbolPackagesToGenerate Include="@(PackagesToPublish->'%(SymbolPackageToGenerate)')" Condition="'%(PackagesToPublish.SymbolPackageToGenerate)' != ''">
+        <OriginalPackage>%(PackagesToPublish.Identity)</OriginalPackage>
+      </SymbolPackagesToGenerate>
     </ItemGroup>
 
+    <!--
+      If a symbol package doesn't exist yet we assume that the regular package contains Portable PDBs.
+      Such packages can act as symbol packages since they have the same structure.
+      We just need to copy them to *.symbols.nupkg.
+    -->
     <MakeDir Directories="$(SymbolPackagesDir)" />
-    <Copy SourceFiles="@(PackagesToPublish)" DestinationFiles="@(SymbolPackagesToPublish)" />
+    <Copy SourceFiles="@(SymbolPackagesToGenerate->'%(OriginalPackage)')" DestinationFiles="@(SymbolPackagesToGenerate)" />
 
     <PushToBlobFeed ExpectedFeedUrl="$(ExpectedFeedUrl)"
                     AccountKey="$(AccountKey)"
-                    ItemsToPush="@(PackagesToPublish);@(SymbolPackagesToPublish)"
+                    ItemsToPush="@(PackagesToPublish);@(ExistingSymbolPackages);@(SymbolPackagesToGenerate)"
                     ManifestName="$(BUILD_REPOSITORY_NAME)"
                     ManifestBranch="$(BUILD_SOURCEBRANCH)"
                     ManifestBuildId="$(BUILD_BUILDNUMBER)"
