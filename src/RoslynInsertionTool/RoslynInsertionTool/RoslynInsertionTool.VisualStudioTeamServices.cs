@@ -62,21 +62,6 @@ namespace Roslyn.Insertion
                     cancellationToken);
         }
 
-        private static async Task<Build> GetLatestPassedBuildAsync(CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            Log.Trace($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.BuildQueueName}");
-            var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
-            var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
-            var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, BuildResult.Succeeded);
-            
-            // Get the latest build with valid artifacts.
-            return (from build in builds
-                    where buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken).Result.Any(a => a.Resource != null && a.Resource.Data != null && a.Resource.Data.Contains(Options.BuildDropPath))
-                    orderby build.FinishTime descending
-                    select build).FirstOrDefault();
-        }
-
         private static async Task<IEnumerable<Build>> GetBuildsFromTFSAsync(BuildHttpClient buildClient, List<BuildDefinitionReference> definitions, CancellationToken cancellationToken, BuildResult? resultFilter = default(BuildResult))
         {
             IEnumerable<Build> builds = await GetBuildsFromTFSByBranchAsync(buildClient, definitions, Options.BranchName, resultFilter, cancellationToken);
@@ -97,13 +82,48 @@ namespace Roslyn.Insertion
 
         private static async Task<Build> GetLatestBuildAsync(CancellationToken cancellationToken)
         {
+            var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
+            var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
+            var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, resultFilter: null);
+
+            return (await BuildsWithValidArtifactsAsync(buildClient, cancellationToken, from build in builds
+                    orderby build.FinishTime descending
+                    select build)).FirstOrDefault();
+        }
+
+        private static async Task<List<Build>> BuildsWithValidArtifactsAsync(BuildHttpClient buildClient, CancellationToken cancellationToken,
+                        IEnumerable<Build> builds)
+        {
+            List<Build> buildsWithValidArtifacts = new List<Build>();
+            foreach (var build in builds)
+            {
+                var artifacts = await buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken);
+                if (artifacts.Any(a => a.Resource != null && a.Resource.Data != null && a.Resource.Data.Contains(Options.BuildDropPath)))
+                {
+                    buildsWithValidArtifacts.Add(build);
+                }
+            }
+            return buildsWithValidArtifacts;
+        }
+
+        private static async Task<Build> GetLatestPassedBuildAsync(CancellationToken cancellationToken)
+        {
             // ********************* Verify Build Passed *****************************
             cancellationToken.ThrowIfCancellationRequested();
             Build newestBuild = null;
             Log.Info($"Get Latest Passed Build");
             try
             {
-                newestBuild = await GetLatestPassedBuildAsync(cancellationToken);
+                Log.Trace($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.BuildQueueName}");
+                var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
+                var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
+                var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, BuildResult.Succeeded);
+
+                // Get the latest build with valid artifacts.
+                newestBuild = (await BuildsWithValidArtifactsAsync(buildClient, cancellationToken,
+                                    from build in builds
+                                    orderby build.FinishTime descending
+                                    select build)).FirstOrDefault();
             }
             catch (Exception ex)
             {

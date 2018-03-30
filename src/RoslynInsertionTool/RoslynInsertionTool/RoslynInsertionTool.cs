@@ -43,6 +43,7 @@ namespace Roslyn.Insertion
             var shouldRollBackGitChanges = false;
             var newPackageFiles = new List<string>();
             var isInsertionCancelled = false;
+            var noProgressOnFailedBuilds = false;
 
             try
             {
@@ -65,20 +66,26 @@ namespace Roslyn.Insertion
                 cancellationToken.ThrowIfCancellationRequested();
 
                 BuildVersion buildVersion;
-                Build newestBuild;
+
+                Build buildToInsert;
+                Build latestBuild = null;
                 bool retainBuild = false;
                 // Get the version from TFS build queue, e.g. Roslyn-Master-Signed-Release.
                 // We assume all CoreXT packages we build (Roslyn and all dependencies we
                 // insert) have the same version.
                 if (string.IsNullOrEmpty(Options.SpecificBuild))
                 {
-                    newestBuild = await GetLatestBuildAsync(cancellationToken);
-                    buildVersion = BuildVersion.FromTfsBuildNumber(newestBuild.BuildNumber, Options.BuildQueueName);
+                    buildToInsert = await GetLatestPassedBuildAsync(cancellationToken);
+                    buildVersion = BuildVersion.FromTfsBuildNumber(buildToInsert.BuildNumber, Options.BuildQueueName);
+
+                    //  Get the latest build, whether passed or failed.  If the buildToInsert has already been inserted but
+                    //  there is a later failing build, then send an error
+                    latestBuild = await GetLatestBuildAsync(cancellationToken);
                 }
                 else
                 {
                     buildVersion = BuildVersion.FromString(Options.SpecificBuild);
-                    newestBuild = await GetSpecificBuildAsync(buildVersion, cancellationToken);
+                    buildToInsert = await GetSpecificBuildAsync(buildVersion, cancellationToken);
                 }
 
                 // ****************** Get Latest and Create Branch ***********************
@@ -158,7 +165,7 @@ namespace Roslyn.Insertion
                     cancellationToken.ThrowIfCancellationRequested();
                     Log.Info($"Updating CoreXT components file");
 
-                    var components = await GetLatestComponentsAsync(newestBuild, cancellationToken);
+                    var components = await GetLatestComponentsAsync(buildToInsert, cancellationToken);
                     var shouldSave = false;
                     foreach (var newComponent in components)
                     {
@@ -176,12 +183,12 @@ namespace Roslyn.Insertion
                 }
 
                 // ************* Ensure the build is retained on the servers *************
-                if (Options.RetainInsertedBuild && retainBuild && !newestBuild.KeepForever.GetValueOrDefault())
+                if (Options.RetainInsertedBuild && retainBuild && !buildToInsert.KeepForever.GetValueOrDefault())
                 {
                     Log.Info("Marking inserted build for retention.");
-                    newestBuild.KeepForever = true;
+                    buildToInsert.KeepForever = true;
                     var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
-                    await buildClient.UpdateBuildAsync(newestBuild, newestBuild.Id);
+                    await buildClient.UpdateBuildAsync(buildToInsert, buildToInsert.Id);
                 }
 
                 // ********************* Verify Build Completes **************************
@@ -203,9 +210,9 @@ namespace Roslyn.Insertion
                 }
 
                 // ********************* Trigger a release *****************************
-                Log.Info($"Triggering a release for the build {newestBuild.BuildNumber}");
+                Log.Info($"Triggering a release for the build {buildToInsert.BuildNumber}");
 
-                var release = await CreateReleaseAsync(newestBuild, cancellationToken);
+                var release = await CreateReleaseAsync(buildToInsert, cancellationToken);
 
                 // The timeout for the below wait is primarily dependent on:
                 // 1. The release task itself - Since its currently only triggering symbol archival,
@@ -230,6 +237,11 @@ namespace Roslyn.Insertion
                     catch (EmptyCommitException ecx)
                     {
                         isInsertionCancelled = true;
+
+                        if (latestBuild != null && latestBuild.Result != BuildResult.Succeeded)
+                        {
+                            noProgressOnFailedBuilds = true;
+                        }
 
                         Log.Warn($"Unable to create pull request for '{branch.FriendlyName}'");
                         Log.Warn(ecx);
@@ -309,7 +321,7 @@ namespace Roslyn.Insertion
                 {
                     try
                     {
-                        SendMail(pullRequest, newPackageFiles, isInsertionCancelled);
+                        SendMail(pullRequest, newPackageFiles, isInsertionCancelled, noProgressOnFailedBuilds);
                     }
                     catch (Exception ex)
                     {
@@ -391,7 +403,8 @@ namespace Roslyn.Insertion
             return bodyHtml.ToString().Replace("\n", "<br/>");
         }
 
-        private static void SendMail(GitPullRequest pullRequest, List<string> newPackageFiles, bool isInsertionCancelled = false)
+        private static void SendMail(GitPullRequest pullRequest, List<string> newPackageFiles,
+            bool isInsertionCancelled = false, bool noProgressOnFailedBuilds = false)
         {
             Log.Factory.Flush();
             using (var mailClient = new SmtpClient(Options.EmailServerName))
@@ -412,11 +425,26 @@ namespace Roslyn.Insertion
                     }
                     else
                     {
-                        var insertionStatus = isInsertionCancelled ? "CANCELLED" : "FAILED";
+                        string insertionStatus;
+                        if (noProgressOnFailedBuilds || !isInsertionCancelled)
+                        {
+                            insertionStatus = "FAILED";
+                        }
+                        else
+                        {
+                            insertionStatus = "CANCELLED";
+                        }
+
+                        string body = $"Review attached log for details";
+                        if (noProgressOnFailedBuilds)
+                        {
+                            body = $"Latest successful build has already been inserted, but there are newer unsuccessful builds.";
+                        }
+
 
                         mailMessage.Subject = $"{Options.InsertionName} insertion from {Options.BuildQueueName}/{Options.BranchName}/{Options.BuildConfig} into {Options.VisualStudioBranchName} {insertionStatus}";
                         mailMessage.SubjectEncoding = Encoding.UTF8;
-                        mailMessage.Body = $"Review attached log for details";
+                        mailMessage.Body = body;
                     }
 
                     if (File.Exists(LogFilePath))
