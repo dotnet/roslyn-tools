@@ -13,6 +13,7 @@
     DotNetRestoreSourcePropsPath    Overrides of ResourceSources (list of NuGet feeds to download dependencies from)
     DotNetBuildFromSource           Building the entire stack from source with no external dependencies.
     DotNetBuildOffline              Building without access to NuGet servers.
+    DotNetOutputBlobFeedDir         Directory to publish Source Build assets to (packages, symbol pacakges, installers, etc.).
 
     CIBuild                         "true" when building on CI server
     Restore                         "true" to restore toolset and solution
@@ -67,9 +68,13 @@
     <Test Condition="'$(PB_SkipTests)' == 'true'">false</Test>
     <IntegrationTest Condition="'$(PB_SkipTests)' == 'true'">false</IntegrationTest>
     <PerformanceTest Condition="'$(PB_SkipTests)' == 'true'">false</PerformanceTest>
-    
-    <_PipeBuildPublishing>false</_PipeBuildPublishing>
-    <_PipeBuildPublishing Condition="$(PB_PublishType.Contains('blob'))">true</_PipeBuildPublishing>
+
+    <!-- True if Orchetrated Build assets need to be published to a blob storage -->
+    <_PublishToBlobStorage>false</_PublishToBlobStorage>
+    <_PublishToBlobStorage Condition="$(PB_PublishType.Contains('blob'))">true</_PublishToBlobStorage>
+
+    <_DotNetOutputBlobFeedDir>$(DotNetOutputBlobFeedDir)</_DotNetOutputBlobFeedDir>
+    <_DotNetOutputBlobFeedDir Condition="'$(_DotNetOutputBlobFeedDir)' != '' and !HasTrailingSlash('$(_DotNetOutputBlobFeedDir)')">$(_DotNetOutputBlobFeedDir)\</_DotNetOutputBlobFeedDir>
 
     <_PackageVersionOverridesPath Condition="'$(PB_PackageVersionPropsUrl)' != ''">$(ArtifactsToolsetDir)PackageVersionOverrides.props</_PackageVersionOverridesPath>
     <DotNetPackageVersionPropsPath Condition="'$(DotNetPackageVersionPropsPath)' == ''">$(_PackageVersionOverridesPath)</DotNetPackageVersionPropsPath>
@@ -128,7 +133,7 @@
       <_RestoreToolsProps Include="@(_CommonProps)"/>
       <_RestoreToolsProps Include="BaseIntermediateOutputPath=$(ArtifactsToolsetDir)Common"/>
       <_RestoreToolsProps Include="ExcludeRestorePackageImports=true"/>
-      <_RestoreToolsProps Include="UsingPipeBuildPublishing=$(_PipeBuildPublishing)"/>
+      <_RestoreToolsProps Include="PublishingToBlobStorage=$(_PublishToBlobStorage)"/>
       <_RestoreToolsProps Include="ExternalRestoreSources=$(PB_RestoreSource)" Condition="'$(PB_RestoreSource)' != ''"/>
     </ItemGroup>
 
@@ -226,8 +231,8 @@
              Condition="'$(Pack)' == 'true'"/>
 
     <MSBuild Projects="OrchestratedBuild.Publish.proj"
-             Properties="@(_CommonProps);ExpectedFeedUrl=$(PB_PublishBlobFeedUrl);AccountKey=$(PB_PublishBlobFeedKey)"
+             Properties="@(_CommonProps);ExpectedFeedUrl=$(PB_PublishBlobFeedUrl);AccountKey=$(PB_PublishBlobFeedKey);DotNetOutputBlobFeedDir=$(_DotNetOutputBlobFeedDir)"
              Targets="Publish"
-             Condition="$(_PipeBuildPublishing)"/>
+             Condition="$(_PublishToBlobStorage) or '$(_DotNetOutputBlobFeedDir)' != ''"/>
   </Target>
 </Project>

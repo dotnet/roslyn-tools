@@ -4,13 +4,20 @@
     Required variables:
       VersionsPropsPath          Versions.props path.
       FixedVersionsPropsPath     FixedVersions.props path.
+
+    Optional variables:
       ExpectedFeedUrl            Target feed URL.
       AccountKey                 Account key.
+      DotNetOutputBlobFeedDir    Source Build publishing directory
+
+    TODO: 
+      Unify this logic between Source and Orchestrated build (https://github.com/dotnet/arcade/issues/101)
   -->
 
   <Import Project="BuildStep.props" />
 
-  <Import Project="$(NuGetPackageRoot)microsoft.dotnet.build.tasks.feed\$(MicrosoftDotNetBuildTasksFeedVersion)\build\Microsoft.DotNet.Build.Tasks.Feed.targets" />
+  <Import Project="$(NuGetPackageRoot)microsoft.dotnet.build.tasks.feed\$(MicrosoftDotNetBuildTasksFeedVersion)\build\Microsoft.DotNet.Build.Tasks.Feed.targets"
+          Condition="'$(ExpectedFeedUrl)' != ''"/>
 
   <Target Name="Publish">
     <PropertyGroup>
@@ -39,13 +46,19 @@
     <MakeDir Directories="$(SymbolPackagesDir)" />
     <Copy SourceFiles="@(SymbolPackagesToGenerate->'%(OriginalPackage)')" DestinationFiles="@(SymbolPackagesToGenerate)" />
 
+    <!-- Orchestrated Build blob storage -->
     <PushToBlobFeed ExpectedFeedUrl="$(ExpectedFeedUrl)"
                     AccountKey="$(AccountKey)"
                     ItemsToPush="@(PackagesToPublish);@(ExistingSymbolPackages);@(SymbolPackagesToGenerate)"
                     ManifestName="$(BUILD_REPOSITORY_NAME)"
                     ManifestBranch="$(BUILD_SOURCEBRANCH)"
                     ManifestBuildId="$(BUILD_BUILDNUMBER)"
-                    ManifestCommit="$(BUILD_SOURCEVERSION)" />
+                    ManifestCommit="$(BUILD_SOURCEVERSION)" 
+                    Condition="'$(ExpectedFeedUrl)' != ''"/>
+
+    <!-- Source Build local storage -->    
+    <Copy SourceFiles="@(PackagesToPublish)" DestinationFolder="$(DotNetOutputBlobFeedDir)packages" Condition="'$(DotNetOutputBlobFeedDir)' != ''" />
+    <Copy SourceFiles="@(ExistingSymbolPackages);@(SymbolPackagesToGenerate)" DestinationFolder="$(DotNetOutputBlobFeedDir)assets" Condition="'$(DotNetOutputBlobFeedDir)' != ''" />
   </Target>
 
 </Project>
