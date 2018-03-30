@@ -61,24 +61,66 @@ function Create-Directory([string[]] $path) {
   }
 }
 
-function InstallDotNetCli {
-  $installScript = "$DotNetRoot\dotnet-install.ps1"
+function InitializeDotNetCli {
+  # Don't resolve runtime, shared framework, or SDK from other locations to ensure build determinism
+  $env:DOTNET_MULTILEVEL_LOOKUP=0
+  
+  # Disable first run since we do not need all ASP.NET packages restored.
+  $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+
+  # Source Build uses DotNetCoreSdkDir variable
+  if ($env:DotNetCoreSdkDir -ne $null) {
+    $env:DOTNET_INSTALL_DIR = $env:DotNetCoreSdkDir    
+  }
+
+  # Use dotnet installation specified in DOTNET_INSTALL_DIR if it contains the required SDK version, 
+  # otherwise install the dotnet CLI and SDK to repo local .dotnet directory to avoid potential permission issues.
+  if (($env:DOTNET_INSTALL_DIR -ne $null) -and (Test-Path(Join-Path $env:DOTNET_INSTALL_DIR "sdk\$($GlobalJson.sdk.version)"))) {
+    $dotnetRoot = $env:DOTNET_INSTALL_DIR
+  } else {
+    $dotnetRoot = Join-Path $RepoRoot ".dotnet"
+    $env:DOTNET_INSTALL_DIR = $dotnetRoot
+    
+    if ($restore) {
+      InstallDotNetCli $dotnetRoot
+    }
+  }
+
+  $global:BuildDriver = Join-Path $dotnetRoot "dotnet.exe"    
+  $global:BuildArgs = "msbuild"
+}
+
+function InstallDotNetCli([string] $dotnetRoot) {
+  $installScript = "$dotnetRoot\dotnet-install.ps1"
   if (!(Test-Path $installScript)) { 
-    Create-Directory $DotNetRoot
+    Create-Directory $dotnetRoot
     Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile $installScript
   }
   
-  & $installScript -Version $GlobalJson.sdk.version -InstallDir $DotNetRoot
+  & $installScript -Version $GlobalJson.sdk.version -InstallDir $dotnetRoot
   if ($lastExitCode -ne 0) {
     throw "Failed to install dotnet cli (exit code '$lastExitCode')."
   }
 }
 
-function LocateVisualStudio {
-  if ($InVSEnvironment) {
-    return Join-Path $env:VS150COMNTOOLS "..\.."
+function InitializeVisualStudioBuild {
+  $inVSEnvironment = !($env:VS150COMNTOOLS -eq $null) -and (Test-Path $env:VS150COMNTOOLS)
+
+  if ($inVSEnvironment) {
+    $vsInstallDir = Join-Path $env:VS150COMNTOOLS "..\.."
+  } else {    
+    $vsInstallDir = LocateVisualStudio
+  
+    $env:VS150COMNTOOLS = Join-Path $vsInstallDir "Common7\Tools\"
+    $env:VSSDK150Install = Join-Path $vsInstallDir "VSSDK\"
+    $env:VSSDKInstall = Join-Path $vsInstallDir "VSSDK\"
   }
 
+  $global:BuildDriver = Join-Path $vsInstallDir "MSBuild\15.0\Bin\msbuild.exe"
+  $global:BuildArgs = "/nodeReuse:$(!$ci)"
+}
+
+function LocateVisualStudio {
   $vswhereVersion = $GlobalJson.vswhere.version
   $toolsRoot = Join-Path $RepoRoot ".tools"
   $vsWhereDir = Join-Path $toolsRoot "vswhere\$vswhereVersion"
@@ -99,7 +141,7 @@ function LocateVisualStudio {
   return $vsInstallDir
 }
 
-function InstallToolset {
+function InitializeToolset {
   if (!(Test-Path $ToolsetBuildProj)) {
    $proj = Join-Path $TempDir "_restore.proj"   
    '<Project Sdk="RoslynTools.RepoToolset"><Target Name="NoOp"/></Project>' | Set-Content $proj
@@ -144,53 +186,37 @@ try {
     $NuGetPackageRoot = Join-Path $env:UserProfile ".nuget\packages\"
   }
 
-  $ToolsetVersion = $GlobalJson.'msbuild-sdks'.'RoslynTools.RepoToolset'
-  $ToolsetBuildProj = Join-Path $NuGetPackageRoot "roslyntools.repotoolset\$ToolsetVersion\tools\Build.proj"
-  
-  # Presence of vswhere.version indicated the repo needs to build using VS msbuild
-  if ((Get-Member -InputObject $GlobalJson -Name "vswhere") -ne $null) {
-    $DotNetRoot = $null
-    $InVSEnvironment = !($env:VS150COMNTOOLS -eq $null) -and (Test-Path $env:VS150COMNTOOLS)
-    $vsInstallDir = LocateVisualStudio
-
-    $BuildDriver = Join-Path $vsInstallDir "MSBuild\15.0\Bin\msbuild.exe"
-    $BuildArgs = "/nodeReuse:$(!$ci)"
-
-    if (!$InVSEnvironment) {
-      $env:VS150COMNTOOLS = Join-Path $vsInstallDir "Common7\Tools\"
-      $env:VSSDK150Install = Join-Path $vsInstallDir "VSSDK\"
-      $env:VSSDKInstall = Join-Path $vsInstallDir "VSSDK\"
-    }
-  } elseif ((Get-Member -InputObject $GlobalJson -Name "sdk") -ne $null) {
-    $DotNetRoot = Join-Path $RepoRoot ".dotnet"
-    $BuildDriver = Join-Path $DotNetRoot "dotnet.exe"    
-    $BuildArgs = "msbuild"
-  } else {
-    throw "/global.json must either specify 'sdk.version' or 'vswhere.version'."
-  }
-
   Create-Directory $TempDir
   Create-Directory $LogDir
   
   if ($ci) {
     $env:TEMP = $TempDir
     $env:TMP = $TempDir
-
-    Write-Host "Using $BuildDriver"
   }
-
 
   # Preparation of a CI machine
   if ($prepareMachine) {
     Clear-NuGetCache
   }
 
-  if ($restore) {
-    if ($DotNetRoot -ne $null) {
-      InstallDotNetCli
-    }
+  $ToolsetVersion = $GlobalJson.'msbuild-sdks'.'RoslynTools.RepoToolset'
+  $ToolsetBuildProj = Join-Path $NuGetPackageRoot "roslyntools.repotoolset\$ToolsetVersion\tools\Build.proj"
+    
+  # Presence of vswhere.version indicates the repo needs to build using VS msbuild
+  if ((Get-Member -InputObject $GlobalJson -Name "vswhere") -ne $null) {    
+    InitializeVisualStudioBuild
+  } elseif ((Get-Member -InputObject $GlobalJson -Name "sdk") -ne $null) {  
+    InitializeDotNetCli
+  } else {
+    throw "/global.json must either specify 'sdk.version' or 'vswhere.version'."
+  }
 
-    InstallToolset
+  if ($ci) {
+    Write-Host "Using $BuildDriver"
+  }
+
+  if ($restore) {
+    InitializeToolset
   }
 
   Build
