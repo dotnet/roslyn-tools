@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(MSBuildRuntimeType)' == 'Core'">
-    <PackageReference Include="Microsoft.NETCore.Compilers" Version="$(MicrosoftNETCoreCompilersVersion)" PrivateAssets="true" />
+    <PackageReference Include="Microsoft.NETCore.Compilers" Version="$(MicrosoftNETCoreCompilersVersion)" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(MSBuildRuntimeType)' != 'Core'">
-    <PackageReference Include="Microsoft.Net.Compilers" Version="$(MicrosoftNetCompilersVersion)" PrivateAssets="true" />
+    <PackageReference Include="Microsoft.Net.Compilers" Version="$(MicrosoftNetCompilersVersion)" PrivateAssets="all" />
   </ItemGroup>
 </Project>
