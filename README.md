@@ -8,6 +8,7 @@ Builds are available on MyGet gallery: https://dotnet.myget.org/Gallery/roslyn-t
 |    | x64 Debug|x64 Release|
 |:--:|:--:|:--:|
 |**Windows**|[![Build Status](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Windows_NT_Debug/badge/icon)](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Windows_NT_Debug/)|[![Build Status](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Windows_NT_Release/badge/icon)](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Windows_NT_Release/)|
+|**Windows**|[![Build Status](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Ubuntu16.04_Debug/badge/icon)](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Ubuntu16.04_Debug/)|[![Build Status](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Ubuntu16.04_Release/badge/icon)](https://ci.dot.net/job/dotnet_roslyn-tools/job/master/job/Ubuntu16.04_Release/)|
 
 [//]: # (End current test results)
 
