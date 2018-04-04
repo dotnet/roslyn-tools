@@ -142,15 +142,35 @@ function LocateVisualStudio {
 }
 
 function InitializeToolset {
-  if (!(Test-Path $ToolsetBuildProj)) {
-   $proj = Join-Path $TempDir "_restore.proj"   
-   '<Project Sdk="RoslynTools.RepoToolset"><Target Name="NoOp"/></Project>' | Set-Content $proj
-    & $BuildDriver $BuildArgs $proj /t:NoOp /m /nologo /clp:None /warnaserror /v:$verbosity /p:NuGetPackageRoot=$NuGetPackageRoot /p:__ExcludeSdkImports=true
+  $toolsetVersion = $GlobalJson.'msbuild-sdks'.'RoslynTools.RepoToolset'
+  $toolsetLocationFile = Join-Path $ToolsetDir "$toolsetVersion.txt"
+
+  if (Test-Path $toolsetLocationFile) {
+    $path = Get-Content $toolsetLocationFile
+    if (Test-Path $path) {
+      $global:ToolsetBuildProj = $path
+      return
+    }
   }
+    
+  if (-not $restore) {
+    throw "Toolset version $toolsetVersion has not been restored."
+  }
+
+  $proj = Join-Path $ToolsetDir "restore.proj"  
+
+  '<Project Sdk="RoslynTools.RepoToolset"/>' | Set-Content $proj
+  & $BuildDriver $BuildArgs $proj /t:__WriteToolsetLocation /m /nologo /clp:None /warnaserror /bl:$ToolsetRestoreLog /v:$verbosity /p:__ToolsetLocationOutputFile=$toolsetLocationFile
+    
+  if ($lastExitCode -ne 0) {
+    throw "Failed to restore toolset (exit code '$lastExitCode'). See log: $ToolsetRestoreLog"
+  }
+
+ $global:ToolsetBuildProj = Get-Content $toolsetLocationFile
 }
 
 function Build {
-  & $BuildDriver $BuildArgs $ToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity /bl:$Log /p:Configuration=$configuration /p:Projects=$solution /p:RepoRoot=$RepoRoot /p:Restore=$restore /p:DeployDeps=$deployDeps /p:Build=$build /p:Rebuild=$rebuild /p:Deploy=$deploy /p:Test=$test /p:IntegrationTest=$integrationTest /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci /p:NuGetPackageRoot=$NuGetPackageRoot $properties
+  & $BuildDriver $BuildArgs $ToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity /bl:$Log /p:Configuration=$configuration /p:Projects=$solution /p:RepoRoot=$RepoRoot /p:Restore=$restore /p:DeployDeps=$deployDeps /p:Build=$build /p:Rebuild=$rebuild /p:Deploy=$deploy /p:Test=$test /p:IntegrationTest=$integrationTest /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci $properties
 }
 
 function Stop-Processes() {
@@ -160,19 +180,13 @@ function Stop-Processes() {
   Get-Process -Name "vbcscompiler" -ErrorAction SilentlyContinue | Stop-Process
 }
 
-function Clear-NuGetCache() {
-  # clean nuget packages -- necessary to avoid mismatching versions of swix microbuild build plugin and VSSDK on Jenkins
-  $nugetRoot = (Join-Path $env:USERPROFILE ".nuget\packages")
-  if (Test-Path $nugetRoot) {
-    Remove-Item $nugetRoot -Recurse -Force
-  }
-}
-
 try {
   $RepoRoot = Join-Path $PSScriptRoot "..\.."
   $ArtifactsDir = Join-Path $RepoRoot "artifacts"
+  $ToolsetDir = Join-Path $ArtifactsDir "toolset"
   $LogDir = Join-Path (Join-Path $ArtifactsDir $configuration) "log"
   $Log = Join-Path $LogDir "Build.binlog"
+  $ToolsetRestoreLog = Join-Path $LogDir "ToolsetRestore.binlog"
   $TempDir = Join-Path (Join-Path $ArtifactsDir $configuration) "tmp"
   $GlobalJson = Get-Content(Join-Path $RepoRoot "global.json") | ConvertFrom-Json
   
@@ -180,27 +194,21 @@ try {
     $solution = Join-Path $RepoRoot "*.sln"
   }
 
-  if ($env:NUGET_PACKAGES -ne $null) {
-    $NuGetPackageRoot = $env:NUGET_PACKAGES.TrimEnd("\") + "\"
-  } else {
-    $NuGetPackageRoot = Join-Path $env:UserProfile ".nuget\packages\"
+  if ($env:NUGET_PACKAGES -eq $null) {
+    # Use local cache on CI to ensure deterministic build,
+    # use global cache in dev builds to avoid cost of downloading packages.
+    $env:NUGET_PACKAGES = if ($ci) { Join-Path $RepoRoot ".packages" } 
+                          else { Join-Path $env:UserProfile ".nuget\packages" }
   }
 
-  Create-Directory $TempDir
+  Create-Directory $ToolsetDir
   Create-Directory $LogDir
   
   if ($ci) {
+    Create-Directory $TempDir
     $env:TEMP = $TempDir
     $env:TMP = $TempDir
   }
-
-  # Preparation of a CI machine
-  if ($prepareMachine) {
-    Clear-NuGetCache
-  }
-
-  $ToolsetVersion = $GlobalJson.'msbuild-sdks'.'RoslynTools.RepoToolset'
-  $ToolsetBuildProj = Join-Path $NuGetPackageRoot "roslyntools.repotoolset\$ToolsetVersion\tools\Build.proj"
     
   # Presence of vswhere.version indicates the repo needs to build using VS msbuild
   if ((Get-Member -InputObject $GlobalJson -Name "vswhere") -ne $null) {    
@@ -215,9 +223,7 @@ try {
     Write-Host "Using $BuildDriver"
   }
 
-  if ($restore) {
-    InitializeToolset
-  }
+  InitializeToolset
 
   Build
   exit $lastExitCode
