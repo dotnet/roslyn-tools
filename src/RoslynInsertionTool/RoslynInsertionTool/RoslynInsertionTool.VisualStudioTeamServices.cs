@@ -195,12 +195,12 @@ namespace Roslyn.Insertion
         {
             cancellationToken.ThrowIfCancellationRequested();
             var releaseClient = ProjectCollection.GetClient<ReleaseHttpClient>();
-            
+
             var releaseDefinition = (await releaseClient.GetReleaseDefinitionsAsync(Options.TFSProjectName, ReleaseDefinitionName, cancellationToken: cancellationToken)).FirstOrDefault();
 
             if (releaseDefinition == null)
             {
-                Log.Log(NLog.LogLevel.Error, $"Could not find a release definition with name: {ReleaseDefinitionName}");
+                Log.Error($"Could not find a release definition with name: {ReleaseDefinitionName}");
                 return null;
             }
 
@@ -274,7 +274,7 @@ namespace Roslyn.Insertion
                     Task.Delay(5 * 1000, cancellationToken).Wait();
 
                     environmentStatus = GetReleaseEnvironment(projectName, release.Id, environmentId, releaseClient, cancellationToken).Status;
-                    
+
                     if(!(environmentStatus.Equals(EnvironmentStatus.InProgress)
                           || environmentStatus.Equals(EnvironmentStatus.Queued)
                           || environmentStatus.Equals(EnvironmentStatus.NotStarted)
@@ -305,7 +305,7 @@ namespace Roslyn.Insertion
         private static ReleaseEnvironment GetReleaseEnvironment(string projectName, int releaseId, int releaseEnvironmentId, ReleaseHttpClient releaseClient, CancellationToken cancellationToken)
         {
             Log.Info("GetReleaseEnvironment: Getting release environment. environmentId: {0}, releaseId:{1}", releaseEnvironmentId, releaseId);
-            
+
             return releaseClient.GetReleaseEnvironmentAsync(projectName, releaseId, releaseEnvironmentId, cancellationToken: cancellationToken).SyncResult();
         }
 
@@ -402,6 +402,12 @@ namespace Roslyn.Insertion
             using (var zipFile = ZipFile.OpenRead(tempZipFile))
             {
                 var entry = zipFile.Entries.SingleOrDefault(x => x.FullName.Contains("Upload VSTS Drop"));
+                if(entry == null)
+                {
+                    var zipFileEntries = string.Join(Environment.NewLine, zipFile.Entries.Select(x => x.FullName));
+                    Log.Trace($"Listing all log file entries:{Environment.NewLine}{zipFileEntries}");
+                    throw new Exception("This build did not upload its contents to VSTS Drop and is invalid.");
+                }
                 entry.ExtractToFile(tempFile);
             }
 
