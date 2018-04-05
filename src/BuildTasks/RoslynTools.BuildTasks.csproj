@@ -6,7 +6,8 @@
     <IsPackable>true</IsPackable>
     <NuspecFile>RoslynTools.BuildTasks.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
-
+    
+    <DebugType>embedded</DebugType>
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
   <ItemGroup>
