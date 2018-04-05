@@ -19,7 +19,7 @@
     Ideally we would have msbuild API to do that for an SDK: https://github.com/Microsoft/msbuild/issues/2992
   -->
   <Target Name="__WriteToolsetLocation" Outputs="$(__ToolsetLocationOutputFile)" Condition="'$(__ToolsetLocationOutputFile)' != ''">
-    <WriteLinesToFile File="$(__ToolsetLocationOutputFile)" Lines="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\Build.proj'))"/>
+    <WriteLinesToFile File="$(__ToolsetLocationOutputFile)" Lines="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\Build.proj'))" Overwrite="true"/>
     <ItemGroup>
       <FileWrites Include="$(__ToolsetLocationOutputFile)" />
     </ItemGroup>
