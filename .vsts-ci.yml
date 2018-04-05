@@ -38,24 +38,6 @@ steps:
     nuGetVersion: 4.0.0.2283
   condition: and(succeeded(), not(contains(variables['PB_PublishType'], 'blob')))
 
-- task: PublishSymbols@1
-  displayName: Prepare Symbols
-  inputs:
-    SymbolsPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.BuildNumber)\Symbols'
-    SearchPattern: '**/*.dll;**/*.exe;**/*.pdb'
-    SymbolsFolder: '$(Build.SourcesDirectory)\artifacts\$(BuildConfiguration)\SymStore'
-    SkipIndexing: true
-  condition: and(succeeded(), not(contains(variables['PB_PublishType'], 'blob')))
-
-- task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
-  displayName: Publish Symbols
-  inputs:
-    symbolServiceURI: 'https://microsoft.artifacts.visualstudio.com/DefaultCollection'
-    requestName: '$(system.teamProject)/$(Build.DefinitionName)/$(Build.BuildNumber)/$(Build.BuildId)'
-    sourcePath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.BuildNumber)\Symbols'
-    usePat: false
-  condition: and(succeeded(), not(contains(variables['PB_PublishType'], 'blob')))
-
 - task: CopyPublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:
