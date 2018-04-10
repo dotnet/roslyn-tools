@@ -30,7 +30,7 @@
     <MicrosoftVisualStudioSetupVersion>15.0.27428-alpha</MicrosoftVisualStudioSetupVersion>
     <MicrosoftVisualStudioSetupCommonVersion>15.0.27428-alpha</MicrosoftVisualStudioSetupCommonVersion>
     <MicrosoftVisualStudioSetupEngineVersion>15.0.27428-alpha</MicrosoftVisualStudioSetupEngineVersion>
-    <MicrosoftVisualStudioThreadingVersion>15.6.31 </MicrosoftVisualStudioThreadingVersion>
+    <MicrosoftVisualStudioThreadingVersion>15.6.31</MicrosoftVisualStudioThreadingVersion>
 
     <!-- Libs -->
     <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
