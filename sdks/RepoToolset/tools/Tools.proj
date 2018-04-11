@@ -22,9 +22,13 @@
     <_RestoreSources Include="https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json"
                      Condition="'$(UsingPipeBuildPublishing)' == 'true'" />
   </ItemGroup>
+
+  <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
+
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
-    <RestoreSources>@(_RestoreSources)</RestoreSources>
+    <RestoreSources>$(DotNetRestoreSources)</RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">$(RestoreSources);@(_RestoreSources)</RestoreSources>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MicroBuild.Core" Version="$(MicroBuildCoreVersion)" />
