@@ -45,7 +45,7 @@
     <RoslynToolsModifyVsixManifestVersion Condition="'$(RoslynToolsModifyVsixManifestVersion)' == ''">1.0.0-beta-62327-02</RoslynToolsModifyVsixManifestVersion>
     <MicrosoftNetFrameworkReferenceAssembliesVersion Condition="'$(MicrosoftNetFrameworkReferenceAssembliesVersion)' == ''">1.0.0-alpha-003</MicrosoftNetFrameworkReferenceAssembliesVersion>
     <RoslynToolsSignToolVersion Condition="'$(RoslynToolsSignToolVersion)' == ''">1.0.0-beta-62414-01</RoslynToolsSignToolVersion>
-    <XliffTasksVersion Condition="'$(XliffTasksVersion)' == ''">0.2.0-beta-000081</XliffTasksVersion>
+    <XliffTasksVersion Condition="'$(XliffTasksVersion)' == ''">0.2.0-beta-62730-03</XliffTasksVersion>
     <XUnitVersion Condition="'$(XUnitVersion)' == ''">2.3.1</XUnitVersion>
     <XUnitRunnerConsoleVersion Condition="'$(XUnitRunnerConsoleVersion)' == ''">$(XUnitVersion)</XUnitRunnerConsoleVersion>
     <XUnitRunnerVisualStudioVersion Condition="'$(XUnitRunnerVisualStudioVersion)' == ''">$(XUnitVersion)</XUnitRunnerVisualStudioVersion>
