@@ -3,7 +3,7 @@
   <PropertyGroup>
     <!-- This repo version -->
     <VersionBase>1.0.0</VersionBase>
-    <PreReleaseVersionLabel>beta</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>msbuild</PreReleaseVersionLabel>
     
     <!-- Toolset -->
     <RoslynToolsRepoToolsetVersion>1.0.0-beta-62503-02</RoslynToolsRepoToolsetVersion>
