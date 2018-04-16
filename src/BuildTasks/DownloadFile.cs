@@ -51,6 +51,8 @@ namespace RoslynTools
                 return true;
             }
 
+            Directory.CreateDirectory(Path.GetDirectoryName(DestinationPath));
+
             const string FileUriProtocol = "file://";
 
             if (Uri.StartsWith(FileUriProtocol, StringComparison.Ordinal))
