@@ -213,7 +213,7 @@ namespace Roslyn.Insertion
 
             var artifactMetadata = new ArtifactMetadata
             {
-                Alias = "Roslyn-Signed", // This is the alias in the Release definition.
+                Alias = "InputBuild", // This is the alias in the Release definition.
                 InstanceReference = new Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts.BuildVersion
                 {
                     Id = build.Id.ToString(CultureInfo.InvariantCulture),
