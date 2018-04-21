@@ -148,7 +148,7 @@ namespace Roslyn.Insertion
 
             var attributes = (from element in sourceElements
                               where element.Attribute("name")?.Value == variableName
-                              select element.Attribute("value"))?.ToArray();
+                              select element.Attribute("value")).ToArray();
 
             if (attributes.Length == 0)
             {
@@ -223,12 +223,12 @@ namespace Roslyn.Insertion
                 if (comparison == 0)
                 {
                     // found exact match, replace this line
-                    var versionStart = line.IndexOf('"') + 1;
-                    var versionEnd = line.IndexOf('"', versionStart);
+                    var versionStart = IndexOfOrThrow(line, '"') + 1;
+                    var versionEnd = IndexOfOrThrow(line, '"', versionStart);
                     var versionStr = line.Substring(versionStart, versionEnd - versionStart);
                     ParseAndValidatePreviousVersion(newVersion, versionStr, fullPath, variableName, assemblyName);
-                    var existingLine = line.Substring(0, versionStart) + newVersion.ToFullVersion() + line.Substring(versionEnd);
-                    sortedValueLines[lineIndex] = existingLine;
+                    newLine = line.Substring(0, versionStart) + newVersion.ToFullVersion() + line.Substring(versionEnd);
+                    sortedValueLines[lineIndex] = newLine;
                     valueUpdated = true;
                     break;
                 }
@@ -249,6 +249,17 @@ namespace Roslyn.Insertion
 
             var allLines = headerLines.Concat(sortedValueLines).Concat(footerLines);
             _versionsTemplateContent = string.Join("\r\n", allLines);
+        }
+
+        private static int IndexOfOrThrow(string str, char value, int startIndex = 0)
+        {
+            var result = str.IndexOf(value, startIndex);
+            if (result < 0)
+            {
+                throw new InvalidDataException($"The specified character '{value}' was not found in the string: {str}");
+            }
+
+            return result;
         }
 
         private static bool TryParseVersionRange(string str, out Version low, out Version high)
