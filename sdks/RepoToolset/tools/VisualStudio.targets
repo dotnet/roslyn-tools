@@ -164,7 +164,7 @@
       <_SwixArgs Include="SwixBuildPath=$(NuGetPackageRoot)microbuild.plugins.swixbuild\$(MicroBuildPluginsSwixBuildVersion)\"/>
     </ItemGroup>
 
-    <MSBuild Projects="$(RepoToolsetDir)VisualStudio.SetupPackage.swixproj" Properties="@(_SwixArgs)" Targets="Build"/>
+    <MSBuild Projects="$(MSBuildThisFileDirectory)VisualStudio.SetupPackage.swixproj" Properties="@(_SwixArgs)" Targets="Build"/>
 
     <Copy SourceFiles="$(IntermediateOutputPath)$(TargetName).vsix;$(IntermediateOutputPath)$(TargetName).json"
           DestinationFolder="$(VisualStudioSetupInsertionPath)" />
