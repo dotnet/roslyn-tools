@@ -119,36 +119,55 @@ namespace Roslyn.Insertion
         {
             var fullPath = _versionsXmlFullPath;
             string variableName;
+            string capName;
 
             switch (assemblyName)
             {
                 case "System.Collections.Immutable":
                     variableName = "immutablearray";
+                    capName = "IMMUTABLEARRAY_VERSION";
                     break;
 
                 case "Roslyn":
                     variableName = "vsmlangsroslyn";
+                    capName = "VSMLANGSROSLYN_VERSION";
                     break;
 
                 default:
                     variableName = assemblyName.Replace(".", string.Empty) + "Version";
+                    capName = assemblyName.Replace(".", "_").ToUpperInvariant() + "_VERSION";
                     break;
             }
 
-            var attributes = (from element in _versionsXml?.Root?.Element("versions")?.Elements("version")
-                              where element.Attribute("name").Value == variableName
-                              select element.Attribute("value"))?.ToArray();
-
-            if (attributes == null || attributes.Length != 1)
+            var versionsElement = _versionsXml?.Root?.Element("versions");
+            var sourceElements = versionsElement?.Elements("version");
+            if (sourceElements == null)
             {
-                throw new InvalidDataException($"Missing version element with @name='{variableName}' (file '{fullPath}')");
+                throw new InvalidDataException($"Invalid XML data structure.  Expected: /root/versions/version (file '{fullPath}')");
             }
 
-            var valueAttribute = attributes.Single();
+            var attributes = (from element in sourceElements
+                              where element.Attribute("name")?.Value == variableName
+                              select element.Attribute("value")).ToArray();
 
-            ParseAndValidatePreviousVersion(newVersion, valueAttribute.Value, fullPath, "version.@name", assemblyName);
-
-            valueAttribute.SetValue(newVersion.ToFullVersion());
+            if (attributes.Length == 0)
+            {
+                var newVersionElement = new XElement("version",
+                    new XAttribute("name", variableName),
+                    new XAttribute("value", newVersion.ToFullVersion()),
+                    new XAttribute("CAPNAME", capName));
+                versionsElement.Add(newVersionElement);
+            }
+            else if (attributes.Length == 1)
+            {
+                var valueAttribute = attributes.Single();
+                ParseAndValidatePreviousVersion(newVersion, valueAttribute.Value, fullPath, "version.@name", assemblyName);
+                valueAttribute.SetValue(newVersion.ToFullVersion());
+            }
+            else
+            {
+                throw new InvalidDataException($"More than one element with @name='{variableName}' (file '{fullPath}')");
+            }
         }
 
         private void UpdateAssemblyVersionsFile(string assemblyName, Version newVersion)
@@ -169,24 +188,78 @@ namespace Roslyn.Insertion
                     break;
             }
 
-            var i = content.IndexOf(variableName);
-            if (i < 0)
+            // the structure of the file is:
+            //   header: opening tag:    <#+
+            //           comments:           //
+            //   values:                     const string AssemblyNameVersion = "<version-number>";
+            //   footer: closing tag:    #>
+            var lines = content.Split('\n').Select(line => line.TrimEnd('\r')).ToList();
+            var finalLines = new List<string>();
+            bool IsVersionLine(string line) => line.TrimStart().StartsWith("const");
+            var headerLines = lines.TakeWhile(line => !IsVersionLine(line)).ToList();
+            var valueLines = lines.Skip(headerLines.Count).TakeWhile(IsVersionLine).ToList();
+            var footerLines = lines.Skip(headerLines.Count + valueLines.Count).ToList();
+
+            // find the variable or the appropriate insertion location
+            var constExpression = "const string";
+            string GetLineVariableName(string line)
             {
-                throw new InvalidDataException($"Definition of {variableName} not found in '{fullPath}'.");
+                var startIndex = line.IndexOf(constExpression) + constExpression.Length + 1;
+                var endIndex = line.IndexOf(' ', startIndex + 1);
+                var variableLength = endIndex - startIndex;
+                return line.Substring(startIndex, variableLength);
+            }
+            var sortedValueLines = valueLines.OrderBy(GetLineVariableName).ToList();
+
+            // rather than get fancy, linearly search through the sorted list and update or add as appropriate
+            // the file is small so this is fine
+            bool valueUpdated = false;
+            var newLine = $@"    const string {variableName} = ""{newVersion.ToFullVersion()}"";";
+            for (int lineIndex = 0; lineIndex < sortedValueLines.Count; lineIndex++)
+            {
+                var line = sortedValueLines[lineIndex];
+                var currentVariableName = GetLineVariableName(line);
+                var comparison = String.Compare(currentVariableName, variableName, StringComparison.OrdinalIgnoreCase);
+                if (comparison == 0)
+                {
+                    // found exact match, replace this line
+                    var versionStart = IndexOfOrThrow(line, '"') + 1;
+                    var versionEnd = IndexOfOrThrow(line, '"', versionStart);
+                    var versionStr = line.Substring(versionStart, versionEnd - versionStart);
+                    ParseAndValidatePreviousVersion(newVersion, versionStr, fullPath, variableName, assemblyName);
+                    newLine = line.Substring(0, versionStart) + newVersion.ToFullVersion() + line.Substring(versionEnd);
+                    sortedValueLines[lineIndex] = newLine;
+                    valueUpdated = true;
+                    break;
+                }
+                else if (comparison > 0)
+                {
+                    // we passed it, add it right before this line
+                    sortedValueLines.Insert(lineIndex, newLine);
+                    valueUpdated = true;
+                    break;
+                }
             }
 
-            var versionStart = content.IndexOf('"', i + variableName.Length) + 1;
-            var versionEnd = content.IndexOf('"', versionStart);
-            if (versionStart <= 0 || versionEnd < 0)
+            if (!valueUpdated)
             {
-                throw new InvalidDataException($"File '{fullPath}' doesn't have expected format.");
+                // value was last alphabetically, just add it to the end
+                sortedValueLines.Add(newLine);
             }
 
-            var versionStr = content.Substring(versionStart, versionEnd - versionStart);
+            var allLines = headerLines.Concat(sortedValueLines).Concat(footerLines);
+            _versionsTemplateContent = string.Join("\r\n", allLines);
+        }
 
-            ParseAndValidatePreviousVersion(newVersion, versionStr, fullPath, variableName, assemblyName);
+        private static int IndexOfOrThrow(string str, char value, int startIndex = 0)
+        {
+            var result = str.IndexOf(value, startIndex);
+            if (result < 0)
+            {
+                throw new InvalidDataException($"The specified character '{value}' was not found in the string: {str}");
+            }
 
-            _versionsTemplateContent = content.Substring(0, versionStart) + newVersion.ToFullVersion() + content.Substring(versionEnd);
+            return result;
         }
 
         private static bool TryParseVersionRange(string str, out Version low, out Version high)
