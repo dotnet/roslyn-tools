@@ -48,9 +48,7 @@ The RepoToolset defines the following output structure:
 artifacts
   $(Configuration)
     bin
-      $(MSBuildProjectName)
-    obj
-      $(MSBuildProjectName)
+      $(MSBuildProjectName)    
     packages
       $(MSBuildProjectName).$(PackageVersion).nupkg
     TestResults
@@ -69,6 +67,9 @@ artifacts
     log
       Build.binlog
     tmp
+  obj
+    $(MSBuildProjectName)
+      $(Configuration)
   toolset
 ```
 
