@@ -14,18 +14,29 @@
 
   <Import Project="BuildStep.props" />
 
-  <ItemGroup>
-    <_RestoreSources Include="$(ExternalRestoreSources)" Condition="'$(ExternalRestoreSources)' != ''"/>
-    <_RestoreSources Include="https://api.nuget.org/v3/index.json"/>
-    <_RestoreSources Include="https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json"/>
-    <_RestoreSources Include="https://dotnet.myget.org/F/symreader-converter/api/v3/index.json"
-                     Condition="'$(UsingToolPdbConverter)' == 'true' and $(MicrosoftDiaSymReaderPdb2PdbVersion.Contains('-'))"/>
-    <_RestoreSources Include="https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json"
-                     Condition="'$(PublishingToBlobStorage)' == 'true'" />
-  </ItemGroup>
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
-    <RestoreSources>@(_RestoreSources)</RestoreSources>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RestoreSources/>
+    <RestoreSources Condition="'$(ExternalRestoreSources)' != ''">
+      $(RestoreSources);
+      $(ExternalRestoreSources)
+    </RestoreSources>
+    <RestoreSources>
+      $(RestoreSources);
+      https://api.nuget.org/v3/index.json;
+      https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json
+    </RestoreSources>
+    <RestoreSources Condition="'$(UsingToolPdbConverter)' == 'true' and $(MicrosoftDiaSymReaderPdb2PdbVersion.Contains('-'))">
+      $(RestoreSources);
+      https://dotnet.myget.org/F/symreader-converter/api/v3/index.json
+    </RestoreSources>
+    <RestoreSources Condition="'$(PublishingToBlobStorage)' == 'true'">
+      $(RestoreSources);
+      https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
+    </RestoreSources>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MicroBuild.Core" Version="$(MicroBuildCoreVersion)" />
