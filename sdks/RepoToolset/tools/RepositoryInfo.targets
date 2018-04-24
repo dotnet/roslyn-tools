@@ -19,7 +19,7 @@
     </PropertyGroup>
 
     <Error Text="RepositoryRawUrl is empty and RepositoryUrl is not a well-known public repository URL: '$(RepositoryUrl)'" Condition="'$(_RepositoryRawUrl)' == ''" />
-   
+
     <!-- Older source packages use RawUrl that doesn't include '/*' suffix instead of SourceLinkUrl -->
     <ItemGroup>
       <SourceRoot Update="@(SourceRoot)">
@@ -27,10 +27,19 @@
       </SourceRoot>
     </ItemGroup>
 
+    <PropertyGroup>
+      <_SourceControlProvider/>
+      <_SourceControlProvider Condition="$(_RepositoryRawUrl.StartsWith('https://raw.githubusercontent.com'))">github</_SourceControlProvider>
+      <_SourceControlProvider Condition="$(_RepositoryRawUrl.StartsWith('https://devdiv.visualstudio.com'))">vsts</_SourceControlProvider>
+    </PropertyGroup>
+
+    <Error Text="Unsupported source control provider: '$(_RepositoryRawUrl)'" Condition="'$(_SourceControlProvider)' == ''" />
+
     <ItemGroup>
       <SourceRoot Include="$([System.IO.Path]::GetFullPath('$(RepoRoot)'))">
         <SourceControl>Git</SourceControl>
-        <SourceLinkUrl>$(_RepositoryRawUrl.TrimEnd('/'))/$(GitHeadSha)/*</SourceLinkUrl>
+        <SourceLinkUrl Condition="'$(_SourceControlProvider)' == 'github'">$(_RepositoryRawUrl.TrimEnd('/'))/$(GitHeadSha)/*</SourceLinkUrl>
+        <SourceLinkUrl Condition="'$(_SourceControlProvider)' == 'vsts'">$(_RepositoryRawUrl.TrimEnd('/'))?api-version=1.0&amp;versionType=commit&amp;version=$(GitHeadSha)&amp;path=/*</SourceLinkUrl>
       </SourceRoot>
     </ItemGroup>
   </Target>
