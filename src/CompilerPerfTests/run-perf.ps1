@@ -23,7 +23,7 @@ try
         [IO.Compression.ZipFile]::ExtractToDirectory($tmpFile, $binariesDir)
     }
 
-    Exec-Console "dotnet" "run -c Release CompilerPerfTests.csproj"
+    Exec-Console "dotnet" "run -c Release"
 }
 catch {
     Write-Host $_
