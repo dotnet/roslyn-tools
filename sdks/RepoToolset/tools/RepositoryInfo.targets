@@ -71,9 +71,9 @@
       <_MappedSourceRoot Remove="@(_MappedSourceRoot)" />
     </ItemGroup>
 
-    <MapSourceRoots SourceRoots="@(SourceRoot)" Condition="'$(DeterministicSourcePaths)' == 'true'">
+    <RoslynTools.BuildTasks.MapSourceRoots SourceRoots="@(SourceRoot)" Condition="'$(DeterministicSourcePaths)' == 'true'">
       <Output TaskParameter="MappedSourceRoots" ItemName="_MappedSourceRoot" />
-    </MapSourceRoots>
+    </RoslynTools.BuildTasks.MapSourceRoots>
 
     <ItemGroup Condition="'$(DeterministicSourcePaths)' == 'true'">
       <SourceRoot Remove="@(SourceRoot)" />
