@@ -14,7 +14,7 @@ try
     $binariesDir = Resolve-Path "$roslynDir/Binaries"
 
     # Download dotnet if it isn't already available
-    Ensure-SdkInPath
+    Ensure-DotnetSdk
 
     if (-not (Test-Path "$binariesDir/CodeAnalysisRepro")) {
         $tmpFile = [System.IO.Path]::GetTempFileName()
