@@ -24,7 +24,7 @@ try {
 
       # Clear MEF Cache
       $mefCacheFolder = Join-Path $env:LOCALAPPDATA "Microsoft\VisualStudio\15.0_$vsId\ComponentModelCache"
-      Get-ChildItem -Path $mefCacheFolder -Include *.* -File -Recurse | foreach { $_.Delete()}
+      Get-ChildItem -Path $mefCacheFolder -Include *.* -File -Recurse | foreach { Remove-Item $_}
 
       $vsExe = Join-Path $vsDir "Common7\IDE\devenv.exe"
       $args = "/updateconfiguration"
@@ -41,4 +41,3 @@ catch {
     Write-Host $_.ScriptStackTrace -ForegroundColor Red
     exit 1
 }
-

@@ -16,7 +16,7 @@ try {
     $vsInstalls = Get-VisualStudioDirAndId
     $vsDir = $vsInstalls[0].Trim("\")
     $vsId = $vsInstalls[1]
-    if ($vsInstalls.Count -ge 3) {
+    if ($vsInstalls.Count -gt 2) {
       while ($true) {
         Write-Host "Multiple Visual Studio Installs Detected" -ForegroundColor White
         Write-Host "Please Select an Instance to Install Into:" -ForegroundColor White
@@ -42,16 +42,16 @@ try {
     }
 
     # Install VSIX
-    Write-Host "Installing Preview..." -ForegroundColor Gray
+    $vsExe = Join-Path $vsDir "Common7\IDE\devenv.exe"
+    Write-Host "Installing Preview Into $vsExe" -ForegroundColor Gray
     Uninstall-VsixViaTool -vsDir $vsDir -vsId $vsId -hive ""
     Uninstall-OlderVsixesViaTool -vsDir $vsDir -vsId $vsId -hive ""
     Install-VsixViaTool -vsDir $vsDir -vsId $vsId -hive ""
 
     # Clear MEF Cache
     $mefCacheFolder = Join-Path $env:LOCALAPPDATA "Microsoft\VisualStudio\15.0_$vsId\ComponentModelCache"
-    Get-ChildItem -Path $mefCacheFolder -Include *.* -File -Recurse | foreach { $_.Delete()}
+    Get-ChildItem -Path $mefCacheFolder -Include *.* -File -Recurse | foreach { Remove-Item $_}
 
-    $vsExe = Join-Path $vsDir "Common7\IDE\devenv.exe"
     $args = "/updateconfiguration"
     Write-Host "Refreshing MEF Cache" -ForegroundColor Gray
     Exec-Console $vsExe $args
@@ -65,4 +65,3 @@ catch {
     Write-Host $_.ScriptStackTrace -ForegroundColor Red
     exit 1
 }
-
