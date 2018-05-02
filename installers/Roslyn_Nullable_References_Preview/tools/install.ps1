@@ -16,6 +16,8 @@ try {
     $vsInstalls = Get-VisualStudioDirAndId
     $vsDir = $vsInstalls[0].Trim("\")
     $vsId = $vsInstalls[1]
+    # We are given two strings per VS instance (vsdir and vsid)
+    # Check to see if more than one instance meets our reqs
     if ($vsInstalls.Count -gt 2) {
       while ($true) {
         Write-Host "Multiple Visual Studio Installs Detected" -ForegroundColor White
