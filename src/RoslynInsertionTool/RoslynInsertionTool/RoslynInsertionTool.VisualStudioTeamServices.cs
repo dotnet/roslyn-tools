@@ -202,6 +202,9 @@ namespace Roslyn.Insertion
 
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
 
+            Debug.Assert(ReferenceEquals(build,
+                (await BuildsWithValidArtifactsAsync(buildClient, cancellationToken, new[] { build })).Single()));
+
             // Pull the build directory from the API
             var artifacts = await buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken);
             foreach (var artifact in artifacts)
@@ -209,6 +212,8 @@ namespace Roslyn.Insertion
                 // The drop path we're looking for is named the same as the build number
                 if (artifact.Name == build.BuildNumber)
                 {
+                    // artifact.Resource.Data should be available and non-null due to BuildWithValidArtifactsAsync,
+                    // which checks this precondition
                     return Path.Combine(artifact.Resource.Data, build.BuildNumber);
                 }
             }
