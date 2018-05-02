@@ -1,48 +1,68 @@
 Set-StrictMode -version 2.0
 $ErrorActionPreference="Stop"
 
-
-# Deploy our core VSIX libraries to Visual Studio via the Roslyn VSIX tool.  This is an alternative to
-# deploying at build time.
-function Deploy-VsixViaTool([string]$vsDir, [string]$vsId) {
-    $vsixExe = Join-Path $PSScriptRoot "vsixexpinstaller\VsixExpInstaller.exe"
-    $vsixExe = "`"$vsixExe`""
-    $hive = ""
-    Write-Host "Using VS Instance $vsId at `"$vsDir`""
-    $baseArgs = "/rootSuffix:$hive /vsInstallDir:`"$vsDir`""
-    $all = @("vsix\RoslynDeployment.vsix")
-
-    Write-Host "Installing all Roslyn VSIXes"
-    foreach ($e in $all) {
-        $name = $e
-        $filePath = "`"$((Resolve-Path $e).Path)`""
-        $fullArg = "$baseArgs $filePath"
-        Write-Host "`tInstalling $name"
-        Exec-Console $vsixExe $fullArg
-    }
-}
-
 try {
     . (Join-Path $PSScriptRoot "utils.ps1")
 
     if (Test-Process "devenv") {
-        Write-Host "Please shut down all instances of Visual Studio before running"
+        Write-Host "Please shut down all instances of Visual Studio before running" -ForegroundColor Red
         exit 1
     }
 
-    $both = Get-VisualStudioDirAndId
-    $vsDir = $both[0].Trim("\")
-    $vsId = $both[1]
-    Deploy-VsixViaTool -vsDir $vsDir -vsId $vsId
+    # Welcome Message
+    Write-Host "Installing C# 8.0 Nullable Preview" -ForegroundColor Green
+
+    # Find VS Instance
+    $vsInstalls = Get-VisualStudioDirAndId
+    $vsDir = $vsInstalls[0].Trim("\")
+    $vsId = $vsInstalls[1]
+    if ($vsInstalls.Count -ge 3) {
+      while ($true) {
+        Write-Host "Multiple Visual Studio Installs Detected" -ForegroundColor White
+        Write-Host "Please Select an Instance to Install Into:" -ForegroundColor White
+        $number=1
+        For($i=0; $i -lt $vsInstalls.Count; $i+=2){
+          $tempVsDir = $vsInstalls[$i].Trim("\")
+          $tempVsExe = Join-Path $tempVsDir "Common7\IDE\devenv.exe"
+          Write-Host "[$number]:  $tempVsExe" -ForegroundColor White
+          $number++
+        }
+
+        $input = Read-Host
+        $vsInstallNumber = $input -as [int]
+        if ($vsInstallNumber -is [int] -and $vsInstallNumber -le ($number-1)) {
+          $index = ($vsInstallNumber -1) * 2
+          $vsDir = $vsInstalls[$index].Trim("\")
+          $vsId = $vsInstalls[$index+1]
+          break
+        }
+
+        Write-Host ""
+      }
+    }
+
+    # Install VSIX
+    Write-Host "Installing Preview..." -ForegroundColor Gray
+    Uninstall-VsixViaTool -vsDir $vsDir -vsId $vsId -hive ""
+    Uninstall-OlderVsixesViaTool -vsDir $vsDir -vsId $vsId -hive ""
+    Install-VsixViaTool -vsDir $vsDir -vsId $vsId -hive ""
+
+    # Clear MEF Cache
+    $mefCacheFolder = Join-Path $env:LOCALAPPDATA "Microsoft\VisualStudio\15.0_$vsId\ComponentModelCache"
+    Get-ChildItem -Path $mefCacheFolder -Include *.* -File -Recurse | foreach { $_.Delete()}
+
     $vsExe = Join-Path $vsDir "Common7\IDE\devenv.exe"
     $args = "/updateconfiguration"
+    Write-Host "Refreshing MEF Cache" -ForegroundColor Gray
     Exec-Console $vsExe $args
+
+    Write-Host "Install Succeeded" -ForegroundColor Green
     exit 0
 }
 catch {
-    Write-Host $_
-    Write-Host $_.Exception
-    Write-Host $_.ScriptStackTrace
+    Write-Host $_ -ForegroundColor Red
+    Write-Host $_.Exception -ForegroundColor Red
+    Write-Host $_.ScriptStackTrace -ForegroundColor Red
     exit 1
 }
 

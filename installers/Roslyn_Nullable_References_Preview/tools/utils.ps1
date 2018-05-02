@@ -76,33 +76,105 @@ function Exec-Console([string]$command, [string]$commandArgs) {
 # meets our minimal requirements for the Roslyn repo.
 function Get-VisualStudioDirAndId() {
     $vswhere = Join-Path $PSScriptRoot "vswhere\vswhere.exe"
-    $output = Exec-Command $vswhere "-prerelease -requires Microsoft.Component.MSBuild -format json" | Out-String
+    $output = Exec-Command $vswhere "-prerelease -requires Microsoft.VisualStudio.Component.Roslyn.Compiler -version [15.5,15.9) -format json" | Out-String
     $j = ConvertFrom-Json $output
+    $foundVsInstall = $false
     foreach ($obj in $j) {
-
-        # Need to be using at least Visual Studio 15.2 in order to have the appropriate
+        # Need to be using at least Visual Studio 15.5 in order to have the appropriate
         # set of SDK fixes. Parsing the installationName is the only place where this is
         # recorded in that form.
         $name = $obj.installationName
         if ($name -match "VisualStudio(Preview)?/([\d.]+)(\+|-).*") {
-            $minVersion = New-Object System.Version "15.3.0"
+            $minVersion = New-Object System.Version "15.5.0"
+            $maxVersion = New-Object System.Version "15.8.0"
             $version = New-Object System.Version $matches[2]
-            if ($version -ge $minVersion) {
+            if ($version -ge $minVersion -and $version -le $maxVersion) {
                 Write-Output $obj.installationPath
                 Write-Output $obj.instanceId
-                return
+                $foundVsInstall = $true;
             }
-        }
-        else {
-            Write-Host "Unrecognized installationName format $name"
         }
     }
 
-    throw "Could not find a suitable Visual Studio Version"
+    if (-not $foundVsInstall) {
+      throw "Could not find a suitable Visual Studio Version"
+    }
 }
 
 function Test-Process([string]$processName) {
     $all = Get-Process $processName -ErrorAction SilentlyContinue
     return $all -ne $null
+}
+
+function Install-VsixViaTool([string]$vsDir, [string]$vsId, [string]$hive) {
+  $baseArgs = "/rootSuffix:$hive /vsInstallDir:`"$vsDir`""
+  Use-VsixTool -vsDir $vsDir -vsId $vsId -baseArgs $baseArgs -hive $hive -vsixes @("vsix\RoslynDeployment.vsix")
+}
+
+function Uninstall-VsixViaTool([string]$vsDir, [string]$vsId, [string]$hive) {
+  $baseArgs = "/rootSuffix:$hive /u /vsInstallDir:`"$vsDir`""
+
+  $attempt = 3
+  $success = $false
+  while ($attempt -gt 0 -and -not $success) {
+    try {
+      Use-VsixTool -vsDir $vsDir -vsId $vsId -baseArgs $baseArgs -hive $hive -vsixes @("vsix\RoslynDeployment.vsix")
+      $success = $true
+    } catch {
+      # remember error information
+      $ErrorInfo = $_
+      $attempt--
+    }
+  }
+
+  if (-not $success) {
+    Write-Host $ErrorInfo -ForegroundColor Red
+    Write-Host $ErrorInfo.Exception  -ForegroundColor Red
+    Write-Host $ErrorInfo.ScriptStackTrace -ForegroundColor Red
+    exit 1
+  }
+}
+
+function Uninstall-OlderVsixesViaTool([string]$vsDir, [string]$vsId, [string]$hive) {
+  $baseArgs = "/rootSuffix:$hive /u /vsInstallDir:`"$vsDir`""
+
+  $all = @(
+    "vsix\ExpressionEvaluatorPackage.vsix"
+    "vsix\Roslyn.VisualStudio.InteractiveComponents.vsix",
+    "vsix\Roslyn.VisualStudio.Setup.Next.vsix",
+    "vsix\Roslyn.VisualStudio.Setup.vsix",
+    "vsix\Roslyn.Compilers.Extension.vsix")
+
+  $attempt = 6
+  $success = $false
+  while ($attempt -gt 0 -and -not $success) {
+    try {
+      Use-VsixTool -vsDir $vsDir -vsId $vsId -baseArgs $baseArgs -hive $hive -vsixes $all
+      $success = $true
+    } catch {
+      # remember error information
+      $ErrorInfo = $_
+      $attempt--
+    }
+  }
+  if (-not $success) {
+    Write-Host $ErrorInfo -ForegroundColor Red
+    Write-Host $ErrorInfo.Exception  -ForegroundColor Red
+    Write-Host $ErrorInfo.ScriptStackTrace -ForegroundColor Red
+    exit 1
+  }
+}
+
+function Use-VsixTool([string]$vsDir, [string]$vsId, [string]$baseArgs, [string]$hive, [string[]]$vsixes) {
+  $vsixExe = Join-Path $PSScriptRoot "vsixexpinstaller\VsixExpInstaller.exe"
+  $vsixExe = "`"$vsixExe`""
+  Write-Host "Using VS Instance $vsId at `"$vsDir`"" -ForegroundColor Gray
+
+  foreach ($e in $vsixes) {
+      $name = $e
+      $filePath = "`"$((Resolve-Path $e).Path)`""
+      $fullArg = "$baseArgs $filePath"
+      Exec-Console $vsixExe $fullArg
+  }
 }
 
