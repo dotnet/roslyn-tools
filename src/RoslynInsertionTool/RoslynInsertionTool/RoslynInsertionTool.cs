@@ -88,6 +88,8 @@ namespace Roslyn.Insertion
                     buildToInsert = await GetSpecificBuildAsync(buildVersion, cancellationToken);
                 }
 
+                string artifactsFolder = await GetBuildDirectoryAsync(buildToInsert, cancellationToken);
+
                 // ****************** Get Latest and Create Branch ***********************
                 cancellationToken.ThrowIfCancellationRequested();
                 Log.Info($"Getting Latest From {Options.VisualStudioBranchName} and Creating New Branch");
@@ -102,6 +104,7 @@ namespace Roslyn.Insertion
                     cancellationToken.ThrowIfCancellationRequested();
                     Log.Info($"Update paths to CoreFX libraries");
                     if (!await TryUpdateFileAsync(
+                        artifactsFolder,
                         Path.Combine("ProductData", "ContractAssemblies.props"),
                         buildVersion,
                         onlyCopyIfFileDoesNotExistAtDestination: false,
@@ -122,7 +125,7 @@ namespace Roslyn.Insertion
                     (success, newPackageFiles) = UpdatePackages(
                         buildVersion,
                         coreXT,
-                        GetPackagesDirPath(buildVersion),
+                        GetPackagesDirPath(artifactsFolder),
                         cancellationToken);
                     retainBuild |= success;
 
@@ -135,6 +138,7 @@ namespace Roslyn.Insertion
                     cancellationToken.ThrowIfCancellationRequested();
                     Log.Info($"Update paths to CoreFX libraries");
                     if (!await TryUpdateFileAsync(
+                        artifactsFolder,
                         Path.Combine("ProductData", "ContractAssemblies.props"),
                         buildVersion,
                         onlyCopyIfFileDoesNotExistAtDestination: false,
@@ -146,7 +150,7 @@ namespace Roslyn.Insertion
                     // ************** Update assembly versions ************************
                     cancellationToken.ThrowIfCancellationRequested();
                     Log.Info($"Updating assembly versions");
-                    UpdateAssemblyVersions(buildVersion);
+                    UpdateAssemblyVersions(artifactsFolder);
 
                     // if we got this far then we definitely need to retain this build
                     retainBuild = true;
@@ -155,7 +159,7 @@ namespace Roslyn.Insertion
                 // *********** Update toolset ********************
                 if (Options.InsertToolset)
                 {
-                    UpdateToolsetPackage(buildVersion, cancellationToken);
+                    UpdateToolsetPackage(artifactsFolder, buildVersion, cancellationToken);
                     retainBuild = true;
                 }
 
@@ -336,12 +340,13 @@ namespace Roslyn.Insertion
         }
 
         private static void UpdateToolsetPackage(
+            string artifactsFolder,
             BuildVersion buildVersion,
             CancellationToken cancellationToken)
         {
             Log.Info("Updating toolset compiler package");
 
-            var packagesDir = GetPackagesDirPath(buildVersion);
+            var packagesDir = GetPackagesDirPath(artifactsFolder);
             var toolsetPackagePath = Directory.EnumerateFiles(packagesDir,
                 $"{PackageInfo.RoslynToolsetPackageName}*.nupkg",
                 SearchOption.AllDirectories).Single();

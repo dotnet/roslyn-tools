@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using Microsoft.TeamFoundation.Build.WebApi;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,23 +11,23 @@ namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
-        internal static string GetDevDivInsertionFilePath(BuildVersion version, string relativePath)
+        internal static string GetDevDivInsertionFilePath(string artifactsFolder, string relativePath)
         {
             // For example: "\\cpvsbuild\drops\Roslyn\Roslyn-Master-Signed-Release\20160315.3\DevDivInsertionFiles\Roslyn\all.roslyn.locproj"
-            return Path.Combine(GetBuildDirectory(version), "DevDivInsertionFiles", relativePath);
+            return Path.Combine(artifactsFolder, "DevDivInsertionFiles", relativePath);
         }
 
-        internal static string GetPackagesDirPath(BuildVersion version)
+        internal static string GetPackagesDirPath(string artifactsFolder)
         {
             // For example: "\\cpvsbuild\drops\Roslyn\Roslyn-Master-Signed-Release\20160315.3\DevDivPackages"
-            var devDivPackagesPath = Path.Combine(GetBuildDirectory(version), "DevDivPackages");
+            var devDivPackagesPath = Path.Combine(artifactsFolder, "DevDivPackages");
             if (Directory.Exists(devDivPackagesPath))
             {
                 return devDivPackagesPath;
             }
 
             // For example: "\\cpvsbuild\drops\Roslyn\Roslyn-Project-System\DotNet-Project-System\20180111.1\packages"
-            var packagesPath = Path.Combine(GetBuildDirectory(version), "packages");
+            var packagesPath = Path.Combine(artifactsFolder, "packages");
             if (Directory.Exists(packagesPath))
             {
                 return packagesPath;
@@ -34,24 +36,8 @@ namespace Roslyn.Insertion
             throw new InvalidOperationException($"Unable to find packages path,  tried '{devDivPackagesPath}' and '{packagesPath}'");
         }
 
-        internal static string GetBuildDirectory(BuildVersion version)
-        {
-            // used for local testing:
-            if (Options.BuildDropPath.EndsWith(@"Binaries\Debug", StringComparison.OrdinalIgnoreCase) ||
-                Options.BuildDropPath.EndsWith(@"Binaries\Release", StringComparison.OrdinalIgnoreCase))
-            {
-                return Options.BuildDropPath;
-            }
-
-            return Path.Combine(
-                Options.BuildDropPath,
-                Options.BuildQueueName,
-                Path.GetFileName(Options.BranchName), // The folder under BranchName is just the last component of the name
-                Options.BuildConfig,
-                version.ToString());
-        }
-
         private static async Task<bool> TryUpdateFileAsync(
+            string artifactsFolder,
             string filePath,
             BuildVersion version,
             bool onlyCopyIfFileDoesNotExistAtDestination,
@@ -59,7 +45,7 @@ namespace Roslyn.Insertion
         {
             var destinationFilePath = Path.Combine(Options.EnlistmentPath, "src", filePath);
             var destinationDirectory = new FileInfo(destinationFilePath).Directory.FullName;
-            var sourceFilePath = GetDevDivInsertionFilePath(version, filePath);
+            var sourceFilePath = GetDevDivInsertionFilePath(artifactsFolder, filePath);
             var sourceDirectory = new FileInfo(sourceFilePath).Directory.FullName;
             var fileToCopy = Path.GetFileName(sourceFilePath);
 

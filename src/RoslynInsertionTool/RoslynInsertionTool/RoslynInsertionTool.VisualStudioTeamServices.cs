@@ -191,6 +191,37 @@ namespace Roslyn.Insertion
                     select build).FirstOrDefault();
         }
 
+        internal static async Task<string> GetBuildDirectoryAsync(Build build, CancellationToken cancellationToken)
+        {
+            // used for local testing:
+            if (Options.BuildDropPath.EndsWith(@"Binaries\Debug", StringComparison.OrdinalIgnoreCase) ||
+                Options.BuildDropPath.EndsWith(@"Binaries\Release", StringComparison.OrdinalIgnoreCase))
+            {
+                return Options.BuildDropPath;
+            }
+
+            var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
+
+            Debug.Assert(ReferenceEquals(build,
+                (await BuildsWithValidArtifactsAsync(buildClient, cancellationToken, new[] { build })).Single()));
+
+            // Pull the build directory from the API
+            var artifacts = await buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken);
+            foreach (var artifact in artifacts)
+            {
+                // The drop path we're looking for is named the same as the build number
+                if (artifact.Name == build.BuildNumber)
+                {
+                    // artifact.Resource.Data should be available and non-null due to BuildWithValidArtifactsAsync,
+                    // which checks this precondition
+                    return Path.Combine(artifact.Resource.Data, build.BuildNumber);
+                }
+            }
+
+            // Should never happen since we already filtered for containing valid paths
+            throw new InvalidOperationException("Could not find drop path");
+        }
+
         private static async Task<Release> CreateReleaseAsync(Build build, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
