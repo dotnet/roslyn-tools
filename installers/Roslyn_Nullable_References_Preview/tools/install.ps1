@@ -49,11 +49,11 @@ try {
     Uninstall-VsixViaTool -vsDir $vsDir -vsId $vsId -hive ""
     Uninstall-OlderVsixesViaTool -vsDir $vsDir -vsId $vsId -hive ""
     Install-VsixViaTool -vsDir $vsDir -vsId $vsId -hive ""
+    Copy-CompilerVsix -vsDir $vsDir -vsId $vsId -hive ""
 
     # Clear MEF Cache
     $mefCacheFolder = Join-Path $env:LOCALAPPDATA "Microsoft\VisualStudio\15.0_$vsId\ComponentModelCache"
     Get-ChildItem -Path $mefCacheFolder -Include *.* -File -Recurse | foreach { Remove-Item $_}
-
     $args = "/updateconfiguration"
     Write-Host "Refreshing MEF Cache" -ForegroundColor Gray
     Exec-Console $vsExe $args

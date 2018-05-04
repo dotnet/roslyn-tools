@@ -15,12 +15,13 @@ try {
     $vsId = $vsInstalls[1]
 
     # Uninstall VSIX
-    Write-Host "Uninstallting Preview Everywhere..." -ForegroundColor Gray
+    Write-Host "Uninstallting Preview Everywhere..." -ForegroundColor Green
     for ($i = 0; $i -lt $vsInstalls.Count;  $i+=2) {
       $vsDir = $vsInstalls[$i].Trim("\")
       $vsId = $vsInstalls[$i+1]
       Uninstall-VsixViaTool -vsDir $vsDir -vsId $vsId -hive ""
       Uninstall-OlderVsixesViaTool -vsDir $vsDir -vsId $vsId -hive ""
+      Delete-CompilerVsix -vsDir $vsDir -vsId $vsId -hive ""
 
       # Clear MEF Cache
       $mefCacheFolder = Join-Path $env:LOCALAPPDATA "Microsoft\VisualStudio\15.0_$vsId\ComponentModelCache"

@@ -108,7 +108,11 @@ function Test-Process([string]$processName) {
 
 function Install-VsixViaTool([string]$vsDir, [string]$vsId, [string]$hive) {
   $baseArgs = "/rootSuffix:$hive /vsInstallDir:`"$vsDir`""
-  Use-VsixTool -vsDir $vsDir -vsId $vsId -baseArgs $baseArgs -hive $hive -vsixes @("vsix\RoslynDeployment.vsix")
+  $vsixes = @(
+    "vsix\Roslyn.VisualStudio.Setup.vsix",
+    "vsix\Roslyn.VisualStudio.InteractiveComponents.vsix",
+    "vsix\ExpressionEvaluatorPackage.vsix")
+  Use-VsixTool -vsDir $vsDir -vsId $vsId -baseArgs $baseArgs -hive $hive -vsixes $vsixes
 }
 
 function Uninstall-VsixViaTool([string]$vsDir, [string]$vsId, [string]$hive) {
@@ -118,7 +122,11 @@ function Uninstall-VsixViaTool([string]$vsDir, [string]$vsId, [string]$hive) {
   $success = $false
   while ($attempt -gt 0 -and -not $success) {
     try {
-      Use-VsixTool -vsDir $vsDir -vsId $vsId -baseArgs $baseArgs -hive $hive -vsixes @("vsix\RoslynDeployment.vsix")
+      $vsixes = @(
+        "vsix\ExpressionEvaluatorPackage.vsix",
+        "vsix\Roslyn.VisualStudio.Setup.vsix",
+        "vsix\Roslyn.VisualStudio.InteractiveComponents.vsix")
+      Use-VsixTool -vsDir $vsDir -vsId $vsId -baseArgs $baseArgs -hive $hive -vsixes $vsixes
       $success = $true
     } catch {
       # remember error information
@@ -165,6 +173,28 @@ function Uninstall-OlderVsixesViaTool([string]$vsDir, [string]$vsId, [string]$hi
   }
 }
 
+function Copy-CompilerVsix([string]$vsDir, [string]$vsId, [string]$hive) {
+  $compilerVSIX = "vsix\Microsoft.CodeAnalysis.Compilers.zip"
+  $tempPath = Join-Path $env:TEMP "Microsoft.CodeAnalysis.Compilers"
+  Expand-Archive $compilerVSIX -DestinationPath $tempPath -Force
+  $compilerVSIXContents = Join-Path  $tempPath "Contents\MSBuild\15.0\Bin\Roslyn\"
+  $vsExtensionsDirectory = Join-Path $env:LOCALAPPDATA "Microsoft\VisualStudio\15.0_$vsid\Extensions\Microsoft.CodeAnalysis.Compilers"
+  Copy-Item -Path $compilerVSIXContents -Destination $vsExtensionsDirectory -Recurse
+  Remove-Item -Path  $tempPath -Recurse -Force
+
+  $compilerPropsFile = Join-Path $env:LOCALAPPDATA "Microsoft\MSBuild\15.0\Imports\Microsoft.Common.props\ImportBefore\Roslyn.Compilers.Extension.VisualStudio.15.0_$vsId.props"
+  $msbuildLocation = Join-Path $vsDir "MSBuild\15.0\Bin"
+  Write-CompilerPropsFileXml -compilerPropsFile $compilerPropsFile -msbuildLocation $msbuildLocation -vsId $vsId
+}
+
+function Delete-CompilerVsix([string]$vsDir, [string]$vsId, [string]$hive) {
+  $vsExtensionsDirectory = Join-Path $env:LOCALAPPDATA "Microsoft\VisualStudio\15.0_$vsid\Extensions\Microsoft.CodeAnalysis.Compilers"
+  Remove-Item -Path  $vsExtensionsDirectory -Recurse -Force -ErrorAction SilentlyContinue
+
+  $compilerPropsFile = Join-Path $env:LOCALAPPDATA "Microsoft\MSBuild\15.0\Imports\Microsoft.Common.props\ImportBefore\Roslyn.Compilers.Extension.VisualStudio.15.0_$vsId.props"
+  Remove-Item -Path  $compilerPropsFile -Force -ErrorAction SilentlyContinue
+}
+
 function Use-VsixTool([string]$vsDir, [string]$vsId, [string]$baseArgs, [string]$hive, [string[]]$vsixes) {
   $vsixExe = Join-Path $PSScriptRoot "vsixexpinstaller\VsixExpInstaller.exe"
   $vsixExe = "`"$vsixExe`""
@@ -178,3 +208,23 @@ function Use-VsixTool([string]$vsDir, [string]$vsId, [string]$baseArgs, [string]
   }
 }
 
+function Write-CompilerPropsFileXml([string]$compilerPropsFile, [string]$msbuildLocation, [string]$vsId) {
+  $vsExtensionsDirectory = Join-Path $env:LOCALAPPDATA "Microsoft\VisualStudio\15.0_$vsid\Extensions"
+  $targetsFiles = Get-ChildItem -Path $vsExtensionsDirectory -Filter Microsoft.CSharp.Core.targets -Recurse -ErrorAction SilentlyContinue -Force
+  $packagePath = $targetsFiles[0].Directory
+  $hiveName = "VisualStudio.15.0_$vsid"
+  $condition = "'`$(RoslynHive)' == '$hiveName'  OR '`$(MSBuildBinPath)' == '$msbuildLocation'"
+
+  $content = @"
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="$condition">
+    <CSharpCoreTargetsPath>$packagePath\Microsoft.CSharp.Core.targets</CSharpCoreTargetsPath>
+    <VisualBasicCoreTargetsPath>$packagePath\Microsoft.VisualBasic.Core.targets</VisualBasicCoreTargetsPath>
+  </PropertyGroup>
+  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.Csc" AssemblyFile="$packagePath\Microsoft.Build.Tasks.CodeAnalysis.dll" Condition="$condition" />
+  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.Vbc" AssemblyFile="$packagePath\Microsoft.Build.Tasks.CodeAnalysis.dll" Condition="$condition" />
+</Project>
+"@
+  Set-Content -Path $compilerPropsFile -Value $content
+}
