@@ -124,8 +124,8 @@ function Uninstall-VsixViaTool([string]$vsDir, [string]$vsId, [string]$hive) {
     try {
       $vsixes = @(
         "vsix\ExpressionEvaluatorPackage.vsix",
-        "vsix\Roslyn.VisualStudio.Setup.vsix",
-        "vsix\Roslyn.VisualStudio.InteractiveComponents.vsix")
+        "vsix\Roslyn.VisualStudio.InteractiveComponents.vsix",
+        "vsix\Roslyn.VisualStudio.Setup.vsix")
       Use-VsixTool -vsDir $vsDir -vsId $vsId -baseArgs $baseArgs -hive $hive -vsixes $vsixes
       $success = $true
     } catch {
