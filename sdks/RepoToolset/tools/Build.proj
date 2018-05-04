@@ -1,11 +1,11 @@
 <!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
 <Project DefaultTargets="Execute" TreatAsLocalProperty="RepoRoot;Sign;Test;IntegrationTest;PerformanceTest">
   <!--
-  
+
   Required parameters:
     RepoRoot                        Repository root.
     Projects                        List of projects to build. Semicolon separated, may include globs.
-                                    
+
   Optional parameters:              
     Configuration                   Build configuration: "Debug", "Release", etc.
 
@@ -27,6 +27,8 @@
     Pack                            "true" to build NuGet packages and VS insertion manifests
     Sign                            "true" to sign built binaries
     SignType                        "real" to send binaries to signing service, "test" to only validate signing configuration.
+
+    SuppressPackageVersionRewrite   "true" to suppress rewrite of PackageVersions.props file. Temporary switch to allow repos to migrate to the official format of the version properties.
   -->
 
   <!--
@@ -46,7 +48,7 @@
 
   <!--
     Orchestrated build environment overrides:
-    
+
     PB_SignType                    {''|'public'|'real'|'test'}    Disables signing if set to a value other than 'real' 
     PB_SkipTests                   {''|'true'|'false'}            Disables tests if set to 'true'.
     PB_RestoreSource               {''|URL}                       URL of pipe build package feed.
@@ -110,9 +112,10 @@
       <_SolutionBuildTargets Include="Build" Condition="'$(Build)' == 'true' and '$(Rebuild)' != 'true'" />
       <!-- Deploy target is set up to chain after Build so that F5 in VS works. -->
       <_SolutionBuildTargets Include="Test" Condition="'$(Test)' == 'true'" />
+      <!-- Pack before running integration and performance tests so that these tests can test packages produced by the repo. -->
+      <_SolutionBuildTargets Include="Pack" Condition="'$(Pack)' == 'true' />
       <_SolutionBuildTargets Include="IntegrationTest" Condition="'$(IntegrationTest)' == 'true'" />
       <_SolutionBuildTargets Include="PerformanceTest" Condition="'$(PerformanceTest)' == 'true'" />
-      <_SolutionBuildTargets Include="Pack" Condition="'$(Pack)' == 'true'" />
     </ItemGroup>
 
     <ItemGroup>
@@ -162,7 +165,7 @@
 
     <!-- Replace -PackageVersion with -Version -->
     <RewriteOrchestratedBuildPackageVersions File="$(_PackageVersionOverridesPath)" 
-                                             Condition="'$(Restore)' == 'true' and '$(PB_PackageVersionPropsUrl)' != ''" />
+                                             Condition="'$(Restore)' == 'true' and '$(PB_PackageVersionPropsUrl)' != '' and '$(SuppressPackageVersionRewrite)' != 'false'" />
 
     <!--
       Workaround for https://github.com/NuGet/Home/issues/4695.
@@ -175,7 +178,7 @@
     <Exec Command='$(_MSBuildCmd) "$(MSBuildProjectDirectory)\Tools.proj" /bl:"$(ArtifactsLogDir)RestoreRepoTools.binlog" /nologo /m /v:quiet /t:Restore $(_RestoreToolsPropsCmdLine)'
           Condition="'$(_RestoreTools)' == 'true' and '$(_QuietRestore)' == 'true'" StandardOutputImportance="normal" />
 
-    <Exec Command='$(_MSBuildCmd) "@(_ProjectsToBuild)" /bl:"$(ArtifactsLogDir)Restore.binlog" /nologo /m /v:quiet /t:Restore $(_SolutionBuildPropsCmdLine) /p:__BuildPhase=SolutionRestore'
+    <Exec Command='$(_MSBuildCmd) "@(_ProjectToBuild)" /bl:"$(ArtifactsLogDir)Restore.binlog" /nologo /m /v:quiet /t:Restore $(_SolutionBuildPropsCmdLine) /p:__BuildPhase=SolutionRestore'
           Condition="'$(Restore)' == 'true' and '$(_QuietRestore)' == 'true'" StandardOutputImportance="normal" />
 
     <!--
@@ -219,7 +222,7 @@
     <!--
       Since multiple projects may contribute to a single insertion component
       we need to package them in a separate phase.
-      
+
       TODO: the sign tool needs to support vsman files:      
       Insertion manifests (vsman files) contain hashes of the referenced VSIXes.
       These need to be calculated using signed VSIXes.
