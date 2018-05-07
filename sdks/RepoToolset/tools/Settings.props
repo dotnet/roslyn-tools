@@ -4,6 +4,8 @@
 
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+
+    <ImportNetSdkFromRepoToolset Condition="'$(ImportNetSdkFromRepoToolset)' == ''">true</ImportNetSdkFromRepoToolset>
   </PropertyGroup>
 
   <Import Project="BuildTasks.props" />
@@ -21,5 +23,5 @@
   <Import Project="VisualStudio.props" Condition="'$(UsingToolVSSDK)' == 'true'"/>
 
   <!-- Directory.Build.props are imported next by .NET SDK (via Common.targets) -->
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition="'$(ImportNetSdkFromRepoToolset)' == 'true'" />
 </Project>
