@@ -50,6 +50,7 @@
     <XUnitRunnerConsoleVersion Condition="'$(XUnitRunnerConsoleVersion)' == ''">$(XUnitVersion)</XUnitRunnerConsoleVersion>
     <XUnitRunnerVisualStudioVersion Condition="'$(XUnitRunnerVisualStudioVersion)' == ''">$(XUnitVersion)</XUnitRunnerVisualStudioVersion>
     <MicrosoftDotNetBuildTasksFeedVersion Condition="'$(MicrosoftDotNetBuildTasksFeedVersion)' == ''">2.2.0-prerelease-02431-01</MicrosoftDotNetBuildTasksFeedVersion>
+    <MicrosoftSourceLinkVersion Condition="'$(SourceLinkVersion)' == ''">1.0.0-beta-62908-01</MicrosoftSourceLinkVersion>
   </PropertyGroup>
 
   <!-- Version overrides -->
