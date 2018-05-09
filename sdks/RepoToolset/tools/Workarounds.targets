@@ -65,7 +65,7 @@
   <PropertyGroup Condition="'$(DebugType)' == 'portable'">
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
-  
+
   <!--
     Workarounds for insufficient support for tools packages by NuGet Pack: https://github.com/NuGet/Home/issues/6321.
     
@@ -76,7 +76,11 @@
           BeforeTargets="GenerateNuspec"
           DependsOnTargets="_InitializeNuspecRepositoryInformationPropertiesWorkaround"
           Condition="'$(NuspecFile)' != '' and '$(NuspecProperties)' == ''">
-    
+
+    <PropertyGroup>
+      <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">$(RepositoryUrl)</PackageProjectUrl>
+    </PropertyGroup>
+
     <Error Text="Description must be specified" Condition="'$(Description)' == ''"/>
     <Error Text="PackageProjectUrl must be specified" Condition="'$(PackageProjectUrl)' == ''"/>
 
