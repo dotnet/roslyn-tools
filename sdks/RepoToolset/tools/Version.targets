@@ -4,9 +4,6 @@
 
   <!--
 
-  Required properties:
-    GitHeadSha
-
   Optional properties:
     OfficialBuild               "true" if this is an official build
     CIBuild                     "true" if this is a CI build
@@ -21,7 +18,7 @@
   <Target Name="_InitializeAssemblyVersion" BeforeTargets="GetAssemblyVersion">
     <PropertyGroup Condition="'$(OfficialBuild)' == 'true'">
       <FileVersion>$(VersionPrefix).$(_BuildNumberFiveDigitDateStamp)</FileVersion>
-      <InformationalVersion>$(Version)+$(GitHeadSha)</InformationalVersion>
+      <InformationalVersion>$(Version)</InformationalVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(OfficialBuild)' != 'true'">

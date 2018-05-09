@@ -25,7 +25,6 @@
   <Import Project="RepositoryInfo.targets"/>
   <Import Project="Version.targets"/>
 
-  <Import Project="SourceLink.targets" Condition="'$(EnableSourceLink)' == 'true' and '$(GitHeadSha)' != ''"/>
   <Import Project="XUnit.targets" Condition="'$(UsingToolXUnit)' == 'true'"/>
   <Import Project="Performance.targets" />
   <Import Project="VisualStudio.targets" Condition="'$(UsingToolVSSDK)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(BuildingForLiveUnitTesting)' != 'true' and '$(MSBuildRuntimeType)' != 'Core'"/>

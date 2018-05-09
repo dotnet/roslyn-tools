@@ -19,6 +19,7 @@
     <DevelopmentDependency>false</DevelopmentDependency>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseUrl>http://go.microsoft.com/fwlink/?LinkId=529443</PackageLicenseUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
     <!-- By default do not build nuget package for a project. Project may override. -->
     <IsPackable>false</IsPackable>
@@ -41,8 +42,6 @@
     -->
     <DebugType>portable</DebugType>
     <DebugType Condition="'$(OfficialBuild)' != 'true' and '$(BuildingForLiveUnitTesting)' != 'true'">embedded</DebugType>
-
-    <EnableSourceLink Condition="'$(CIBuild)' == 'true'">true</EnableSourceLink>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Language)' == ''">
