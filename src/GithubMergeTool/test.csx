@@ -41,6 +41,12 @@ private static async Task RunAsync()
 {
     // Write your test code here to test changes to the merge tool DLL
     var gh = new GithubMergeTool.GithubMergeTool(GithubUsername, GithubAuthToken);
+
+    var (prs, error) = await gh.FetchAutoMergeablePrs("dotnet", "roslyn");
+    foreach (var pr in prs)
+    {
+        Console.WriteLine(pr);
+    }
 }
 
 RunAsync().GetAwaiter().GetResult();
