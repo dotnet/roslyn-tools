@@ -215,6 +215,15 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                 return (false, null);
             }
 
+            Console.WriteLine(prInfo.ToString());
+
+            // Check that the PR is by 'dotnet-bot'. Eventually we will support created PRs
+            // created by other users, but not right now.
+            if ((string)prInfo["user"]["login"] != "dotnet-bot")
+            {
+                return (false, null);
+            }
+
             // Check that the PR has a well-known 'auto-merge' label
             var prIssueResponse = await _client.GetAsync($"repos/{repoOwner}/{repoName}/issues/{prId}");
             if (!prIssueResponse.IsSuccessStatusCode)
