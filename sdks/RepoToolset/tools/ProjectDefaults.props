@@ -20,6 +20,7 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseUrl>http://go.microsoft.com/fwlink/?LinkId=529443</PackageLicenseUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <ContinuousIntegrationBuild>$(CIBuild)</ContinuousIntegrationBuild>
 
     <!-- By default do not build nuget package for a project. Project may override. -->
     <IsPackable>false</IsPackable>
@@ -34,14 +35,10 @@
        - Embed PDBs to make it easier to debug Jenkins crash dumps.
        
       Developer build:
-       - Embed PDBs to be consistent with Jenkins builds.
-
-      TODO:
-      - Live Unit Testing doesn't support embedded PDBs:
-         https://github.com/dotnet/testimpact/issues/1877      
+       - Embed PDBs to be consistent with Jenkins builds.    
     -->
     <DebugType>portable</DebugType>
-    <DebugType Condition="'$(OfficialBuild)' != 'true' and '$(BuildingForLiveUnitTesting)' != 'true'">embedded</DebugType>
+    <DebugType Condition="'$(OfficialBuild)' != 'true'">embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Language)' == ''">
