@@ -125,4 +125,14 @@
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(NuspecFile)' != ''">
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificBuildOutput);Publish</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
+
+  <!--
+    Workaround for not having VS 15.7 on MicroBuild machines.
+    Remove when machines are upgraded.
+  -->
+  <Target Name="InitializeSourceControlInformation" />
+  <PropertyGroup>
+    <SourceControlInformationFeatureSupported>true</SourceControlInformationFeatureSupported>
+  </PropertyGroup>
+
 </Project>
