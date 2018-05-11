@@ -215,8 +215,6 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                 return (false, null);
             }
 
-            Console.WriteLine(prInfo.ToString());
-
             // Check that the PR is by 'dotnet-bot'. Eventually we will support created PRs
             // created by other users, but not right now.
             if ((string)prInfo["user"]["login"] != "dotnet-bot")
@@ -274,7 +272,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                 .ToDictionary(t => t.Item1, t => t.Item2);
             foreach (var test in requiredTests)
             {
-                if (!statusDict[test])
+                if (!statusDict.ContainsKey(test) || !statusDict[test])
                 {
                     // There is a failing required test
                     return (false, null);
