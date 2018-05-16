@@ -41,6 +41,7 @@ namespace GithubMergeTool
         /// </summary>
         /// <returns>
         /// (true, null) if the PR was created without error.
+        /// (true, error) if the PR was created but there was a subsequent error
         /// (false, null) if the PR wasn't created due to a PR already existing
         /// or if the <paramref name="destBranch"/> contains all the commits
         /// from <paramref name="srcBranch"/>.
@@ -50,7 +51,8 @@ namespace GithubMergeTool
             string repoOwner,
             string repoName,
             string srcBranch,
-            string destBranch)
+            string destBranch,
+            bool addAutoMergeLabel = false)
         {
             string prTitle = $"Merge {srcBranch} to {destBranch}";
             string prBranchName = $"merges/{srcBranch}-to-{destBranch}";
@@ -152,14 +154,25 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             Console.WriteLine("Creating PR");
             response = await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/pulls", body);
 
-            jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
-
             // 422 (Unprocessable Entity) indicates there were no commits to merge
             if (response.StatusCode == (HttpStatusCode)422)
             {
                 // Delete the pr branch if the PR was not created.
                 await _client.DeleteAsync($"repos/{repoOwner}/{repoName}/git/refs/heads/{prBranchName}");
                 return (false, null);
+            }
+
+            jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
+
+            var prNumber = (string)jsonBody["number"];
+
+            // Add labels to the issue
+            body = $"[ \"Area-Infrastructure\"{(addAutoMergeLabel ? $", \"{AutoMergeLabelText}\"" : "")} ]";
+            response = await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{prNumber}/labels", body);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (true, response);
             }
 
             return (true, null);
