@@ -35,8 +35,10 @@ The toolset has four kinds of features and helpers:
 - https://github.com/dotnet/clicommandlineparser
 - https://github.com/dotnet/cli-migrate
 - https://github.com/dotnet/sdk
+- https://github.com/dotnet/sourcelink
 - https://github.com/dotnet/xliff-tasks
 - https://github.com/Microsoft/msbuild
+
 
 The toolset has following requirements on the repo layout.
 
