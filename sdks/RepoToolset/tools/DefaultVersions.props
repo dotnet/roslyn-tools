@@ -31,6 +31,7 @@
     <UsingToolVSSDK Condition="'$(UsingToolVSSDK)' == ''">false</UsingToolVSSDK>
     <UsingToolIbcOptimization Condition="'$(UsingToolIbcOptimization)' == ''">false</UsingToolIbcOptimization>
     <UsingToolNetFrameworkReferenceAssemblies Condition="'$(UsingToolNetFrameworkReferenceAssemblies)' == ''">false</UsingToolNetFrameworkReferenceAssemblies>
+    <UsingToolNuGetRepack Condition="'$(UsingToolNuGetRepack)' == ''">false</UsingToolNuGetRepack>
 
     <!-- Default versions -->
     <MicroBuildPluginsSwixBuildVersion Condition="'$(MicroBuildPluginsSwixBuildVersion)' == ''">1.0.147</MicroBuildPluginsSwixBuildVersion>
@@ -44,6 +45,7 @@
     <MicrosoftDiaSymReaderPdb2PdbVersion Condition="'$(MicrosoftDiaSymReaderPdb2PdbVersion)' == ''">1.1.0-beta1-62506-02</MicrosoftDiaSymReaderPdb2PdbVersion>
     <RoslynToolsModifyVsixManifestVersion Condition="'$(RoslynToolsModifyVsixManifestVersion)' == ''">1.0.0-beta-62327-02</RoslynToolsModifyVsixManifestVersion>
     <MicrosoftNetFrameworkReferenceAssembliesVersion Condition="'$(MicrosoftNetFrameworkReferenceAssembliesVersion)' == ''">1.0.0-alpha-003</MicrosoftNetFrameworkReferenceAssembliesVersion>
+    <RoslynToolsNuGetRepackVersion Condition="'$(RoslynToolsNuGetRepackVersion)' == ''">1.0.0-beta2-62922-01</RoslynToolsNuGetRepackVersion>
     <RoslynToolsSignToolVersion Condition="'$(RoslynToolsSignToolVersion)' == ''">1.0.0-beta-62414-01</RoslynToolsSignToolVersion>
     <XliffTasksVersion Condition="'$(XliffTasksVersion)' == ''">0.2.0-beta-62730-03</XliffTasksVersion>
     <XUnitVersion Condition="'$(XUnitVersion)' == ''">2.3.1</XUnitVersion>

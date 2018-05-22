@@ -172,7 +172,7 @@
       We launch a new msbuild process to restore.
     -->
     <Message Text="Restoring packages ..." Importance="high" Condition="'$(Restore)' == 'true' and '$(_QuietRestore)' == 'true'" />
-    
+
     <MakeDir Directories="$(ArtifactsLogDir)" Condition="'$(Restore)' == 'true' and '$(_QuietRestore)' == 'true'" />
 
     <Exec Command='$(_MSBuildCmd) "$(MSBuildProjectDirectory)\Tools.proj" /bl:"$(ArtifactsLogDir)RestoreRepoTools.binlog" /nologo /m /v:quiet /t:Restore $(_RestoreToolsPropsCmdLine)'
@@ -211,6 +211,10 @@
              BuildInParallel="true"
              Condition="'@(_SolutionBuildTargets)' != ''" />
 
+    <MSBuild Projects="AfterSolutionBuild.proj"
+             Properties="@(_CommonProps)"
+             Targets="@(_SolutionBuildTargets)" />
+
     <!--
       Sign artifacts.
     -->
@@ -219,19 +223,9 @@
              Targets="Sign"
              Condition="'$(Sign)' == 'true'"/>
 
-    <!--
-      Since multiple projects may contribute to a single insertion component
-      we need to package them in a separate phase.
-
-      TODO: the sign tool needs to support vsman files:      
-      Insertion manifests (vsman files) contain hashes of the referenced VSIXes.
-      These need to be calculated using signed VSIXes.
-      Hence we need to run this task after both signing.
-    -->
-    <MSBuild Projects="VisualStudio.Insertion.proj"
+    <MSBuild Projects="AfterSigning.proj"
              Properties="@(_CommonProps)"
-             Targets="Pack"
-             Condition="'$(Pack)' == 'true'"/>
+             Targets="@(_SolutionBuildTargets)" />
 
     <MSBuild Projects="OrchestratedBuild.Publish.proj"
              Properties="@(_CommonProps);ExpectedFeedUrl=$(PB_PublishBlobFeedUrl);AccountKey=$(PB_PublishBlobFeedKey);DotNetOutputBlobFeedDir=$(_DotNetOutputBlobFeedDir)"
