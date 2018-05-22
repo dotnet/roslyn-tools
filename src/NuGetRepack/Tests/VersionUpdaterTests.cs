@@ -6,10 +6,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Xml.Linq;
 using Roslyn.Test.Utilities;
-using Roslyn.Tools.NuGet.Repack;
 using Xunit;
 
-namespace NuGetRepack.Tests
+namespace Roslyn.Tools.Tests
 {
     public class VersionUpdaterTests
     {

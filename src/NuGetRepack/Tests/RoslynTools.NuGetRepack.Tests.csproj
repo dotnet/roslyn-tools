@@ -4,9 +4,6 @@
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NuGetRepack\NuGetRepack.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="System.IO.Compression" Version="$(SystemIOCompressionVersion)" />
     <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
   </ItemGroup>
@@ -47,5 +44,8 @@
     <EmbeddedResource Include="Resources\D.1.0.0.nupkg">
       <LogicalName>D.1.0.0.nupkg</LogicalName>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CLI\NuGetRepack.csproj" />
   </ItemGroup>
 </Project>
