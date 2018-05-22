@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Roslyn.Tools.NuGet.Repack
+namespace Roslyn.Tools
 {
-    internal sealed class Program
+    internal sealed class NuGetRepackApp
     {
         private enum Operation
         {
@@ -112,11 +112,11 @@ namespace Roslyn.Tools.NuGet.Repack
                 switch (operation)
                 {
                     case Operation.Release:
-                        VersionUpdater.Run(packages, outDirectory, release: true);
+                        NuGetVersionUpdater.Run(packages, outDirectory, release: true);
                         break;
 
                     case Operation.PreRelease:
-                        VersionUpdater.Run(packages, outDirectory, release: false);
+                        NuGetVersionUpdater.Run(packages, outDirectory, release: false);
                         break;
 
                     default:

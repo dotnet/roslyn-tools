@@ -8,9 +8,9 @@ using System.Linq;
 using System.Xml.Linq;
 using NuGet.Versioning;
 
-namespace Roslyn.Tools.NuGet.Repack
+namespace Roslyn.Tools
 {
-    internal static class VersionUpdater
+    internal static class NuGetVersionUpdater
     {
         private const string DefaultNuspecXmlns = "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd";
 

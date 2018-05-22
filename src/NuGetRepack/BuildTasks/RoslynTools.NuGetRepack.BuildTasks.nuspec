@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
-    <id>RoslynTools.BuildTasks</id>
-    <summary>RepoToolset build tasks</summary>
-    <description>RepoToolset build tasks</description>
+    <id>RoslynTools.NuGetRepack.BuildTasks</id>
+    <summary>Build task for updating version of NuGet packages.</summary>
+    <description>Build task for updating version of NuGet packages.</description>
     <version>$version$</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
@@ -18,8 +18,8 @@
     <language>en-US</language>
   </metadata>
   <files>
-    <file src="netcoreapp1.0\*.*" target="tools\netcoreapp1.0" />
-    <file src="net46\RoslynTools.*.*" target="tools\net46" />
-    <file src="net46\System.*.*" target="tools\net46" />
+    <file src="netcoreapp2.0\*.*" target="tools\netcoreapp2.0" />
+    <file src="net461\RoslynTools.*.*" target="tools\net461" />
+    <file src="net461\NuGet.Versioning.*" target="tools\net461" />
   </files>
 </package>
