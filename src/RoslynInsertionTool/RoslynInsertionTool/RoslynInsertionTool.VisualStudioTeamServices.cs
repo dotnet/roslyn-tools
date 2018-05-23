@@ -98,7 +98,10 @@ namespace Roslyn.Insertion
             foreach (var build in builds)
             {
                 var artifacts = await buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken);
-                if (artifacts.Any(a => a.Resource != null && a.Resource.Data != null && a.Resource.Data.Contains(Options.BuildDropPath)))
+                // A valid artifact would:
+                // 1. Have a resource
+                // 2. The resource would either point to a cpvsbuild path (or) be uploaded to the artifacts service with a build number label.
+                if (artifacts.Any(a => a.Resource != null && a.Resource.Data != null && (a.Resource.Data.Contains(Options.BuildDropPath) || a.Resource.Data.Contains(build.BuildNumber))))
                 {
                     buildsWithValidArtifacts.Add(build);
                 }
@@ -214,12 +217,52 @@ namespace Roslyn.Insertion
                 {
                     // artifact.Resource.Data should be available and non-null due to BuildWithValidArtifactsAsync,
                     // which checks this precondition
+                    if(string.Compare(artifact.Resource.Type, "container", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        // This is a build where the artifacts are published to the artifacts server instead of a UNC path.
+                        // Download this artifacts to a temp folder and provide that path instead.
+                        return await DownloadArtifactsAsync(buildClient, build, artifact, cancellationToken);
+                    }
+
                     return Path.Combine(artifact.Resource.Data, build.BuildNumber);
                 }
             }
 
             // Should never happen since we already filtered for containing valid paths
             throw new InvalidOperationException("Could not find drop path");
+        }
+
+        private static async Task<string> DownloadArtifactsAsync(BuildHttpClient buildClient, Build build, BuildArtifact artifact, CancellationToken cancellationToken)
+        {
+            var tempDirectory = Path.Combine(Path.GetTempPath(), string.Concat(Options.InsertionName, Options.BranchName).Replace(" ", "_").Replace("/","_"));
+            if (Directory.Exists(tempDirectory))
+            {
+                // Be judicious and clean up old artifacts so we do not eat up memory on the scheduler machine.
+                // Sometime FileSystem APIs do not create a directory immediately after a deletion - Looks like there is a race.
+                // So I'm just cleaning up the old directories contents in this case.
+                foreach (var dir in Directory.GetDirectories(tempDirectory)) Directory.Delete(dir, recursive: true);
+                foreach (var file in Directory.GetFiles(tempDirectory)) File.Delete(file);
+            }
+            else
+            {
+                Directory.CreateDirectory(tempDirectory);
+            }
+
+            var archiveDownloadPath = Path.Combine(tempDirectory, string.Concat(artifact.Name, ".zip"));
+            Log.Trace($"Downloading artifacts to {archiveDownloadPath}");
+
+            using (Stream s = await buildClient.GetArtifactContentZipAsync(Options.TFSProjectName, build.Id, artifact.Name, cancellationToken))
+            {
+                using (var fs = File.OpenWrite(archiveDownloadPath))
+                {
+                    await s.CopyToAsync(fs, 1024, cancellationToken);
+                }
+
+                ZipFile.ExtractToDirectory(archiveDownloadPath, tempDirectory);
+                File.Delete(archiveDownloadPath);
+            }
+
+            return Path.Combine(tempDirectory, artifact.Name);
         }
 
         private static async Task<Release> CreateReleaseAsync(Build build, CancellationToken cancellationToken)

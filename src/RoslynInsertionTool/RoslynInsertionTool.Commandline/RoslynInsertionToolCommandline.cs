@@ -152,6 +152,11 @@ partial class RoslynInsertionToolCommandline
                 insertWillowPackages => options = options.WithInsertWillowPackages(bool.Parse(insertWillowPackages))
             },
             {
+                "il=|insertLibraryPackages=",
+                $"Defaults to \"{options.InsertLibraryPackages}\".",
+                insertLibraryPackages => options = options.WithInsertLibraryPackages(bool.Parse(insertLibraryPackages))
+            },
+            {
                 "in=|insertionName=",
                 $"The \"friendly\" name of the components being inserted, e.g., Roslyn, Live Unit Testing, Project System. Defaults to \"{options.InsertionName}\".",
                 insertionName=> options = options.WithInsertionName(insertionName)
