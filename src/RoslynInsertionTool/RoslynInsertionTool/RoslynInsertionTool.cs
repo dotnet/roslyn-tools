@@ -116,7 +116,7 @@ namespace Roslyn.Insertion
 
                 var coreXT = CoreXT.Load(GetAbsolutePathForEnlistment());
 
-                if(Options.InsertCoreXTPackages || Options.InsertLibraryPackages)
+                if(Options.InsertCoreXTPackages)
                 {
                     // ************** Update Nuget Packages For Branch************************
                     cancellationToken.ThrowIfCancellationRequested();
@@ -135,7 +135,7 @@ namespace Roslyn.Insertion
                     coreXT.SaveConfig();
                 }
 
-                if (Options.InsertCoreXTPackages)
+                if (Options.UpdateCoreXTLibraries)
                 {
                     // ************** Update paths to CoreFX libraries ************************
                     cancellationToken.ThrowIfCancellationRequested();
