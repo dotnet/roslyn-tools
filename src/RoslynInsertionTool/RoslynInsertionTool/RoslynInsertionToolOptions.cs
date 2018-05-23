@@ -804,37 +804,6 @@ namespace Roslyn.Insertion
                 partitionsToBuild: PartitionsToBuild);
         }
 
-        public RoslynInsertionToolOptions WithInsertLibraryPackages(bool insertLibraryPackages)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                partitionsToBuild: PartitionsToBuild);
-        }
-
         public RoslynInsertionToolOptions WithInsertionName(string insertionName)
         {
             return new RoslynInsertionToolOptions(
@@ -934,8 +903,6 @@ namespace Roslyn.Insertion
         public bool InsertDevDivSourceFiles { get; }
 
         public bool InsertWillowPackages { get; }
-
-        public bool InsertLibraryPackages { get; }
 
         public string InsertionName { get; }
 
