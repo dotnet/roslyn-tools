@@ -793,7 +793,7 @@ namespace Roslyn.Insertion
                 insertCoreXTPackages: InsertCoreXTPackages,
                 updateCoreXTLibraries: UpdateCoreXTLibraries,
                 insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
+                insertWillowPackages: insertWillowPackages,
                 insertionName: InsertionName,
                 insertToolset: InsertToolset,
                 retainInsertedBuild: RetainInsertedBuild,
