@@ -242,7 +242,7 @@ namespace Roslyn.Insertion
             if (Directory.Exists(tempDirectory))
             {
                 // Be judicious and clean up old artifacts so we do not eat up memory on the scheduler machine.
-                // Sometime FileSystem APIs do not create a directory immediately after a deletion - Looks like there is a race.
+                // Sometimes FileSystem APIs do not create a directory immediately after a deletion - Looks like there is a race.
                 // So I'm just cleaning up the old directories contents in this case.
                 foreach (var dir in Directory.GetDirectories(tempDirectory)) Directory.Delete(dir, recursive: true);
                 foreach (var file in Directory.GetFiles(tempDirectory)) File.Delete(file);
@@ -255,16 +255,21 @@ namespace Roslyn.Insertion
             var archiveDownloadPath = Path.Combine(tempDirectory, string.Concat(artifact.Name, ".zip"));
             Log.Trace($"Downloading artifacts to {archiveDownloadPath}");
 
+            Stopwatch watch = Stopwatch.StartNew();
+
             using (Stream s = await buildClient.GetArtifactContentZipAsync(Options.TFSProjectName, build.Id, artifact.Name, cancellationToken))
             {
                 using (var fs = File.OpenWrite(archiveDownloadPath))
                 {
-                    await s.CopyToAsync(fs, 1024, cancellationToken);
+                    // Using the default buffer size.
+                    await s.CopyToAsync(fs, 81920, cancellationToken);
                 }
 
                 ZipFile.ExtractToDirectory(archiveDownloadPath, tempDirectory);
                 File.Delete(archiveDownloadPath);
             }
+
+            Log.Info($"Artifact download took {watch.ElapsedMilliseconds/1000} seconds");
 
             return Path.Combine(tempDirectory, artifact.Name);
         }
