@@ -242,15 +242,14 @@ namespace Roslyn.Insertion
             if (Directory.Exists(tempDirectory))
             {
                 // Be judicious and clean up old artifacts so we do not eat up memory on the scheduler machine.
-                // Sometimes FileSystem APIs do not create a directory immediately after a deletion - Looks like there is a race.
-                // So I'm just cleaning up the old directories contents in this case.
-                foreach (var dir in Directory.GetDirectories(tempDirectory)) Directory.Delete(dir, recursive: true);
-                foreach (var file in Directory.GetFiles(tempDirectory)) File.Delete(file);
+                Directory.Delete(tempDirectory, recursive: true);
+                // Sometimes a creation of a directory races with deletion since at least in .net 4.6 deletion is not a blocking call.
+                // Hence explictly waiting for the directory to be deleted before moving on.
+                Stopwatch w = Stopwatch.StartNew();
+                while (Directory.Exists(tempDirectory) && w.ElapsedMilliseconds < 10 * 1000) Thread.Sleep(100);
             }
-            else
-            {
-                Directory.CreateDirectory(tempDirectory);
-            }
+
+            Directory.CreateDirectory(tempDirectory);
 
             var archiveDownloadPath = Path.Combine(tempDirectory, string.Concat(artifact.Name, ".zip"));
             Log.Trace($"Downloading artifacts to {archiveDownloadPath}");
