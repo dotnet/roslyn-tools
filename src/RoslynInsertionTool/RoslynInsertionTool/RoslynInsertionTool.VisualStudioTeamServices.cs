@@ -98,7 +98,14 @@ namespace Roslyn.Insertion
             foreach (var build in builds)
             {
                 var artifacts = await buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken);
-                if (artifacts.Any(a => a.Resource != null && a.Resource.Data != null && a.Resource.Data.Contains(Options.BuildDropPath)))
+                // A valid artifact would:
+                // 1. Have a resource
+                // 2. The resource would either point to a cpvsbuild path (or) be uploaded to the artifacts service with a build number label.
+                if (artifacts.Any(
+                    a => a.Resource != null &&
+                    a.Resource.Data != null &&
+                        (a.Resource.Data.Contains(Options.BuildDropPath) ||
+                            a.Resource.Data.Contains(build.BuildNumber))))
                 {
                     buildsWithValidArtifacts.Add(build);
                 }
@@ -214,12 +221,58 @@ namespace Roslyn.Insertion
                 {
                     // artifact.Resource.Data should be available and non-null due to BuildWithValidArtifactsAsync,
                     // which checks this precondition
+                    if(string.Compare(artifact.Resource.Type, "container", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        // This is a build where the artifacts are published to the artifacts server instead of a UNC path.
+                        // Download this artifacts to a temp folder and provide that path instead.
+                        return await DownloadArtifactsAsync(buildClient, build, artifact, cancellationToken);
+                    }
+
                     return Path.Combine(artifact.Resource.Data, build.BuildNumber);
                 }
             }
 
             // Should never happen since we already filtered for containing valid paths
             throw new InvalidOperationException("Could not find drop path");
+        }
+
+        private static async Task<string> DownloadArtifactsAsync(BuildHttpClient buildClient, Build build, BuildArtifact artifact, CancellationToken cancellationToken)
+        {
+            var tempDirectory = Path.Combine(Path.GetTempPath(), string.Concat(Options.InsertionName, Options.BranchName).Replace(" ", "_").Replace("/","_"));
+            if (Directory.Exists(tempDirectory))
+            {
+                // Be judicious and clean up old artifacts so we do not eat up memory on the scheduler machine.
+                Directory.Delete(tempDirectory, recursive: true);
+                
+                // Sometimes a creation of a directory races with deletion since at least in .net 4.6 deletion is not a blocking call.
+                // Hence explictly waiting for the directory to be deleted before moving on.
+                Stopwatch w = Stopwatch.StartNew();
+
+                while (Directory.Exists(tempDirectory) && w.ElapsedMilliseconds < 10 * 1000) Thread.Sleep(100);
+            }
+
+            Directory.CreateDirectory(tempDirectory);
+
+            var archiveDownloadPath = Path.Combine(tempDirectory, string.Concat(artifact.Name, ".zip"));
+            Log.Trace($"Downloading artifacts to {archiveDownloadPath}");
+
+            Stopwatch watch = Stopwatch.StartNew();
+
+            using (Stream s = await buildClient.GetArtifactContentZipAsync(Options.TFSProjectName, build.Id, artifact.Name, cancellationToken))
+            {
+                using (var fs = File.OpenWrite(archiveDownloadPath))
+                {
+                    // Using the default buffer size.
+                    await s.CopyToAsync(fs, 81920, cancellationToken);
+                }
+
+                ZipFile.ExtractToDirectory(archiveDownloadPath, tempDirectory);
+                File.Delete(archiveDownloadPath);
+            }
+
+            Log.Info($"Artifact download took {watch.ElapsedMilliseconds/1000} seconds");
+
+            return Path.Combine(tempDirectory, artifact.Name);
         }
 
         private static async Task<Release> CreateReleaseAsync(Build build, CancellationToken cancellationToken)
