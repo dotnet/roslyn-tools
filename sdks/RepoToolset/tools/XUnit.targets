@@ -29,7 +29,7 @@
           Inputs="*%(_TestArchitectureItems.Identity)"
           Outputs="*%(_TestArchitectureItems.Identity)"
           Returns="@(_FailedTestRuns)"
-          Condition="$(TargetFramework.StartsWith('netcoreapp')) or '$(OS)' == 'Windows_NT'">
+          Condition="$(TargetFramework.StartsWith('netcoreapp')) or '$(OS)' == 'Windows_NT' or '$(MSBuildRuntimeType)' == 'Mono'">
 
     <PropertyGroup>
       <_TestArchitecture>%(_TestArchitectureItems.Identity)</_TestArchitecture>
