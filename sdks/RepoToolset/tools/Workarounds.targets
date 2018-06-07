@@ -45,16 +45,6 @@
   </PropertyGroup>
 
   <!--
-    Workaround for PathTooLongException (see https://github.com/Microsoft/msbuild/issues/1786).
-  -->
-  <Target Name="WorkaroundAppConfigPathTooLong"
-          BeforeTargets="GenerateBindingRedirects">
-    <PropertyGroup>
-      <_GenerateBindingRedirectsIntermediateAppConfig>$(IntermediateOutputPath)$(TargetFileName).config</_GenerateBindingRedirectsIntermediateAppConfig>
-    </PropertyGroup>
-  </Target>
-
-  <!--
     Workaround for a race condition https://github.com/Microsoft/msbuild/issues/1479.
   -->
   <PropertyGroup>
