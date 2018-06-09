@@ -11,6 +11,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
+  <Import Project="Version.props" />
   <Import Project="$(VersionsPropsPath)" />
 
   <PropertyGroup>
@@ -26,12 +27,13 @@
       Repo can set this property to true for local builds if it needs to use newer compiler than the one in the dotnet SDK.
     -->
     <UsingToolMicrosoftNetCompilers Condition="'$(CIBuild)' == 'true'">true</UsingToolMicrosoftNetCompilers>
-                                    
+
     <!-- Opt-in features -->
     <UsingToolVSSDK Condition="'$(UsingToolVSSDK)' == ''">false</UsingToolVSSDK>
     <UsingToolIbcOptimization Condition="'$(UsingToolIbcOptimization)' == ''">false</UsingToolIbcOptimization>
     <UsingToolNetFrameworkReferenceAssemblies Condition="'$(UsingToolNetFrameworkReferenceAssemblies)' == ''">false</UsingToolNetFrameworkReferenceAssemblies>
     <UsingToolNuGetRepack Condition="'$(UsingToolNuGetRepack)' == ''">false</UsingToolNuGetRepack>
+    <UsingToolSymbolUploader Condition="'$(UsingToolSymbolUploader)' == ''">false</UsingToolSymbolUploader>
 
     <!-- Default versions -->
     <MicroBuildPluginsSwixBuildVersion Condition="'$(MicroBuildPluginsSwixBuildVersion)' == ''">1.0.147</MicroBuildPluginsSwixBuildVersion>
@@ -53,6 +55,7 @@
     <XUnitRunnerVisualStudioVersion Condition="'$(XUnitRunnerVisualStudioVersion)' == ''">$(XUnitVersion)</XUnitRunnerVisualStudioVersion>
     <MicrosoftDotNetBuildTasksFeedVersion Condition="'$(MicrosoftDotNetBuildTasksFeedVersion)' == ''">2.2.0-prerelease-02431-01</MicrosoftDotNetBuildTasksFeedVersion>
     <MicrosoftSourceLinkVersion Condition="'$(MicrosoftSourceLinkVersion)' == ''">1.0.0-beta-62925-02</MicrosoftSourceLinkVersion>
+    <MicrosoftSymbolUploaderBuildTaskVersion Condition="'$(MicrosoftSymbolUploaderBuildTaskVersion)' == ''">1.0.0-beta-63008-01</MicrosoftSymbolUploaderBuildTaskVersion>
   </PropertyGroup>
 
   <!-- Version overrides -->

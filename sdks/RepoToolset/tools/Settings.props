@@ -12,7 +12,6 @@
   <Import Project="ProjectLayout.props" />
   <Import Project="DefaultVersions.props"/>
   <Import Project="StrongName.props"/>
-  <Import Project="Version.props"/>
   <Import Project="ProjectDefaults.props"/>
   <Import Project="Tests.props" />
   

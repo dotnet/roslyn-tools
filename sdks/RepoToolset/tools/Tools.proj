@@ -29,6 +29,10 @@
       https://api.nuget.org/v3/index.json;
       https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json
     </RestoreSources>
+    <RestoreSources Condition="'$(UsingToolSymbolUploader)' == 'true'">
+      $(RestoreSources);
+      https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json
+    </RestoreSources>
     <RestoreSources Condition="'$(UsingToolPdbConverter)' == 'true' and $(MicrosoftDiaSymReaderPdb2PdbVersion.Contains('-'))">
       $(RestoreSources);
       https://dotnet.myget.org/F/symreader-converter/api/v3/index.json
@@ -47,6 +51,7 @@
     <PackageReference Include="RoslynTools.NuGetRepack.BuildTasks" Version="$(RoslynToolsNuGetRepackVersion)" Condition="'$(UsingToolNuGetRepack)' == 'true'" />
     <PackageReference Include="RoslynTools.SignTool" Version="$(RoslynToolsSignToolVersion)" />
     <PackageReference Include="RoslynTools.ModifyVsixManifest" Version="$(RoslynToolsModifyVsixManifestVersion)" Condition="'$(UsingToolVSSDK)' == 'true'" />
+    <PackageReference Include="Microsoft.SymbolUploader.Build.Task" Version="$(MicrosoftSymbolUploaderBuildTaskVersion)" Condition="'$(UsingToolSymbolUploader)' == 'true'" />
   </ItemGroup>
 
   <!-- Repository extensibility point -->
