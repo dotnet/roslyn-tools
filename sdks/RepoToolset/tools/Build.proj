@@ -45,6 +45,8 @@
   <PropertyGroup>
     <_RepoRootOriginal>$(RepoRoot)</_RepoRootOriginal>
     <RepoRoot>$([System.IO.Path]::GetFullPath('$(RepoRoot)/'))</RepoRoot>
+
+    <_RemoveProps>Projects;Restore;QuietRestore;Build;Rebuild;Deploy;Test;IntegrationTest;PerformanceTest;Pack;Sign;Publish</_RemoveProps>
   </PropertyGroup>
 
   <Import Project="BuildTasks.props"/>
@@ -209,6 +211,7 @@
     -->
     <MSBuild Projects="@(_ProjectToBuild)"
              Properties="@(_SolutionBuildProps);__BuildPhase=SolutionRestore"
+             RemoveProperties="$(_RemoveProps)"
              Targets="Restore"
              BuildInParallel="true"
              Condition="'$(Restore)' == 'true' and '$(_QuietRestore)' != 'true'"/>
@@ -218,6 +221,7 @@
     -->
     <MSBuild Projects="@(_ProjectToBuild)"
              Properties="@(_SolutionBuildProps);__BuildPhase=SolutionBuild"
+             RemoveProperties="$(_RemoveProps)"
              Targets="@(_SolutionBuildTargets)"
              BuildInParallel="true"
              Condition="'@(_SolutionBuildTargets)' != ''" />
