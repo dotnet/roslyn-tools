@@ -198,11 +198,16 @@ For example,
   },
   "msbuild-sdks": {
     "RoslynTools.RepoToolset": "1.0.0-beta2-63009-01"
-  },
+  }
+}
+```
+
+Include `vswhere` version if the repository should be built via desktop `msbuild` instead of dotnet cli:
+
+```json
   "vswhere": {
     "version": "2.2.7"
   }
-}
 ```
 
 `/nuget.config` file is present and specifies the MyGet feed to retrieve `RoslynTools.RepoToolset` SDK from like so:
