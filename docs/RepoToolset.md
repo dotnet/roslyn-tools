@@ -43,7 +43,7 @@ The toolset has four kinds of features and helpers:
 The toolset has following requirements on the repo layout.
 
 ### Single build output
-All build outputs are located under a single directory called ```artifacts```. 
+All build outputs are located under a single directory called `artifacts`. 
 The RepoToolset defines the following output structure:
 
 ```
@@ -66,6 +66,8 @@ artifacts
       $(VsixContainerName).vsix
     VSSetup.obj
       $(VisualStudioInsertionComponent)
+    SymStore
+      $(MSBuildProjectName)
     log
       Build.binlog
     tmp
@@ -85,46 +87,50 @@ Having a common output directory structure makes it possible to unify MicroBuild
 | VSSetup           | Packages produced by VSIX projects in the repo. These packages are experimental and can be used for dogfooding.
 | VSSetup/Insertion | Willow manifests and VSIXes to be inserted into VS.
 | VSSetup.obj       | Temp files produced by VSIX build. |
+| SymStore          | Storage for converted Windows PDBs |
 | log               | Build binary log and other logs. |
 | tmp               | Temp files generated during build. |
 | toolset           | Files generated during toolset restore. |
 
-### SDK configuration (global.json, nuget.config)
+### Build scripts and extensibility points
 
-`/global.json` file is present and specifies the version of the donet and `RoslynTools.RepoToolset` SDKs.
-
-For example,
-
-```json
-{
-  "sdk": {
-    "version": "2.1.100-preview-007366"
-  },
-  "msbuild-sdks": {
-    "RoslynTools.RepoToolset": "1.0.0-beta2-62615-01"
-  }
-}
+```
+eng
+  common
+    build.ps1
+    build.sh
+    CIBuild.cmd
+    cibuild.sh
+  SignToolData.json
+  Versions.props
+  FixedVersions.props (optional)
+  Tools.props (optional)
+  AfterSolutionBuild.targets (optional)
+  AfterSigning.targets (optional)
+src
+  Directory.Build.props
+  Directory.Build.targets
+global.json
+nuget.config
+.vsts-ci.yml
+Build.cmd
+build.sh
+Restore.cmd
+restore.sh
+Test.cmd
+test.sh
 ```
 
-`/nuget.config` file is present and specifies the MyGet feed to retrieve `RoslynTools.RepoToolset` SDK from like so:
+#### /eng/common/*
 
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <!-- Only specify feed for RepoToolset SDK (see https://github.com/Microsoft/msbuild/issues/2982) -->
-  <packageSources>
-    <add key="roslyn-tools" value="https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json" />
-  </packageSources>
-</configuration>
-```
+The RepoToolset requires bootstrapper scripts to be present in the repo.
+The scripts in this directory shall be present and the same across all repositories using RepoToolset.
 
-> An improvement in SKD resolver is proposed to be able to specify the feed in `global.json` file to avoid the need for extra configuration in `nuget.config`. See https://github.com/Microsoft/msbuild/issues/2982.
+#### /eng/SignToolData.json: Sign Tool configuration
+Teh file is present in the repo and describes how build outputs should be signed.
 
-### Sign Tool configuration
-`/build/SignToolData.json` file is present in the repo and describes how build outputs should be signed.
-
-### A single file listing component versions and used tools
-`/build/Versions.props` file is present in the repo and defines versions of all dependencies used in the repository, the NuGet feeds they should be restored from and the version of the components produced by the repo build.
+#### /eng/Versions.props: A single file listing component versions and used tools
+The file is present in the repo and defines versions of all dependencies used in the repository, the NuGet feeds they should be restored from and the version of the components produced by the repo build.
 
 ```xml
 <Project>
@@ -161,27 +167,94 @@ The toolset also defines default versions for various tools and dependencies, su
 
 See [DefaultVersions](https://github.com/dotnet/roslyn-tools/blob/master/src/RepoToolset/DefaultVersions.props]) for a list of *UsingTool* properties and default versions.
 
-### Root build properties (optional)
-`Directory.Build.props` in the repo root may specify the `RepositoryUrl` and public keys for `InternalsVisibleTo` project items.
+#### /eng/FixedVersions.props (Orchestrated Build)
+
+Versions of dependencies specified in Versions.props may be overriden by Orchestrated Build.
+FixedVersions.props specifies versions that should not flow from Orchestrated Build.
+
+#### /eng/Tools.props (optional)
+
+Specify package references to additional tools that are needed for the build.
+These tools are only used for build operations performed outside of the repository solution (such as additional packaging, signing, publishing, etc.).
+
+#### /eng/AfterSolutionBuild.targets (optional)
+
+Targets executed in a step right after the solution is built.
+
+#### /eng/AfterSigning.targets (optional)
+
+Targets executed in a step right after artifacts has been signed.
+
+#### /global.json, /nuget.config: SDK configuration
+
+`/global.json` file is present and specifies the version of the donet and `RoslynTools.RepoToolset` SDKs.
+
+For example,
+
+```json
+{
+  "sdk": {
+    "version": "2.1.300-rtm-008866"
+  },
+  "msbuild-sdks": {
+    "RoslynTools.RepoToolset": "1.0.0-beta2-63009-01"
+  },
+  "vswhere": {
+    "version": "2.2.7"
+  }
+}
+```
+
+`/nuget.config` file is present and specifies the MyGet feed to retrieve `RoslynTools.RepoToolset` SDK from like so:
 
 ```xml
-<PropertyGroup>
-  <!-- Repository and project URLs (used in nuget packages) -->
-  <RepositoryUrl>https://github.com/dotnet/symreader-converter</RepositoryUrl>
-  <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
-  
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <!-- Only specify feed for RepoToolset SDK (see https://github.com/Microsoft/msbuild/issues/2982) -->
+  <packageSources>
+    <clear />
+    <add key="roslyn-tools" value="https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json" />
+  </packageSources>
+</configuration>
+```
+
+> An improvement in SKD resolver is proposed to be able to specify the feed in `global.json` file to avoid the need for extra configuration in `nuget.config`. See https://github.com/Microsoft/msbuild/issues/2982.
+
+#### /src/Directory.Build.props
+
+`Directory.Build.props` shall import RepoToolset SDK.
+It may also specify public keys for `InternalsVisibleTo` project items and other properties applicable to all projects to the repository. 
+
+```xml
+<PropertyGroup>  
+  <PropertyGroup>
+    <ImportNetSdkFromRepoToolset>false</ImportNetSdkFromRepoToolset>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="RoslynTools.RepoToolset" />    
+
   <!-- Public keys used by InternalsVisibleTo project items -->
   <MoqPublicKey>00240000048000009400...</MoqPublicKey> 
 </PropertyGroup>
 ```
 
+#### Directory.Build.targets
+
+`Directory.Build.props` shall import RepoToolset SDK. It may specify additional targets applicable to all source projects.
+
+```xml
+<Project>
+  <Import Project="Sdk.targets" Sdk="RoslynTools.RepoToolset" />
+</Project>
+```
+
 ### Source Projects
 Projects are located under `src` directory under root repo, in any subdirectory structure appropriate for the repo. 
 
-Projects shall use `RoslynTools.RepoToolset` SDK like so:
+Projects shall use `Microsoft.NET.Sdk` SDK like so:
 
 ```xml
-<Project Sdk="RoslynTools.RepoToolset">
+<Project Sdk="Microsoft.NET.Sdk">
     ...
 </Project>
 ```
@@ -261,35 +334,47 @@ folder "InstallDir:MSBuild\Microsoft\VisualStudio\Managed"
   file source="$(VisualStudioXamlRulesDir)Microsoft.FSharp.DesignTime.targets"
   file source="$(VisualStudioXamlRulesDir)Microsoft.Managed.DesignTime.targets"
 ```
-### Build script (OS Specific)
 
-The RepoToolset provides a build driver `Build.proj`. 
+### MicroBuild
 
-The driver can be built from dotnet CLI or Desktop Framework msbuild. 
+The repository shall define a YAML build definition to be used by MicroBuild (e.g. `.vsts-ci.yml`).
 
-Example of dotnet cli driven build:
-https://github.com/dotnet/symreader-converter/blob/master/build/build.ps1.
+The following step shall be included in the definition:
 
-Example of desktop msbuild driven build:
-https://github.com/dotnet/interactive-window/blob/master/build/build.ps1.
-
-#### CIBuild.cmd
-
-It is recommended to include `/build/CIBuild.cmd` and `/build/CIBuild.sh` in the repository and execute these scripts from Jenkins and MicroBuild to trigger CI build. The purpose of these scripts is to allow running CI build locally with the same parameters as on the CI server.
-
-```
-@echo off
-powershell -ExecutionPolicy ByPass .\build\Build.ps1 -restore -build -test -sign -pack -ci %*
-exit /b %ErrorLevel%
+```yml
+- task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
+  displayName: Install Signing Plugin
+  inputs:
+    signType: real
+    esrpSigning: true
+  condition: and(succeeded(), eq(variables['PB_SignType'], 'real'))  # Orchestrated Build only
 ```
 
-#### MicroBuild
-
-Use the following build command in MicroBuild definition:
-
+```yml
+- script: eng\common\CIBuild.cmd 
+          -configuration $(BuildConfiguration)
+          /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+          /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+  displayName: Build
 ```
-CIBuild.cmd -configuration $(BuildConfiguration)
+
+```yml
+- task: PublishTestResults@1
+  displayName: Publish Test Results
+  inputs:
+    testRunner: XUnit
+    testResultsFiles: 'artifacts/$(BuildConfiguration)/TestResults/*.xml'
+    mergeTestResults: true
+    testRunTitle: 'Unit Tests'
+  condition: and(succeededOrFailed(), ne(variables['PB_SkipTests'], 'true')) # Orchestrated Build only
 ```
+
+The VSTS build definition also needs to link the following variable group:
+
+- DotNet-Symbol-Publish 
+
+  - `microsoft-symbol-server-pat`
+  - `symweb-symbol-server-pat`
 
 RepoToolset expects MicroBuild to set the following environment variables:
 
