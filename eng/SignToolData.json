@@ -8,6 +8,14 @@
         "bin/SignTool/net461/SignTool.exe",
         "bin/VSIXExpInstaller/net46/VSIXExpInstaller.exe"
       ]
+    },
+    {
+      "certificate": "NuGet",
+      "strongName": null,
+      "values": [
+        "packages/*.nupkg",
+        "packages/*/*.nupkg"
+      ]
     }
   ]
 }
