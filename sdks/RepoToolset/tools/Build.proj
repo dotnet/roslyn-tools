@@ -30,6 +30,7 @@
     Pack                            "true" to build NuGet packages and VS insertion manifests
     Sign                            "true" to sign built binaries
     SignType                        "real" to send binaries to signing service, "test" to only validate signing configuration.
+    Publish                         "true" to publish artifacts (e.g. symbols)
 
     SuppressPackageVersionRewrite   "true" to suppress rewrite of PackageVersions.props file. Temporary switch to allow repos to migrate to the official format of the version properties.
   -->
@@ -239,6 +240,7 @@
 
     <MSBuild Projects="Publish.proj"
              Properties="@(_PublishProps)"
-             Targets="Publish"/>
+             Targets="Publish"
+             Condition="'$(Publish)' == 'true'"/>
   </Target>
 </Project>
