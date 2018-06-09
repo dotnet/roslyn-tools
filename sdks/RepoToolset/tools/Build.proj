@@ -14,6 +14,9 @@
     DotNetBuildFromSource           Building the entire stack from source with no external dependencies.
     DotNetBuildOffline              Building without access to NuGet servers.
     DotNetOutputBlobFeedDir         Directory to publish Source Build assets to (packages, symbol pacakges, installers, etc.).
+    DotNetSymbolServerTokenMsdl     Personal access token for MSDL symbol server. Available from variable group DotNet-Symbol-Publish.
+    DotNetSymbolServerTokenSymWeb   Personal access token for SymWeb symbol server. Available from variable group DotNet-Symbol-Publish.
+    DotNetSymbolExpirationInDays    Symbol expiration time in days (defaults to 10 years).
 
     CIBuild                         "true" when building on CI server
     Restore                         "true" to restore toolset and solution
@@ -141,6 +144,13 @@
     </ItemGroup>
 
     <ItemGroup>
+      <_PublishProps Include="@(_CommonProps)"/>
+      <_PublishProps Include="AzureFeedUrl=$(PB_PublishBlobFeedUrl)" Condition="$(_PublishToBlobStorage)" />
+      <_PublishProps Include="AzureAccountKey=$(PB_PublishBlobFeedKey)" Condition="$(_PublishToBlobStorage)" />
+      <_PublishProps Include="DotNetOutputBlobFeedDir=$(_DotNetOutputBlobFeedDir)" Condition="'$(_DotNetOutputBlobFeedDir)' != ''" />
+    </ItemGroup>
+
+    <ItemGroup>
       <_SolutionBuildProps Include="@(_CommonProps)"/>
       <_SolutionBuildProps Include="__DeployProjectOutput=$(Deploy)" Condition="'$(Deploy)' != ''"/>
       <_SolutionBuildProps Include="__ExternalRestoreSources=$(PB_RestoreSource)" Condition="'$(PB_RestoreSource)' != ''"/>
@@ -227,9 +237,8 @@
              Properties="@(_CommonProps)"
              Targets="@(_SolutionBuildTargets)" />
 
-    <MSBuild Projects="OrchestratedBuild.Publish.proj"
-             Properties="@(_CommonProps);ExpectedFeedUrl=$(PB_PublishBlobFeedUrl);AccountKey=$(PB_PublishBlobFeedKey);DotNetOutputBlobFeedDir=$(_DotNetOutputBlobFeedDir)"
-             Targets="Publish"
-             Condition="$(_PublishToBlobStorage) or '$(_DotNetOutputBlobFeedDir)' != ''"/>
+    <MSBuild Projects="Publish.proj"
+             Properties="@(_PublishProps)"
+             Targets="Publish"/>
   </Target>
 </Project>

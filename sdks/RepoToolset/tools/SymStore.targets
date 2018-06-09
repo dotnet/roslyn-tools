@@ -31,7 +31,7 @@
       <_SymStoreOutputDir>$(ArtifactsSymStoreDirectory)$(MSBuildProjectName)\$(TargetFramework)\</_SymStoreOutputDir>
       <_SymStorePdbPath>$(_SymStoreOutputDir)$(TargetName).pdb</_SymStorePdbPath>
       <_SymStoreAssemblyPath>$(_SymStoreOutputDir)$(TargetName)$(TargetExt)</_SymStoreAssemblyPath>
-      
+
       <PublishOutputToSymStore Condition="'$(PublishOutputToSymStore)' == '' and Exists('$(TargetPath)') and ('$(DebugType)' == 'embedded' or Exists('$(_TargetPdbPath)'))">true</PublishOutputToSymStore>
     </PropertyGroup>
   </Target>
@@ -93,7 +93,7 @@
 
   <Target Name="_DeployAssembliesToSymStore"
           AfterTargets="_InnerDeployToSymStore"
-          Condition="'$(PublishOutputToSymStore)' == 'true'"
+          Condition="'$(PublishOutputToSymStore)' == 'true' and '$(UsingToolSymbolUploader)' != 'true'"
           Inputs="$(TargetPath)"
           Outputs="$(_SymStoreAssemblyPath)">
 
