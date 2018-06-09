@@ -93,13 +93,17 @@
       https://github.com/dotnet/core-eng/issues/3645
     -->
     <ItemGroup>
-      <SymStoreFile Include="$(ArtifactsSymStoreDirectory)**\*.pdb"/>
+      <FilesToPublish Include="$(ArtifactsSymStoreDirectory)**\*.pdb"/>
     </ItemGroup>
+
+    <PropertyGroup>
+      <PublishToSymbolServer Condition="'@(FilesToPublish)' == '' and '@(ExistingSymbolPackages)' == '' and '@(SymbolPackagesToGenerate)' == ''">false</PublishToSymbolServer>
+    </PropertyGroup>
 
     <!-- Symbol Uploader: MSDL -->
     <Message Importance="High" Text="Publishing symbol packages to MSDL ..." />
     <PublishSymbols PackagesToPublish="@(ExistingSymbolPackages);@(SymbolPackagesToGenerate)"
-                    FilesToPublish="@(SymStoreFile)"
+                    FilesToPublish="@(FilesToPublish)"
                     PersonalAccessToken="$(DotNetSymbolServerTokenMsdl)"
                     SymbolServerPath="https://microsoftpublicsymbols.artifacts.visualstudio.com/DefaultCollection"
                     ExpirationInDays="$(DotNetSymbolExpirationInDays)"
@@ -116,7 +120,7 @@
     -->
     <Message Importance="High" Text="Publishing symbol packages to SymWeb ..." />
     <PublishSymbols PackagesToPublish="@(ExistingSymbolPackages);@(SymbolPackagesToGenerate)"
-                    FilesToPublish="@(SymStoreFile)"
+                    FilesToPublish="@(FilesToPublish)"
                     PersonalAccessToken="$(DotNetSymbolServerTokenSymWeb)"
                     SymbolServerPath="https://microsoft.artifacts.visualstudio.com/DefaultCollection"
                     ExpirationInDays="$(DotNetSymbolExpirationInDays)"
