@@ -5,7 +5,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup>
-    <RoslynToolsBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)tasks\net461\RoslynTools.BuildTasks.dll</RoslynToolsBuildTasksAssembly>
-    <RoslynToolsBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)tasks\netcoreapp2.0\RoslynTools.BuildTasks.dll</RoslynToolsBuildTasksAssembly>
+    <RoslynToolsBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)tasks\net461\RoslynTools.RepoToolset.dll</RoslynToolsBuildTasksAssembly>
+    <RoslynToolsBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)tasks\netcoreapp2.0\RoslynTools.RepoToolset.dll</RoslynToolsBuildTasksAssembly>
   </PropertyGroup>
 </Project>

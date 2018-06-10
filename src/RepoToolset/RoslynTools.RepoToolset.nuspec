@@ -20,9 +20,9 @@
   <files>
     <file src="$ProjectDirectory$\sdk\*.*" target="sdk" />
     <file src="$ProjectDirectory$\tools\*.*" target="tools" />
-    <file src="..\RoslynTools.BuildTasks\netcoreapp2.0\publish\RoslynTools.*" target="tools\tasks\netcoreapp2.0" />
-    <file src="..\RoslynTools.BuildTasks\netcoreapp2.0\publish\System.*" target="tools\tasks\netcoreapp2.0" />
-    <file src="..\RoslynTools.BuildTasks\net461\RoslynTools.*" target="tools\tasks\net461" />
-    <file src="..\RoslynTools.BuildTasks\net461\System.*" target="tools\tasks\net461" />
+    <file src="netcoreapp2.0\publish\RoslynTools.*" target="tools\tasks\netcoreapp2.0" />
+    <file src="netcoreapp2.0\publish\System.*" target="tools\tasks\netcoreapp2.0" />
+    <file src="net461\RoslynTools.*" target="tools\tasks\net461" />
+    <file src="net461\System.*" target="tools\tasks\net461" />
   </files>
 </package>

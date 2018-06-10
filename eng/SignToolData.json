@@ -11,7 +11,9 @@
         "bin/RoslynTools.NuGetRepack.BuildTasks/net461/RoslynTools.NuGetRepack.BuildTasks.dll",
         "bin/RoslynTools.NuGetRepack.BuildTasks/netcoreapp2.0/publish/RoslynTools.NuGetRepack.BuildTasks.dll",
         "bin/RoslynTools.BuildTasks/net461/RoslynTools.BuildTasks.dll",
-        "bin/RoslynTools.BuildTasks/netcoreapp2.0/publish/RoslynTools.BuildTasks.dll"
+        "bin/RoslynTools.BuildTasks/netcoreapp2.0/publish/RoslynTools.BuildTasks.dll",
+        "bin/RoslynTools.RepoToolset/net461/RoslynTools.RepoToolset.dll",
+        "bin/RoslynTools.RepoToolset/netcoreapp2.0/publish/RoslynTools.RepoToolset.dll"
       ]
     },
     {
