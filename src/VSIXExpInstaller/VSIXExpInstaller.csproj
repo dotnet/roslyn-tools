@@ -1,4 +1,4 @@
-<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+﻿<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
@@ -11,6 +11,10 @@
     <IsPackable>true</IsPackable>
     <NuspecFile>VSIXExpInstaller.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
+
+    <Description>VSIX installer for a non-root hive</Description>
+    <PackageTags>Roslyn Build Tool VSIX installer</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -32,10 +36,4 @@
     <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Interop.10.0.DesignTime" Version="$(MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion)" />
     <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Interop.11.0.DesignTime" Version="$(MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion)" />
   </ItemGroup>
-
-  <Target Name="_InitializeNuspecProperties" BeforeTargets="GenerateNuspec">
-    <PropertyGroup>
-      <NuspecProperties>version=$(Version);licenseUrl=$(PackageLicenseUrl);repoUrl=$(RepositoryUrl);copyright=$(Copyright)</NuspecProperties>
-    </PropertyGroup>
-  </Target>
 </Project>
