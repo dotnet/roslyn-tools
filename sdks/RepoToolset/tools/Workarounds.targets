@@ -111,9 +111,12 @@
     </PropertyGroup>
   </Target>
 
-  <!-- Note: TargetFrameworkIdentifier is defined by the .NET SDK imported before these targets -->
+  <!-- 
+    Publish before packaging (see https://github.com/NuGet/Home/issues/6321).
+    Note: TargetFrameworkIdentifier is defined by the .NET SDK imported before these targets
+  -->
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(NuspecFile)' != ''">
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificBuildOutput);Publish</TargetsForTfmSpecificContentInPackage>
+    <TargetsForTfmSpecificContentInPackage>Publish;$(TargetsForTfmSpecificContentInPackage)</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
   <!--
