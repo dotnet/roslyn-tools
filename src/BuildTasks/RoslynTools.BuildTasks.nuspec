@@ -15,8 +15,9 @@
     <repository type="$RepositoryType$" url="$RepositoryUrl$" commit="$RepositoryCommit$" />
   </metadata>
   <files>
-    <file src="netcoreapp1.0\*.*" target="tools\netcoreapp1.0" />
-    <file src="net46\RoslynTools.*.*" target="tools\net46" />
-    <file src="net46\System.*.*" target="tools\net46" />
+    <file src="netcoreapp2.0\publish\RoslynTools.*" target="tools\netcoreapp2.0" />
+    <file src="netcoreapp2.0\publish\System.*" target="tools\netcoreapp2.0" />
+    <file src="net461\RoslynTools.*" target="tools\net461" />
+    <file src="net461\System.*" target="tools\net461" />
   </files>
 </package>

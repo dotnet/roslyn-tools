@@ -1,30 +1,28 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
-    <id>RoslynTools.RepoToolset</id>
-    <summary>Common toolset for repositories</summary>
-    <description>Common toolset for repositories</description>
-    <version>$version$</version>
-    <authors>Microsoft</authors>
-    <owners>Microsoft</owners>
-    <requireLicenseAcceptance>true</requireLicenseAcceptance>
-    <licenseUrl>$licenseUrl$</licenseUrl>
-    <projectUrl>$repoUrl$</projectUrl>
-    <copyright>$copyright$</copyright>
-    <repository url="$repoUrl$" />
-    <developmentDependency>true</developmentDependency>
-    <tags>Toslyn Build Repository Toolset MSBuild SDK</tags>
-    <serviceable>true</serviceable>
-    <language>en-US</language>
+    <id>$PackageId$</id>
+    <description>$Description$</description>
+    <version>$Version$</version>
+    <authors>$Authors$</authors>
+    <requireLicenseAcceptance>$RequireLicenseAcceptance$</requireLicenseAcceptance>
+    <licenseUrl>$PackageLicenseUrl$</licenseUrl>
+    <projectUrl>$PackageProjectUrl$</projectUrl>
+    <copyright>$Copyright$</copyright>
+    <developmentDependency>$DevelopmentDependency$</developmentDependency>
+    <tags>$PackageTags$</tags>
+    <serviceable>$Serviceable$</serviceable>
+    <repository type="$RepositoryType$" url="$RepositoryUrl$" commit="$RepositoryCommit$" />
     <packageTypes>
       <packageType name="MSBuildSdk" />
     </packageTypes>
   </metadata>
   <files>
-    <file src="sdk\*.*" target="sdk" />
-    <file src="tools\*.*" target="tools" />
-    <file src="$ArtifactsBinDir$RoslynTools.BuildTasks\netcoreapp1.0\*.*" target="tools\tasks\netcoreapp1.0" />
-    <file src="$ArtifactsBinDir$RoslynTools.BuildTasks\net46\RoslynTools.*.*" target="tools\tasks\net46" />
-    <file src="$ArtifactsBinDir$RoslynTools.BuildTasks\net46\System.*.*" target="tools\tasks\net46" />
+    <file src="$ProjectDirectory$\sdk\*.*" target="sdk" />
+    <file src="$ProjectDirectory$\tools\*.*" target="tools" />
+    <file src="..\RoslynTools.BuildTasks\netcoreapp2.0\publish\RoslynTools.*" target="tools\tasks\netcoreapp2.0" />
+    <file src="..\RoslynTools.BuildTasks\netcoreapp2.0\publish\System.*" target="tools\tasks\netcoreapp2.0" />
+    <file src="..\RoslynTools.BuildTasks\net461\RoslynTools.*" target="tools\tasks\net461" />
+    <file src="..\RoslynTools.BuildTasks\net461\System.*" target="tools\tasks\net461" />
   </files>
 </package>
