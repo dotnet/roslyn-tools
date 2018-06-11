@@ -12,6 +12,7 @@
     <NuspecFile>VSIXExpInstaller.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
 
+    <PackageId>RoslynTools.VSIXExpInstaller</PackageId>
     <Description>VSIX installer for a non-root hive</Description>
     <PackageTags>Roslyn Build Tool VSIX installer</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
