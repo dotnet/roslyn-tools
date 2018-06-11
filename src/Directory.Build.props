@@ -18,4 +18,41 @@
     
     <MoqPublicKey>0024000004800000940000000602000000240000525341310004000001000100c547cac37abd99c8db225ef2f6c8a3602f3b3606cc9891605d02baa56104f4cfc0734aa39b93bf7852f7d9266654753cc297e7d2edfe0bac1cdcf9f717241550e0a7b191195b7667bb4f64bcb8e2121380fd1d9d46ad2d92d2d15605093924cceaf74c4861eff62abf69b9291ed0a340e113be11e6a7d3113e92484cf7045cc7</MoqPublicKey>
   </PropertyGroup>
+
+  <Choose>
+    <When Condition="'$(OfficialBuild)' == 'true'">
+      <PropertyGroup>
+        <!--
+            Split the build parts out from the BuildNumber which is given to us by MicroBuild in the format of yyyymmdd.nn
+            where BuildNumberFiveDigitDateStamp is mmmdd (such as 60615) and BuildNumberBuildOfTheDay is nn (which represents the nth build
+            started that day). So the first build of the day, 20160615.1, will produce something similar to BuildNumberFiveDigitDateStamp: 60615,
+            BuildNumberBuildOfTheDayPadded: 01;and the 12th build of the day, 20160615.12, will produce BuildNumberFiveDigitDateStamp: 60615, BuildNumberBuildOfTheDay: 12
+
+            Additionally, in order ensure the value fits in the 16-bit PE header fields, we will only take the last five digits of the BuildNumber, so
+            in the case of 20160615, we will set BuildNumberFiveDigitDateStamp to 60615. Further, if this would result in a number like 71201 or 81201, we
+            decrement the year and add 12 to the month to extend the time. 
+        -->
+        <_BuildNumberFiveDigitDateStamp>$([MSBuild]::Subtract($(BUILD_BUILDNUMBER.Split($([System.Convert]::ToString(`.`).ToCharArray())).GetValue($([System.Convert]::ToInt32(0)))), 20100000))</_BuildNumberFiveDigitDateStamp>
+        <_BuildNumberFiveDigitDateStampYearsToOffset>$([System.Math]::Max($([System.Convert]::ToInt32($([MSBuild]::Subtract($([MSBuild]::Divide($(_BuildNumberFiveDigitDateStamp), 10000)), 6)))), 0))</_BuildNumberFiveDigitDateStampYearsToOffset>
+        <_BuildNumberFiveDigitDateStamp>$([MSBuild]::Subtract($([System.Convert]::ToInt32($(_BuildNumberFiveDigitDateStamp))), $([MSBuild]::Multiply($(_BuildNumberFiveDigitDateStampYearsToOffset), 8800))))</_BuildNumberFiveDigitDateStamp>
+        <_BuildNumberBuildOfTheDayPadded>$(BUILD_BUILDNUMBER.Split($([System.Convert]::ToString(`.`).ToCharArray())).GetValue($([System.Convert]::ToInt32(1))).PadLeft($([System.Convert]::ToInt32(2)), $([System.Convert]::ToChar(`0`))))</_BuildNumberBuildOfTheDayPadded>
+
+        <VersionSuffix Condition="'$(PB_IsStable)' == 'true'">$(PB_VersionStamp)</VersionSuffix>
+        <VersionSuffix Condition="'$(PB_IsStable)' == 'false'">$(PB_VersionStamp)-$(_BuildNumberFiveDigitDateStamp)-$(_BuildNumberBuildOfTheDayPadded)</VersionSuffix>
+        <VersionSuffix Condition="'$(PB_IsStable)' == '' and '$(PreReleaseVersionLabel)' != ''">$(PreReleaseVersionLabel)-$(_BuildNumberFiveDigitDateStamp)-$(_BuildNumberBuildOfTheDayPadded)</VersionSuffix>
+      </PropertyGroup>
+    </When>
+
+    <When Condition="'$(CIBuild)' == 'true'">
+      <PropertyGroup>
+        <VersionSuffix>ci</VersionSuffix>
+      </PropertyGroup>
+    </When>
+
+    <Otherwise>
+      <PropertyGroup>
+        <VersionSuffix>dev</VersionSuffix>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 </Project>

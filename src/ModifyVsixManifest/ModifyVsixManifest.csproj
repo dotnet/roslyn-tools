@@ -10,6 +10,7 @@
     <NuspecFile>ModifyVsixManifest.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
 
+    <PackageId>RoslynTools.ModifyVsixManifest</PackageId>
     <Description>Tool for manually updating a VSIX manifest file in-situ.</Description>
     <PackageTags>Roslyn build tool VSIX manifest</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
