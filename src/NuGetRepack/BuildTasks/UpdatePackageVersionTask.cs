@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -16,6 +19,8 @@ namespace Roslyn.Tools
 
         [Required]
         public string OutputDirectory { get; set; }
+
+        public bool AllowPreReleaseDependencies { get; set; }
 
         public override bool Execute()
         {
@@ -40,9 +45,26 @@ namespace Roslyn.Tools
                 return;
             }
 
+            var preReleaseDependencies = new List<string>();
+
             try
             {
-                NuGetVersionUpdater.Run(Packages, OutputDirectory, isRelease);
+                NuGetVersionUpdater.Run(Packages, OutputDirectory, isRelease, allowPreReleaseDependency: (packageId, dependencyId, dependencyVersion) =>
+                {
+                    if (AllowPreReleaseDependencies)
+                    {
+                        Log.LogMessage(MessageImportance.High, $"Package '{packageId}' depends on a pre-release package '{dependencyId}, {dependencyVersion}'");
+                        preReleaseDependencies.Add($"{dependencyId}, {dependencyVersion}");
+                        return true;
+                    }
+
+                    return false;
+                });
+
+                if (isRelease)
+                {
+                    File.WriteAllLines(Path.Combine(OutputDirectory, "PreReleaseDependencies.txt"), preReleaseDependencies.Distinct());
+                }
             }
             catch (AggregateException e)
             {
@@ -55,6 +77,7 @@ namespace Roslyn.Tools
             {
                 Log.LogErrorFromException(e);
             }
+
         }
     }
 }

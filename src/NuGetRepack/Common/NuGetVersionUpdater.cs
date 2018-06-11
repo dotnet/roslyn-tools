@@ -47,7 +47,7 @@ namespace Roslyn.Tools
             }
         }
 
-        public static void Run(IEnumerable<string> packagePaths, string outDirectoryOpt, bool release)
+        public static void Run(IEnumerable<string> packagePaths, string outDirectoryOpt, bool release, Func<string, string, string, bool> allowPreReleaseDependency = null)
         {
             string tempDirectoryOpt;
             if (outDirectoryOpt != null)
@@ -64,7 +64,7 @@ namespace Roslyn.Tools
             try
             {
                 LoadPackages(packagePaths, packages, tempDirectoryOpt, release);
-                UpdateDependencies(packages, release);
+                UpdateDependencies(packages, release, allowPreReleaseDependency);
 
                 if (outDirectoryOpt != null)
                 {
@@ -220,7 +220,7 @@ namespace Roslyn.Tools
             dirName = (lastSeparator == -1) ? "" : (lastSeparator == 0) ? "/" : relativePath.Substring(0, lastSeparator);
         }
 
-        private static void UpdateDependencies(Dictionary<string, PackageInfo> packages, bool release)
+        private static void UpdateDependencies(Dictionary<string, PackageInfo> packages, bool release, Func<string, string, string, bool> allowPreReleaseDependency)
         {
             var errors = new List<Exception>();
 
@@ -271,7 +271,10 @@ namespace Roslyn.Tools
                     }
                     else if (release && (versionRange.MinVersion?.IsPrerelease == true || versionRange.MaxVersion?.IsPrerelease == true))
                     {
-                        errors.Add(new InvalidOperationException($"Package '{package.Id}' depends on a pre-release package '{id}, {versionRangeAttribute.Value}'"));
+                        if (!allowPreReleaseDependency(package.Id, id, versionRangeAttribute.Value))
+                        {
+                            errors.Add(new InvalidOperationException($"Package '{package.Id}' depends on a pre-release package '{id}, {versionRangeAttribute.Value}'"));
+                        }
                     }
                 }
             }
