@@ -187,6 +187,11 @@ partial class RoslynInsertionToolCommandline
                 createDummyPr => options = options.WithCreateDummyPr(true)
             },
             {
+                "upr=|updateexistingpr=",
+                "Update the specified existing PR with new build information.",
+                updateExistingPr => options = options.WithUpdateExistingPr(int.Parse(updateExistingPr))
+            },
+            {
                 "parts=|partitions=",
                 "A set of folders relative to **enlistmentpath** that should successfully build after we have inserted. List should be separated by `;`.",
                 partitionsToBuild =>

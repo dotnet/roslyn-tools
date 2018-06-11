@@ -114,13 +114,24 @@ namespace Roslyn.Insertion
                 }
 
                 string artifactsFolder = await GetBuildDirectoryAsync(buildToInsert, cancellationToken);
+                Branch branch = null;
 
-                // ****************** Get Latest and Create Branch ***********************
                 cancellationToken.ThrowIfCancellationRequested();
-                Log.Info($"Getting Latest From {Options.VisualStudioBranchName} and Creating New Branch");
-                var branch = string.IsNullOrEmpty(Options.NewBranchName)
-                    ? null
-                    : GetLatestAndCreateBranch(cancellationToken);
+                if (Options.UpdateExistingPr != 0)
+                {
+                    // ****************** Update existing PR ***********************
+                    pullRequest = await GetExistingPullRequestAsync(Options.UpdateExistingPr, cancellationToken);
+                    branch = SwitchToBranchAndUpdate(pullRequest.SourceRefName, Options.VisualStudioBranchName);
+                }
+                else
+                {
+                    // ****************** Get Latest and Create Branch ***********************
+                    Log.Info($"Getting Latest From {Options.VisualStudioBranchName} and Creating New Branch");
+                    branch = string.IsNullOrEmpty(Options.NewBranchName)
+                        ? null
+                        : GetLatestAndCreateBranch(cancellationToken);
+                }
+
                 shouldRollBackGitChanges = branch != null;
 
                 if (Options.UpdateCoreXTLibraries)
@@ -259,31 +270,52 @@ namespace Roslyn.Insertion
                 if (branch != null)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    Log.Info($"Create Pull Request");
-                    try
+                    var prDescription = $"Updating {Options.InsertionName} to {buildVersion}";
+                    if (Options.UpdateExistingPr != 0 && pullRequest != null)
                     {
-                        PushChanges(branch, buildVersion, cancellationToken);
-                        pullRequest = await CreatePullRequestAsync(branch.FriendlyName, $"Updating {Options.InsertionName} to {buildVersion}", cancellationToken);
-                        shouldRollBackGitChanges = false;
-                    }
-                    catch (EmptyCommitException ecx)
-                    {
-                        isInsertionCancelled = true;
-
-                        if (latestBuild != null && latestBuild.Result != BuildResult.Succeeded)
+                        // update an existing pr
+                        try
                         {
-                            noProgressOnFailedBuilds = true;
+                            branch = PushChanges(branch, buildVersion, cancellationToken, forcePush: true);
+                            pullRequest = await UpdatePullRequestDescriptionAsync(Options.UpdateExistingPr, prDescription, cancellationToken);
+                            shouldRollBackGitChanges = false;
                         }
-
-                        Log.Warn($"Unable to create pull request for '{branch.FriendlyName}'");
-                        Log.Warn(ecx);
-                        return;
+                        catch (Exception ex)
+                        {
+                            Log.Error($"Unable to update pull request for '{branch.FriendlyName}'");
+                            Log.Error(ex);
+                            return;
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Log.Error($"Unable to create pull request for '{branch.FriendlyName}'");
-                        Log.Error(ex);
-                        return;
+                        // create a new PR
+                        Log.Info($"Create Pull Request");
+                        try
+                        {
+                            branch = PushChanges(branch, buildVersion, cancellationToken);
+                            pullRequest = await CreatePullRequestAsync(branch.FriendlyName, prDescription, cancellationToken);
+                            shouldRollBackGitChanges = false;
+                        }
+                        catch (EmptyCommitException ecx)
+                        {
+                            isInsertionCancelled = true;
+
+                            if (latestBuild != null && latestBuild.Result != BuildResult.Succeeded)
+                            {
+                                noProgressOnFailedBuilds = true;
+                            }
+
+                            Log.Warn($"Unable to create pull request for '{branch.FriendlyName}'");
+                            Log.Warn(ecx);
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error($"Unable to create pull request for '{branch.FriendlyName}'");
+                            Log.Error(ex);
+                            return;
+                        }
                     }
 
                     if (pullRequest == null)

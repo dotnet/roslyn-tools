@@ -35,6 +35,7 @@ namespace Roslyn.Insertion
             bool runDDRITsInValidation,
             bool runRPSInValidation,
             bool createDummyPr,
+            int updateExistingPr,
             params string[] partitionsToBuild)
         {
             EnlistmentPath = enlistmentPath;
@@ -63,6 +64,7 @@ namespace Roslyn.Insertion
             RunDDRITsInValidation = runDDRITsInValidation;
             RunRPSInValidation = runRPSInValidation;
             CreateDummyPr = createDummyPr;
+            UpdateExistingPr = updateExistingPr;
             PartitionsToBuild = partitionsToBuild;
         }
 
@@ -95,6 +97,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: runRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -127,6 +130,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: runDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -159,6 +163,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -191,6 +196,7 @@ namespace Roslyn.Insertion
                runDDRITsInValidation: RunDDRITsInValidation,
                runRPSInValidation: RunRPSInValidation,
                createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                partitionsToBuild: PartitionsToBuild);
         }
 
@@ -223,6 +229,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -254,6 +261,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
 
         public RoslynInsertionToolOptions WithInsertedBuildRetained(bool retainInsertedBuild) =>
@@ -284,6 +292,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
 
         public RoslynInsertionToolOptions WithUsername(string username)
@@ -315,6 +324,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -347,6 +357,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -379,6 +390,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -411,6 +423,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -443,6 +456,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -475,6 +489,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -507,6 +522,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -539,6 +555,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -571,6 +588,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -603,6 +621,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -635,6 +654,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -667,6 +687,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -699,6 +720,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -731,6 +753,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: partitionsToBuild);
         }
 
@@ -763,6 +786,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -795,6 +819,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -827,6 +852,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -859,6 +885,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -891,6 +918,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: CreateDummyPr,
+                updateExistingPr: UpdateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -923,6 +951,40 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
                 createDummyPr: createDummyPr,
+                updateExistingPr: UpdateExistingPr,
+                partitionsToBuild: PartitionsToBuild);
+        }
+
+        public RoslynInsertionToolOptions WithUpdateExistingPr(int updateExistingPr)
+        {
+            return new RoslynInsertionToolOptions(
+                enlistmentPath: EnlistmentPath,
+                username: Username,
+                password: Password,
+                visualStudioBranchName: VisualStudioBranchName,
+                buildQueueName: BuildQueueName,
+                branchName: BranchName,
+                buildConfig: BuildConfig,
+                vstsUri: VSTSUri,
+                tfsProjectName: TFSProjectName,
+                newBranchName: NewBranchName,
+                buildDropPath: BuildDropPath,
+                specificbuild: SpecificBuild,
+                emailServerName: EmailServerName,
+                mailRecipient: MailRecipient,
+                insertCoreXTPackages: InsertCoreXTPackages,
+                updateCoreXTLibraries: UpdateCoreXTLibraries,
+                insertDevDivSourceFiles: InsertDevDivSourceFiles,
+                insertWillowPackages: InsertWillowPackages,
+                insertionName: InsertionName,
+                insertToolset: InsertToolset,
+                retainInsertedBuild: RetainInsertedBuild,
+                queueValidationBuild: QueueValidationBuild,
+                validationBuildQueueName: ValidationBuildQueueName,
+                runDDRITsInValidation: RunDDRITsInValidation,
+                runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
+                updateExistingPr: updateExistingPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -980,6 +1042,8 @@ namespace Roslyn.Insertion
 
         public bool CreateDummyPr { get; }
 
+        public int UpdateExistingPr { get; }
+
         public bool Valid
         {
             get
@@ -988,8 +1052,19 @@ namespace Roslyn.Insertion
                 {
                     // only InsertionName and VisualStudioBranchName are required for creating a dummy pr
                     return
+                        UpdateExistingPr == 0 &&
                         !string.IsNullOrEmpty(InsertionName) &&
                         !string.IsNullOrEmpty(VisualStudioBranchName);
+                }
+                else if (UpdateExistingPr != 0)
+                {
+                    // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for updating an existing pr
+                    return
+                        !CreateDummyPr &&
+                        !string.IsNullOrEmpty(InsertionName) &&
+                        !string.IsNullOrEmpty(BranchName) &&
+                        !string.IsNullOrEmpty(VisualStudioBranchName) &&
+                        !string.IsNullOrEmpty(BuildQueueName);
                 }
                 else
                 {
@@ -1017,6 +1092,11 @@ namespace Roslyn.Insertion
                 if (CreateDummyPr)
                 {
                     // only InsertionName and VisualStudioBranchName are required for creating a dummy pr
+                    if (UpdateExistingPr != 0)
+                    {
+                        builder.AppendLine($"{nameof(CreateDummyPr).ToLowerInvariant()} and {nameof(UpdateExistingPr).ToLowerInvariant()} are mutually exclusive and cannot be specified together");
+                    }
+
                     if (string.IsNullOrEmpty(InsertionName))
                     {
                         builder.AppendLine($"{nameof(InsertionName).ToLowerInvariant()} is required");
@@ -1025,6 +1105,34 @@ namespace Roslyn.Insertion
                     if (string.IsNullOrEmpty(VisualStudioBranchName))
                     {
                         builder.AppendLine($"{nameof(VisualStudioBranchName).ToLowerInvariant()} is required");
+                    }
+                }
+                else if (UpdateExistingPr != 0)
+                {
+                    // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for updating an existing pr
+                    if (CreateDummyPr)
+                    {
+                        builder.AppendLine($"{nameof(CreateDummyPr).ToLowerInvariant()} and {nameof(UpdateExistingPr).ToLowerInvariant()} are mutually exclusive and cannot be specified together");
+                    }
+
+                    if (string.IsNullOrEmpty(InsertionName))
+                    {
+                        builder.AppendLine($"{nameof(InsertionName).ToLowerInvariant()} is required");
+                    }
+
+                    if (string.IsNullOrEmpty(BranchName))
+                    {
+                        builder.AppendLine($"{nameof(BranchName).ToLowerInvariant()} is required");
+                    }
+
+                    if (string.IsNullOrEmpty(VisualStudioBranchName))
+                    {
+                        builder.AppendLine($"{nameof(VisualStudioBranchName).ToLowerInvariant()} is required");
+                    }
+
+                    if (string.IsNullOrEmpty(BuildQueueName))
+                    {
+                        builder.AppendLine($"{nameof(BuildQueueName).ToLowerInvariant()} is required");
                     }
                 }
                 else

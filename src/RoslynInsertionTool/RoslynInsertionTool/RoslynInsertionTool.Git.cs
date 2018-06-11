@@ -161,6 +161,21 @@ namespace Roslyn.Insertion
             };
         }
 
+        private static Branch SwitchToBranchAndUpdate(string branchToSwitchTo, string baseBranchName)
+        {
+            if (!baseBranchName.StartsWith("origin/"))
+            {
+                baseBranchName = "origin/" + baseBranchName;
+            }
+
+            FetchLatest(Enlistment, GetFetchOptions());
+            Enlistment.Checkout(branchToSwitchTo, GetCheckoutOptions());
+            var baseBranch = Enlistment.Branches.Single(b => b.FriendlyName == baseBranchName);
+            Enlistment.Reset(ResetMode.Hard, baseBranch.Tip);
+            var branch = Enlistment.Head;
+            return branch;
+        }
+
         private static void CreateDummyCommit(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -178,21 +193,28 @@ namespace Roslyn.Insertion
             Log.Trace($"Committing took {watch.Elapsed.TotalSeconds} seconds");
         }
 
-        private static void PushChanges(Branch branch, BuildVersion newRoslynVersion, CancellationToken cancellationToken)
+        private static Branch PushChanges(Branch branch, BuildVersion newRoslynVersion, CancellationToken cancellationToken, bool forcePush = false)
         {
             StageFiles(newRoslynVersion, cancellationToken);
             CommitStagedChanges(newRoslynVersion, cancellationToken);
-            PushChanges(branch, cancellationToken);
+            return PushChanges(branch, cancellationToken, forcePush: forcePush);
         }
 
-        private static void PushChanges(Branch branch, CancellationToken cancellationToken)
+        private static Branch PushChanges(Branch branch, CancellationToken cancellationToken, bool forcePush = false)
         {
             Stopwatch watch;
             cancellationToken.ThrowIfCancellationRequested();
             Log.Info($"Pushing branch");
             watch = Stopwatch.StartNew();
-            Enlistment.Network.Push(Enlistment.Network.Remotes["origin"], Enlistment.Refs["HEAD"].TargetIdentifier, branch.CanonicalName, GetPushOptions());
+            var destinationSpec = Enlistment.Refs["HEAD"].TargetIdentifier;
+            if (forcePush)
+            {
+                destinationSpec = "+" + destinationSpec;
+            }
+
+            Enlistment.Network.Push(Enlistment.Network.Remotes["origin"], destinationSpec, branch.CanonicalName, GetPushOptions());
             Log.Trace($"Pushing took {watch.Elapsed.TotalSeconds} seconds");
+            return Enlistment.Head;
         }
 
         private static void StageFiles(BuildVersion newRoslynVersion,CancellationToken cancellationToken)
