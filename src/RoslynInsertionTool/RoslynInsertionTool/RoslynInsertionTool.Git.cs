@@ -161,6 +161,23 @@ namespace Roslyn.Insertion
             };
         }
 
+        private static void CreateDummyCommit(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var message = $"DUMMY INSERTION FOR {Options.InsertionName}";
+            var options = new CommitOptions()
+            {
+                AllowEmptyCommit = true
+            };
+            var watch = Stopwatch.StartNew();
+            var commit = Enlistment.Commit(
+                message,
+                InsertionToolSignature,
+                InsertionToolSignature,
+                options);
+            Log.Trace($"Committing took {watch.Elapsed.TotalSeconds} seconds");
+        }
+
         private static void PushChanges(Branch branch, BuildVersion newRoslynVersion, CancellationToken cancellationToken)
         {
             StageFiles(newRoslynVersion, cancellationToken);

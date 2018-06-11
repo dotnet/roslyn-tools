@@ -182,6 +182,11 @@ partial class RoslynInsertionToolCommandline
                 runRPSInValidation => options = options.WithRunRPSInValidation(bool.Parse(runRPSInValidation))
             },
             {
+                "dm|createdummypr",
+                $"Create a dummy insertion PR that will be updated later.",
+                createDummyPr => options = options.WithCreateDummyPr(true)
+            },
+            {
                 "parts=|partitions=",
                 "A set of folders relative to **enlistmentpath** that should successfully build after we have inserted. List should be separated by `;`.",
                 partitionsToBuild =>

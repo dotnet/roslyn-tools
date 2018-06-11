@@ -62,6 +62,31 @@ namespace Roslyn.Insertion
 
                 Log.Trace($"Verification succeeded for {Options.VSTSUri}");
 
+                // ********************** Create dummy PR *****************************
+                if (Options.CreateDummyPr)
+                {
+                    var dummyBranch = GetLatestAndCreateBranch(cancellationToken);
+                    try
+                    {
+                        CreateDummyCommit(cancellationToken);
+                        PushChanges(dummyBranch, cancellationToken);
+                        pullRequest = await CreatePullRequestAsync(dummyBranch.FriendlyName, $"DUMMY INSERTION FOR {Options.InsertionName}", cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"Unable to create pull request for '{dummyBranch.FriendlyName}'");
+                        Log.Error(ex);
+                        return;
+                    }
+
+                    if (pullRequest == null)
+                    {
+                        Log.Error($"Unable to create pull request for '{dummyBranch.FriendlyName}'");
+                    }
+
+                    return;
+                }
+
                 // ********************** Get Last Insertion *****************************
                 cancellationToken.ThrowIfCancellationRequested();
 

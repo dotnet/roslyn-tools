@@ -34,6 +34,7 @@ namespace Roslyn.Insertion
             string validationBuildQueueName,
             bool runDDRITsInValidation,
             bool runRPSInValidation,
+            bool createDummyPr,
             params string[] partitionsToBuild)
         {
             EnlistmentPath = enlistmentPath;
@@ -61,6 +62,7 @@ namespace Roslyn.Insertion
             ValidationBuildQueueName = validationBuildQueueName;
             RunDDRITsInValidation = runDDRITsInValidation;
             RunRPSInValidation = runRPSInValidation;
+            CreateDummyPr = createDummyPr;
             PartitionsToBuild = partitionsToBuild;
         }
 
@@ -92,6 +94,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: runRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -123,6 +126,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: runDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -154,38 +158,40 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: validationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
         public RoslynInsertionToolOptions WithQueueValidationBuild(bool queueValidationBuild)
         {
-             return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: queueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                partitionsToBuild: PartitionsToBuild);
+            return new RoslynInsertionToolOptions(
+               enlistmentPath: EnlistmentPath,
+               username: Username,
+               password: Password,
+               visualStudioBranchName: VisualStudioBranchName,
+               buildQueueName: BuildQueueName,
+               branchName: BranchName,
+               buildConfig: BuildConfig,
+               vstsUri: VSTSUri,
+               tfsProjectName: TFSProjectName,
+               newBranchName: NewBranchName,
+               buildDropPath: BuildDropPath,
+               specificbuild: SpecificBuild,
+               emailServerName: EmailServerName,
+               mailRecipient: MailRecipient,
+               insertCoreXTPackages: InsertCoreXTPackages,
+               updateCoreXTLibraries: UpdateCoreXTLibraries,
+               insertDevDivSourceFiles: InsertDevDivSourceFiles,
+               insertWillowPackages: InsertWillowPackages,
+               insertionName: InsertionName,
+               insertToolset: InsertToolset,
+               retainInsertedBuild: RetainInsertedBuild,
+               queueValidationBuild: queueValidationBuild,
+               validationBuildQueueName: ValidationBuildQueueName,
+               runDDRITsInValidation: RunDDRITsInValidation,
+               runRPSInValidation: RunRPSInValidation,
+               createDummyPr: CreateDummyPr,
+               partitionsToBuild: PartitionsToBuild);
         }
 
         public RoslynInsertionToolOptions WithEnlistmentPath(string enlistmentPath)
@@ -216,6 +222,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -246,6 +253,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
 
         public RoslynInsertionToolOptions WithInsertedBuildRetained(bool retainInsertedBuild) =>
@@ -275,6 +283,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
 
         public RoslynInsertionToolOptions WithUsername(string username)
@@ -305,6 +314,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -336,6 +346,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -367,6 +378,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -398,6 +410,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -429,6 +442,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -460,6 +474,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -491,6 +506,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -522,6 +538,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -553,6 +570,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -584,6 +602,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -615,6 +634,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -646,6 +666,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -677,6 +698,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -708,6 +730,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: partitionsToBuild);
         }
 
@@ -739,6 +762,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -770,6 +794,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -801,6 +826,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -832,6 +858,7 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -863,6 +890,39 @@ namespace Roslyn.Insertion
                 validationBuildQueueName: ValidationBuildQueueName,
                 runDDRITsInValidation: RunDDRITsInValidation,
                 runRPSInValidation: RunRPSInValidation,
+                createDummyPr: CreateDummyPr,
+                partitionsToBuild: PartitionsToBuild);
+        }
+
+        public RoslynInsertionToolOptions WithCreateDummyPr(bool createDummyPr)
+        {
+            return new RoslynInsertionToolOptions(
+                enlistmentPath: EnlistmentPath,
+                username: Username,
+                password: Password,
+                visualStudioBranchName: VisualStudioBranchName,
+                buildQueueName: BuildQueueName,
+                branchName: BranchName,
+                buildConfig: BuildConfig,
+                vstsUri: VSTSUri,
+                tfsProjectName: TFSProjectName,
+                newBranchName: NewBranchName,
+                buildDropPath: BuildDropPath,
+                specificbuild: SpecificBuild,
+                emailServerName: EmailServerName,
+                mailRecipient: MailRecipient,
+                insertCoreXTPackages: InsertCoreXTPackages,
+                updateCoreXTLibraries: UpdateCoreXTLibraries,
+                insertDevDivSourceFiles: InsertDevDivSourceFiles,
+                insertWillowPackages: InsertWillowPackages,
+                insertionName: InsertionName,
+                insertToolset: InsertToolset,
+                retainInsertedBuild: RetainInsertedBuild,
+                queueValidationBuild: QueueValidationBuild,
+                validationBuildQueueName: ValidationBuildQueueName,
+                runDDRITsInValidation: RunDDRITsInValidation,
+                runRPSInValidation: RunRPSInValidation,
+                createDummyPr: createDummyPr,
                 partitionsToBuild: PartitionsToBuild);
         }
 
@@ -918,71 +978,107 @@ namespace Roslyn.Insertion
 
         public bool RunRPSInValidation { get; }
 
-        public bool Valid =>
-            !string.IsNullOrEmpty(EnlistmentPath) &&
-            !string.IsNullOrEmpty(Username) &&
-            !string.IsNullOrEmpty(Password) &&
-            !string.IsNullOrEmpty(VisualStudioBranchName) &&
-            !string.IsNullOrEmpty(BuildQueueName) &&
-            !string.IsNullOrEmpty(BranchName) &&
-            !string.IsNullOrEmpty(BuildConfig) &&
-            !string.IsNullOrEmpty(VSTSUri) &&
-            !string.IsNullOrEmpty(TFSProjectName) &&
-            !string.IsNullOrEmpty(BuildDropPath);
+        public bool CreateDummyPr { get; }
+
+        public bool Valid
+        {
+            get
+            {
+                if (CreateDummyPr)
+                {
+                    // only InsertionName and VisualStudioBranchName are required for creating a dummy pr
+                    return
+                        !string.IsNullOrEmpty(InsertionName) &&
+                        !string.IsNullOrEmpty(VisualStudioBranchName);
+                }
+                else
+                {
+                    return
+                        !string.IsNullOrEmpty(EnlistmentPath) &&
+                        !string.IsNullOrEmpty(Username) &&
+                        !string.IsNullOrEmpty(Password) &&
+                        !string.IsNullOrEmpty(VisualStudioBranchName) &&
+                        !string.IsNullOrEmpty(BuildQueueName) &&
+                        !string.IsNullOrEmpty(BranchName) &&
+                        !string.IsNullOrEmpty(BuildConfig) &&
+                        !string.IsNullOrEmpty(VSTSUri) &&
+                        !string.IsNullOrEmpty(TFSProjectName) &&
+                        !string.IsNullOrEmpty(BuildDropPath);
+                }
+            }
+        }
 
         public string ValidationErrors
         {
             get
             {
                 var builder = new StringBuilder();
-                if (string.IsNullOrEmpty(EnlistmentPath))
-                {
-                    builder.AppendLine($"{nameof(EnlistmentPath).ToLowerInvariant()} is required");
-                }
 
-                if (string.IsNullOrEmpty(Username))
+                if (CreateDummyPr)
                 {
-                    builder.AppendLine($"{nameof(Username).ToLowerInvariant()} is required");
-                }
+                    // only InsertionName and VisualStudioBranchName are required for creating a dummy pr
+                    if (string.IsNullOrEmpty(InsertionName))
+                    {
+                        builder.AppendLine($"{nameof(InsertionName).ToLowerInvariant()} is required");
+                    }
 
-                if (string.IsNullOrEmpty(Password))
-                {
-                    builder.AppendLine($"{nameof(Password).ToLowerInvariant()} is required");
+                    if (string.IsNullOrEmpty(VisualStudioBranchName))
+                    {
+                        builder.AppendLine($"{nameof(VisualStudioBranchName).ToLowerInvariant()} is required");
+                    }
                 }
-
-                if (string.IsNullOrEmpty(VisualStudioBranchName))
+                else
                 {
-                    builder.AppendLine($"{nameof(VisualStudioBranchName).ToLowerInvariant()} is required");
-                }
+                    // perform a regular insertion
+                    if (string.IsNullOrEmpty(EnlistmentPath))
+                    {
+                        builder.AppendLine($"{nameof(EnlistmentPath).ToLowerInvariant()} is required");
+                    }
 
-                if (string.IsNullOrEmpty(BuildQueueName))
-                {
-                    builder.AppendLine($"{nameof(BuildQueueName).ToLowerInvariant()} is required");
-                }
+                    if (string.IsNullOrEmpty(Username))
+                    {
+                        builder.AppendLine($"{nameof(Username).ToLowerInvariant()} is required");
+                    }
 
-                if (string.IsNullOrEmpty(BranchName))
-                {
-                    builder.AppendLine($"{nameof(BranchName).ToLowerInvariant()} is required");
-                }
+                    if (string.IsNullOrEmpty(Password))
+                    {
+                        builder.AppendLine($"{nameof(Password).ToLowerInvariant()} is required");
+                    }
 
-                if (string.IsNullOrEmpty(BuildConfig))
-                {
-                    builder.AppendLine($"{nameof(BuildConfig).ToLowerInvariant()} is required");
-                }
+                    if (string.IsNullOrEmpty(VisualStudioBranchName))
+                    {
+                        builder.AppendLine($"{nameof(VisualStudioBranchName).ToLowerInvariant()} is required");
+                    }
 
-                if (string.IsNullOrEmpty(VSTSUri))
-                {
-                    builder.AppendLine($"{nameof(VSTSUri).ToLowerInvariant()} is required");
-                }
+                    if (string.IsNullOrEmpty(BuildQueueName))
+                    {
+                        builder.AppendLine($"{nameof(BuildQueueName).ToLowerInvariant()} is required");
+                    }
 
-                if (string.IsNullOrEmpty(TFSProjectName))
-                {
-                    builder.AppendLine($"{nameof(TFSProjectName).ToLowerInvariant()} is required");
-                }
+                    if (string.IsNullOrEmpty(BranchName))
+                    {
+                        builder.AppendLine($"{nameof(BranchName).ToLowerInvariant()} is required");
+                    }
 
-                if (string.IsNullOrEmpty(BuildDropPath))
-                {
-                    builder.AppendLine($"{nameof(BuildDropPath).ToLowerInvariant()} is required");
+                    if (string.IsNullOrEmpty(BuildConfig))
+                    {
+                        builder.AppendLine($"{nameof(BuildConfig).ToLowerInvariant()} is required");
+                    }
+
+                    if (string.IsNullOrEmpty(VSTSUri))
+                    {
+                        builder.AppendLine($"{nameof(VSTSUri).ToLowerInvariant()} is required");
+                    }
+
+                    if (string.IsNullOrEmpty(TFSProjectName))
+                    {
+                        builder.AppendLine($"{nameof(TFSProjectName).ToLowerInvariant()} is required");
+                    }
+
+                    if (string.IsNullOrEmpty(BuildDropPath))
+                    {
+                        builder.AppendLine($"{nameof(BuildDropPath).ToLowerInvariant()} is required");
+                    }
                 }
 
                 return builder.ToString();
