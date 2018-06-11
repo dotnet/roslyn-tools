@@ -220,7 +220,7 @@ namespace Roslyn.Tools
             dirName = (lastSeparator == -1) ? "" : (lastSeparator == 0) ? "/" : relativePath.Substring(0, lastSeparator);
         }
 
-        private static void UpdateDependencies(Dictionary<string, PackageInfo> packages, bool release, Func<string, string, string, bool> allowPreReleaseDependency)
+        private static void UpdateDependencies(Dictionary<string, PackageInfo> packages, bool release, Func<string, string, string, bool> allowPreReleaseDependencyOpt)
         {
             var errors = new List<Exception>();
 
@@ -271,7 +271,7 @@ namespace Roslyn.Tools
                     }
                     else if (release && (versionRange.MinVersion?.IsPrerelease == true || versionRange.MaxVersion?.IsPrerelease == true))
                     {
-                        if (!allowPreReleaseDependency(package.Id, id, versionRangeAttribute.Value))
+                        if (allowPreReleaseDependencyOpt?.Invoke(package.Id, id, versionRangeAttribute.Value) != true)
                         {
                             errors.Add(new InvalidOperationException($"Package '{package.Id}' depends on a pre-release package '{id}, {versionRangeAttribute.Value}'"));
                         }
