@@ -169,6 +169,15 @@ namespace Roslyn.Insertion
             }
 
             FetchLatest(Enlistment, GetFetchOptions());
+            var destinationBranch = Enlistment.Branches[branchToSwitchTo];
+            if (destinationBranch == null)
+            {
+                // Branch might not exist locally if it was originally created on another machine.  The workaround is
+                // simply to make sure a branch with that name exists; contents don't matter since it's going to be
+                // overwritten anyways.
+                Enlistment.CreateBranch(branchToSwitchTo);
+            }
+
             Enlistment.Checkout(branchToSwitchTo, GetCheckoutOptions());
             var baseBranch = Enlistment.Branches.Single(b => b.FriendlyName == baseBranchName);
             Enlistment.Reset(ResetMode.Hard, baseBranch.Tip);
