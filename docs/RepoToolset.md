@@ -245,7 +245,7 @@ It may also specify public keys for `InternalsVisibleTo` project items and other
 
 #### Directory.Build.targets
 
-`Directory.Build.props` shall import RepoToolset SDK. It may specify additional targets applicable to all source projects.
+`Directory.Build.targets` shall import RepoToolset SDK. It may specify additional targets applicable to all source projects.
 
 ```xml
 <Project>
