@@ -62,6 +62,32 @@ namespace Roslyn.Insertion
                     cancellationToken);
         }
 
+        private static async Task<GitPullRequest> GetExistingPullRequestAsync(int pullRequestId, CancellationToken cancellationToken)
+        {
+            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+            var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
+            return await gitClient.GetPullRequestAsync(
+                repositoryId: repository.Id,
+                pullRequestId: pullRequestId,
+                cancellationToken: cancellationToken);
+        }
+
+        private static async Task<GitPullRequest> UpdatePullRequestDescriptionAsync(int pullRequestId, string newDescription, CancellationToken cancellationToken)
+        {
+            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+            var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
+            var pullRequest = new GitPullRequest()
+            {
+                Description = newDescription
+            };
+            return await gitClient.UpdatePullRequestAsync(
+                pullRequest,
+                repository.Id,
+                pullRequestId,
+                userState: null,
+                cancellationToken: cancellationToken);
+        }
+
         private static async Task<IEnumerable<Build>> GetBuildsFromTFSAsync(BuildHttpClient buildClient, List<BuildDefinitionReference> definitions, CancellationToken cancellationToken, BuildResult? resultFilter = null)
         {
             IEnumerable<Build> builds = await GetBuildsFromTFSByBranchAsync(buildClient, definitions, Options.BranchName, resultFilter, cancellationToken);

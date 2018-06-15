@@ -161,21 +161,69 @@ namespace Roslyn.Insertion
             };
         }
 
-        private static void PushChanges(Branch branch, BuildVersion newRoslynVersion, CancellationToken cancellationToken)
+        private static Branch SwitchToBranchAndUpdate(string branchToSwitchTo, string baseBranchName)
+        {
+            if (!baseBranchName.StartsWith("origin/"))
+            {
+                baseBranchName = "origin/" + baseBranchName;
+            }
+
+            FetchLatest(Enlistment, GetFetchOptions());
+            var destinationBranch = Enlistment.Branches[branchToSwitchTo];
+            if (destinationBranch == null)
+            {
+                // Branch might not exist locally if it was originally created on another machine.  The workaround is
+                // simply to make sure a branch with that name exists; contents don't matter since it's going to be
+                // overwritten anyways.
+                Enlistment.CreateBranch(branchToSwitchTo);
+            }
+
+            Enlistment.Checkout(branchToSwitchTo, GetCheckoutOptions());
+            var baseBranch = Enlistment.Branches.Single(b => b.FriendlyName == baseBranchName);
+            Enlistment.Reset(ResetMode.Hard, baseBranch.Tip);
+            var branch = Enlistment.Head;
+            return branch;
+        }
+
+        private static void CreateDummyCommit(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var message = $"DUMMY INSERTION FOR {Options.InsertionName}";
+            var options = new CommitOptions()
+            {
+                AllowEmptyCommit = true
+            };
+            var watch = Stopwatch.StartNew();
+            var commit = Enlistment.Commit(
+                message,
+                InsertionToolSignature,
+                InsertionToolSignature,
+                options);
+            Log.Trace($"Committing took {watch.Elapsed.TotalSeconds} seconds");
+        }
+
+        private static Branch PushChanges(Branch branch, BuildVersion newRoslynVersion, CancellationToken cancellationToken, bool forcePush = false)
         {
             StageFiles(newRoslynVersion, cancellationToken);
             CommitStagedChanges(newRoslynVersion, cancellationToken);
-            PushChanges(branch, cancellationToken);
+            return PushChanges(branch, cancellationToken, forcePush: forcePush);
         }
 
-        private static void PushChanges(Branch branch, CancellationToken cancellationToken)
+        private static Branch PushChanges(Branch branch, CancellationToken cancellationToken, bool forcePush = false)
         {
             Stopwatch watch;
             cancellationToken.ThrowIfCancellationRequested();
             Log.Info($"Pushing branch");
             watch = Stopwatch.StartNew();
-            Enlistment.Network.Push(Enlistment.Network.Remotes["origin"], Enlistment.Refs["HEAD"].TargetIdentifier, branch.CanonicalName, GetPushOptions());
+            var destinationSpec = Enlistment.Refs["HEAD"].TargetIdentifier;
+            if (forcePush)
+            {
+                destinationSpec = "+" + destinationSpec;
+            }
+
+            Enlistment.Network.Push(Enlistment.Network.Remotes["origin"], destinationSpec, branch.CanonicalName, GetPushOptions());
             Log.Trace($"Pushing took {watch.Elapsed.TotalSeconds} seconds");
+            return Enlistment.Head;
         }
 
         private static void StageFiles(BuildVersion newRoslynVersion,CancellationToken cancellationToken)
