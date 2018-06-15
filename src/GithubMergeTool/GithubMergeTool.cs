@@ -292,6 +292,16 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                 }
             }
 
+            // Check that there are no failing non-required tests if merging into a 'features/*' branch
+            if (baseBranchRef.StartsWith("features/"))
+            {
+                if (statusDict.Any(kvp => !kvp.Value))
+                {
+                    // There is a failing non-required test
+                    return (false, null);
+                }
+            }
+
             // Check if there are any approvals
             if (!prReviews.Any(review => (string)review["state"] == "APPROVED"))
             {
