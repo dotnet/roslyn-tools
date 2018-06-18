@@ -12,6 +12,8 @@ namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
+        private const string RefsHeadsPrefix = "refs/heads/";
+
         private static readonly Lazy<Repository> LazyEnlistment = new Lazy<Repository>(() =>
         {
             var absolutePath = GetAbsolutePathForEnlistment();
@@ -166,6 +168,11 @@ namespace Roslyn.Insertion
             if (!baseBranchName.StartsWith("origin/"))
             {
                 baseBranchName = "origin/" + baseBranchName;
+            }
+
+            if (branchToSwitchTo.StartsWith(RefsHeadsPrefix))
+            {
+                branchToSwitchTo = branchToSwitchTo.Substring(RefsHeadsPrefix.Length);
             }
 
             FetchLatest(Enlistment, GetFetchOptions());
