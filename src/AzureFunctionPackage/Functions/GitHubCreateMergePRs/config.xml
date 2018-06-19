@@ -1,0 +1,76 @@
+<config>
+  <repo owner="dotnet" name="roslyn">
+    <!-- Roslyn branches (non-vs-deps) (flowing between releases) -->
+    <merge from="dev15.0.x" to="dev15.5.x" />
+    <merge from="dev15.5.x" to="dev15.6.x" />
+    <merge from="dev15.6.x" to="dev15.7.x" />
+    <merge from="dev15.7.x" to="dev15.8-preview4" />
+    <merge from="dev15.8-preview4" to="dev15.8.x" />
+    <merge from="dev15.8.x" to="dev15.9.x" />
+    <merge from="dev15.9.x" to="master" />
+
+    <!-- Roslyn branches (between vs-deps branches) -->
+    <merge from="dev15.6.x-vs-deps" to="dev15.7.x-vs-deps" />
+    <merge from="dev15.7.x-vs-deps" to="dev15.8-preview4-vs-deps" />
+    <merge from="dev15.8-preview4-vs-deps" to="dev15.8.x-vs-deps" />
+    <merge from="dev15.8.x-vs-deps" to="dev15.9.x-vs-deps" />
+    <merge from="dev15.9.x-vs-deps" to="master-vs-deps" />
+
+    <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
+    <merge from="dev15.6.x" to="dev15.6.x-vs-deps" />
+    <merge from="dev15.7.x" to="dev15.7.x-vs-deps" />
+    <merge from="dev15.8-preview4" to="dev15.8-preview4-vs-deps" />
+    <merge from="dev15.8.x" to="dev15.8.x-vs-deps" />
+    <merge from="dev15.9.x" to="dev15.9.x-vs-deps" />
+    <merge from="master" to="master-vs-deps" />
+
+    <!-- Roslyn feature branches -->
+    <merge from="master" to="features/razorFar" addAutoMergeLabel="true" />
+    <merge from="master" to="features/editorconfig-in-compiler" addAutoMergeLabel="true" />
+    <merge from="master" to="features/compiler" addAutoMergeLabel="true" />
+    <merge from="master" to="features/embeddedJson" addAutoMergeLabel="true" />
+    <merge from="master" to="features/embeddedRegex" addAutoMergeLabel="true" />
+    <merge from="master" to="features/generic-attributes" addAutoMergeLabel="true" />
+    <merge from="master" to="features/async-streams" addAutoMergeLabel="true" />
+    <merge from="master" to="features/decon-default" addAutoMergeLabel="true" />
+    <merge from="master" to="features/caller-expression" addAutoMergeLabel="true" />
+    <merge from="master" to="features/target-typed-new" addAutoMergeLabel="true" />
+  </repo>
+  <repo owner="dotnet" name="testimpact">
+    <merge from="dev15.6.x" to="dev15.7.x" />
+    <merge from="dev15.7.x" to="dev15.8-preview3" />
+    <merge from="dev15.8-preview3" to="dev15.8.x" />
+    <merge from="dev15.8.x" to="dev15.9.x" />
+    <merge from="dev15.9.x" to="master" />
+  </repo>
+  <repo owner="dotnet" name="project-system">
+    <merge from="dev15.0.x" to="dev15.7.x" />
+    <merge from="dev15.7.x" to="dev15.8-preview3" />
+    <merge from="dev15.8-preview3" to="dev15.8.x" />
+    <merge from="dev15.8.x" to="dev15.9.x" />
+    <merge from="dev15.9.x" to="master" />
+  </repo>
+  <repo owner="dotnet" name="cli">
+    <merge from="release/2.0.0" to="release/2.1.1xx" />
+    <merge from="release/2.1.1xx" to="release/2.1.2xx" />
+    <merge from="release/2.1.2xx" to="release/2.1.3xx" />
+    <merge from="release/2.1.3xx" to="release/2.1.4xx" />
+    <merge from="release/2.1.4xx" to="release/2.1.401" />
+    <merge from="release/2.1.4xx" to="release/2.2.1xx" />
+    <merge from="release/2.2.1xx" to="master" />
+  </repo>
+  <repo owner="dotnet" name="sdk">
+    <merge from="release/2.0.0" to="release/2.1" />
+    <merge from="release/2.1" to="release/2.1.1xx" />
+    <merge from="release/2.1.1xx" to="release/2.1.2xx" />
+    <merge from="release/2.1.2xx" to="release/2.1.3xx" />
+    <merge from="release/2.1.3xx" to="release/2.1.4xx" />
+    <merge from="release/2.1.4xx" to="release/2.2.1xx" />
+    <merge from="release/2.2.1xx" to="master" />
+  </repo>
+  <repo owner="Microsoft" name="visualfsharp">
+    <merge from="dev15.7" to="dev15.8" />
+    <merge from="dev15.8" to="dev16.0" />
+    <merge from="master" to="dev16.0" />
+  </repo>
+</config>
