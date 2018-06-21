@@ -168,7 +168,8 @@ namespace Roslyn.Insertion
 
             var componentFilename = (string)componentJSON["fileName"];
             var componentUri = new Uri((string)componentJSON["url"]);
-            component = new Component(componentName, componentFilename, componentUri);
+            var version = componentJSON.Value<string>("version"); // might not be present
+            component = new Component(componentName, componentFilename, componentUri, version);
             return true;
         }
 
@@ -178,9 +179,20 @@ namespace Roslyn.Insertion
 
             if (componentDocument != null)
             {
-                var componentJSON = componentDocument["Components"][component.Name];
+                var componentJSON = (JObject)componentDocument["Components"][component.Name];
                 componentJSON["fileName"] = component.Filename;
                 componentJSON["url"] = component.Uri.ToString();
+                if (component.Version == null)
+                {
+                    // ensure no 'version' property is set in the JSON
+                    var versionProperty = componentJSON.Property("version");
+                    versionProperty?.Remove();
+                }
+                else
+                {
+                    // otherwise set or update the version
+                    componentJSON["version"] = component.Version;
+                }
 
                 string componentFilePath = ComponentToFileMap[component.Name];
                 dirtyFiles.Add(componentFilePath);
