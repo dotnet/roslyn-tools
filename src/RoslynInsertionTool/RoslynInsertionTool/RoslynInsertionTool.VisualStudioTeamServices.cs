@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Clients;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Roslyn.Insertion
 {
@@ -423,10 +425,11 @@ namespace Roslyn.Insertion
         {
             var logText = await GetLogTextAsync(newestBuild, cancellationToken);
             var urls = GetUrls(logText);
-            return GetComponents(urls);
+            var components = await GetComponents(urls);
+            return components;
         }
 
-        private static Component[] GetComponents(string[] urls)
+        private static async Task<Component[]> GetComponents(string[] urls)
         {
             if (urls == null || urls.Length == 0)
             {
@@ -452,10 +455,28 @@ namespace Roslyn.Insertion
 
                 var fileName = urlString.Split(';').Last();
                 var name = fileName.Remove(fileName.Length - 6, 6);
-                result[i] = new Component(name, fileName, uri);
+                var version = await GetVersionFromComponentUrl(uri);
+                result[i] = new Component(name, fileName, uri, version);
             }
 
             return result;
+        }
+
+        private static async Task<string> GetVersionFromComponentUrl(Uri uri)
+        {
+            using (var client = new System.Net.WebClient())
+            {
+                var manifestText = await client.DownloadStringTaskAsync(uri);
+                using (var stringStream = new MemoryStream(Encoding.UTF8.GetBytes(manifestText)))
+                using (var streamReader = new StreamReader(stringStream))
+                using (var reader = new JsonTextReader(streamReader))
+                {
+                    var jsonDocument = (JObject)JToken.ReadFrom(reader);
+                    var infoObject = (JObject)jsonDocument["info"];
+                    var version = infoObject.Value<string>("buildVersion"); // might not be present
+                    return version;
+                }
+            }
         }
 
         private static string[] GetUrls(string logText)
