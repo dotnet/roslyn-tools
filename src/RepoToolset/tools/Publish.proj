@@ -67,7 +67,7 @@
     <!-- Orchestrated Build blob storage -->
     <ItemGroup>
       <ItemsToPushToBlobFeed Include="@(PackagesToPublish);@(ExistingSymbolPackages);@(SymbolPackagesToGenerate)">
-        <ManifestArtifactData Condition="!%(IsShipping)">NonShipping=false</ManifestArtifactData>
+        <ManifestArtifactData Condition="!%(IsShipping)">NonShipping=true</ManifestArtifactData>
       </ItemsToPushToBlobFeed>
     </ItemGroup>
 
