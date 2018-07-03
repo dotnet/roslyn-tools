@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <LangVersion>Latest</LangVersion>
-    <PublishOutputToSymStore>false</PublishOutputToSymStore>
+    <IsShipping>false</IsShipping>
 
     <!--
       Most projects in the repo do not participate in source build.
