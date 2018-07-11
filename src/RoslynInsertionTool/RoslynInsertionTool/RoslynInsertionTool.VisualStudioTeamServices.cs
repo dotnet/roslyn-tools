@@ -274,7 +274,7 @@ namespace Roslyn.Insertion
                 // Hence explictly waiting for the directory to be deleted before moving on.
                 Stopwatch w = Stopwatch.StartNew();
 
-                while (Directory.Exists(tempDirectory) && w.ElapsedMilliseconds < 10 * 1000) Thread.Sleep(100);
+                while (Directory.Exists(tempDirectory) && w.ElapsedMilliseconds < 20 * 1000) Thread.Sleep(100);
             }
 
             Directory.CreateDirectory(tempDirectory);
