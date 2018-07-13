@@ -23,7 +23,9 @@
     To add a new Azure Function, add to both the `AzureFunction` and `ProjectReference` item collections below.
 
     -->
+    <AzureFunction Include="GitHubAutoMergePRs" TargetFramework="net46" />
     <AzureFunction Include="GitHubCreateMergePRs" TargetFramework="net46" />
+    <ProjectReference Include="Functions\GitHubAutoMergePRs\GitHubAutoMergePRs.csproj" />
     <ProjectReference Include="Functions\GitHubCreateMergePRs\GitHubCreateMergePRs.csproj" />
   </ItemGroup>
 
