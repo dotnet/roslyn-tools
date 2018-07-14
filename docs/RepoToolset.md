@@ -187,7 +187,7 @@ Targets executed in a step right after artifacts has been signed.
 
 #### /global.json, /nuget.config: SDK configuration
 
-`/global.json` file is present and specifies the version of the donet and `RoslynTools.RepoToolset` SDKs.
+`/global.json` file is present and specifies the version of the dotnet and `RoslynTools.RepoToolset` SDKs.
 
 For example,
 
@@ -287,7 +287,7 @@ A project that needs `Microsoft.VSSDK.BuildTools` for generating pkgdef file nee
 
 RepoToolset include build target for generating VS Template VSIXes. Adding `VSTemplate` items to project will trigger the target.
 
-`source.extension.vsixmanifest` shall sepcify `Experimental="true"` attribute in `Installation` section. The experimental flag will be stripped from VSIXes inserted into Visual Studio.
+`source.extension.vsixmanifest` shall specify `Experimental="true"` attribute in `Installation` section. The experimental flag will be stripped from VSIXes inserted into Visual Studio.
 
 VSIX packages are built to `VSSetup` directory.
 
