@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net46</TargetFramework>
+    <RootPackageDirectory>$(OutputPath)\package</RootPackageDirectory>
+    <ZipPackagePath>$(OutputPath)\$(MSBuildThisFileName).zip</ZipPackagePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+    This isn't really a C# project, we just need to re-use a bunch of the targets that are
+    automatically pulled in for .csproj.  Because of this we need to have an empty Program.cs.
+    -->
+    <Compile Remove="**" />
+    <Compile Include="Program.cs" />
+
+    <None Include="host.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+
+    To add a new Azure Function, add to both the `AzureFunction` and `ProjectReference` item collections below.
+
+    -->
+    <AzureFunction Include="GitHubCreateMergePRs" TargetFramework="net46" />
+    <ProjectReference Include="Functions\GitHubCreateMergePRs\GitHubCreateMergePRs.csproj" />
+  </ItemGroup>
+
+  <Target Name="PreparePackageDirectory">
+    <RemoveDir Directories="$(RootPackageDirectory)" Condition="Exists('$(RootPackageDirectory)')" />
+    <MakeDir Directories="$(RootPackageDirectory)" />
+  </Target>
+
+  <Target Name="CopyPackageFiles"
+          DependsOnTargets="PreparePackageDirectory">
+    <ItemGroup>
+      <FilesToCopy Remove="**" />
+      <FilesToCopy Include="host.json" />
+      <FileWrites Include="@(FilesToCopy)" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(RootPackageDirectory)" />
+  </Target>
+
+  <Target Name="CopyPackageFunctionFiles"
+          DependsOnTargets="PreparePackageDirectory">
+    <ItemGroup>
+      <FilesToCopy Remove="**" />
+      <FilesToCopy Include="$(ArtifactsBinDir)%(AzureFunction.Identity)\%(AzureFunction.TargetFramework)\AzureFunctionFiles\**" />
+      <FileWrites Include="@(FilesToCopy)" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(RootPackageDirectory)\%(AzureFunction.Identity)" />
+  </Target>
+
+  <Target Name="CreateZipPackage"
+          AfterTargets="Build"
+          DependsOnTargets="CopyPackageFiles;CopyPackageFunctionFiles"
+          Outputs="$(ZipPackagePath)">
+    <ItemGroup>
+      <FileWrites Include="$(ZipPackagePath)" />
+    </ItemGroup>
+    <Delete Files="$(ZipPackagePath)" Condition="Exists('$(ZipPackagePath)')" />
+    <Exec Command='powershell -noprofile -executionPolicy RemoteSigned -file "$(MSBuildThisFileDirectory)CreateZipPackage.ps1" -sourceDirectoryName "$(RootPackageDirectory)" -destinationArchiveFileName "$(ZipPackagePath)"' />
+  </Target>
+
+</Project>
