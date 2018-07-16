@@ -385,3 +385,17 @@ RepoToolset expects MicroBuild to set the following environment variables:
 
 - `BUILD_BUILDNUMBER=yyyymmdd.nn`
 - `SignType="real"`
+
+### Build Properties
+
+#### `SemanticVersioningV1` (bool)
+
+`true` if `Version` needs to respect SemVer 1.0. Default is `false`, which means format following SemVer 2.0.
+
+#### `IsShipping` (bool)
+
+`true` if the package (NuGet or VSIX) produced by the project is shipping. 
+
+Shipping packages and their content must be signed. 
+Windows PDBs are produced and published to symbol servers for binaries in shipping packages. 
+Shipping packages can be published to NuGet, non-shipping packages can only be published to MyGet or Azure tool feeds.
