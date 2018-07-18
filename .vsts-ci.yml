@@ -45,18 +45,15 @@ steps:
     nuGetVersion: 4.0.0.2283
   condition: and(succeeded(), not(contains(variables['PB_PublishType'], 'blob')))
 
-- task: CopyPublishBuildArtifacts@1
+- task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:
-    CopyRoot: '$(Build.SourcesDirectory)'
-    Contents: |
-     artifacts\$(BuildConfiguration)\bin
-     artifacts\$(BuildConfiguration)\log
-     artifacts\$(BuildConfiguration)\TestResults
-     artifacts\$(BuildConfiguration)\packages
+    PathtoPublish: $(Build.SourcesDirectory)\artifacts\$(BuildConfiguration)
     ArtifactName: '$(Build.BuildNumber)'
-    ArtifactType: FilePath
+    publishLocation: FilePath
     TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)'
+    Parallel: true
+    ParallelCount: 64
   condition: and(succeededOrFailed(), not(contains(variables['PB_PublishType'], 'blob')))
 
 - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
