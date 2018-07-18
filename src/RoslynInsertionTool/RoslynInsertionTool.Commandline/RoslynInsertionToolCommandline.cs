@@ -48,7 +48,8 @@ partial class RoslynInsertionToolCommandline
             .WithQueueValidationBuild(settings.QueueValidationBuild)
             .WithValidationBuildQueueName(settings.ValidationBuildQueueName)
             .WithRunDDRITsInValidation(settings.RunDDRITsInValidation)
-            .WithRunRPSInValidation(settings.RunRPSInValidation);
+            .WithRunRPSInValidation(settings.RunRPSInValidation)
+            .WithLogFileLocation(settings.LogFileLocation);
 
         // ************************ Process Arguments ****************************
         bool showHelp = false;
@@ -192,6 +193,11 @@ partial class RoslynInsertionToolCommandline
                 updateExistingPr => options = options.WithUpdateExistingPr(int.Parse(updateExistingPr))
             },
             {
+                "ll=|loglocation=",
+                "The location of the log file to be written.  Defaults to `rit.log`.",
+                logFileLocation => options = options.WithLogFileLocation(logFileLocation)
+            },
+            {
                 "parts=|partitions=",
                 "A set of folders relative to **enlistmentpath** that should successfully build after we have inserted. List should be separated by `;`.",
                 partitionsToBuild =>
@@ -237,6 +243,8 @@ partial class RoslynInsertionToolCommandline
             return;
         }
 
+        EnableFileLogging(options);
+
         if (string.IsNullOrEmpty(options.Password))
         {
             Log.Trace($"Attempting to get credentials from KeyVault.");
@@ -263,6 +271,25 @@ partial class RoslynInsertionToolCommandline
         Log.Trace($"Processing args succeeded");
 
         await PerformInsertionAsync(options, Log, cancellationToken);
+    }
+
+    private static void EnableFileLogging(RoslynInsertionToolOptions options)
+    {
+        var logConfig = LogManager.Configuration;
+
+        // regular file logging
+        var fileTarget = new NLog.Targets.FileTarget("file") { FileName = options.LogFileLocation, Layout = logConfig.Variables["VerboseLayout"] };
+        logConfig.AddTarget(fileTarget);
+        logConfig.AddRule(NLog.LogLevel.Trace, NLog.LogLevel.Fatal, fileTarget);
+
+        // exception logging
+        var exceptionFilter = new NLog.Filters.ConditionBasedFilter() { Condition = "length('${exception}') > 0", Action = NLog.Filters.FilterResult.Ignore };
+        var exceptionFileTarget = new NLog.Targets.FileTarget("fileAsException") { FileName = options.LogFileLocation, Layout = logConfig.Variables["ExceptionVerboselayout"] };
+        var rule = new NLog.Config.LoggingRule("*", NLog.LogLevel.Trace, exceptionFileTarget);
+        rule.Filters.Add(exceptionFilter);
+        logConfig.LoggingRules.Add(rule);
+
+        logConfig.Reload();
     }
 
     /// <summary>

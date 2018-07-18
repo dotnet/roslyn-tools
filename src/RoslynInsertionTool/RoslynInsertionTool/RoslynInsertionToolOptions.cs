@@ -4,6 +4,29 @@ using System.Text;
 
 namespace Roslyn.Insertion
 {
+    // borrowed from https://github.com/dotnet/roslyn/blob/master/src/Compilers/Core/Portable/Optional.cs
+    public readonly struct Optional<T>
+    {
+        public bool HasValue { get; }
+        public T Value { get; }
+
+        public Optional(T value)
+        {
+            HasValue = true;
+            Value = value;
+        }
+
+        public T ValueOrFallback(T fallback)
+        {
+            return HasValue ? Value : fallback;
+        }
+
+        public static implicit operator Optional<T>(T value)
+        {
+            return new Optional<T>(value);
+        }
+    }
+
     public sealed class RoslynInsertionToolOptions
     {
         public RoslynInsertionToolOptions() { }
@@ -20,7 +43,7 @@ namespace Roslyn.Insertion
             string tfsProjectName,
             string newBranchName,
             string buildDropPath,
-            string specificbuild,
+            string specificBuild,
             string emailServerName,
             string mailRecipient,
             bool insertCoreXTPackages,
@@ -36,6 +59,7 @@ namespace Roslyn.Insertion
             bool runRPSInValidation,
             bool createDummyPr,
             int updateExistingPr,
+            string logFileLocation,
             params string[] partitionsToBuild)
         {
             EnlistmentPath = enlistmentPath;
@@ -49,7 +73,7 @@ namespace Roslyn.Insertion
             TFSProjectName = tfsProjectName;
             NewBranchName = newBranchName;
             BuildDropPath = buildDropPath;
-            SpecificBuild = specificbuild;
+            SpecificBuild = specificBuild;
             EmailServerName = emailServerName;
             MailRecipient = mailRecipient;
             InsertCoreXTPackages = insertCoreXTPackages;
@@ -65,928 +89,130 @@ namespace Roslyn.Insertion
             RunRPSInValidation = runRPSInValidation;
             CreateDummyPr = createDummyPr;
             UpdateExistingPr = updateExistingPr;
+            LogFileLocation = logFileLocation;
             PartitionsToBuild = partitionsToBuild;
         }
 
-        public RoslynInsertionToolOptions WithRunRPSInValidation(bool runRPSInValidation)
+        public RoslynInsertionToolOptions Update(
+            Optional<string> enlistmentPath = default,
+            Optional<string> username = default,
+            Optional<string> password = default,
+            Optional<string> visualStudioBranchName = default,
+            Optional<string> buildQueueName = default,
+            Optional<string> branchName = default,
+            Optional<string> buildConfig = default,
+            Optional<string> vstsUri = default,
+            Optional<string> tfsProjectName = default,
+            Optional<string> newBranchName = default,
+            Optional<string> buildDropPath = default,
+            Optional<string> specificBuild = default,
+            Optional<string> emailServerName = default,
+            Optional<string> mailRecipient = default,
+            Optional<bool> insertCoreXTPackages = default,
+            Optional<bool> updateCoreXTLibraries = default,
+            Optional<bool> insertDevDivSourceFiles = default,
+            Optional<bool> insertWillowPackages = default,
+            Optional<string> insertionName = default,
+            Optional<bool> insertToolset = default,
+            Optional<bool> retainInsertedBuild = default,
+            Optional<bool> queueValidationBuild = default,
+            Optional<string> validationBuildQueueName = default,
+            Optional<bool> runDDRITsInValidation = default,
+            Optional<bool> runRPSInValidation = default,
+            Optional<bool> createDummyPr = default,
+            Optional<int> updateExistingPr = default,
+            Optional<string> logFileLocation = default,
+            Optional<string[]> partitionsToBuild = default)
         {
             return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: runRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
+                enlistmentPath: enlistmentPath.ValueOrFallback(EnlistmentPath),
+                username: username.ValueOrFallback(Username),
+                password: password.ValueOrFallback(Password),
+                visualStudioBranchName: visualStudioBranchName.ValueOrFallback(VisualStudioBranchName),
+                buildQueueName: buildQueueName.ValueOrFallback(BuildQueueName),
+                branchName: branchName.ValueOrFallback(BranchName),
+                buildConfig: buildConfig.ValueOrFallback(BuildConfig),
+                vstsUri: vstsUri.ValueOrFallback(VSTSUri),
+                tfsProjectName: tfsProjectName.ValueOrFallback(TFSProjectName),
+                newBranchName: newBranchName.ValueOrFallback(NewBranchName),
+                buildDropPath: buildDropPath.ValueOrFallback(BuildDropPath),
+                specificBuild: specificBuild.ValueOrFallback(SpecificBuild),
+                emailServerName: emailServerName.ValueOrFallback(EmailServerName),
+                mailRecipient: mailRecipient.ValueOrFallback(MailRecipient),
+                insertCoreXTPackages: insertCoreXTPackages.ValueOrFallback(InsertCoreXTPackages),
+                updateCoreXTLibraries: updateCoreXTLibraries.ValueOrFallback(UpdateCoreXTLibraries),
+                insertDevDivSourceFiles: insertDevDivSourceFiles.ValueOrFallback(InsertDevDivSourceFiles),
+                insertWillowPackages: insertWillowPackages.ValueOrFallback(InsertWillowPackages),
+                insertionName: insertionName.ValueOrFallback(InsertionName),
+                insertToolset: insertToolset.ValueOrFallback(InsertToolset),
+                retainInsertedBuild: retainInsertedBuild.ValueOrFallback(RetainInsertedBuild),
+                queueValidationBuild: queueValidationBuild.ValueOrFallback(QueueValidationBuild),
+                validationBuildQueueName: validationBuildQueueName.ValueOrFallback(ValidationBuildQueueName),
+                runDDRITsInValidation: runDDRITsInValidation.ValueOrFallback(RunDDRITsInValidation),
+                runRPSInValidation: runRPSInValidation.ValueOrFallback(RunRPSInValidation),
+                createDummyPr: createDummyPr.ValueOrFallback(CreateDummyPr),
+                updateExistingPr: updateExistingPr.ValueOrFallback(UpdateExistingPr),
+                logFileLocation: logFileLocation.ValueOrFallback(LogFileLocation),
+                partitionsToBuild: partitionsToBuild.ValueOrFallback(PartitionsToBuild));
         }
 
-        public RoslynInsertionToolOptions WithRunDDRITsInValidation(bool runDDRITsInValidation)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: runDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithRunRPSInValidation(bool runRPSInValidation) => Update(runRPSInValidation: runRPSInValidation);
 
-        public RoslynInsertionToolOptions WithValidationBuildQueueName(string validationBuildQueueName)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: validationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithRunDDRITsInValidation(bool runDDRITsInValidation) => Update(runDDRITsInValidation: runDDRITsInValidation);
 
-        public RoslynInsertionToolOptions WithQueueValidationBuild(bool queueValidationBuild)
-        {
-            return new RoslynInsertionToolOptions(
-               enlistmentPath: EnlistmentPath,
-               username: Username,
-               password: Password,
-               visualStudioBranchName: VisualStudioBranchName,
-               buildQueueName: BuildQueueName,
-               branchName: BranchName,
-               buildConfig: BuildConfig,
-               vstsUri: VSTSUri,
-               tfsProjectName: TFSProjectName,
-               newBranchName: NewBranchName,
-               buildDropPath: BuildDropPath,
-               specificbuild: SpecificBuild,
-               emailServerName: EmailServerName,
-               mailRecipient: MailRecipient,
-               insertCoreXTPackages: InsertCoreXTPackages,
-               updateCoreXTLibraries: UpdateCoreXTLibraries,
-               insertDevDivSourceFiles: InsertDevDivSourceFiles,
-               insertWillowPackages: InsertWillowPackages,
-               insertionName: InsertionName,
-               insertToolset: InsertToolset,
-               retainInsertedBuild: RetainInsertedBuild,
-               queueValidationBuild: queueValidationBuild,
-               validationBuildQueueName: ValidationBuildQueueName,
-               runDDRITsInValidation: RunDDRITsInValidation,
-               runRPSInValidation: RunRPSInValidation,
-               createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-               partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithValidationBuildQueueName(string validationBuildQueueName) => Update(validationBuildQueueName: validationBuildQueueName);
 
-        public RoslynInsertionToolOptions WithEnlistmentPath(string enlistmentPath)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: enlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithQueueValidationBuild(bool queueValidationBuild) => Update(queueValidationBuild: queueValidationBuild);
 
-        public RoslynInsertionToolOptions WithInsertToolset(bool insertToolset) =>
-            new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: true,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
+        public RoslynInsertionToolOptions WithEnlistmentPath(string enlistmentPath) => Update(enlistmentPath: enlistmentPath);
 
-        public RoslynInsertionToolOptions WithInsertedBuildRetained(bool retainInsertedBuild) =>
-            new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: retainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
+        public RoslynInsertionToolOptions WithInsertToolset(bool insertToolset) => Update(insertToolset: insertToolset);
 
-        public RoslynInsertionToolOptions WithUsername(string username)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithInsertedBuildRetained(bool retainInsertedBuild) => Update(retainInsertedBuild: retainInsertedBuild);
 
-        public RoslynInsertionToolOptions WithPassword(string password)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithUsername(string username) => Update(username: username);
 
-        public RoslynInsertionToolOptions WithVisualStudioBranchName(string visualStudioBranchName)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: visualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithPassword(string password) => Update(password: password);
 
-        public RoslynInsertionToolOptions WithBuildQueueName(string buildQueueName)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: buildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithVisualStudioBranchName(string visualStudioBranchName) => Update(visualStudioBranchName: visualStudioBranchName);
 
-        public RoslynInsertionToolOptions WithbranchName(string branchName)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: branchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithBuildQueueName(string buildQueueName) => Update(buildQueueName: buildQueueName);
 
-        public RoslynInsertionToolOptions WithBuildConfig(string buildConfig)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: buildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithbranchName(string branchName) => Update(branchName: branchName);
 
-        public RoslynInsertionToolOptions WithVSTSUrl(string vstsUri)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: vstsUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithBuildConfig(string buildConfig) => Update(buildConfig: buildConfig);
 
-        public RoslynInsertionToolOptions WithTFSProjectName(string tfsProjectName)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: tfsProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithVSTSUrl(string vstsUri) => Update(vstsUri: vstsUri);
 
-        public RoslynInsertionToolOptions WithNewBranchName(string newBranchName)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: newBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithTFSProjectName(string tfsProjectName) => Update(tfsProjectName: tfsProjectName);
 
-        public RoslynInsertionToolOptions WithBuildDropPath(string buildDropPath)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: buildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithNewBranchName(string newBranchName) => Update(newBranchName: newBranchName);
 
-        public RoslynInsertionToolOptions WithSpecificBuild(string specificbuild)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: specificbuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithBuildDropPath(string buildDropPath) => Update(buildDropPath: buildDropPath);
 
-        public RoslynInsertionToolOptions WithEmailServerName(string emailServerName)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: emailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithSpecificBuild(string specificBuild) => Update(specificBuild: specificBuild);
 
-        public RoslynInsertionToolOptions WithMailRecipient(string mailRecipient)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: mailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithEmailServerName(string emailServerName) => Update(emailServerName: emailServerName);
 
-        public RoslynInsertionToolOptions WithPartitionsToBuild(params string[] partitionsToBuild)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: partitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithMailRecipient(string mailRecipient) => Update(mailRecipient: mailRecipient);
 
-        public RoslynInsertionToolOptions WithInsertCoreXTPackages(bool insertCoreXTPackages)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: insertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithPartitionsToBuild(params string[] partitionsToBuild) => Update(partitionsToBuild: partitionsToBuild);
 
-        public RoslynInsertionToolOptions WithInsertDevDivSourceFiles(bool insertDevDivSourceFiles)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: insertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithInsertCoreXTPackages(bool insertCoreXTPackages) => Update(insertCoreXTPackages: insertCoreXTPackages);
 
-        public RoslynInsertionToolOptions WithInsertWillowPackages(bool insertWillowPackages)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: insertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithInsertDevDivSourceFiles(bool insertDevDivSourceFiles) => Update(insertDevDivSourceFiles: insertDevDivSourceFiles);
 
-        public RoslynInsertionToolOptions WithInsertionName(string insertionName)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: insertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithInsertWillowPackages(bool insertWillowPackages) => Update(insertWillowPackages: insertWillowPackages);
 
-        public RoslynInsertionToolOptions WithUpdateCoreXTLLibraries(bool updateCoreXTLibraries)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: updateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithInsertionName(string insertionName) => Update(insertionName: insertionName);
 
-        public RoslynInsertionToolOptions WithCreateDummyPr(bool createDummyPr)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: createDummyPr,
-                updateExistingPr: UpdateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithUpdateCoreXTLLibraries(bool updateCoreXTLibraries) => Update(updateCoreXTLibraries: updateCoreXTLibraries);
 
-        public RoslynInsertionToolOptions WithUpdateExistingPr(int updateExistingPr)
-        {
-            return new RoslynInsertionToolOptions(
-                enlistmentPath: EnlistmentPath,
-                username: Username,
-                password: Password,
-                visualStudioBranchName: VisualStudioBranchName,
-                buildQueueName: BuildQueueName,
-                branchName: BranchName,
-                buildConfig: BuildConfig,
-                vstsUri: VSTSUri,
-                tfsProjectName: TFSProjectName,
-                newBranchName: NewBranchName,
-                buildDropPath: BuildDropPath,
-                specificbuild: SpecificBuild,
-                emailServerName: EmailServerName,
-                mailRecipient: MailRecipient,
-                insertCoreXTPackages: InsertCoreXTPackages,
-                updateCoreXTLibraries: UpdateCoreXTLibraries,
-                insertDevDivSourceFiles: InsertDevDivSourceFiles,
-                insertWillowPackages: InsertWillowPackages,
-                insertionName: InsertionName,
-                insertToolset: InsertToolset,
-                retainInsertedBuild: RetainInsertedBuild,
-                queueValidationBuild: QueueValidationBuild,
-                validationBuildQueueName: ValidationBuildQueueName,
-                runDDRITsInValidation: RunDDRITsInValidation,
-                runRPSInValidation: RunRPSInValidation,
-                createDummyPr: CreateDummyPr,
-                updateExistingPr: updateExistingPr,
-                partitionsToBuild: PartitionsToBuild);
-        }
+        public RoslynInsertionToolOptions WithCreateDummyPr(bool createDummyPr) => Update(createDummyPr: createDummyPr);
+
+        public RoslynInsertionToolOptions WithUpdateExistingPr(int updateExistingPr) => Update(updateExistingPr: updateExistingPr);
+
+        public RoslynInsertionToolOptions WithLogFileLocation(string logFileLocation) => Update(logFileLocation: logFileLocation);
 
         public string EnlistmentPath { get; }
 
@@ -1043,6 +269,8 @@ namespace Roslyn.Insertion
         public bool CreateDummyPr { get; }
 
         public int UpdateExistingPr { get; }
+
+        public string LogFileLocation { get; }
 
         public bool Valid
         {

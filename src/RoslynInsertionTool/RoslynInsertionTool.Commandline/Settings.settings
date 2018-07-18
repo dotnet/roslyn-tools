@@ -71,5 +71,8 @@
     <Setting Name="UpdateCoreXTLibraries" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="LogFileLocation" Type="System.String" Scope="Application">
+      <Value profile="(Default)">rit.log</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

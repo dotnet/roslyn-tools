@@ -230,5 +230,14 @@ namespace Roslyn.Insertion {
                 return ((bool)(this["UpdateCoreXTLibraries"]));
             }
         }
+
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("rit.log")]
+        public string LogFileLocation {
+            get {
+                return ((string)(this["LogFileLocation"]));
+            }
+        }
     }
 }

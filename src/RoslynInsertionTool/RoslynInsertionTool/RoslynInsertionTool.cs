@@ -21,8 +21,6 @@ namespace Roslyn.Insertion
 {
     public static partial class RoslynInsertionTool
     {
-        private const string LogFilePath = "rit.log";
-
         private static ILogger Log { get; set; }
 
         private static List<string> WarningMessages { get; } = new List<string>();
@@ -36,7 +34,6 @@ namespace Roslyn.Insertion
         {
             Options = options;
             Log = log;
-            File.Delete(LogFilePath);
             Log.Info($"{Environment.NewLine}New Insertion Into {Options.VisualStudioBranchName} Started{Environment.NewLine}");
 
             GitPullRequest pullRequest = null;
@@ -512,9 +509,9 @@ namespace Roslyn.Insertion
                         mailMessage.Body = body;
                     }
 
-                    if (File.Exists(LogFilePath))
+                    if (File.Exists(Options.LogFileLocation))
                     {
-                        mailMessage.Attachments.Add(new System.Net.Mail.Attachment(LogFilePath));
+                        mailMessage.Attachments.Add(new System.Net.Mail.Attachment(Options.LogFileLocation));
                     }
 
                     mailClient.Send(mailMessage);
