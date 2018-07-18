@@ -56,7 +56,7 @@ steps:
      artifacts\$(BuildConfiguration)\packages
     ArtifactName: '$(Build.BuildNumber)'
     ArtifactType: FilePath
-    TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)'
+    TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)'
   condition: and(succeededOrFailed(), not(contains(variables['PB_PublishType'], 'blob')))
 
 - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
@@ -69,7 +69,7 @@ steps:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)\MicroBuild\Output'
     ArtifactName: '$(Build.BuildNumber)'
     publishLocation: FilePath
-    TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)'
+    TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)'
   condition: and(succeededOrFailed(), not(contains(variables['PB_PublishType'], 'blob')))
 
 - task: AzureRmWebAppDeployment@4
