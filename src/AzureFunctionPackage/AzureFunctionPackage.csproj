@@ -45,6 +45,8 @@
   </Target>
 
   <Target Name="CopyPackageFunctionFiles"
+          Inputs="@(AzureFunction)"
+          Outputs="$(RootPackageDirectory)\%(AzureFunction.Identity)"
           DependsOnTargets="PreparePackageDirectory">
     <ItemGroup>
       <FilesToCopy Remove="**" />
