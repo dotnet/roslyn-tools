@@ -43,7 +43,7 @@ private static async Task RunAsync(ExecutionContext context)
             }
             else
             {
-                Log.Error($"Unable to auto-merge PR '{prIdentifier}': {mergeError.Content.ReadAsStringAsync()}");
+                Log.Error($"Unable to auto-merge PR '{prIdentifier}': {await mergeError.Content.ReadAsStringAsync()}");
             }
         }
     }
