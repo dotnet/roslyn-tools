@@ -15,7 +15,7 @@ private static TraceWriter Log = null;
 
 private static async Task RunAsync(ExecutionContext context)
 {
-    var gh = new GithubMergeTool.GithubMergeTool("dotnet-bot@users.noreply.github.com", await GetSecret("dotnet-bot-github-auth-token"));
+    var gh = new GithubMergeTool.GithubMergeTool("dotnet-automerge-bot@users.noreply.github.com", await GetSecret("dotnet-automerge-bot-token"));
     var configPath = Path.Combine(context.FunctionDirectory, "config.xml");
     var config = XDocument.Load(configPath).Root;
     foreach (var repo in config.Elements("repo"))
