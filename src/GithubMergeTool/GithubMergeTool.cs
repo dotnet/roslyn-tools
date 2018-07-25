@@ -283,22 +283,22 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             var testStatusBody = JObject.Parse(await testStatusResponse.Content.ReadAsStringAsync());
             var statusDict = testStatusBody["statuses"].Select(t => ((string)t["context"], "success" == (string)t["state"]))
                 .ToDictionary(t => t.Item1, t => t.Item2);
-            foreach (var test in requiredTests)
-            {
-                if (!statusDict.ContainsKey(test) || !statusDict[test])
-                {
-                    // There is a failing required test
-                    return (false, null);
-                }
-            }
 
-            // Check that there are no failing non-required tests if merging into a 'features/*' branch
-            if (baseBranchRef.StartsWith("features/"))
+            // If there are no required tests, treat *any* test failure as a blocker
+            if (!requiredTests.Any() && statusDict.Any(kvp => !kvp.Value))
             {
-                if (statusDict.Any(kvp => !kvp.Value))
+                // There is a failing non-required test
+                return (false, null);
+            }
+            else
+            {
+                foreach (var test in requiredTests)
                 {
-                    // There is a failing non-required test
-                    return (false, null);
+                    if (!statusDict.ContainsKey(test) || !statusDict[test])
+                    {
+                        // There is a failing required test
+                        return (false, null);
+                    }
                 }
             }
 
