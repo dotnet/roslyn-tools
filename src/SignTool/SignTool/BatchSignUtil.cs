@@ -57,10 +57,7 @@ namespace SignTool
             RemovePublicSign(textWriter);
 
             // Next sign all of the files
-            SignFiles(contentMap, zipDataMap, textWriter);
-
-            // Validate the signing worked and produced actual signed binaries in all locations.
-            return VerifyAfterSign(zipDataMap, textWriter);
+            return SignFiles(contentMap, zipDataMap, textWriter);
         }
 
         private bool GenerateOrchestrationManifest(TextWriter textWriter, BatchSignInput batchData, ContentMap contentMap, string outputPath)
@@ -117,7 +114,7 @@ namespace SignTool
         /// <summary>
         /// Actually sign all of the described files.
         /// </summary>
-        private void SignFiles(ContentMap contentMap, Dictionary<FileName, ZipData> zipDataMap, TextWriter textWriter)
+        private bool SignFiles(ContentMap contentMap, Dictionary<FileName, ZipData> zipDataMap, TextWriter textWriter)
         {
             // Generate the list of signed files in a deterministic order. Makes it easier to track down
             // bugs if repeated runs use the same ordering.
@@ -190,18 +187,28 @@ namespace SignTool
                 return list;
             }
 
-            while (toSignList.Count > 0)
+            try
             {
-                var list = extractNextGroup();
-                if (list.Count == 0)
+                while (toSignList.Count > 0)
                 {
-                    throw new Exception("No progress made on signing which indicates a bug");
+                    var list = extractNextGroup();
+                    if (list.Count == 0)
+                    {
+                        throw new Exception("No progress made on signing which indicates a bug");
+                    }
+
+                    repackFiles(list);
+                    signFiles(list);
+                    round++;
+                    list.ForEach(x => signedSet.Add(x));
                 }
 
-                repackFiles(list);
-                signFiles(list);
-                round++;
-                list.ForEach(x => signedSet.Add(x));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                textWriter.WriteLine($"Signing failed: {ex.Message}");
+                return false;
             }
         }
 
@@ -425,52 +432,6 @@ namespace SignTool
             }
 
             return path;
-        }
-
-        private bool VerifyAfterSign(Dictionary<FileName, ZipData> zipDataMap, TextWriter textWriter)
-        {
-            var allGood = true;
-            foreach (var fileName in _batchData.FileNames)
-            {
-                if (fileName.IsAssembly)
-                {
-                    using (var stream = File.OpenRead(fileName.FullPath))
-                    {
-                        if (!_signTool.VerifySignedAssembly(stream))
-                        {
-                            textWriter.WriteLine($"signtool : error : Assembly {fileName} is not signed properly");
-                            allGood = false;
-                        }
-                    }
-                }
-                else if (fileName.IsZipContainer)
-                {
-                    var zipData = zipDataMap[fileName];
-                    using (var package = Package.Open(fileName.FullPath, FileMode.Open, FileAccess.Read))
-                    {
-                        foreach (var part in package.GetParts())
-                        {
-                            var relativeName = GetPartRelativeFileName(part);
-                            var zipPart = zipData.FindNestedBinaryPart(relativeName);
-                            if (!zipPart.HasValue || !zipPart.Value.FileName.IsAssembly)
-                            {
-                                continue;
-                            }
-
-                            using (var stream = part.GetStream())
-                            {
-                                if (!_signTool.VerifySignedAssembly(stream))
-                                {
-                                    textWriter.WriteLine($"signtool : error : Zip container {fileName} has part {relativeName} which is not signed.");
-                                    allGood = false;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return allGood;
         }
 
         private static bool IsVsixCertificate(string certificate) => certificate.StartsWith("Vsix", StringComparison.OrdinalIgnoreCase);
