@@ -69,7 +69,6 @@
     <merge from="release/2.2.1xx" to="master" />
   </repo>
   <repo owner="Microsoft" name="visualfsharp">
-    <merge from="dev15.7" to="dev15.8" />
     <merge from="dev15.8" to="dev15.9" />
     <merge from="dev15.9" to="dev16.0" />
     <merge from="master" to="dev16.0" />
