@@ -246,7 +246,7 @@ namespace Roslyn.Insertion
                     .Select(item => item.FilePath).ToList();
 
                 cancellationToken.ThrowIfCancellationRequested();
-                if (!isWhitespace(Enlistment.Diff.Compare<Patch>(filesToStage)))
+                if (!isWhitespaceOnlyChange(Enlistment.Diff.Compare<Patch>(filesToStage)))
                 {
                     Log.Info($"Staging {filesToStage.Count()} file(s)");
                     var watch = Stopwatch.StartNew();
@@ -259,10 +259,10 @@ namespace Roslyn.Insertion
                 }
             }
 
-            bool isWhitespace(Patch p)
+            bool isWhitespaceOnlyChange(Patch p)
             {
-                var adds = new StringBuilder();
-                var removes = new StringBuilder();
+                var before = new StringBuilder();
+                var after = new StringBuilder();
                 foreach (var change in p)
                 {
                     if (change.Status != ChangeKind.Modified)
@@ -275,29 +275,32 @@ namespace Roslyn.Insertion
                         string line;
                         while ((line = reader.ReadLine()) != null)
                         {
-                            if (line.StartsWith("---") || line.StartsWith("+++"))
+                            if (!line.StartsWith("---") && !line.StartsWith("+++"))
                             {
-                                continue;
+                                if (line.StartsWith("+"))
+                                {
+                                    after.Append(line.TrimStart('+').Trim());
+                                    continue;
+                                }
+                                else if (line.StartsWith("-"))
+                                {
+                                    before.Append(line.TrimStart('-').Trim());
+                                    continue;
+                                }
                             }
 
-                            if (line.StartsWith("+"))
-                            {
-                                adds.Append(line.TrimStart('+').Trim());
-                            }
-                            else if (line.StartsWith("-"))
-                            {
-                                removes.Append(line.TrimStart('-').Trim());
-                            }
+                            after.AppendLine(line);
+                            before.AppendLine(line);
                         }
                     }
 
-                    if (adds.ToString() != removes.ToString())
+                    if (after.ToString() != before.ToString())
                     {
                         return false;
                     }
 
-                    adds.Clear();
-                    removes.Clear();
+                    after.Clear();
+                    before.Clear();
                 }
                 return true;
             }
