@@ -279,12 +279,12 @@ namespace Roslyn.Insertion
                             {
                                 if (line.StartsWith("+"))
                                 {
-                                    after.Append(line.TrimStart('+').Trim());
+                                    after.Append(line.Substring(1).Trim());
                                     continue;
                                 }
                                 else if (line.StartsWith("-"))
                                 {
-                                    before.Append(line.TrimStart('-').Trim());
+                                    before.Append(line.Substring(1).Trim());
                                     continue;
                                 }
                             }
