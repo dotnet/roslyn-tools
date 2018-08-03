@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 
 using LibGit2Sharp;
@@ -238,15 +239,70 @@ namespace Roslyn.Insertion
             var repositoryStatus = Enlistment.RetrieveStatus();
             if (repositoryStatus.IsDirty)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var filesToStage = repositoryStatus
                     .Where(item => item.State != FileStatus.Unaltered && item.State != FileStatus.Ignored)
-                    .Select(item => item.FilePath);
+                    .Select(item => item.FilePath).ToList();
 
                 cancellationToken.ThrowIfCancellationRequested();
-                Log.Info($"Staging {filesToStage.Count()} file(s)");
-                var watch = Stopwatch.StartNew();
-                Enlistment.Stage(filesToStage, GetStageOptions());
-                Log.Trace($"Staging took {watch.Elapsed.TotalSeconds} seconds");
+                if (!isWhitespaceOnlyChange(Enlistment.Diff.Compare<Patch>(filesToStage)))
+                {
+                    Log.Info($"Staging {filesToStage.Count()} file(s)");
+                    var watch = Stopwatch.StartNew();
+                    Enlistment.Stage(filesToStage, GetStageOptions());
+                    Log.Trace($"Staging took {watch.Elapsed.TotalSeconds} seconds");
+                }
+                else
+                {
+                    Log.Info("Only whitespace changes found");
+                }
+            }
+
+            bool isWhitespaceOnlyChange(Patch p)
+            {
+                var before = new StringBuilder();
+                var after = new StringBuilder();
+                foreach (var change in p)
+                {
+                    if (change.Status != ChangeKind.Modified)
+                    {
+                        return false;
+                    }
+
+                    using (var reader = new StringReader(change.Patch))
+                    {
+                        string line;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            if (!line.StartsWith("---") && !line.StartsWith("+++"))
+                            {
+                                if (line.StartsWith("+"))
+                                {
+                                    after.Append(line.Substring(1).Trim());
+                                    continue;
+                                }
+                                else if (line.StartsWith("-"))
+                                {
+                                    before.Append(line.Substring(1).Trim());
+                                    continue;
+                                }
+                            }
+
+                            after.AppendLine(line);
+                            before.AppendLine(line);
+                        }
+                    }
+
+                    if (after.ToString() != before.ToString())
+                    {
+                        return false;
+                    }
+
+                    after.Clear();
+                    before.Clear();
+                }
+                return true;
             }
         }
     }
