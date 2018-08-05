@@ -25,16 +25,16 @@
     <merge from="master" to="master-vs-deps" />
 
     <!-- Roslyn feature branches -->
-    <merge from="master" to="features/razorFar" addAutoMergeLabel="true" />
-    <merge from="master" to="features/editorconfig-in-compiler" addAutoMergeLabel="true" />
-    <merge from="master" to="features/compiler" addAutoMergeLabel="true" />
-    <merge from="master" to="features/embeddedJson" addAutoMergeLabel="true" />
-    <merge from="master" to="features/embeddedRegex" addAutoMergeLabel="true" />
-    <merge from="master" to="features/generic-attributes" addAutoMergeLabel="true" />
-    <merge from="master" to="features/async-streams" addAutoMergeLabel="true" />
-    <merge from="master" to="features/decon-default" addAutoMergeLabel="true" />
-    <merge from="master" to="features/caller-expression" addAutoMergeLabel="true" />
-    <merge from="master" to="features/target-typed-new" addAutoMergeLabel="true" />
+    <merge from="master" to="features/razorFar" />
+    <merge from="master" to="features/editorconfig-in-compiler" />
+    <merge from="master" to="features/compiler" />
+    <merge from="master" to="features/embeddedJson" />
+    <merge from="master" to="features/embeddedRegex" />
+    <merge from="master" to="features/generic-attributes" />
+    <merge from="master" to="features/async-streams" />
+    <merge from="master" to="features/decon-default" />
+    <merge from="master" to="features/caller-expression" />
+    <merge from="master" to="features/target-typed-new" />
   </repo>
   <repo owner="dotnet" name="testimpact">
     <merge from="dev15.6.x" to="dev15.7.x" />
