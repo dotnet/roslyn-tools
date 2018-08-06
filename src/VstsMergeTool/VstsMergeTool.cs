@@ -120,7 +120,10 @@ namespace VstsMergeTool
                 Title = $"Auto PR from {SourceName} to {DestName}",
                 SourceRefName = Options.SourceBranch,
                 TargetRefName = dummyBranchName,
+<<<<<<< HEAD
                 // TODO : Add reviewer info
+=======
+>>>>>>> 950453b0c86ea644b7ef43d90cc746b49f512d41
             };
             var response = await gitHttpClient.CreatePullRequestAsync(pullRequest, Options.RepoId);
 
