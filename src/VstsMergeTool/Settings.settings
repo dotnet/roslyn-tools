@@ -1,0 +1,39 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="VstsMergeTool" GeneratedClassName="Settings1">
+  <Profiles />
+  <Settings>
+    <Setting Name="AccountName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Devdiv</Value>
+    </Setting>
+    <Setting Name="UserName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">vslsnap@microsoft.com</Value>
+    </Setting>
+    <Setting Name="RepositoryID" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">c7f34b55-ede8-4e52-916f-2b3301c84492</Value>
+    </Setting>
+    <Setting Name="Reviewer" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">10a2f33b-3b3d-47a9-a22f-6bb09247bb63</Value>
+    </Setting>
+    <Setting Name="TFSProjectName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">DevDiv</Value>
+    </Setting>
+    <Setting Name="KeyVaultUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://roslyninfra.vault.azure.net:443</Value>
+    </Setting>
+    <Setting Name="VsoSecretName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">vslsnap-vso-auth-token</Value>
+    </Setting>
+    <Setting Name="SourceBranch" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">refs/heads/dev/shech/AutoMergeTestBranch</Value>
+    </Setting>
+    <Setting Name="DestBranch" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">refs/heads/dev/shech/632225</Value>
+    </Setting>
+    <Setting Name="ApplicationId" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">1950a258-227b-4e31-a9cf-717495945fc2</Value>
+    </Setting>
+    <Setting Name="Token" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">g3sc5tc43jhm6d4f574ns6sfes5u2mad6gpw3ghygsy4pswpvg3q</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
