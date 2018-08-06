@@ -1,5 +1,4 @@
 using System;
-using System.Net.Http;
 using NLog;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
@@ -12,42 +11,6 @@ using Microsoft.Azure.KeyVault;
 
 namespace VstsMergeTool
 {
-
-    public class Options
-    {
-        public string DestBranch { get; }
-
-        public string SourceBranch { get; }
-
-        public string Username { get; }
-
-        public string Token { get; }
-
-        public string RepoId { get; }
-
-        public string Project { get; }
-
-        public string AccountName { get; }
-
-        public string Reviewer { get; }
-
-        public string Secret { get; }
-
-        private Settings setting = Settings.Default;
-
-        public Options()
-        {
-            SourceBranch = setting.SourceBranch;
-            DestBranch = setting.DestBranch;
-            Username = setting.UserName;
-            Token = setting.Token;
-            Project = setting.TFSProjectName;
-            AccountName = setting.AccountName;
-            Reviewer = setting.Reviewer;
-            RepoId = setting.RepositoryID;
-            Secret = setting.VsoSecretName;
-        }
-    }
 
     public enum Authentication
     {
@@ -63,32 +26,33 @@ namespace VstsMergeTool
 
         private TfsTeamProjectCollection ProjectCollection;
 
+        private Settings settings = Settings.Default;
+
         public Initializer(Authentication authentication)
         {
-            Options options = new Options();
             logger = LogManager.GetCurrentClassLogger();
             logger.Info($"Auto Merging tool start on {DateTime.Now:yyMMddHHmmss}");
             if (authentication == Authentication.PersonalToken)
             {
                 logger.Info("Using personal token");
-                VssConnection connection = new VssConnection(new Uri($"https://{options.AccountName}.visualstudio.com"), new VssBasicCredential("", options.Token));
+                VssConnection connection = new VssConnection(new Uri($"https://{settings.AccountName}.visualstudio.com"), new VssBasicCredential("", settings.Token));
 
                 var gitClient = connection.GetClient<GitHttpClient>();
 
-                MergeTool = new VstsMergeTool(options, gitClient);
+                MergeTool = new VstsMergeTool(gitClient);
             }
             else if (authentication == Authentication.UserNameAndPassword)
             {
                 logger.Info("Using UserName and Password");
 
                 // Fetch password
-                string password = GetPassword(options.Secret).Result;
+                string password = GetPassword(settings.VsoSecretName).Result;
 
                 ProjectCollection = new TfsTeamProjectCollection(
-                    new Uri($"www.{options.AccountName}.visualstudio.com/{options.Project}"),
-                    new VssBasicCredential(options.Username, password));
+                    new Uri($"www.{settings.AccountName}.visualstudio.com/{settings.TFSProjectName}"),
+                    new VssBasicCredential(settings.UserName, password));
                 var gitClient = ProjectCollection.GetClient<GitHttpClient>();
-                MergeTool = new VstsMergeTool(options, gitClient);
+                MergeTool = new VstsMergeTool(gitClient);
             }
             else
             {

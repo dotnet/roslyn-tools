@@ -3,7 +3,6 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace VstsMergeTool
@@ -12,26 +11,25 @@ namespace VstsMergeTool
     {
         private static Logger logger;
 
-        private Options Options { get; }
-
         private readonly GitHttpClient gitHttpClient;
 
         private List<GitRef> RefsInfo;
+
+        private Settings settings = Settings.Default;
 
         private readonly string SourceName;
 
         private readonly string DestName;
 
-        public VstsMergeTool(Options options, GitHttpClient gitHttpClient)
+        public VstsMergeTool(GitHttpClient gitHttpClient)
         {
-            Options = options;
             this.gitHttpClient = gitHttpClient;
             logger = LogManager.GetCurrentClassLogger();
 
-            var source = Options.SourceBranch.Split('/');
+            var source = settings.SourceBranch.Split('/');
             SourceName = source[source.Length - 1];
 
-            var dest = Options.DestBranch.Split('/');
+            var dest = settings.DestBranch.Split('/');
             DestName = dest[dest.Length - 1];
         }
 
@@ -45,9 +43,9 @@ namespace VstsMergeTool
             }
 
             // Check if source branch and target branch both exist
-            if (!IsBranchExist(Options.SourceBranch) || !IsBranchExist(Options.DestBranch))
+            if (!IsBranchExist(settings.SourceBranch) || !IsBranchExist(settings.DestBranch))
             {
-                logger.Error($"{Options.SourceBranch} or {Options.DestBranch} doesn't exist");
+                logger.Error($"{settings.SourceBranch} or {settings.DestBranch} doesn't exist");
                 return false;
             }
 
@@ -86,7 +84,7 @@ namespace VstsMergeTool
         private async Task<bool> GetBranchInfoAsync()
         {
             // Download the current Branch and pull Request information about this repo            
-            var response = await gitHttpClient.GetRefsAsync(project: Options.Project, repositoryId: Options.RepoId);
+            var response = await gitHttpClient.GetRefsAsync(project: settings.TFSProjectName, repositoryId: settings.RepositoryID);
             RefsInfo = response;
 
             return true;
@@ -96,16 +94,16 @@ namespace VstsMergeTool
         {
             var searchCriteria = new GitPullRequestSearchCriteria()
             {
-                RepositoryId = new Guid(Options.RepoId),
+                RepositoryId = new Guid(settings.RepositoryID),
                 Status = PullRequestStatus.Active,
-                TargetRefName = Options.DestBranch,
-                SourceRefName = Options.SourceBranch,
+                TargetRefName = settings.DestBranch,
+                SourceRefName = settings.SourceBranch,
             };
-            var response = await gitHttpClient.GetPullRequestsByProjectAsync(Options.Project, searchCriteria);
+            var response = await gitHttpClient.GetPullRequestsByProjectAsync(settings.TFSProjectName, searchCriteria);
 
             if (response.Count != 0)
             {
-                logger.Error($"There are existing pull requests between {Options.SourceBranch} and {Options.DestBranch}");
+                logger.Error($"There are existing pull requests between {settings.SourceBranch} and {settings.DestBranch}");
                 return true;
             }
 
@@ -118,14 +116,11 @@ namespace VstsMergeTool
             var pullRequest = new GitPullRequest()
             {
                 Title = $"Auto PR from {SourceName} to {DestName}",
-                SourceRefName = Options.SourceBranch,
+                SourceRefName = settings.SourceBranch,
                 TargetRefName = dummyBranchName,
-<<<<<<< HEAD
                 // TODO : Add reviewer info
-=======
->>>>>>> 950453b0c86ea644b7ef43d90cc746b49f512d41
             };
-            var response = await gitHttpClient.CreatePullRequestAsync(pullRequest, Options.RepoId);
+            var response = await gitHttpClient.CreatePullRequestAsync(pullRequest, settings.RepositoryID);
 
             return response.PullRequestId;
         }
@@ -133,7 +128,7 @@ namespace VstsMergeTool
         private async Task<(bool Succeed, string BranchName)> CreateNewBranch()
         {
             // Get the sha1 of destBranch
-            var query = RefsInfo.Select(refs => (refs.Name, refs.ObjectId)).Where(refsTuple => refsTuple.Name == Options.DestBranch)
+            var query = RefsInfo.Select(refs => (refs.Name, refs.ObjectId)).Where(refsTuple => refsTuple.Name == settings.DestBranch)
                 .Select(refsTuple => refsTuple.ObjectId);
 
             var sha1 = query.ToList()[0];
@@ -142,7 +137,7 @@ namespace VstsMergeTool
 
             var refUpdate = new List<GitRefUpdate>() { new GitRefUpdate() { IsLocked = false, OldObjectId = new string('0', 40), NewObjectId = sha1, Name = branchName } };
 
-            var response = await gitHttpClient.UpdateRefsAsync(refUpdate, Options.RepoId);
+            var response = await gitHttpClient.UpdateRefsAsync(refUpdate, settings.RepositoryID);
 
             if (response.Where(res => !res.Success).Any())
             {
