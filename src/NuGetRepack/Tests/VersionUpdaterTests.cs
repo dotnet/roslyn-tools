@@ -48,7 +48,7 @@ namespace Roslyn.Tools.Tests
         }
 
         [Fact]
-        public void TestPackages()
+        public void TestPackagesSemVer1()
         {
             var dir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(dir);
@@ -81,6 +81,33 @@ namespace Roslyn.Tools.Tests
             AssertPackagesEqual(TestResources.PreReleasePackages.B, File.ReadAllBytes(b_pre));
             AssertPackagesEqual(TestResources.PreReleasePackages.C, File.ReadAllBytes(c_pre));
             AssertPackagesEqual(TestResources.PreReleasePackages.D, File.ReadAllBytes(d_pre));
+
+            Directory.Delete(dir, recursive: true);
+        }
+        [Fact]
+        public void TestPackagesSemVer2()
+        {
+            var dir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(dir);
+
+            string e_daily, f_daily;
+            File.WriteAllBytes(e_daily = Path.Combine(dir, TestResources.DailyBuildPackages.NameE), TestResources.DailyBuildPackages.E);
+            File.WriteAllBytes(f_daily = Path.Combine(dir, TestResources.DailyBuildPackages.NameF), TestResources.DailyBuildPackages.F);
+
+            var e_pre = Path.Combine(dir, TestResources.PreReleasePackages.NameE);
+            var f_pre = Path.Combine(dir, TestResources.PreReleasePackages.NameF);
+
+            var e_rel = Path.Combine(dir, TestResources.ReleasePackages.NameE);
+            var f_rel = Path.Combine(dir, TestResources.ReleasePackages.NameF);
+
+            NuGetVersionUpdater.Run(new[] { e_daily, f_daily }, dir, release: true);
+            NuGetVersionUpdater.Run(new[] { e_daily, f_daily }, dir, release: false);
+
+            AssertPackagesEqual(TestResources.ReleasePackages.E, File.ReadAllBytes(e_rel));
+            AssertPackagesEqual(TestResources.ReleasePackages.F, File.ReadAllBytes(f_rel));
+
+            AssertPackagesEqual(TestResources.PreReleasePackages.E, File.ReadAllBytes(e_pre));
+            AssertPackagesEqual(TestResources.PreReleasePackages.F, File.ReadAllBytes(f_pre));
 
             Directory.Delete(dir, recursive: true);
         }

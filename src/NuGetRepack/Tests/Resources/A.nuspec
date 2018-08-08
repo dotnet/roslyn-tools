@@ -17,7 +17,5 @@
       </group>
     </dependencies>
   </metadata>
-  <files>
-    <file src="A.nuspec" target="build" />
-  </files>
+  <files/>
 </package>
