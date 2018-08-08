@@ -11,9 +11,9 @@
     <MicrosoftExtensionsFileSystemGlobbingVersion>2.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
     <SystemCollectionsImmutableVersion>1.3.1</SystemCollectionsImmutableVersion>
     <SystemReflectionMetadataVersion>1.4.2</SystemReflectionMetadataVersion>
-    <SystemValueTupleVersion>4.3.1</SystemValueTupleVersion>
+    <SystemValueTupleVersion>4.4.0</SystemValueTupleVersion>
     <SystemIOCompressionVersion>4.3.0</SystemIOCompressionVersion>
-    <SystemIOPackagingVersion>4.4.0</SystemIOPackagingVersion>
+    <SystemIOPackagingVersion>4.5.0</SystemIOPackagingVersion>
     <SystemNetHttpVersion>4.3.3</SystemNetHttpVersion>
 
     <!-- VS -->
