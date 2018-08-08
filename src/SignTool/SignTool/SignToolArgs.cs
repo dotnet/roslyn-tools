@@ -11,6 +11,7 @@ namespace SignTool
         internal string ConfigFile { get; }
         internal bool Test { get; }
         internal bool TestSign { get; }
+        internal bool DiagnosticOutput { get; }
         internal string OrchestrationManifestPath { get; }
 
         internal SignToolArgs(
@@ -23,6 +24,7 @@ namespace SignTool
             string configFile,
             bool test,
             bool testSign,
+            bool diagnosticOutput,
             string orchestrationManifestPath
             )
         {
@@ -35,6 +37,7 @@ namespace SignTool
             ConfigFile = configFile;
             Test = test;
             TestSign = testSign;
+            DiagnosticOutput = diagnosticOutput;
             OrchestrationManifestPath = orchestrationManifestPath;
         }
     }

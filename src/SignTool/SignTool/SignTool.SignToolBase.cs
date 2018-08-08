@@ -44,7 +44,8 @@ namespace SignTool
                 textWriter.WriteLine(content);
 
                 string fileName = MSBuildPath;
-                var commandLine = $@"/v:m ""{buildFilePath}""";
+                var verbosity = _args.DiagnosticOutput ? "diag" : "m";
+                var commandLine = $@"/v:{verbosity} ""{buildFilePath}""";
                 if (!string.IsNullOrEmpty(_args.MSBuildBinaryLogFilePath))
                 {
                     commandLine += $@" /binaryLogger:""{_args.MSBuildBinaryLogFilePath}""";

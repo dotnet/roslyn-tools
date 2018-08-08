@@ -131,7 +131,7 @@ namespace SignTool
             foreach (var item in fileJson.SignList)
             {
                 var data = new SignInfo(certificate: item.Certificate, strongName: item.StrongName);
-                
+
                 foreach (FileSignDataEntry entry in item.FileList)
                 {
                     if (map.ContainsKey(entry))
@@ -158,7 +158,7 @@ namespace SignTool
 
 
         /// <summary>
-        /// The 'files to sign' section supports globbing. The only caveat is that globs must expand to match at least a 
+        /// The 'files to sign' section supports globbing. The only caveat is that globs must expand to match at least a
         /// single file else an error occurs. This function will expand those globs as necessary.
         /// </summary>
         private static List<string> ExpandFileList(string outputPath, IEnumerable<string> relativeFileNames, ref bool allGood)
@@ -232,6 +232,7 @@ outputConfig: Run tool to produce an orchestration json file with specified name
             string msbuildBinaryLogFilePath = null;
             var test = false;
             var testSign = false;
+            var diag = false;
 
             var i = 0;
 
@@ -246,6 +247,10 @@ outputConfig: Run tool to produce an orchestration json file with specified name
                         break;
                     case "-testsign":
                         testSign = true;
+                        i++;
+                        break;
+                    case "-diag":
+                        diag = true;
                         i++;
                         break;
                     case "-intermediateoutputpath":
@@ -337,6 +342,7 @@ outputConfig: Run tool to produce an orchestration json file with specified name
                 configFile: configFile,
                 test: test,
                 testSign: testSign,
+                diagnosticOutput: diag,
                 orchestrationManifestPath: outputConfigFile);
             return true;
         }
