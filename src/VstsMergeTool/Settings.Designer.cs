@@ -88,37 +88,10 @@ namespace VstsMergeTool {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("refs/heads/dev/shech/AutoMergeTestBranch")]
-        public string SourceBranch {
-            get {
-                return ((string)(this["SourceBranch"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("refs/heads/dev/shech/632225")]
-        public string DestBranch {
-            get {
-                return ((string)(this["DestBranch"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1950a258-227b-4e31-a9cf-717495945fc2")]
         public string ApplicationId {
             get {
                 return ((string)(this["ApplicationId"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("g3sc5tc43jhm6d4f574ns6sfes5u2mad6gpw3ghygsy4pswpvg3q")]
-        public string Token {
-            get {
-                return ((string)(this["Token"]));
             }
         }
     }

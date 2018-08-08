@@ -1,7 +1,7 @@
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 using System;
 using NLog;
 using Microsoft.VisualStudio.Services.Common;
-using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.TeamFoundation.Client;
 using System.Threading.Tasks;
@@ -11,12 +11,6 @@ using Microsoft.Azure.KeyVault;
 
 namespace VstsMergeTool
 {
-
-    public enum Authentication
-    {
-        PersonalToken,
-        UserNameAndPassword
-    }
 
     public class Initializer
     {
@@ -28,36 +22,19 @@ namespace VstsMergeTool
 
         private Settings settings = Settings.Default;
 
-        public Initializer(Authentication authentication)
+        public Initializer(string sourceBranch, string destBranch)
         {
             logger = LogManager.GetCurrentClassLogger();
-            logger.Info($"Auto Merging tool start on {DateTime.Now:yyMMddHHmmss}");
-            if (authentication == Authentication.PersonalToken)
-            {
-                logger.Info("Using personal token");
-                VssConnection connection = new VssConnection(new Uri($"https://{settings.AccountName}.visualstudio.com"), new VssBasicCredential("", settings.Token));
+            logger.Info($"Auto Merging tool start on {DateTime.Now:MM-dd-yyyy-HH-mm-ss}");
+            logger.Info($"Source branch: {sourceBranch}, Target Branch: {destBranch}");
 
-                var gitClient = connection.GetClient<GitHttpClient>();
+            string password = GetPassword(settings.VsoSecretName).Result;
+            ProjectCollection = new TfsTeamProjectCollection(
+                new Uri($"www.{settings.AccountName}.visualstudio.com/{settings.TFSProjectName}"),
+                new VssBasicCredential(settings.UserName, password));
 
-                MergeTool = new VstsMergeTool(gitClient);
-            }
-            else if (authentication == Authentication.UserNameAndPassword)
-            {
-                logger.Info("Using UserName and Password");
-
-                // Fetch password
-                string password = GetPassword(settings.VsoSecretName).Result;
-
-                ProjectCollection = new TfsTeamProjectCollection(
-                    new Uri($"www.{settings.AccountName}.visualstudio.com/{settings.TFSProjectName}"),
-                    new VssBasicCredential(settings.UserName, password));
-                var gitClient = ProjectCollection.GetClient<GitHttpClient>();
-                MergeTool = new VstsMergeTool(gitClient);
-            }
-            else
-            {
-                logger.Info("Please select your authentication method correctly");
-            }
+            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+            MergeTool = new VstsMergeTool(gitClient, sourceBranch, destBranch);
         }
 
         private static async Task<string> GetPassword(string secretName)

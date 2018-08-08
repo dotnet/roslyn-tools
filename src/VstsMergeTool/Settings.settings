@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="VstsMergeTool" GeneratedClassName="Settings1">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="VstsMergeTool" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="AccountName" Type="System.String" Scope="Application">
@@ -23,17 +23,8 @@
     <Setting Name="VsoSecretName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">vslsnap-vso-auth-token</Value>
     </Setting>
-    <Setting Name="SourceBranch" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">refs/heads/dev/shech/AutoMergeTestBranch</Value>
-    </Setting>
-    <Setting Name="DestBranch" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">refs/heads/dev/shech/632225</Value>
-    </Setting>
     <Setting Name="ApplicationId" Type="System.String" Scope="Application">
       <Value Profile="(Default)">1950a258-227b-4e31-a9cf-717495945fc2</Value>
-    </Setting>
-    <Setting Name="Token" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">g3sc5tc43jhm6d4f574ns6sfes5u2mad6gpw3ghygsy4pswpvg3q</Value>
     </Setting>
   </Settings>
 </SettingsFile>
