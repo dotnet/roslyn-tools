@@ -164,14 +164,36 @@ namespace Roslyn.Tools
                                 throw new InvalidOperationException($"Can only update pre-release packages: '{packagePath}' has release version");
                             }
 
-                            // To strip build number take the first part of the pre-release label (e.g. "beta1-62030-10")
-                            string releaseLabel = release ? null : packageVersion.Release.Split('-').First();
+                            if (release)
+                            {
+                                // "1.2.3-beta-12345-01-abcdef" -> "1.2.3"
+                                // "1.2.3-beta.12345.1+abcdef" -> "1.2.3"
+                                newPackageVersion = new SemanticVersion(packageVersion.Major, packageVersion.Minor, packageVersion.Patch);
+                            }
+                            else
+                            {
+                                // To strip build number take the first pre-release label.
+                                // "1.2.3-beta-12345-01-abcdef" -> "1.2.3-beta-final-abcdef"
+                                // "1.2.3-beta.12345.1+abcdef" -> "1.2.3-beta.final+abcdef"
 
-                            newPackageVersion = new SemanticVersion(packageVersion.Major, packageVersion.Minor, packageVersion.Patch, releaseLabel);
+                                // SemVer1 version has a single label "beta-12345-01-abcdef" and no metadata.
+                                // SemVer2 version has multiple labels { "beta", "12345", "1" } and metadata "abcdef".
+                                const string finalLabel = "final";
+                                bool isSemVer1 = packageVersion.Release.Contains('-');
+                                var label = packageVersion.ReleaseLabels.First().Split('-')[0];
+                                
+                                newPackageVersion = new SemanticVersion(
+                                    packageVersion.Major,
+                                    packageVersion.Minor,
+                                    packageVersion.Patch,
+                                    isSemVer1 ? new[] { label + "-" + finalLabel } : new[] { label, finalLabel },
+                                    packageVersion.Metadata);
+                            }
 
                             if (!readOnly)
                             {
-                                versionElement.SetValue(newPackageVersion.ToNormalizedString());
+                                // Note: ToFullString = ToNormalizedString + metadata
+                                versionElement.SetValue(newPackageVersion.ToFullString());
                             }
 
                             break;
@@ -190,7 +212,7 @@ namespace Roslyn.Tools
 
                     if (!readOnly)
                     {
-                        package.PackageProperties.Version = newPackageVersion.ToNormalizedString();
+                        package.PackageProperties.Version = newPackageVersion.ToFullString();
                     }
                     
                     packageInfo = new PackageInfo(package, packageId, packageVersion, newPackageVersion, tempPathOpt, nuspecStream, nuspecXml, nuspecXmlns);
@@ -267,6 +289,7 @@ namespace Roslyn.Tools
                             versionRange.HasUpperBound ? newVersion : null,
                             versionRange.IsMaxInclusive);
 
+                        // Note: metadata is not included in the range
                         versionRangeAttribute.SetValue(newRange.ToNormalizedString());
                     }
                     else if (release && (versionRange.MinVersion?.IsPrerelease == true || versionRange.MaxVersion?.IsPrerelease == true))
