@@ -25,6 +25,9 @@ namespace VstsMergeTool
         private readonly string SourceBranch;
 
         private readonly string DestBranch;
+
+        private Guid RepositoryId;
+
         public VstsMergeTool(GitHttpClient gitHttpClient, string sourceBranch, string destBranch)
         {
             this.gitHttpClient = gitHttpClient;
@@ -42,6 +45,9 @@ namespace VstsMergeTool
 
         public async Task<bool> CreatePullRequest()
         {
+            // Fetch the repository id according to repository name
+            await GetRepositoryId(settings.RepositoryName);
+
             var getCurrentBranchInfo = await GetBranchInfoAsync();
 
             if (!getCurrentBranchInfo)
@@ -93,7 +99,7 @@ namespace VstsMergeTool
         private async Task<bool> GetBranchInfoAsync()
         {
             // Download the current Branch and pull Request information about this repo            
-            var response = await gitHttpClient.GetRefsAsync(project: settings.TFSProjectName, repositoryId: settings.RepositoryID);
+            var response = await gitHttpClient.GetRefsAsync(project: settings.TFSProjectName, repositoryId:RepositoryId);
             RefsInfo = response;
 
             return true;
@@ -103,7 +109,7 @@ namespace VstsMergeTool
         {
             var searchCriteria = new GitPullRequestSearchCriteria()
             {
-                RepositoryId = new Guid(settings.RepositoryID),
+                RepositoryId = this.RepositoryId,
                 Status = PullRequestStatus.Active,
                 TargetRefName = DestBranch,
                 SourceRefName = SourceBranch,
@@ -119,7 +125,6 @@ namespace VstsMergeTool
             return false;
         }
 
-
         private async Task<int> CreateNewPullRequest(string dummyBranchName)
         {
             var pullRequest = new GitPullRequest()
@@ -129,7 +134,7 @@ namespace VstsMergeTool
                 TargetRefName = dummyBranchName,
                 // TODO : Add reviewer info
             };
-            var response = await gitHttpClient.CreatePullRequestAsync(pullRequest, settings.RepositoryID);
+            var response = await gitHttpClient.CreatePullRequestAsync(pullRequest, RepositoryId);
 
             return response.PullRequestId;
         }
@@ -146,7 +151,7 @@ namespace VstsMergeTool
 
             var refUpdate = new List<GitRefUpdate>() { new GitRefUpdate() { IsLocked = false, OldObjectId = new string('0', 40), NewObjectId = sha1, Name = branchName } };
 
-            var response = await gitHttpClient.UpdateRefsAsync(refUpdate, settings.RepositoryID);
+            var response = await gitHttpClient.UpdateRefsAsync(refUpdate, RepositoryId);
 
             if (response.Where(res => !res.Success).Any())
             {
@@ -154,6 +159,38 @@ namespace VstsMergeTool
                 return (false, branchName);
             }
             return (true, branchName);
+        }
+
+        private async Task GetRepositoryId(string repoName)
+        {
+            // Some request don't accept Repository name as parameter. Therefore, just use repository id.
+            logger.Info($"Trying to get {repoName}' id");
+            var response = await gitHttpClient.GetRepositoryAsync(settings.TFSProjectName, RepositoryId);
+
+            this.RepositoryId = response.Id;
+        } 
+
+        private async Task<bool> RemoveBranch(string branchName)
+        {
+            var refDelete = new List<GitRefUpdate>() {
+                new GitRefUpdate()
+                {
+                    IsLocked = false,
+                    Name = branchName,
+                    OldObjectId = new string('0', 40),
+                    NewObjectId = new string('0', 40)
+                }
+            };
+            logger.Info($"Trying to delete {branchName}");
+
+            var response = await gitHttpClient.UpdateRefsAsync(refDelete, RepositoryId);
+
+            if (response.Where(res => !res.Success).Any())
+            {
+                logger.Error($"Fail to delete the {branchName}");
+                return false;
+            }
+            return true;
         }
     }
 }

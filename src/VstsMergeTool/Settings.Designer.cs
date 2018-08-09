@@ -43,10 +43,10 @@ namespace VstsMergeTool {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("c7f34b55-ede8-4e52-916f-2b3301c84492")]
-        public string RepositoryID {
+        [global::System.Configuration.DefaultSettingValueAttribute("VSUnitTesting")]
+        public string RepositoryName {
             get {
-                return ((string)(this["RepositoryID"]));
+                return ((string)(this["RepositoryName"]));
             }
         }
         
