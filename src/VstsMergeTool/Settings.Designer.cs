@@ -52,15 +52,6 @@ namespace VstsMergeTool {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("10a2f33b-3b3d-47a9-a22f-6bb09247bb63")]
-        public string Reviewer {
-            get {
-                return ((string)(this["Reviewer"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("DevDiv")]
         public string TFSProjectName {
             get {
