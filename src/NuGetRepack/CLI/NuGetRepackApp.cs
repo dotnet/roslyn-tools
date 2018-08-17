@@ -25,6 +25,7 @@ namespace Roslyn.Tools
             var operation = Operation.None;
             var packages = new List<string>();
             string outDirectory = null;
+            bool exactVersions = false;
 
             try
             {
@@ -49,6 +50,10 @@ namespace Roslyn.Tools
 
                         case "/out":
                             outDirectory = ReadValue();
+                            break;
+
+                        case "/exactVersions":
+                            exactVersions = true;
                             break;
 
                         default:
@@ -98,6 +103,8 @@ namespace Roslyn.Tools
                 Console.Error.WriteLine("Operation:");
                 Console.Error.WriteLine("  /rel[ease]           Strip pre-release version suffix from versions of specified package(s).");
                 Console.Error.WriteLine("  /prerel[ease]        Strip per-build version suffix from versions of specified package(s).");
+                Console.Error.WriteLine("  /exactVersions       Replace references among given packages with exact versions.");
+                Console.Error.WriteLine("                       Use when packages tightly depend on each other (e.g. the binaries have InternalsVisibleTo).");
                 Console.Error.WriteLine();
                 Console.Error.WriteLine("Options:");
                 Console.Error.WriteLine("  /out <path>          Optional path to an output directory. Validation is performed if not specified.");
@@ -112,11 +119,11 @@ namespace Roslyn.Tools
                 switch (operation)
                 {
                     case Operation.Release:
-                        NuGetVersionUpdater.Run(packages, outDirectory, release: true);
+                        NuGetVersionUpdater.Run(packages, outDirectory, release: true, exactVersions);
                         break;
 
                     case Operation.PreRelease:
-                        NuGetVersionUpdater.Run(packages, outDirectory, release: false);
+                        NuGetVersionUpdater.Run(packages, outDirectory, release: false, exactVersions);
                         break;
 
                     default:
