@@ -20,6 +20,8 @@ namespace Roslyn.Tools
         [Required]
         public string OutputDirectory { get; set; }
 
+        public bool ExactVersions { get; set; }
+
         public bool AllowPreReleaseDependencies { get; set; }
 
         public override bool Execute()
@@ -49,7 +51,7 @@ namespace Roslyn.Tools
 
             try
             {
-                NuGetVersionUpdater.Run(Packages, OutputDirectory, isRelease, allowPreReleaseDependency: (packageId, dependencyId, dependencyVersion) =>
+                NuGetVersionUpdater.Run(Packages, OutputDirectory, isRelease, ExactVersions, allowPreReleaseDependency: (packageId, dependencyId, dependencyVersion) =>
                 {
                     if (AllowPreReleaseDependencies)
                     {

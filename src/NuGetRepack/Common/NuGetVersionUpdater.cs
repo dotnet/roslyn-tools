@@ -47,7 +47,12 @@ namespace Roslyn.Tools
             }
         }
 
-        public static void Run(IEnumerable<string> packagePaths, string outDirectoryOpt, bool release, Func<string, string, string, bool> allowPreReleaseDependency = null)
+        public static void Run(
+            IEnumerable<string> packagePaths,
+            string outDirectoryOpt,
+            bool release,
+            bool exactVersions,
+            Func<string, string, string, bool> allowPreReleaseDependency = null)
         {
             string tempDirectoryOpt;
             if (outDirectoryOpt != null)
@@ -64,7 +69,7 @@ namespace Roslyn.Tools
             try
             {
                 LoadPackages(packagePaths, packages, tempDirectoryOpt, release);
-                UpdateDependencies(packages, release, allowPreReleaseDependency);
+                UpdateDependencies(packages, release, exactVersions, allowPreReleaseDependency);
 
                 if (outDirectoryOpt != null)
                 {
@@ -242,7 +247,7 @@ namespace Roslyn.Tools
             dirName = (lastSeparator == -1) ? "" : (lastSeparator == 0) ? "/" : relativePath.Substring(0, lastSeparator);
         }
 
-        private static void UpdateDependencies(Dictionary<string, PackageInfo> packages, bool release, Func<string, string, string, bool> allowPreReleaseDependencyOpt)
+        private static void UpdateDependencies(Dictionary<string, PackageInfo> packages, bool release, bool exactVersions, Func<string, string, string, bool> allowPreReleaseDependencyOpt)
         {
             var errors = new List<Exception>();
 
@@ -283,11 +288,13 @@ namespace Roslyn.Tools
 
                         var newVersion = ToNuGetVersion(dependentPackage.NewVersion);
 
-                        var newRange = new VersionRange(
-                            versionRange.HasLowerBound ? newVersion : null,
-                            versionRange.IsMinInclusive,
-                            versionRange.HasUpperBound ? newVersion : null,
-                            versionRange.IsMaxInclusive);
+                        var newRange = exactVersions ?
+                            new VersionRange(newVersion, includeMinVersion: true, newVersion, includeMaxVersion: true) :
+                            new VersionRange(
+                                versionRange.HasLowerBound ? newVersion : null,
+                                versionRange.IsMinInclusive,
+                                versionRange.HasUpperBound ? newVersion : null,
+                                versionRange.IsMaxInclusive);
 
                         // Note: metadata is not included in the range
                         versionRangeAttribute.SetValue(newRange.ToNormalizedString());
