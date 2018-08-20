@@ -299,7 +299,6 @@ namespace VstsMergeTool
 
             try
             {
-                token.ThrowIfCancellationRequested();
                 var response = await GitHttpClient.UpdateRefsAsync(refDelete, RepositoryId);
                 if (response.Where(res => !res.Success).Any())
                 {
