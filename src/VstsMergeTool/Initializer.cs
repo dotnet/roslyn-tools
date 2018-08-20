@@ -29,7 +29,7 @@ namespace VstsMergeTool
 
             string password = GetPassword(settings.VsoSecretName).Result;
             ProjectCollection = new TfsTeamProjectCollection(
-                new Uri($"www.{settings.AccountName}.visualstudio.com/{settings.TFSProjectName}"),
+                new Uri($"https://{settings.AccountName}.visualstudio.com/{settings.TFSProjectName}"),
                 new VssBasicCredential(settings.UserName, password));
 
             var gitClient = ProjectCollection.GetClient<GitHttpClient>();

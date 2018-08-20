@@ -264,11 +264,10 @@ namespace VstsMergeTool
             token.ThrowIfCancellationRequested();
             // Some request don't accept Repository name as parameter. Therefore, just use repository id.
             Logger.Info($"Trying to get {repoName}' id");
-
             try
             {
-                var response = await GitHttpClient.GetRepositoryAsync(Settings.TFSProjectName, RepositoryId);
-                this.RepositoryId = response.Id;
+                var response = await GitHttpClient.GetRepositoriesAsync(Settings.TFSProjectName);
+                this.RepositoryId = response.Where(repo => repo.Name == Settings.RepositoryName).First().Id;
                 return true;
             }
             catch(OperationCanceledException)
