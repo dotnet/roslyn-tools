@@ -19,7 +19,7 @@ namespace VstsMergeTool
 
         private List<GitRef> RefsInfo;
 
-        private Settings settings = Settings.Default;
+        private Settings Settings = Settings.Default;
 
         private readonly string SourceName;
 
@@ -59,13 +59,13 @@ namespace VstsMergeTool
         {
             Cts.CancelAfter(Timeout);
             // Fetch the repository id according to repository name
-            await GetRepositoryId(settings.RepositoryName, Cts.Token);
+            await GetRepositoryId(Settings.RepositoryName, Cts.Token);
 
             var getCurrentBranchInfo = await GetBranchInfoAsync(Cts.Token);
 
             if (!getCurrentBranchInfo)
             {
-                Logger.Error($"Fail to get the branch and PR information about {settings.TFSProjectName}");
+                Logger.Error($"Fail to get the branch and PR information about {Settings.TFSProjectName}");
                 return false;
             }
 
@@ -77,11 +77,11 @@ namespace VstsMergeTool
             }
 
             // Check if there are existing dummybranch and open PR
-            var isDummyBranchAndOpenPrExisting = await IskDummyBranchAndOpenPrExists(Cts.Token);
+            var isDummyBranchAndOpenPrExisting = await IsDummyBranchAndOpenPrExists(Cts.Token);
 
             if (isDummyBranchAndOpenPrExisting)
             {
-                Logger.Error("Previous auto merge is not finshed");
+                Logger.Warn("Previous auto merge is not finshed");
                 return false;
             }
 
@@ -109,7 +109,6 @@ namespace VstsMergeTool
 
             // TODO: 1. If there is no conflict, let source branch merge to dummy branch.
             //       2. If conflict existing, stop. When conflict is resolve, then merge.
-            //       3. When all tasks finished, remove the dummy branch
             return true;
         }
 
@@ -121,11 +120,12 @@ namespace VstsMergeTool
 
         private async Task<bool> GetBranchInfoAsync(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             try
             {
                 // Download the current Branch and pull Request information about this repo            
                 var response = await GitHttpClient.GetRefsAsync(
-                                project: settings.TFSProjectName,
+                                project: Settings.TFSProjectName,
                                 repositoryId:RepositoryId,
                                 cancellationToken: token);
 
@@ -134,18 +134,19 @@ namespace VstsMergeTool
             }
             catch (OperationCanceledException)
             {
-                Logger.Info($"Time out occurs during downloading {settings.TFSProjectName} branch and pull request information");
+                Logger.Info($"Time out occurs during downloading {Settings.TFSProjectName} branch and pull request information");
                 throw;
             }
             catch (Exception e)
             {
-                Logger.Info($"Exception occurs during downloading {settings.TFSProjectName} branch and pull request information, message: {e.Message}");
+                Logger.Info($"Exception occurs during downloading {Settings.TFSProjectName} branch and pull request information, message: {e.Message}");
                 throw;
             }
         }
 
-        private async Task<bool> IskDummyBranchAndOpenPrExists(CancellationToken token)
+        private async Task<bool> IsDummyBranchAndOpenPrExists(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             if (RefsInfo.Where(info => info.Name == DummyBranchName).Any())
             {
                 // If the dummy branch exists, check if there is open PR exist
@@ -159,8 +160,7 @@ namespace VstsMergeTool
 
                 try
                 {
-                    var response = await GitHttpClient.GetPullRequestsByProjectAsync(settings.TFSProjectName, searchCriteria, cancellationToken: token);
-                    Logger.Info($"Pull Request ID: {response.First().PullRequestId}, URL: {response.First().Url}");
+                    var response = await GitHttpClient.GetPullRequestsByProjectAsync(Settings.TFSProjectName, searchCriteria, cancellationToken: token);
                     if (response.Count != 0)
                     {
                         // If there is an open PR, means the preious merge is not finished
@@ -177,7 +177,7 @@ namespace VstsMergeTool
                         else
                         {
                             Logger.Error("Fail to delete old dummy branch.");
-                            return false;
+                            return true;
                         }
                     }
                 }
@@ -200,6 +200,7 @@ namespace VstsMergeTool
 
         private async Task<bool> CreateNewPullRequest(string dummyBranchName, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             var pullRequest = new GitPullRequest()
             {
                 Title = $"AutoMerge PR from {SourceName} to {DestName}",
@@ -209,6 +210,7 @@ namespace VstsMergeTool
             try
             {
                 var response = await GitHttpClient.CreatePullRequestAsync(pullRequest, RepositoryId);
+                Logger.Info($"Pull Request ID: {response.PullRequestId}, URL: {response.Url}");
                 AutoPullRequestId = response.PullRequestId;
                 return true;
             }
@@ -226,6 +228,7 @@ namespace VstsMergeTool
 
         private async Task<bool> CreateNewBranch(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             // Get the sha1 of destBranch
             var query = RefsInfo.Select(refs => (refs.Name, refs.ObjectId)).Where(refsTuple => refsTuple.Name == DestBranch)
                 .Select(refsTuple => refsTuple.ObjectId);
@@ -258,12 +261,13 @@ namespace VstsMergeTool
 
         private async Task<bool> GetRepositoryId(string repoName, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             // Some request don't accept Repository name as parameter. Therefore, just use repository id.
             Logger.Info($"Trying to get {repoName}' id");
 
             try
             {
-                var response = await GitHttpClient.GetRepositoryAsync(settings.TFSProjectName, RepositoryId);
+                var response = await GitHttpClient.GetRepositoryAsync(Settings.TFSProjectName, RepositoryId);
                 this.RepositoryId = response.Id;
                 return true;
             }
@@ -281,6 +285,7 @@ namespace VstsMergeTool
 
         private async Task<bool> RemoveBranch(string branchName, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             var refDelete = new List<GitRefUpdate>() {
                 new GitRefUpdate()
                 {
@@ -294,6 +299,7 @@ namespace VstsMergeTool
 
             try
             {
+                token.ThrowIfCancellationRequested();
                 var response = await GitHttpClient.UpdateRefsAsync(refDelete, RepositoryId);
                 if (response.Where(res => !res.Success).Any())
                 {

@@ -11,7 +11,6 @@ using Microsoft.Azure.KeyVault;
 
 namespace VstsMergeTool
 {
-
     public class Initializer
     {
         private Logger logger;
