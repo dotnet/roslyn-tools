@@ -182,7 +182,10 @@ namespace Roslyn.Insertion
                     {
                         return;
                     }
+                }
 
+                if (Options.UpdateCoreXTLibraries || Options.UpdateAssemblyVersions)
+                {
                     // ************** Update assembly versions ************************
                     cancellationToken.ThrowIfCancellationRequested();
                     Log.Info($"Updating assembly versions");

@@ -143,6 +143,11 @@ partial class RoslynInsertionToolCommandline
                 updateCoreXTLibraries => options = options.WithUpdateCoreXTLLibraries(bool.Parse(updateCoreXTLibraries))
             },
             {
+                "ua=|updateassemblyversions=",
+                $"Updates the binding redirects for the insertion components. Defaults to \"{options.UpdateAssemblyVersions}\".",
+                updateAssemblyVersions => options = options.WithUpdateAssemblyVersions(bool.Parse(updateAssemblyVersions))
+            },
+            {
                 "id=|insertdevdivsourcefiles=",
                 $"Defaults to \"{options.InsertDevDivSourceFiles}\".",
                 insertDevDivSourceFiles => options = options.WithInsertDevDivSourceFiles(bool.Parse(insertDevDivSourceFiles))
