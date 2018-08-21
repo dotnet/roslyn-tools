@@ -48,6 +48,7 @@ namespace Roslyn.Insertion
             string mailRecipient,
             bool insertCoreXTPackages,
             bool updateCoreXTLibraries,
+            bool updateAssemblyVersions,
             bool insertDevDivSourceFiles,
             bool insertWillowPackages,
             string insertionName,
@@ -78,6 +79,7 @@ namespace Roslyn.Insertion
             MailRecipient = mailRecipient;
             InsertCoreXTPackages = insertCoreXTPackages;
             UpdateCoreXTLibraries = updateCoreXTLibraries;
+            UpdateAssemblyVersions = updateAssemblyVersions;
             InsertDevDivSourceFiles = insertDevDivSourceFiles;
             InsertWillowPackages = insertWillowPackages;
             InsertionName = insertionName;
@@ -110,6 +112,7 @@ namespace Roslyn.Insertion
             Optional<string> mailRecipient = default,
             Optional<bool> insertCoreXTPackages = default,
             Optional<bool> updateCoreXTLibraries = default,
+            Optional<bool> updateAssemblyVersions = default,
             Optional<bool> insertDevDivSourceFiles = default,
             Optional<bool> insertWillowPackages = default,
             Optional<string> insertionName = default,
@@ -141,6 +144,7 @@ namespace Roslyn.Insertion
                 mailRecipient: mailRecipient.ValueOrFallback(MailRecipient),
                 insertCoreXTPackages: insertCoreXTPackages.ValueOrFallback(InsertCoreXTPackages),
                 updateCoreXTLibraries: updateCoreXTLibraries.ValueOrFallback(UpdateCoreXTLibraries),
+                updateAssemblyVersions: updateAssemblyVersions.ValueOrFallback(UpdateAssemblyVersions),
                 insertDevDivSourceFiles: insertDevDivSourceFiles.ValueOrFallback(InsertDevDivSourceFiles),
                 insertWillowPackages: insertWillowPackages.ValueOrFallback(InsertWillowPackages),
                 insertionName: insertionName.ValueOrFallback(InsertionName),
@@ -208,6 +212,8 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithUpdateCoreXTLLibraries(bool updateCoreXTLibraries) => Update(updateCoreXTLibraries: updateCoreXTLibraries);
 
+        public RoslynInsertionToolOptions WithUpdateAssemblyVersions(bool updateAssemblyVersions) => Update(updateAssemblyVersions: updateAssemblyVersions);
+
         public RoslynInsertionToolOptions WithCreateDummyPr(bool createDummyPr) => Update(createDummyPr: createDummyPr);
 
         public RoslynInsertionToolOptions WithUpdateExistingPr(int updateExistingPr) => Update(updateExistingPr: updateExistingPr);
@@ -247,6 +253,8 @@ namespace Roslyn.Insertion
         public bool InsertCoreXTPackages { get; }
 
         public bool UpdateCoreXTLibraries { get; }
+
+        public bool UpdateAssemblyVersions { get; }
 
         public bool InsertDevDivSourceFiles { get; }
 
