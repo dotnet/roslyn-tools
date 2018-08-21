@@ -147,6 +147,10 @@ namespace VsixExpInstaller
 
             try
             {
+                // Force mscorlib satellite assembly to be loaded before adding an AssemblyResolve handler,
+                // to avoid a cycle resolving the satellite assembly if an exception is thrown in the handler.
+                _ = (new ArgumentNullException()).ToString();
+
                 devenvPath = GetDevenvPath(vsInstallDir);
 
                 var assemblyResolutionPaths = new string[] {
@@ -177,6 +181,7 @@ namespace VsixExpInstaller
                 {
                     Console.WriteLine("  Running as Admin.");
                 }
+                Console.WriteLine("  {0}", System.Threading.Thread.CurrentThread.CurrentUICulture);
 
                 RunProgram();
 
