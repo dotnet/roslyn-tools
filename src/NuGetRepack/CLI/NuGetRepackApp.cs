@@ -8,13 +8,6 @@ namespace Roslyn.Tools
 {
     internal sealed class NuGetRepackApp
     {
-        private enum Operation
-        {
-            None = 0,
-            Release = 1,
-            PreRelease = 2,
-        }
-
         private const int ExitCodeSuccess = 0;
         private const int ExitCodeInvalidArgument = 1;
         private const int ExitCodeError = 2;
@@ -22,7 +15,7 @@ namespace Roslyn.Tools
 
         private static int Main(string[] args)
         {
-            var operation = Operation.None;
+            var translation = VersionTranslation.None;
             var packages = new List<string>();
             string outDirectory = null;
             bool exactVersions = false;
@@ -40,12 +33,12 @@ namespace Roslyn.Tools
                     {
                         case "/rel":
                         case "/release":
-                            operation = Operation.Release;
+                            translation = VersionTranslation.Release;
                             break;
 
                         case "/prerel":
                         case "/prerelease":
-                            operation = Operation.PreRelease;
+                            translation = VersionTranslation.PreRelease;
                             break;
 
                         case "/out":
@@ -81,19 +74,9 @@ namespace Roslyn.Tools
                     }
                 }
 
-                switch (operation)
+                if (packages.Count == 0)
                 {
-                    case Operation.Release:
-                    case Operation.PreRelease:
-                        if (packages.Count == 0)
-                        {
-                            throw new InvalidDataException($"Must specify at least one package");
-                        }
-
-                        break;
-
-                    default:
-                        throw new InvalidDataException($"Operation not specified");
+                    throw new InvalidDataException($"Must specify at least one package");
                 }
             }
             catch (InvalidDataException e)
@@ -103,32 +86,20 @@ namespace Roslyn.Tools
                 Console.Error.WriteLine("Operation:");
                 Console.Error.WriteLine("  /rel[ease]           Strip pre-release version suffix from versions of specified package(s).");
                 Console.Error.WriteLine("  /prerel[ease]        Strip per-build version suffix from versions of specified package(s).");
-                Console.Error.WriteLine("  /exactVersions       Replace references among given packages with exact versions.");
-                Console.Error.WriteLine("                       Use when packages tightly depend on each other (e.g. the binaries have InternalsVisibleTo).");
                 Console.Error.WriteLine();
                 Console.Error.WriteLine("Options:");
                 Console.Error.WriteLine("  /out <path>          Optional path to an output directory. Validation is performed if not specified.");
+                Console.Error.WriteLine("  /exactVersions       Replace references among given packages with exact versions.");
+                Console.Error.WriteLine("                       Use when packages tightly depend on each other (e.g. the binaries have InternalsVisibleTo).");
                 Console.Error.WriteLine();
                 Console.Error.WriteLine("<packages>             Paths to .nupkg files.");
-                Console.Error.WriteLine(e.Message);
+                Console.Error.WriteLine(e.Message); 
                 return ExitCodeInvalidArgument;
             }
 
             try
             {
-                switch (operation)
-                {
-                    case Operation.Release:
-                        NuGetVersionUpdater.Run(packages, outDirectory, release: true, exactVersions);
-                        break;
-
-                    case Operation.PreRelease:
-                        NuGetVersionUpdater.Run(packages, outDirectory, release: false, exactVersions);
-                        break;
-
-                    default:
-                        throw new InvalidDataException($"Operation not specified");
-                }
+                NuGetVersionUpdater.Run(packages, outDirectory, translation, exactVersions);
             }
             catch (AggregateException e)
             {

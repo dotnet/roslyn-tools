@@ -10,6 +10,13 @@ using NuGet.Versioning;
 
 namespace Roslyn.Tools
 {
+    internal enum VersionTranslation
+    {
+        None = 0,
+        Release = 1,
+        PreRelease = 2,
+    }
+
     internal static class NuGetVersionUpdater
     {
         private const string DefaultNuspecXmlns = "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd";
@@ -50,7 +57,7 @@ namespace Roslyn.Tools
         public static void Run(
             IEnumerable<string> packagePaths,
             string outDirectoryOpt,
-            bool release,
+            VersionTranslation translation,
             bool exactVersions,
             Func<string, string, string, bool> allowPreReleaseDependency = null)
         {
@@ -68,8 +75,8 @@ namespace Roslyn.Tools
             var packages = new Dictionary<string, PackageInfo>();
             try
             {
-                LoadPackages(packagePaths, packages, tempDirectoryOpt, release);
-                UpdateDependencies(packages, release, exactVersions, allowPreReleaseDependency);
+                LoadPackages(packagePaths, packages, tempDirectoryOpt, translation);
+                UpdateDependencies(packages, translation, exactVersions, allowPreReleaseDependency);
 
                 if (outDirectoryOpt != null)
                 {
@@ -91,7 +98,7 @@ namespace Roslyn.Tools
             }
         }
 
-        private static void LoadPackages(IEnumerable<string> packagePaths, Dictionary<string, PackageInfo> packages, string tempDirectoryOpt, bool release)
+        private static void LoadPackages(IEnumerable<string> packagePaths, Dictionary<string, PackageInfo> packages, string tempDirectoryOpt, VersionTranslation translation)
         {
             bool readOnly = tempDirectoryOpt == null;
 
@@ -169,30 +176,36 @@ namespace Roslyn.Tools
                                 throw new InvalidOperationException($"Can only update pre-release packages: '{packagePath}' has release version");
                             }
 
-                            if (release)
+                            switch (translation)
                             {
-                                // "1.2.3-beta-12345-01-abcdef" -> "1.2.3"
-                                // "1.2.3-beta.12345.1+abcdef" -> "1.2.3"
-                                newPackageVersion = new SemanticVersion(packageVersion.Major, packageVersion.Minor, packageVersion.Patch);
-                            }
-                            else
-                            {
-                                // To strip build number take the first pre-release label.
-                                // "1.2.3-beta-12345-01-abcdef" -> "1.2.3-beta-final-abcdef"
-                                // "1.2.3-beta.12345.1+abcdef" -> "1.2.3-beta.final+abcdef"
+                                case VersionTranslation.Release:
+                                    // "1.2.3-beta-12345-01-abcdef" -> "1.2.3"
+                                    // "1.2.3-beta.12345.1+abcdef" -> "1.2.3"
+                                    newPackageVersion = new SemanticVersion(packageVersion.Major, packageVersion.Minor, packageVersion.Patch);
+                                    break;
 
-                                // SemVer1 version has a single label "beta-12345-01-abcdef" and no metadata.
-                                // SemVer2 version has multiple labels { "beta", "12345", "1" } and metadata "abcdef".
-                                const string finalLabel = "final";
-                                bool isSemVer1 = packageVersion.Release.Contains('-');
-                                var label = packageVersion.ReleaseLabels.First().Split('-')[0];
-                                
-                                newPackageVersion = new SemanticVersion(
-                                    packageVersion.Major,
-                                    packageVersion.Minor,
-                                    packageVersion.Patch,
-                                    isSemVer1 ? new[] { label + "-" + finalLabel } : new[] { label, finalLabel },
-                                    packageVersion.Metadata);
+                                case VersionTranslation.PreRelease:
+                                    // To strip build number take the first pre-release label.
+                                    // "1.2.3-beta-12345-01-abcdef" -> "1.2.3-beta-final-abcdef"
+                                    // "1.2.3-beta.12345.1+abcdef" -> "1.2.3-beta.final+abcdef"
+
+                                    // SemVer1 version has a single label "beta-12345-01-abcdef" and no metadata.
+                                    // SemVer2 version has multiple labels { "beta", "12345", "1" } and metadata "abcdef".
+                                    const string finalLabel = "final";
+                                    bool isSemVer1 = packageVersion.Release.Contains('-');
+                                    var label = packageVersion.ReleaseLabels.First().Split('-')[0];
+
+                                    newPackageVersion = new SemanticVersion(
+                                        packageVersion.Major,
+                                        packageVersion.Minor,
+                                        packageVersion.Patch,
+                                        isSemVer1 ? new[] { label + "-" + finalLabel } : new[] { label, finalLabel },
+                                        packageVersion.Metadata);
+                                    break;
+
+                                case VersionTranslation.None:
+                                    newPackageVersion = packageVersion;
+                                    break;
                             }
 
                             if (!readOnly)
@@ -247,7 +260,7 @@ namespace Roslyn.Tools
             dirName = (lastSeparator == -1) ? "" : (lastSeparator == 0) ? "/" : relativePath.Substring(0, lastSeparator);
         }
 
-        private static void UpdateDependencies(Dictionary<string, PackageInfo> packages, bool release, bool exactVersions, Func<string, string, string, bool> allowPreReleaseDependencyOpt)
+        private static void UpdateDependencies(Dictionary<string, PackageInfo> packages, VersionTranslation translation, bool exactVersions, Func<string, string, string, bool> allowPreReleaseDependencyOpt)
         {
             var errors = new List<Exception>();
 
@@ -299,7 +312,7 @@ namespace Roslyn.Tools
                         // Note: metadata is not included in the range
                         versionRangeAttribute.SetValue(newRange.ToNormalizedString());
                     }
-                    else if (release && (versionRange.MinVersion?.IsPrerelease == true || versionRange.MaxVersion?.IsPrerelease == true))
+                    else if (translation == VersionTranslation.Release && (versionRange.MinVersion?.IsPrerelease == true || versionRange.MaxVersion?.IsPrerelease == true))
                     {
                         if (allowPreReleaseDependencyOpt?.Invoke(package.Id, id, versionRangeAttribute.Value) != true)
                         {
