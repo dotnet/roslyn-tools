@@ -159,7 +159,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             {
                 // Delete the pr branch if the PR was not created.
                 await _client.DeleteAsync($"repos/{repoOwner}/{repoName}/git/refs/heads/{prBranchName}");
-                return (false, null);
+                return (false, response);
             }
 
             jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
