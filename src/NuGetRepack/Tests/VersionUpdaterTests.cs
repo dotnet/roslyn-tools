@@ -69,8 +69,8 @@ namespace Roslyn.Tools.Tests
             var c_rel = Path.Combine(dir, TestResources.ReleasePackages.NameC);
             var d_rel = Path.Combine(dir, TestResources.ReleasePackages.NameD);
 
-            NuGetVersionUpdater.Run(new[] { a_daily, b_daily, c_daily, d_daily }, dir, release: true, exactVersions: false);
-            NuGetVersionUpdater.Run(new[] { a_daily, b_daily, c_daily, d_daily }, dir, release: false, exactVersions: false);
+            NuGetVersionUpdater.Run(new[] { a_daily, b_daily, c_daily, d_daily }, dir, VersionTranslation.Release, exactVersions: false);
+            NuGetVersionUpdater.Run(new[] { a_daily, b_daily, c_daily, d_daily }, dir, VersionTranslation.PreRelease, exactVersions: false);
 
             AssertPackagesEqual(TestResources.ReleasePackages.A, File.ReadAllBytes(a_rel));
             AssertPackagesEqual(TestResources.ReleasePackages.B, File.ReadAllBytes(b_rel));
@@ -84,6 +84,7 @@ namespace Roslyn.Tools.Tests
 
             Directory.Delete(dir, recursive: true);
         }
+
         [Fact]
         public void TestPackagesSemVer2()
         {
@@ -100,8 +101,8 @@ namespace Roslyn.Tools.Tests
             var e_rel = Path.Combine(dir, TestResources.ReleasePackages.NameE);
             var f_rel = Path.Combine(dir, TestResources.ReleasePackages.NameF);
 
-            NuGetVersionUpdater.Run(new[] { e_daily, f_daily }, dir, release: true, exactVersions: true);
-            NuGetVersionUpdater.Run(new[] { e_daily, f_daily }, dir, release: false, exactVersions: true);
+            NuGetVersionUpdater.Run(new[] { e_daily, f_daily }, dir, VersionTranslation.Release, exactVersions: true);
+            NuGetVersionUpdater.Run(new[] { e_daily, f_daily }, dir, VersionTranslation.PreRelease, exactVersions: true);
 
             AssertPackagesEqual(TestResources.ReleasePackages.E, File.ReadAllBytes(e_rel));
             AssertPackagesEqual(TestResources.ReleasePackages.F, File.ReadAllBytes(f_rel));
@@ -123,10 +124,10 @@ namespace Roslyn.Tools.Tests
             File.WriteAllBytes(b_daily = Path.Combine(dir, TestResources.DailyBuildPackages.NameB), TestResources.DailyBuildPackages.B);
             File.WriteAllBytes(c_daily = Path.Combine(dir, TestResources.DailyBuildPackages.NameC), TestResources.DailyBuildPackages.C);
 
-            var e1 = Assert.Throws<InvalidOperationException>(() => NuGetVersionUpdater.Run(new[] { c_daily }, outDirectoryOpt: null, release: true, exactVersions: false));
+            var e1 = Assert.Throws<InvalidOperationException>(() => NuGetVersionUpdater.Run(new[] { c_daily }, outDirectoryOpt: null, VersionTranslation.Release, exactVersions: false));
             AssertEx.AreEqual("Package 'C' depends on a pre-release package 'B, [1.0.0-beta-12345-01]'", e1.Message);
 
-            var e2 = Assert.Throws<AggregateException>(() => NuGetVersionUpdater.Run(new[] { a_daily }, outDirectoryOpt: null, release: true, exactVersions: false));
+            var e2 = Assert.Throws<AggregateException>(() => NuGetVersionUpdater.Run(new[] { a_daily }, outDirectoryOpt: null, VersionTranslation.Release, exactVersions: false));
             AssertEx.Equal(new[]
             {
                 "System.InvalidOperationException: Package 'A' depends on a pre-release package 'B, 1.0.0-beta-12345-01'",
@@ -134,14 +135,14 @@ namespace Roslyn.Tools.Tests
                 "System.InvalidOperationException: Package 'A' depends on a pre-release package 'C, 1.0.0-beta-12345-01'"
             }, e2.InnerExceptions.Select(i => i.ToString()));
 
-            var e3 = Assert.Throws<AggregateException>(() => NuGetVersionUpdater.Run(new[] { a_daily, b_daily }, outDirectoryOpt: null, release: true, exactVersions: false));
+            var e3 = Assert.Throws<AggregateException>(() => NuGetVersionUpdater.Run(new[] { a_daily, b_daily }, outDirectoryOpt: null, VersionTranslation.Release, exactVersions: false));
             AssertEx.Equal(new[]
             {
                 "System.InvalidOperationException: Package 'A' depends on a pre-release package 'C, (, 1.0.0-beta-12345-01]'",
                 "System.InvalidOperationException: Package 'A' depends on a pre-release package 'C, 1.0.0-beta-12345-01'"
             }, e3.InnerExceptions.Select(i => i.ToString()));
 
-            var e4 = Assert.Throws<AggregateException>(() => NuGetVersionUpdater.Run(new[] { a_daily, c_daily }, outDirectoryOpt: null, release: true, exactVersions: false));
+            var e4 = Assert.Throws<AggregateException>(() => NuGetVersionUpdater.Run(new[] { a_daily, c_daily }, outDirectoryOpt: null, VersionTranslation.Release, exactVersions: false));
             AssertEx.Equal(new[]
             {
                 "System.InvalidOperationException: Package 'A' depends on a pre-release package 'B, 1.0.0-beta-12345-01'",

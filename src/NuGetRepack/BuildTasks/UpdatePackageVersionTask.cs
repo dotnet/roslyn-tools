@@ -11,7 +11,6 @@ namespace Roslyn.Tools
 {
     public sealed class UpdatePackageVersionTask : Task
     {
-        [Required]
         public string VersionKind { get; set; }
 
         [Required]
@@ -32,18 +31,22 @@ namespace Roslyn.Tools
 
         private void ExecuteImpl()
         {
-            bool isRelease;
-            if (StringComparer.OrdinalIgnoreCase.Equals(VersionKind, "release"))
+            VersionTranslation translation;
+            if (string.IsNullOrEmpty(VersionKind))
             {
-                isRelease = true;
+                translation = VersionTranslation.None;
+            }
+            else if (StringComparer.OrdinalIgnoreCase.Equals(VersionKind, "release"))
+            {
+                translation = VersionTranslation.Release;
             }
             else if (StringComparer.OrdinalIgnoreCase.Equals(VersionKind, "prerelease"))
             {
-                isRelease = false;
+                translation = VersionTranslation.PreRelease;
             }
             else
             {
-                Log.LogError($"Invalid value for task argument {nameof(VersionKind)}: '{VersionKind}'. Specify 'release' or 'prerelease'.");
+                Log.LogError($"Invalid value for task argument {nameof(VersionKind)}: '{VersionKind}'. Specify 'release' or 'prerelease' or leave empty.");
                 return;
             }
 
@@ -51,7 +54,7 @@ namespace Roslyn.Tools
 
             try
             {
-                NuGetVersionUpdater.Run(Packages, OutputDirectory, isRelease, ExactVersions, allowPreReleaseDependency: (packageId, dependencyId, dependencyVersion) =>
+                NuGetVersionUpdater.Run(Packages, OutputDirectory, translation, ExactVersions, allowPreReleaseDependency: (packageId, dependencyId, dependencyVersion) =>
                 {
                     if (AllowPreReleaseDependencies)
                     {
@@ -63,7 +66,7 @@ namespace Roslyn.Tools
                     return false;
                 });
 
-                if (isRelease)
+                if (translation == VersionTranslation.Release)
                 {
                     File.WriteAllLines(Path.Combine(OutputDirectory, "PreReleaseDependencies.txt"), preReleaseDependencies.Distinct());
                 }
