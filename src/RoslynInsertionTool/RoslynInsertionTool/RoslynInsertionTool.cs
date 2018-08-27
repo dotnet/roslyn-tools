@@ -339,7 +339,7 @@ namespace Roslyn.Insertion
 
                     try
                     {
-                        await QueueBuildPolicy(pullRequest, "VAL build with DDRITs and RPS");
+                        await QueueBuildPolicy(pullRequest, "VAL build with RPS");
                     }
                     catch (Exception ex)
                     {
