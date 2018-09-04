@@ -34,7 +34,7 @@ namespace SignTool
 
             protected abstract int RunMSBuild(ProcessStartInfo startInfo, TextWriter textWriter);
 
-            public void Sign(IEnumerable<FileSignInfo> filesToSign, TextWriter textWriter)
+            public void Sign(int round, IEnumerable<FileSignInfo> filesToSign, TextWriter textWriter)
             {
                 var buildFilePath = Path.Combine(AppPath, "build.proj");
                 
@@ -46,9 +46,10 @@ namespace SignTool
                 string fileName = MSBuildPath;
                 var verbosity = _args.DiagnosticOutput ? "diag" : "m";
                 var commandLine = $@"/v:{verbosity} ""{buildFilePath}""";
-                if (!string.IsNullOrEmpty(_args.MSBuildBinaryLogFilePath))
+                var log = _args.MSBuildBinaryLogFilePath;
+                if (!string.IsNullOrEmpty(log))
                 {
-                    commandLine += $@" /binaryLogger:""{_args.MSBuildBinaryLogFilePath}""";
+                    commandLine += $@" /binaryLogger:""{Path.Combine(Path.GetDirectoryName(log), Path.GetFileNameWithoutExtension(log))}.{round}.binlog""";
                 }
 
                 if (!_args.Test)
