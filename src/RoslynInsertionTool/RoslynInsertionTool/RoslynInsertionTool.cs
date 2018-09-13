@@ -343,9 +343,18 @@ namespace Roslyn.Insertion
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"Unable to create a validation build for '{pullRequest.SourceRefName}'");
+                        Log.Error($"Unable to create a deprecated validation build for '{pullRequest.SourceRefName}'");
                         Log.Error(ex);
-                        return;
+                    }
+
+                    try
+                    {
+                        await QueueBuildPolicy(pullRequest, "CloudBuild - RPS");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"Unable to create a CloudBuild validation build for '{pullRequest.SourceRefName}'");
+                        Log.Error(ex);
                     }
                 }
             }
