@@ -75,6 +75,7 @@
   <repo owner="Microsoft" name="visualfsharp">
     <merge from="dev15.8" to="dev15.9" />
     <merge from="dev15.9" to="dev16.0" />
+    <merge from="dev16.0" to="dev16.0-future" />
     <merge from="master" to="dev16.0" />
   </repo>
 </config>
