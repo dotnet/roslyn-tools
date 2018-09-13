@@ -339,7 +339,7 @@ namespace Roslyn.Insertion
 
                     try
                     {
-                        await QueueBuildPolicy(pullRequest, "VAL build with RPS");
+                        await QueueBuildPolicy(pullRequest, "[Deprecated] ValBuild RPS");
                     }
                     catch (Exception ex)
                     {
