@@ -52,13 +52,10 @@
     <merge from="dev15.9.x" to="master" />
   </repo>
   <repo owner="dotnet" name="project-system">
-    <merge from="dev15.0.x" to="dev15.7.x" />
-    <merge from="dev15.7.x" to="dev15.8-preview3" />
-    <merge from="dev15.8-preview3" to="dev15.8.x" />
-    <merge from="dev15.8.x" to="dev15.9-preview1" />
-    <merge from="dev15.9-preview1" to="dev15.9-preview2" />
-    <merge from="dev15.9-preview2" to="dev15.9.x" />
+    <merge from="dev15.0.x" to="dev15.8.x" />
+    <merge from="dev15.8.x" to="dev15.9.x" />
     <merge from="dev15.9.x" to="master" />
+    <merge from="dev16.0.x" to="master" />
   </repo>
   <repo owner="dotnet" name="cli">
     <merge from="release/2.0.0" to="release/2.1.1xx" />
