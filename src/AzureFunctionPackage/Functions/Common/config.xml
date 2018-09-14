@@ -3,28 +3,22 @@
     <!-- Roslyn branches (non-vs-deps) (flowing between releases) -->
     <merge from="dev15.0.x" to="dev15.5.x" />
     <merge from="dev15.7.x" to="dev15.8.x" />
-    <merge from="dev15.8.x" to="dev15.9-preview1" />
-    <merge from="dev15.9-preview1" to="dev15.9-preview2" />
-    <merge from="dev15.9-preview2" to="dev15.9.x" />
-    <merge from="dev15.9.x" to="master" />
+    <merge from="dev15.8.x" to="dev15.9.x" />
+    <merge from="dev15.9.x" to="dev16.0.x" />
     <merge from="dev16.0.x" to="master" />
 
     <!-- Roslyn branches (between vs-deps branches) -->
     <merge from="dev15.7.x-vs-deps" to="dev15.8.x-vs-deps" />
-    <merge from="dev15.8.x-vs-deps" to="dev15.9-preview1-vs-deps" />
-    <merge from="dev15.9-preview1-vs-deps" to="dev15.9-preview2-vs-deps" />
-    <merge from="dev15.9-preview2-vs-deps" to="dev15.9.x-vs-deps" />
-    <merge from="dev15.9.x-vs-deps" to="master-vs-deps" />
+    <merge from="dev15.8.x-vs-deps" to="dev15.9.x-vs-dep" />
+    <merge from="dev15.9.x-vs-deps" to="dev16.0.x-vs-deps" />
     <merge from="dev16.0.x-vs-deps" to="master-vs-deps" />
 
     <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
     <merge from="dev15.7.x" to="dev15.7.x-vs-deps" />
     <merge from="dev15.8.x" to="dev15.8.x-vs-deps" />
-    <merge from="dev15.9-preview1" to="dev15.9-preview1-vs-deps" />
-    <merge from="dev15.9-preview2" to="dev15.9-preview2-vs-deps" />
     <merge from="dev15.9.x" to="dev15.9.x-vs-deps" />
-    <merge from="master" to="master-vs-deps" />
     <merge from="dev16.0.x" to="dev16.0.x-vs-deps" />
+    <merge from="master" to="master-vs-deps" />
 
     <!-- Roslyn feature branches -->
     <merge from="master" to="features/razorFar" />
@@ -40,13 +34,13 @@
   </repo>
   <repo owner="dotnet" name="testimpact">
     <merge from="dev15.8.x" to="dev15.9.x" />
-    <merge from="dev15.9.x" to="master" />
+    <merge from="dev15.9.x" to="dev16.0.x" />
     <merge from="dev16.0.x" to="master" />
   </repo>
   <repo owner="dotnet" name="project-system">
     <merge from="dev15.0.x" to="dev15.8.x" />
     <merge from="dev15.8.x" to="dev15.9.x" />
-    <merge from="dev15.9.x" to="master" />
+    <merge from="dev15.9.x" to="dev16.0.x" />
     <merge from="dev16.0.x" to="master" />
   </repo>
   <repo owner="dotnet" name="cli">
