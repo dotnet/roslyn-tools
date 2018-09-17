@@ -1,3 +1,9 @@
+##########################################################################
+# Changes to this file will NOT be automatically deployed to the server. #
+#                                                                        #
+# Changes should be made on both the server and in source control.       #
+##########################################################################
+
 # this script has it's own enlistment path, so it shouldn't need the mutex
 
 Set-Location -Path E:\prebuilt\roslyn-tools\RIT
@@ -33,39 +39,46 @@ function Do-Insertion(
     Move-Item rit.log E:\logs\RIT\rit.$queueName.$timeStamp.log
 }
 
-#Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"    -fromBranch "dev15.8.x-vs-deps" -toBranch "rel/d15.8" -insertToolset "true" -insertDevdiv "false" -queueValidation "true" -updatecorextlibraries "true"
+###
+### F# Insertions (handled by the F# team)
+###
+
+#Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -fromBranch "dev15.8"           -toBranch "rel/d15.8" -insertCore "false" -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
+Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -fromBranch "dev15.9"           -toBranch "rel/d15.9" -insertCore "false" -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
+#Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -fromBranch "dev16.0"        -toBranch "lab/ml" -insertCore "false"    -insertDevdiv "false" -dropPath "\\cpvsbuild\drops\FSharp"
+#Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -fromBranch "dev16.0"        -toBranch "lab/ml" -insertCore "false"    -insertDevdiv "false" -dropPath "\\cpvsbuild\drops\FSharp"
+
+
+###
+### Non-F# Insertions (handled by the Infrastructure Team)
+###
 
 # Dev15.8 - Servicing only
 #Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev15.8.x-vs-deps" -toBranch "rel/d15.8" -insertToolset "false" -insertDevdiv "false" -queueValidation "true" -updatecorextl#ibraries "true"
 #Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "dev15.8.x"         -toBranch "rel/d15.8" -insertCore "false" -insertDevdiv "false" -queueValidation "true"
 #Do-Insertion -component "Project System"    -queueName "DotNet-Project-System" -fromBranch "dev15.8.x"         -toBranch "rel/d15.8" -insertCore "false" -insertDevdiv "false" -queueValidation "true"
-#Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -fromBranch "dev15.8"           -toBranch "rel/d15.8" -insertCore "false" -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
 #Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev15.8.x"         -toBranch "rel/d15.8" -insertCore "true"                       -queueValidation "true" -dropPath "server"
 
 # Dev15.9 Preview 3 (until 9/18 6pm)
 Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev15.9-preview3-vs-deps" -toBranch "lab/d15.9stg" -insertToolset "false" -insertDevdiv "false" -updatecorextl#ibraries "true"
 Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "dev15.9-preview3"         -toBranch "lab/d15.9stg" -insertCore "false"    -insertDevdiv "false" -queueValidation "true"
 Do-Insertion -component "Project System"    -queueName "DotNet-Project-System" -fromBranch "dev15.9-preview3"         -toBranch "lab/d15.9stg" -insertCore "false"    -insertDevdiv "false" -queueValidation "true" -updateassemblyversions "false"
-Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -fromBranch "dev15.9"                  -toBranch "lab/d15.9stg" -insertCore "false"    -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
 Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev15.9-preview3"         -toBranch "lab/d15.9stg" -insertCore "true"                           -queueValidation "true" -dropPath "server"
 
 # Dev15.9 Preview 3 (starting 9/18 6pm)
 #Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev15.9-preview3-vs-deps" -toBranch "rel/d15.9" -insertToolset "false" -insertDevdiv "false" -updatecorextl#ibraries "true"
 #Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "dev15.9-preview3"         -toBranch "rel/d15.9" -insertCore "false"    -insertDevdiv "false" -queueValidation "true"
 #Do-Insertion -component "Project System"    -queueName "DotNet-Project-System" -fromBranch "dev15.9-preview3"         -toBranch "rel/d15.9" -insertCore "false"    -insertDevdiv "false" -queueValidation "true" -updateassemblyversions "false"
-#Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -fromBranch "dev15.9"                  -toBranch "rel/d15.9" -insertCore "false"    -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
 #Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev15.9-preview3"         -toBranch "rel/d15.9" -insertCore "true"                           -queueValidation "true" -dropPath "server"
 
 # Dev15.9 Preview 4 (starting 9/18 6pm)
 #Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev15.9.x-vs-deps" -toBranch "lab/d15.9stg" -insertToolset "false" -insertDevdiv "false" -updatecorextl#ibraries "true"
 #Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "dev15.9.x"         -toBranch "lab/d15.9stg" -insertCore "false"    -insertDevdiv "false" -queueValidation "true"
 #Do-Insertion -component "Project System"    -queueName "DotNet-Project-System" -fromBranch "dev15.9.x"         -toBranch "lab/d15.9stg" -insertCore "false"    -insertDevdiv "false" -queueValidation "true" -updateassemblyversions "false"
-#Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -fromBranch "dev15.9"           -toBranch "lab/d15.9stg" -insertCore "false"    -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
 #Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev15.9.x"         -toBranch "lab/d15.9stg" -insertCore "true"                           -queueValidation "true" -dropPath "server"
 
 # Dev16 Preview 1
 Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev16.0.x-vs-deps" -toBranch "lab/ml" -insertToolset "true" -insertDevdiv "false"   -updatecorextlibraries "true"
 Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "dev16.0.x"         -toBranch "lab/ml" -insertCore "false"   -insertDevdiv "false"
 Do-Insertion -component "Project System"    -queueName "DotNet-Project-System" -fromBranch "dev16.0.x"         -toBranch "lab/ml" -insertCore "true"    -insertDevdiv "false"   -updateassemblyversions "true" 
-Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -fromBranch "dev16.0"           -toBranch "lab/ml" -insertCore "false"   -insertDevdiv "false"   -dropPath "\\cpvsbuild\drops\FSharp"
 Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev16.0.x"         -toBranch "lab/ml" -insertCore "true"    -queueValidation "true" -dropPath "server"

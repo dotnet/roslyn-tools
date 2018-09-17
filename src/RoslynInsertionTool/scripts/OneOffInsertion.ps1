@@ -1,3 +1,9 @@
+##########################################################################
+# Changes to this file will NOT be automatically deployed to the server. #
+#                                                                        #
+# Changes should be made on both the server and in source control.       #
+##########################################################################
+
 . .\RitMutexHelper.ps1
 ExitOnNoEnlistment -pause $true
 # at this point `$EnlistmentPath` contains the enlistment path to use
