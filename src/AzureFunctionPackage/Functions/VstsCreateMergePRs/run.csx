@@ -17,9 +17,9 @@ private static async Task MakeVstsPr(string repoName, string srcBranch, string d
 {
     Log.Info($"Merging {repoName} from {srcBranch} to {destBranch}");
 
-    VstsMergeTool.Initializer initializer = new VstsMergeTool.Initializer(srcBranch, destBranch);
+    var vstsInitializer = new Initializer.Initializer(srcBranch, destBranch);
 
-    var response = await initializer.MergeTool.CreatePullRequest(); ;
+    var response = await vstsInitializer.MergeTool.CreatePullRequest(); ;
 
     if (response)
     {
