@@ -61,6 +61,8 @@ namespace Roslyn.Insertion
             bool createDummyPr,
             int updateExistingPr,
             string logFileLocation,
+            string clientId,
+            string clientSecret,
             params string[] partitionsToBuild)
         {
             EnlistmentPath = enlistmentPath;
@@ -92,6 +94,8 @@ namespace Roslyn.Insertion
             CreateDummyPr = createDummyPr;
             UpdateExistingPr = updateExistingPr;
             LogFileLocation = logFileLocation;
+            ClientId = clientId;
+            ClientSecret = clientSecret;
             PartitionsToBuild = partitionsToBuild;
         }
 
@@ -125,6 +129,8 @@ namespace Roslyn.Insertion
             Optional<bool> createDummyPr = default,
             Optional<int> updateExistingPr = default,
             Optional<string> logFileLocation = default,
+            Optional<string> clientId = default,
+            Optional<string> clientSecret = default,
             Optional<string[]> partitionsToBuild = default)
         {
             return new RoslynInsertionToolOptions(
@@ -157,6 +163,8 @@ namespace Roslyn.Insertion
                 createDummyPr: createDummyPr.ValueOrFallback(CreateDummyPr),
                 updateExistingPr: updateExistingPr.ValueOrFallback(UpdateExistingPr),
                 logFileLocation: logFileLocation.ValueOrFallback(LogFileLocation),
+                clientId: clientId.ValueOrFallback(ClientId),
+                clientSecret: clientSecret.ValueOrFallback(ClientSecret),
                 partitionsToBuild: partitionsToBuild.ValueOrFallback(PartitionsToBuild));
         }
 
@@ -220,6 +228,10 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithLogFileLocation(string logFileLocation) => Update(logFileLocation: logFileLocation);
 
+        public RoslynInsertionToolOptions WithClientId(string clientId) => Update(clientId: clientId);
+
+        public RoslynInsertionToolOptions WithClientSecret(string clientSecret) => Update(clientSecret: clientSecret);
+
         public string EnlistmentPath { get; }
 
         public string Username { get; }
@@ -279,6 +291,10 @@ namespace Roslyn.Insertion
         public int UpdateExistingPr { get; }
 
         public string LogFileLocation { get; }
+
+        public string ClientId { get; }
+
+        public string ClientSecret { get; }
 
         public bool Valid
         {

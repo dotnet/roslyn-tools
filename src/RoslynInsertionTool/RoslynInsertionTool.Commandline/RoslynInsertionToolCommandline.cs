@@ -216,6 +216,16 @@ partial class RoslynInsertionToolCommandline
                     options = options.WithPartitionsToBuild(list.ToArray());
                 }
             },
+            {
+                "ci=|clientid=",
+                "The client ID to use for authentication token retreival.",
+                clientId => options = options.WithClientId(clientId)
+            },
+            {
+                "cs=|clientsecret",
+                "The client secret to use for authentication token retreival.",
+                clientSecret => options = options.WithClientSecret(clientSecret)
+            },
         };
 
         List<string> extraArguments = null;
@@ -247,7 +257,7 @@ partial class RoslynInsertionToolCommandline
             Console.WriteLine($"Attempting to get credentials from KeyVault.");
             try
             {
-                var password = await GetSecret(settings.VsoSecretName);
+                var password = await GetSecret(settings.VsoSecretName, options);
                 options = options.WithPassword(password);
             }
             catch (Exception e)
@@ -273,29 +283,32 @@ partial class RoslynInsertionToolCommandline
     /// <summary>
     /// Gets the specified secret from the key vault;
     /// </summary>
-    private static async Task<string> GetSecret(string secretName)
+    private static async Task<string> GetSecret(string secretName, RoslynInsertionToolOptions options)
     {
-        var kv = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(GetAccessToken));
+        var kv = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(GetAccessTokenFunction(options.ClientId, options.ClientSecret)));
         var secret = await kv.GetSecretAsync(Settings.Default.KeyVaultUrl, secretName);
         return secret.Value;
     }
 
-    private static async Task<string> GetAccessToken(string authority, string resource, string scope)
+    private static Func<string, string, string, Task<string>> GetAccessTokenFunction(string clientId, string clientSecret)
     {
-        var context = new AuthenticationContext(authority);
-        AuthenticationResult authResult;
-        if (string.IsNullOrEmpty(WebConfigurationManager.AppSettings["ClientId"]))
+        return async (authority, resource, scope) =>
         {
-            // use default domain authentication
-            authResult = await context.AcquireTokenAsync(resource, Settings.Default.ApplicationId, new UserCredential());
-        }
-        else
-        {
-            // use client authentication; "ClientId" and "ClientSecret" are only available when run as a web job
-            var credentials = new ClientCredential(WebConfigurationManager.AppSettings["ClientId"], WebConfigurationManager.AppSettings["ClientSecret"]);
-            authResult = await context.AcquireTokenAsync(resource, credentials);
-        }
+            var context = new AuthenticationContext(authority);
+            AuthenticationResult authResult;
+            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+            {
+                // use default domain authentication
+                authResult = await context.AcquireTokenAsync(resource, Settings.Default.ApplicationId, new UserCredential());
+            }
+            else
+            {
+                // use client authentication from command line arguments
+                var credentials = new ClientCredential(clientId, clientSecret);
+                authResult = await context.AcquireTokenAsync(resource, credentials);
+            }
 
-        return authResult.AccessToken;
+            return authResult.AccessToken;
+        };
     }
 }
