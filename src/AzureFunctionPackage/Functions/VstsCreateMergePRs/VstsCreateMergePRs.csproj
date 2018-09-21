@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <AzureFunctionFiles Include="$(MSBuildThisFileDirectory)..\Common\auth.csx" />
-    <AzureFunctionFiles Include="$(MSBuildThisFileDirectory)..\Common\config.xml" />
+    <AzureFunctionFiles Include="$(MSBuildThisFileDirectory)..\Common\VstsPrConfig.xml" />
     <AzureFunctionFiles Include="$(MSBuildThisFileDirectory)function.json" />
     <AzureFunctionFiles Include="$(MSBuildThisFileDirectory)project.json" />
     <AzureFunctionFiles Include="$(MSBuildThisFileDirectory)run.csx" />
