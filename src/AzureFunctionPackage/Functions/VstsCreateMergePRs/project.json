@@ -1,0 +1,23 @@
+{
+  "frameworks": {
+    "net46": {
+      "comment": "NOTE: The dependencies listed here must be duplicated in the .csproj for the Azure Function to work.",
+      "dependencies": {
+        "LibGit2Sharp": "0.22.0",
+        "Microsoft.AspNet.WebApi.Client": "5.2.3",
+        "Microsoft.AspNet.WebApi.Core": "5.2.3",
+        "Microsoft.IdentityModel.Clients.ActiveDirectory": "3.13.8",
+        "Microsoft.TeamFoundationServer.Client": "15.112.1",
+        "Microsoft.TeamFoundationServer.ExtendedClient": "15.112.1",
+        "Microsoft.WindowsAzure.ConfigurationManager": "3.2.1",
+        "Newtonsoft.Json": "10.0.3",
+        "NLog": "4.4.0-betaV15",
+        "System.IdentityModel.Tokens.Jwt": "5.2.1",
+        "System.IO.Compression.ZipFile":  "4.3.0",
+        "System.ValueTuple": "4.3.1",
+        "WindowsAzure.ServiceBus": "3.3.2",
+        "Microsoft.Azure.KeyVault":  "2.0.6"
+      }
+    }
+  }
+}
