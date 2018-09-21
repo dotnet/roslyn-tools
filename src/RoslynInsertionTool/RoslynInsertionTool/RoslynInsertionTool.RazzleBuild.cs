@@ -20,13 +20,13 @@ namespace Roslyn.Insertion
                 cancellationToken: cancellationToken);
             if (result.ExitCode != 0 || result.ErrorLines.Any())
             {
-                Log.Error($"Build exited with code {result.ExitCode}");
-                Log.Error($"Output:{Environment.NewLine}{string.Join(Environment.NewLine, result.OutputLines)}");
-                Log.Error($"Errors:{Environment.NewLine}{string.Join(Environment.NewLine, result.ErrorLines)}");
+                Console.WriteLine($"Build exited with code {result.ExitCode}");
+                Console.WriteLine($"Output:{Environment.NewLine}{string.Join(Environment.NewLine, result.OutputLines)}");
+                Console.WriteLine($"Errors:{Environment.NewLine}{string.Join(Environment.NewLine, result.ErrorLines)}");
                 return false;
             }
 
-            Log.Trace($"Build of {relativePathToPartition} output:{Environment.NewLine}{string.Join(Environment.NewLine, result.OutputLines)}");
+            Console.WriteLine($"Build of {relativePathToPartition} output:{Environment.NewLine}{string.Join(Environment.NewLine, result.OutputLines)}");
             return true;
         }
     }

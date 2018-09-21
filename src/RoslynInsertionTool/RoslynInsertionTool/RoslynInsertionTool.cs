@@ -15,26 +15,20 @@ using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 
-using NLog;
-
 namespace Roslyn.Insertion
 {
     public static partial class RoslynInsertionTool
     {
-        private static ILogger Log { get; set; }
-
         private static List<string> WarningMessages { get; } = new List<string>();
 
         private static RoslynInsertionToolOptions Options { get; set; }
 
         public static async Task PerformInsertionAsync(
             RoslynInsertionToolOptions options,
-            ILogger log,
             CancellationToken cancellationToken)
         {
             Options = options;
-            Log = log;
-            Log.Info($"{Environment.NewLine}New Insertion Into {Options.VisualStudioBranchName} Started{Environment.NewLine}");
+            Console.WriteLine($"{Environment.NewLine}New Insertion Into {Options.VisualStudioBranchName} Started{Environment.NewLine}");
 
             GitPullRequest pullRequest = null;
             var shouldRollBackGitChanges = false;
@@ -45,19 +39,19 @@ namespace Roslyn.Insertion
             try
             {
                 // Verify that the arguments we were passed authenticate correctly
-                Log.Trace($"Verifying given authentication for {Options.VSTSUri}");
+                Console.WriteLine($"Verifying given authentication for {Options.VSTSUri}");
                 try
                 {
                     ProjectCollection.Authenticate();
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Could not authenticate with {Options.VSTSUri}");
-                    Log.Error(ex);
+                    Console.WriteLine($"Could not authenticate with {Options.VSTSUri}");
+                    Console.WriteLine(ex);
                     return;
                 }
 
-                Log.Trace($"Verification succeeded for {Options.VSTSUri}");
+                Console.WriteLine($"Verification succeeded for {Options.VSTSUri}");
 
                 // ********************** Create dummy PR *****************************
                 if (Options.CreateDummyPr)
@@ -71,14 +65,14 @@ namespace Roslyn.Insertion
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"Unable to create pull request for '{dummyBranch.FriendlyName}'");
-                        Log.Error(ex);
+                        Console.WriteLine($"Unable to create pull request for '{dummyBranch.FriendlyName}'");
+                        Console.WriteLine(ex);
                         return;
                     }
 
                     if (pullRequest == null)
                     {
-                        Log.Error($"Unable to create pull request for '{dummyBranch.FriendlyName}'");
+                        Console.WriteLine($"Unable to create pull request for '{dummyBranch.FriendlyName}'");
                     }
 
                     return;
@@ -123,7 +117,7 @@ namespace Roslyn.Insertion
                 else
                 {
                     // ****************** Get Latest and Create Branch ***********************
-                    Log.Info($"Getting Latest From {Options.VisualStudioBranchName} and Creating New Branch");
+                    Console.WriteLine($"Getting Latest From {Options.VisualStudioBranchName} and Creating New Branch");
                     branch = string.IsNullOrEmpty(Options.NewBranchName)
                         ? null
                         : GetLatestAndCreateBranch(cancellationToken);
@@ -135,7 +129,7 @@ namespace Roslyn.Insertion
                 {
                     // ************** Update paths to CoreFX libraries ************************
                     cancellationToken.ThrowIfCancellationRequested();
-                    Log.Info($"Update paths to CoreFX libraries");
+                    Console.WriteLine($"Update paths to CoreFX libraries");
                     if (!await TryUpdateFileAsync(
                         artifactsFolder,
                         Path.Combine("ProductData", "ContractAssemblies.props"),
@@ -153,7 +147,7 @@ namespace Roslyn.Insertion
                 {
                     // ************** Update Nuget Packages For Branch************************
                     cancellationToken.ThrowIfCancellationRequested();
-                    Log.Info($"Updating Nuget Packages");
+                    Console.WriteLine($"Updating Nuget Packages");
                     bool success = false;
                     (success, newPackageFiles) = UpdatePackages(
                         buildVersion,
@@ -164,7 +158,7 @@ namespace Roslyn.Insertion
 
                     // ************ Update .corext\Configs\default.config ********************
                     cancellationToken.ThrowIfCancellationRequested();
-                    Log.Info($"Updating CoreXT default.config file");
+                    Console.WriteLine($"Updating CoreXT default.config file");
                     coreXT.SaveConfig();
                 }
 
@@ -172,7 +166,7 @@ namespace Roslyn.Insertion
                 {
                     // ************** Update paths to CoreFX libraries ************************
                     cancellationToken.ThrowIfCancellationRequested();
-                    Log.Info($"Update paths to CoreFX libraries");
+                    Console.WriteLine($"Update paths to CoreFX libraries");
                     if (!await TryUpdateFileAsync(
                         artifactsFolder,
                         Path.Combine("ProductData", "ContractAssemblies.props"),
@@ -188,7 +182,7 @@ namespace Roslyn.Insertion
                 {
                     // ************** Update assembly versions ************************
                     cancellationToken.ThrowIfCancellationRequested();
-                    Log.Info($"Updating assembly versions");
+                    Console.WriteLine($"Updating assembly versions");
                     UpdateAssemblyVersions(artifactsFolder);
 
                     // if we got this far then we definitely need to retain this build
@@ -206,7 +200,7 @@ namespace Roslyn.Insertion
                 if (Options.InsertWillowPackages)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    Log.Info($"Updating CoreXT components file");
+                    Console.WriteLine($"Updating CoreXT components file");
 
                     var components = await GetLatestComponentsAsync(buildToInsert, cancellationToken);
                     var shouldSave = false;
@@ -228,7 +222,7 @@ namespace Roslyn.Insertion
                 // ************* Ensure the build is retained on the servers *************
                 if (Options.RetainInsertedBuild && retainBuild && !buildToInsert.KeepForever.GetValueOrDefault())
                 {
-                    Log.Info("Marking inserted build for retention.");
+                    Console.WriteLine("Marking inserted build for retention.");
                     buildToInsert.KeepForever = true;
                     var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
                     await buildClient.UpdateBuildAsync(buildToInsert, buildToInsert.Id);
@@ -237,23 +231,23 @@ namespace Roslyn.Insertion
                 // ********************* Verify Build Completes **************************
                 if (Options.PartitionsToBuild != null)
                 {
-                    Log.Info($"Verifying build succeeds with changes");
+                    Console.WriteLine($"Verifying build succeeds with changes");
                     foreach (var partition in Options.PartitionsToBuild)
                     {
-                        Log.Info($"Starting build of {partition}");
+                        Console.WriteLine($"Starting build of {partition}");
 
                         if (!(await CanBuildPartitionAsync(partition, cancellationToken)))
                         {
-                            Log.Error($"Build of partition {partition} failed");
+                            Console.WriteLine($"Build of partition {partition} failed");
                             return;
                         }
 
-                        Log.Info($"Build of partition {partition} succeeded");
+                        Console.WriteLine($"Build of partition {partition} succeeded");
                     }
                 }
 
                 // ********************* Trigger a release *****************************
-                Log.Info($"Triggering a release for the build {buildToInsert.BuildNumber}");
+                Console.WriteLine($"Triggering a release for the build {buildToInsert.BuildNumber}");
 
                 var release = await CreateReleaseAsync(buildToInsert, cancellationToken);
 
@@ -264,7 +258,7 @@ namespace Roslyn.Insertion
                 //    where getting a machine can take upto an hour or more.
                 WaitForReleaseCompletion(release, TimeSpan.FromMinutes(10), cancellationToken);
 
-                Log.Info($"Release succesfully triggered");
+                Console.WriteLine($"Release succesfully triggered");
 
                 // ********************* Create pull request *****************************
                 if (branch != null)
@@ -282,15 +276,15 @@ namespace Roslyn.Insertion
                         }
                         catch (Exception ex)
                         {
-                            Log.Error($"Unable to update pull request for '{branch.FriendlyName}'");
-                            Log.Error(ex);
+                            Console.WriteLine($"Unable to update pull request for '{branch.FriendlyName}'");
+                            Console.WriteLine(ex);
                             return;
                         }
                     }
                     else
                     {
                         // create a new PR
-                        Log.Info($"Create Pull Request");
+                        Console.WriteLine($"Create Pull Request");
                         try
                         {
                             branch = PushChanges(branch, buildVersion, cancellationToken);
@@ -306,21 +300,21 @@ namespace Roslyn.Insertion
                                 noProgressOnFailedBuilds = true;
                             }
 
-                            Log.Warn($"Unable to create pull request for '{branch.FriendlyName}'");
-                            Log.Warn(ecx);
+                            Console.WriteLine($"Unable to create pull request for '{branch.FriendlyName}'");
+                            Console.WriteLine(ecx);
                             return;
                         }
                         catch (Exception ex)
                         {
-                            Log.Error($"Unable to create pull request for '{branch.FriendlyName}'");
-                            Log.Error(ex);
+                            Console.WriteLine($"Unable to create pull request for '{branch.FriendlyName}'");
+                            Console.WriteLine(ex);
                             return;
                         }
                     }
 
                     if (pullRequest == null)
                     {
-                        Log.Error($"Unable to create pull request for '{branch.FriendlyName}'");
+                        Console.WriteLine($"Unable to create pull request for '{branch.FriendlyName}'");
                         return;
                     }
                 }
@@ -329,22 +323,32 @@ namespace Roslyn.Insertion
                 if (Options.QueueValidationBuild)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    Log.Info($"Create Validation Build");
+                    Console.WriteLine($"Create Validation Build");
 
                     if (pullRequest == null)
                     {
-                        Log.Error("Unable to create a validation build: no pull request.");
+                        Console.WriteLine("Unable to create a validation build: no pull request.");
                         return;
                     }
 
                     try
                     {
-                        await QueueBuildPolicy(pullRequest, "CloudBuild - Request RPS");
+                        await QueueBuildPolicy(pullRequest, "[Deprecated] ValBuild RPS");
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"Unable to create a CloudBuild validation build for '{pullRequest.SourceRefName}'");
-                        Log.Error(ex);
+                        Console.WriteLine($"Unable to create a deprecated validation build for '{pullRequest.SourceRefName}'");
+                        Console.WriteLine(ex);
+                    }
+
+                    try
+                    {
+                        await QueueBuildPolicy(pullRequest, "CloudBuild - RPS");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Unable to create a CloudBuild validation build for '{pullRequest.SourceRefName}'");
+                        Console.WriteLine(ex);
                     }
                 }
             }
@@ -355,26 +359,23 @@ namespace Roslyn.Insertion
                     isInsertionCancelled = true;
                 }
 
-                Log.Error(ex);
+                Console.WriteLine(ex);
             }
             finally
             {
-                // ************************* Flush Log ***********************************
-                Log.Factory.Flush();
-
                 // ********************* Rollback Git Changes ****************************
                 if (shouldRollBackGitChanges)
                 {
                     try
                     {
-                        Log.Info("Rolling back git changes");
+                        Console.WriteLine("Rolling back git changes");
                         var rollBackCommit = Enlistment.Branches[Options.VisualStudioBranchName].Commits.First();
                         Enlistment.Reset(ResetMode.Hard, rollBackCommit);
                         Enlistment.RemoveUntrackedFiles();
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(ex);
+                        Console.WriteLine(ex);
                     }
                 }
 
@@ -388,13 +389,12 @@ namespace Roslyn.Insertion
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"Unable to send mail, EmailServerName: '{Options.EmailServerName}', MailRecipient: '{Options.MailRecipient}'");
-                        Log.Error(ex);
+                        Console.WriteLine($"Unable to send mail, EmailServerName: '{Options.EmailServerName}', MailRecipient: '{Options.MailRecipient}'");
+                        Console.WriteLine(ex);
                     }
                 }
 
                 Options = null;
-                Log = null;
             }
         }
 
@@ -403,7 +403,7 @@ namespace Roslyn.Insertion
             BuildVersion buildVersion,
             CancellationToken cancellationToken)
         {
-            Log.Info("Updating toolset compiler package");
+            Console.WriteLine("Updating toolset compiler package");
 
             var packagesDir = GetPackagesDirPath(artifactsFolder);
             var toolsetPackagePath = Directory.EnumerateFiles(packagesDir,
@@ -423,7 +423,7 @@ namespace Roslyn.Insertion
 
             // Update .corext/Configs/default.config
             cancellationToken.ThrowIfCancellationRequested();
-            Log.Info("Updateing CoreXT config file");
+            Console.WriteLine("Updateing CoreXT config file");
             coreXT.SaveConfig();
         }
 
@@ -470,7 +470,6 @@ namespace Roslyn.Insertion
         private static void SendMail(GitPullRequest pullRequest, List<string> newPackageFiles,
             bool isInsertionCancelled = false, bool noProgressOnFailedBuilds = false)
         {
-            Log.Factory.Flush();
             using (var mailClient = new SmtpClient(Options.EmailServerName))
             {
                 mailClient.UseDefaultCredentials = true;

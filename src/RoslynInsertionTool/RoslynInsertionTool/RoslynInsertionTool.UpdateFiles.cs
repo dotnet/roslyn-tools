@@ -68,20 +68,20 @@ namespace Roslyn.Insertion
                 workingDirectory: workingDirectory,
                 captureOutput: true,
                 isErrorCodeOk: exitCode => exitCode >= 0 && exitCode <= 7,
-                onErrorDataReceived: s => Log.Error($"Copy files error: {s}"),
-                onOutputDataReceived: s => Log.Info($"{s}"),
+                onErrorDataReceived: s => Console.WriteLine($"Copy files error: {s}"),
+                onOutputDataReceived: s => Console.WriteLine($"{s}"),
                 cancellationToken: cancellationToken);
             foreach (var outputLine in xcopyResult.OutputLines)
             {
-                Log.Info(outputLine);
+                Console.WriteLine(outputLine);
             }
 
             // robocopy returns exit codes 0-16 (inclusive) where 0-7 are success, 8-15 are failure, and 16 is fatal error
             // however, we additionally need to handle negative exit codes for the case of `Process.Kill()`
             if (xcopyResult.ExitCode < 0 || xcopyResult.ExitCode > 7)
             {
-                Log.Error(errorMessage);
-                Log.Error(xcopyResult.ErrorLines);
+                Console.WriteLine(errorMessage);
+                Console.WriteLine(xcopyResult.ErrorLines);
                 return false;
             }
 

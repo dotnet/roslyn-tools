@@ -12,20 +12,14 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 using Mono.Options;
 
-using NLog;
-
 using Roslyn.Insertion;
 
 using static Roslyn.Insertion.RoslynInsertionTool;
 
 partial class RoslynInsertionToolCommandline
 {
-    public static Logger Log => LogManager.GetCurrentClassLogger();
-
     private static async Task MainAsync(string[] args, CancellationToken cancellationToken)
     {
-        PrintSplashScreen();
-
         // ********************** Load Default Settings **************************
         var settings = Settings.Default;
         var options = new RoslynInsertionToolOptions()
@@ -54,7 +48,7 @@ partial class RoslynInsertionToolCommandline
         // ************************ Process Arguments ****************************
         bool showHelp = false;
         cancellationToken.ThrowIfCancellationRequested();
-        Log.Trace($"Processing args: {Environment.NewLine}{string.Join(Environment.NewLine, args)}");
+        Console.WriteLine($"Processing args: {Environment.NewLine}{string.Join(Environment.NewLine, args)}");
         var parser = new OptionSet
         {
             {
@@ -231,14 +225,14 @@ partial class RoslynInsertionToolCommandline
         }
         catch (Exception e)
         {
-            Log.Error("Failed to parse arguments.");
-            Log.Error(e.Message);
+            Console.WriteLine("Failed to parse arguments.");
+            Console.WriteLine(e.Message);
             return;
         }
 
         if (extraArguments.Count > 0)
         {
-            Log.Error($"Unknown arguments: {string.Join(" ", extraArguments)}");
+            Console.WriteLine($"Unknown arguments: {string.Join(" ", extraArguments)}");
             return;
         }
 
@@ -248,11 +242,9 @@ partial class RoslynInsertionToolCommandline
             return;
         }
 
-        EnableFileLogging(options);
-
         if (string.IsNullOrEmpty(options.Password))
         {
-            Log.Trace($"Attempting to get credentials from KeyVault.");
+            Console.WriteLine($"Attempting to get credentials from KeyVault.");
             try
             {
                 var password = await GetSecret(settings.VsoSecretName);
@@ -260,41 +252,22 @@ partial class RoslynInsertionToolCommandline
             }
             catch (Exception e)
             {
-                Log.Trace($"Failed to get credential");
-                Log.Trace(e.Message);
+                Console.WriteLine($"Failed to get credential");
+                Console.WriteLine(e.Message);
                 return;
             }
         }
 
         if (!options.Valid)
         {
-            Log.Error(options.ValidationErrors);
+            Console.WriteLine(options.ValidationErrors);
             parser.WriteOptionDescriptions(Console.Out);
             return;
         }
 
-        Log.Trace($"Processing args succeeded");
+        Console.WriteLine($"Processing args succeeded");
 
-        await PerformInsertionAsync(options, Log, cancellationToken);
-    }
-
-    private static void EnableFileLogging(RoslynInsertionToolOptions options)
-    {
-        var logConfig = LogManager.Configuration;
-
-        // regular file logging
-        var fileTarget = new NLog.Targets.FileTarget("file") { FileName = options.LogFileLocation, Layout = logConfig.Variables["VerboseLayout"] };
-        logConfig.AddTarget(fileTarget);
-        logConfig.AddRule(NLog.LogLevel.Trace, NLog.LogLevel.Fatal, fileTarget);
-
-        // exception logging
-        var exceptionFilter = new NLog.Filters.ConditionBasedFilter() { Condition = "length('${exception}') > 0", Action = NLog.Filters.FilterResult.Ignore };
-        var exceptionFileTarget = new NLog.Targets.FileTarget("fileAsException") { FileName = options.LogFileLocation, Layout = logConfig.Variables["ExceptionVerboselayout"] };
-        var rule = new NLog.Config.LoggingRule("*", NLog.LogLevel.Trace, exceptionFileTarget);
-        rule.Filters.Add(exceptionFilter);
-        logConfig.LoggingRules.Add(rule);
-
-        logConfig.Reload();
+        await PerformInsertionAsync(options, cancellationToken);
     }
 
     /// <summary>

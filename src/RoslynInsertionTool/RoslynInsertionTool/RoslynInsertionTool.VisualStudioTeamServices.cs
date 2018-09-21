@@ -33,7 +33,7 @@ namespace Roslyn.Insertion
 
         private static readonly Lazy<TfsTeamProjectCollection> LazyProjectCollection = new Lazy<Microsoft.TeamFoundation.Client.TfsTeamProjectCollection>(() =>
         {
-            Log.Trace($"Creating TfsTeamProjectCollection object from {Options.VSTSUri}");
+            Console.WriteLine($"Creating TfsTeamProjectCollection object from {Options.VSTSUri}");
             return new TfsTeamProjectCollection(new Uri(Options.VSTSUri), new VssBasicCredential(Options.Username, Options.Password));
         });
 
@@ -41,7 +41,7 @@ namespace Roslyn.Insertion
 
         private static GitPullRequest CreatePullRequest(string sourceBranch, string targetBranch, string description, string buildToInsert)
         {
-            Log.Trace($"Creating pull request sourceBranch:{sourceBranch} targetBranch:{targetBranch} description:{description}");
+            Console.WriteLine($"Creating pull request sourceBranch:{sourceBranch} targetBranch:{targetBranch} description:{description}");
             return new GitPullRequest
             {
                 Title = $"{Options.InsertionName} '{Options.BranchName}/{buildToInsert}' Insertion into {Options.VisualStudioBranchName}",
@@ -54,7 +54,7 @@ namespace Roslyn.Insertion
         private static async Task<GitPullRequest> CreatePullRequestAsync(string branchName, string message, string buildToInsert, CancellationToken cancellationToken)
         {
             var gitClient = ProjectCollection.GetClient<GitHttpClient>();
-            Log.Trace($"Getting remote repository from {Options.VisualStudioBranchName} in {Options.TFSProjectName}");
+            Console.WriteLine($"Getting remote repository from {Options.VisualStudioBranchName} in {Options.TFSProjectName}");
             var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
             return await gitClient.CreatePullRequestAsync(
                     CreatePullRequest("refs/heads/" + branchName, "refs/heads/" + Options.VisualStudioBranchName, message, buildToInsert),
@@ -154,10 +154,10 @@ namespace Roslyn.Insertion
             // ********************* Verify Build Passed *****************************
             cancellationToken.ThrowIfCancellationRequested();
             Build newestBuild = null;
-            Log.Info($"Get Latest Passed Build");
+            Console.WriteLine($"Get Latest Passed Build");
             try
             {
-                Log.Trace($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.BuildQueueName}");
+                Console.WriteLine($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.BuildQueueName}");
                 var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
                 var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
                 var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, BuildResult.Succeeded);
@@ -210,7 +210,7 @@ namespace Roslyn.Insertion
                 if (evaluation != null)
                 {
                     await policyClient.RequeuePolicyEvaluationAsync(repository.ProjectReference.Id, evaluation.EvaluationId);
-                    Log.Info($"Started '{buildPolicy}' build policy on {pullRequest.Description}");
+                    Console.WriteLine($"Started '{buildPolicy}' build policy on {pullRequest.Description}");
                     break;
                 }
 
@@ -224,7 +224,7 @@ namespace Roslyn.Insertion
         private static async Task<Build> GetSpecificBuildAsync(BuildVersion version, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Log.Trace($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.BuildQueueName}");
+            Console.WriteLine($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.BuildQueueName}");
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
             var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
             var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken);
@@ -290,7 +290,7 @@ namespace Roslyn.Insertion
             Directory.CreateDirectory(tempDirectory);
 
             var archiveDownloadPath = Path.Combine(tempDirectory, string.Concat(artifact.Name, ".zip"));
-            Log.Trace($"Downloading artifacts to {archiveDownloadPath}");
+            Console.WriteLine($"Downloading artifacts to {archiveDownloadPath}");
 
             Stopwatch watch = Stopwatch.StartNew();
 
@@ -306,7 +306,7 @@ namespace Roslyn.Insertion
                 File.Delete(archiveDownloadPath);
             }
 
-            Log.Info($"Artifact download took {watch.ElapsedMilliseconds/1000} seconds");
+            Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds/1000} seconds");
 
             return Path.Combine(tempDirectory, artifact.Name);
         }
@@ -320,7 +320,7 @@ namespace Roslyn.Insertion
 
             if (releaseDefinition == null)
             {
-                Log.Error($"Could not find a release definition with name: {ReleaseDefinitionName}");
+                Console.WriteLine($"Could not find a release definition with name: {ReleaseDefinitionName}");
                 return null;
             }
 
@@ -366,7 +366,7 @@ namespace Roslyn.Insertion
             {
                 // Log and swallow exceptions here.
                 // These aren't as severe as to stop creating an insertion PR.
-                Log.Error(exception);
+                Console.WriteLine(exception);
             }
         }
 
@@ -377,7 +377,7 @@ namespace Roslyn.Insertion
                 throw new ArgumentNullException(nameof(release));
             }
 
-            Log.Info("Waiting for release environment to complete. releaseId: {0}, environmentId: {1} in project: {2}", release.Id, environmentId, projectName);
+            Console.WriteLine("Waiting for release environment to complete. releaseId: {0}, environmentId: {1} in project: {2}", release.Id, environmentId, projectName);
 
             EnvironmentStatus environmentStatus;
             ReleaseEnvironment releaseEnvironment;
@@ -415,7 +415,7 @@ namespace Roslyn.Insertion
 
                 if (releaseEnvironment.Status != EnvironmentStatus.Succeeded)
                 {
-                    Log.Error($"The release did not succeed. Take a look at {release.ReleaseDefinitionReference.Url} to find {release.Name} for more details.");
+                    Console.WriteLine($"The release did not succeed. Take a look at {release.ReleaseDefinitionReference.Url} to find {release.Name} for more details.");
                 }
             }
 
@@ -424,7 +424,7 @@ namespace Roslyn.Insertion
 
         private static ReleaseEnvironment GetReleaseEnvironment(string projectName, int releaseId, int releaseEnvironmentId, ReleaseHttpClient releaseClient, CancellationToken cancellationToken)
         {
-            Log.Info("GetReleaseEnvironment: Getting release environment. environmentId: {0}, releaseId:{1}", releaseEnvironmentId, releaseId);
+            Console.WriteLine("GetReleaseEnvironment: Getting release environment. environmentId: {0}, releaseId:{1}", releaseEnvironmentId, releaseId);
 
             return releaseClient.GetReleaseEnvironmentAsync(projectName, releaseId, releaseEnvironmentId, cancellationToken: cancellationToken).SyncResult();
         }
@@ -441,7 +441,7 @@ namespace Roslyn.Insertion
         {
             if (urls == null || urls.Length == 0)
             {
-                Log.Warn("GetComponents: No URLs specified.");
+                Console.WriteLine("GetComponents: No URLs specified.");
                 return Array.Empty<Component>();
             }
 
@@ -457,7 +457,7 @@ namespace Roslyn.Insertion
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, $"Exception thrown creating Uri from {urlString}");
+                    Console.WriteLine($"Exception thrown creating Uri from {urlString}: {ex}");
                     throw;
                 }
 
@@ -516,7 +516,7 @@ namespace Roslyn.Insertion
 
             foreach (var url in urls)
             {
-                Log.Info($"Manifest URL: {url}");
+                Console.WriteLine($"Manifest URL: {url}");
             }
 
             return urls;
@@ -544,7 +544,7 @@ namespace Roslyn.Insertion
                 if(entry == null)
                 {
                     var zipFileEntries = string.Join(Environment.NewLine, zipFile.Entries.Select(x => x.FullName));
-                    Log.Trace($"Listing all log file entries:{Environment.NewLine}{zipFileEntries}");
+                    Console.WriteLine($"Listing all log file entries:{Environment.NewLine}{zipFileEntries}");
                     throw new Exception("This build did not upload its contents to VSTS Drop and is invalid.");
                 }
                 entry.ExtractToFile(tempFile);
