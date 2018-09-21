@@ -129,7 +129,7 @@ namespace SignTool
                 {
                     textWriter.WriteLine($"\t{name}");
                 }
-                _signTool.Sign(files.Select(x => _batchData.FileSignInfoMap[x]).Where(x => !x.IsEmpty), textWriter);
+                _signTool.Sign(round, files.Select(x => _batchData.FileSignInfoMap[x]).Where(x => !x.IsEmpty), textWriter);
             }
 
             void repackFiles(IEnumerable<FileName> files)

@@ -339,13 +339,22 @@ namespace Roslyn.Insertion
 
                     try
                     {
-                        await QueueBuildPolicy(pullRequest, "VAL build with RPS");
+                        await QueueBuildPolicy(pullRequest, "[Deprecated] ValBuild RPS");
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"Unable to create a validation build for '{pullRequest.SourceRefName}'");
+                        Log.Error($"Unable to create a deprecated validation build for '{pullRequest.SourceRefName}'");
                         Log.Error(ex);
-                        return;
+                    }
+
+                    try
+                    {
+                        await QueueBuildPolicy(pullRequest, "CloudBuild - RPS");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"Unable to create a CloudBuild validation build for '{pullRequest.SourceRefName}'");
+                        Log.Error(ex);
                     }
                 }
             }

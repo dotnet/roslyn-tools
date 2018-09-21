@@ -15,7 +15,7 @@ namespace SignTool
 
         bool VerifySignedAssembly(Stream assemblyStream);
 
-        void Sign(IEnumerable<FileSignInfo> filesToSign, TextWriter textWriter);
+        void Sign(int round, IEnumerable<FileSignInfo> filesToSign, TextWriter textWriter);
     }
 
     internal static partial class SignToolFactory
