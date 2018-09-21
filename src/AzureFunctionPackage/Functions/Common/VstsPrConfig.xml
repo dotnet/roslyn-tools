@@ -1,0 +1,8 @@
+<config>
+  <repo name="VSUnitTesting">
+    <merge from="dev15.8.x" to="dev15.9-preview3" />
+    <merge from="dev15.9-preview3" to="dev15.9.x" />
+    <merge from="dev15.9.x" to="dev16.0.x" />
+    <merge from="dev16.0.x" to="master" />
+  </repo>
+</config>
