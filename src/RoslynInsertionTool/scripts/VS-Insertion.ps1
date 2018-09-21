@@ -1,12 +1,4 @@
-##########################################################################
-# Changes to this file will NOT be automatically deployed to the server. #
-#                                                                        #
-# Changes should be made on both the server and in source control.       #
-##########################################################################
-
-# this script has it's own enlistment path, so it shouldn't need the mutex
-
-Set-Location -Path E:\prebuilt\roslyn-tools\RIT
+param([string] $enlistmentPath)
 
 function Do-Insertion(
     $component,
@@ -33,19 +25,16 @@ function Do-Insertion(
         $dropPathFlag = "/dp=$dropPath"
     }
 
-    & .\RIT.exe /ep=E:\VS /in=$component /bn=$fromBranch /vsbn=$toBranch /bq=$queueName /ic=$insertCore /uc=$updatecorextlibraries /ua=$updateassemblyversions /id=$insertDevdiv /qv=$queueValidation $toolsetFlag $dropPathFlag
-
-    $timeStamp = Get-Date -Format o | foreach {$_ -replace ":", "."}
-    Move-Item rit.log E:\logs\RIT\rit.$queueName.$timeStamp.log
+    & .\RIT.exe "/ep=$enlistmentPath" "/in=$component" "/bn=$fromBranch" "/vsbn=$toBranch" "/bq=$queueName" /ic=$insertCore /uc=$updatecorextlibraries /ua=$updateassemblyversions /id=$insertDevdiv /qv=$queueValidation $toolsetFlag $dropPathFlag
 }
 
 ###
 ### F# Insertions (handled by the F# team)
 ###
 
-#Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -fromBranch "dev15.8"        -toBranch "rel/d15.8"    -insertCore "false" -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
-Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -fromBranch "dev15.9"        -toBranch "lab/d15.9stg" -insertCore "false" -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
-Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -fromBranch "dev16.0"        -toBranch "lab/d16.0stg" -insertCore "false" -insertDevdiv "false" -dropPath "\\cpvsbuild\drops\FSharp"
+#Do-Insertion -component "F#" -queueName "FSharp-Signed" -fromBranch "dev15.8" -toBranch "rel/d15.8"    -insertCore "false" -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
+Do-Insertion -component "F#" -queueName "FSharp-Signed" -fromBranch "dev15.9" -toBranch "lab/d15.9stg" -insertCore "false" -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
+Do-Insertion -component "F#" -queueName "FSharp-Signed" -fromBranch "dev16.0" -toBranch "lab/d16.0stg" -insertCore "false" -insertDevdiv "false" -dropPath "\\cpvsbuild\drops\FSharp"
 
 
 ###
