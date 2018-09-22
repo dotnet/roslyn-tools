@@ -14,7 +14,10 @@
         "bin/RoslynTools.BuildTasks/net461/RoslynTools.BuildTasks.dll",
         "bin/RoslynTools.BuildTasks/netcoreapp2.0/publish/RoslynTools.BuildTasks.dll",
         "bin/RoslynTools.RepoToolset/net461/RoslynTools.RepoToolset.dll",
-        "bin/RoslynTools.RepoToolset/netcoreapp2.0/publish/RoslynTools.RepoToolset.dll"
+        "bin/RoslynTools.RepoToolset/netcoreapp2.0/publish/RoslynTools.RepoToolset.dll",
+        "bin/roslyn.optprof/net461/roslyn.optprof.exe",
+        "bin/roslyn.optprof/net461/System.CommandLine.dll",
+        "bin/roslyn.optprof.lib/net461/roslyn.optprof.lib.dll"
       ]
     },
     {

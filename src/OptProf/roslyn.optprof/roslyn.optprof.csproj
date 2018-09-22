@@ -1,0 +1,29 @@
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <CopyNuGetImplementations>true</CopyNuGetImplementations>
+
+    <!-- Using an explicit nuspec file since NuGet Pack target currently doesn't support including dependencies in tools packages -->
+    <IsPackable>true</IsPackable>
+    <NuspecFile>roslyn.optprof.nuspec</NuspecFile>
+    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
+
+    <PackageId>RoslynTools.OptProf</PackageId>
+    <Description>Generates OptProf json data from VSIX</Description>
+    <PackageTags>Roslyn Build Tool OptProf</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="WindowsBase" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
+    <PackageReference Include="System.ValueTuple" Version="$(SystemValueTupleVersion)" />
+    <PackageReference Include="System.CommandLine.Experimental" Version="0.1.0-alpha-63227-01" />
+    <ProjectReference Include="..\roslyn.optprof.lib\roslyn.optprof.lib.csproj" />
+  </ItemGroup>
+</Project>
