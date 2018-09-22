@@ -24,15 +24,15 @@ namespace roslyn.optprof
                 .AddOption(
                     new[] { "-c", "--configFile" },
                     "The absolute path to the OptProf.json config file.",
-                    c => c.WithDefaultValue(() => null).ParseArgumentsAs<string>())
+                    c => c.WithDefaultValue(() => null).LegalFilePathsOnly().ExistingFilesOnly().ParseArgumentsAs<string>())
                 .AddOption(
                     new[] { "-if", "--insertionFolder" },
                     "This is the absolute path to the folder that contains the VSIXes that will be inserted.",
-                    i => i.WithDefaultValue(() => null).ParseArgumentsAs<string>())
+                    i => i.WithDefaultValue(() => null).LegalFilePathsOnly().ParseArgumentsAs<string>())
                 .AddOption(
                     new[] { "-o", "--outputFolder" },
                     "The folder to output the results optprof data to.",
-                    o => o.WithDefaultValue(() => null).ParseArgumentsAs<string>())
+                    o => o.WithDefaultValue(() => null).LegalFilePathsOnly().ParseArgumentsAs<string>())
                 .AddVersionOption()
                 .OnExecute(typeof(Program).GetMethod(nameof(Execute)))
                 .Build();
@@ -40,25 +40,14 @@ namespace roslyn.optprof
             return await parser.InvokeAsync(args);
         }
 
-        private static void Execute(string configFile, string insertionFolder, string outputFolder, IConsole console = null)
+        public static async Task<int> Execute(string configFile, string insertionFolder, string outputFolder, IConsole console = null)
         {
-            if (string.IsNullOrEmpty(configFile))
+            if (string.IsNullOrEmpty(configFile) || string.IsNullOrEmpty(insertionFolder) || string.IsNullOrEmpty(outputFolder))
             {
-                throw new ArgumentException($"must specify '--{nameof(configFile)}'", nameof(configFile));
-            }
-
-            if (string.IsNullOrEmpty(insertionFolder))
-            {
-                throw new ArgumentException($"must specify '--{nameof(insertionFolder)}'", nameof(insertionFolder));
-            }
-
-            if (string.IsNullOrEmpty(outputFolder))
-            {
-                throw new ArgumentException($"must specify '--{nameof(outputFolder)}'", nameof(outputFolder));
+                return 1;
             }
 
             var config = ReadConfigFile(configFile);
-
             foreach (var product in config.Products)
             {
                 string productName = product.Name;
@@ -78,19 +67,21 @@ namespace roslyn.optprof
                             Directory.CreateDirectory(folderToWriteJsonEntires);
                         }
 
-                        WriteEntries(fileEntries, folderToWriteJsonEntires);
+                        await WriteEntriesAsync(fileEntries, folderToWriteJsonEntires);
                     }
                 }
             }
+
+            return 0;
         }
 
-        private static void WriteEntries((string Technology, string RelativeInstallationPath, string InstrumentationArguments)[] fileEntries, string folderToWriteJsonEntires)
+        private static async Task WriteEntriesAsync((string Technology, string RelativeInstallationPath, string InstrumentationArguments)[] fileEntries, string folderToWriteJsonEntires)
         {
             foreach (var entry in fileEntries)
             {
                 var filename = Path.GetFileNameWithoutExtension(entry.RelativeInstallationPath) + ".IBC.json";
                 filename = Path.Combine(folderToWriteJsonEntires, filename);
-                WriteEntry(filename, entry);
+                await WriteEntryAsync(filename, entry);
             }
         }
 
@@ -117,12 +108,12 @@ namespace roslyn.optprof
             }
         }
 
-        private static void WriteEntry(string filename, (string Technology, string RelativeInstallationPath, string InstrumentationArguments) entry)
+        private static async Task WriteEntryAsync(string filename, (string Technology, string RelativeInstallationPath, string InstrumentationArguments) entry)
         {
             using (var writer = new StreamWriter(File.Open(filename, FileMode.Create, FileAccess.Write, FileShare.Read)))
             {
                 string jsonString = ToJsonString(entry);
-                writer.WriteLine(jsonString);
+                await writer.WriteLineAsync(jsonString);
             }
         }
 
