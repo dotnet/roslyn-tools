@@ -18,7 +18,8 @@
         "bin/RoslynTools.RepoToolset/netcoreapp2.0/publish/RoslynTools.RepoToolset.dll",
         "bin/roslyn.optprof/net461/roslyn.optprof.exe",
         "bin/roslyn.optprof/net461/System.CommandLine.dll",
-        "bin/roslyn.optprof.lib/net461/roslyn.optprof.lib.dll"
+        "bin/roslyn.optprof.lib/net461/roslyn.optprof.lib.dll",
+        "bin/roslyn.optprof.runsettings.generator/net461/roslyn.optprof.runsettings.generator.exe",
       ]
     },
     {
@@ -220,6 +221,7 @@
     "System.Xml.XPath.dll",
     "System.Xml.XPath.XDocument.dll",
     "System.Xml.XPath.XmlDocument.dll",
-    "vswhere.exe"
+    "vswhere.exe",
+    "YamlDotNet.dll"
   ]
 }
