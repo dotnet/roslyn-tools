@@ -12,7 +12,7 @@
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
 
     <PackageId>RoslynTools.OptProf</PackageId>
-    <Description>Generates OptProf json data from VSIX</Description>
+    <PackageDescription>Generates OptProf json data from VSIX</PackageDescription>
     <PackageTags>Roslyn Build Tool OptProf</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
