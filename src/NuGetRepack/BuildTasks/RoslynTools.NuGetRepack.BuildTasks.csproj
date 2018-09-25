@@ -11,6 +11,8 @@
     <PackageDescription>Build task for updating version of NuGet packages.</PackageDescription>
     <PackageTags>Roslyn Build Tool NuGet version</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
+    
+    <TargetsForTfmSpecificContentInPackage>_CorePublish;$(TargetsForTfmSpecificContentInPackage)</TargetsForTfmSpecificContentInPackage>  
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Common\NuGetVersionUpdater.cs" Link="NuGetVersionUpdater.cs" />
@@ -27,4 +29,5 @@
   <ItemGroup>
     <InternalsVisibleTo Include="RoslynTools.NuGetRepack.Tests" />
   </ItemGroup>
+  <Target Name="_CorePublish" DependsOnTargets="Publish" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
 </Project>

@@ -12,6 +12,8 @@
     <PackageDescription>Common toolset for repositories</PackageDescription>
     <PackageTags>Roslyn Build Repository Toolset MSBuild SDK</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
+    
+    <TargetsForTfmSpecificContentInPackage>_CorePublish;$(TargetsForTfmSpecificContentInPackage)</TargetsForTfmSpecificContentInPackage>    
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Net.Http" Version="$(SystemNetHttpVersion)" />
@@ -28,4 +30,5 @@
     -->
     <Compile Include="$(RepoRoot)src\BuildTasks\*.cs" />
   </ItemGroup>
+  <Target Name="_CorePublish" DependsOnTargets="Publish" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
 </Project>
