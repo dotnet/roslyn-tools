@@ -84,5 +84,5 @@ steps:
     azureSubscription: 'Roslyn Infrastructure Azure Resource Management'
     appType: functionApp
     webAppName: roslyn-infra-functions
-    Package: 'artifacts/$(BuildConfiguration)/bin/AzureFunctionPackage/AzureFunctionPackage.zip'
+    Package: 'artifacts/bin/AzureFunctionPackage/$(BuildConfiguration)/AzureFunctionPackage.zip'
   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'master'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
