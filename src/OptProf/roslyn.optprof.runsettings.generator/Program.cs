@@ -179,7 +179,8 @@ namespace roslyn.optprof.runsettings.generator
             using (var reader = new JsonTextReader(file))
             {
                 var jsonContent = JObject.ReadFrom(reader);
-                return (true, (string)jsonContent["VSBuildVersion"]);
+                var parts = ((string)((JArray)jsonContent).First["VSBuildVersion"]).Split('.');
+                return (true, parts[2]+"."+parts[3]);
             }
         }
 
