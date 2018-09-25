@@ -37,7 +37,7 @@
     <AzureFunctionFiles Include="$(MSBuildThisFileDirectory)function.json" />
     <AzureFunctionFiles Include="$(MSBuildThisFileDirectory)project.json" />
     <AzureFunctionFiles Include="$(MSBuildThisFileDirectory)run.csx" />
-    <AzureFunctionFiles Include="$(ArtifactsBinDir)\VstsMergeTool\net46\VstsMergeTool.dll" />
+    <AzureFunctionFiles Include="$(ArtifactsBinDir)\VstsMergeTool\$(Configuration)\net46\VstsMergeTool.dll" />
   </ItemGroup>
 
 </Project>
