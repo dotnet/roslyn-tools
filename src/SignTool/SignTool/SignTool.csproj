@@ -12,7 +12,7 @@
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
 
     <PackageId>RoslynTools.SignTool</PackageId>
-    <Description>Build artifact signing tool</Description>
+    <PackageDescription>Build artifact signing tool</PackageDescription>
     <PackageTags>Roslyn Build Tool Signing</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>

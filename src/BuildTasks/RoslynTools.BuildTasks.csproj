@@ -9,7 +9,7 @@
     <NuspecFile>RoslynTools.BuildTasks.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
 
-    <Description>Common toolset build tasks</Description>
+    <PackageDescription>Common toolset build tasks</PackageDescription>
     <PackageTags>Roslyn build tasks</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
