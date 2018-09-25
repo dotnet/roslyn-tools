@@ -20,7 +20,7 @@
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
 
     <PackageId>RoslynTools.VisualStudioInsertionTool</PackageId>
-    <Description>Tool for inserting Roslyn binaries into the Visual Studio repo.</Description>
+    <PackageDescription>Tool for inserting Roslyn binaries into the Visual Studio repo.</PackageDescription>
     <PackageTags>Roslyn Build Tool</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>    
   </PropertyGroup>

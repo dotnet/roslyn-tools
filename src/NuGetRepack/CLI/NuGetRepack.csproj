@@ -10,7 +10,7 @@
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
 
     <PackageId>RoslynTools.NuGetRepack</PackageId>
-    <Description>Tool for updating version of NuGet packages.</Description>
+    <PackageDescription>Tool for updating version of NuGet packages.</PackageDescription>
     <PackageTags>Roslyn Build Tool NuGet version</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>

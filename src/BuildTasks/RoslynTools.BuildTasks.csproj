@@ -9,13 +9,16 @@
     <NuspecFile>RoslynTools.BuildTasks.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
 
-    <Description>Common toolset build tasks</Description>
+    <PackageDescription>Common toolset build tasks</PackageDescription>
     <PackageTags>Roslyn build tasks</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
+    
+    <TargetsForTfmSpecificContentInPackage>_CorePublish;$(TargetsForTfmSpecificContentInPackage)</TargetsForTfmSpecificContentInPackage>  
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Net.Http" Version="$(SystemNetHttpVersion)" />
     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" />
   </ItemGroup>
+  <Target Name="_CorePublish" DependsOnTargets="Publish" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
 </Project>
