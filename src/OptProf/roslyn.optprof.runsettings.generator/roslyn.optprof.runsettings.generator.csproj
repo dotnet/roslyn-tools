@@ -12,7 +12,7 @@
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
 
     <PackageId>Roslyn.OptProf.RunSettings.Generator</PackageId>
-    <Description>Generates RunSettings file for OptProf training runs</Description>
+    <PackageDescription>Generates RunSettings file for OptProf training runs</PackageDescription>
     <PackageTags>Roslyn Build Tool OptProf RunSettings Generator</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
