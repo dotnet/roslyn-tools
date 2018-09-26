@@ -52,15 +52,22 @@
           DependsOnTargets="PreparePackageDirectory">
     <ItemGroup>
       <FilesToCopy Remove="**" />
-      <FilesToCopy Include="$(ArtifactsBinDir)%(AzureFunction.Identity)\%(AzureFunction.TargetFramework)\AzureFunctionFiles\**" />
+      <FilesToCopy Include="$(ArtifactsBinDir)%(AzureFunction.Identity)\$(Configuration)\%(AzureFunction.TargetFramework)\AzureFunctionFiles\**" />
       <FileWrites Include="@(FilesToCopy)" />
     </ItemGroup>
     <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(RootPackageDirectory)\%(AzureFunction.Identity)" />
   </Target>
 
+  <Target Name="EnsurePackageSourceHasAllFunctions">
+    <ItemGroup>
+      <MissingFunctions Include="%(AzureFunction.Identity)" Condition="!Exists('$(RootPackageDirectory)\%(AzureFunction.Identity)')" />
+    </ItemGroup>
+    <Error Text="Azure Functions not found at '$(RootPackageDirectory)', check the body of the `CopyPackageFunctionFiles` target.  Missing functions: @(MissingFunctions)" Condition="'@(MissingFunctions)' != ''" />
+  </Target>
+
   <Target Name="CreateZipPackage"
           AfterTargets="Build"
-          DependsOnTargets="CopyPackageFiles;CopyPackageFunctionFiles"
+          DependsOnTargets="CopyPackageFiles;CopyPackageFunctionFiles;EnsurePackageSourceHasAllFunctions"
           Outputs="$(ZipPackagePath)">
     <ItemGroup>
       <FileWrites Include="$(ZipPackagePath)" />
