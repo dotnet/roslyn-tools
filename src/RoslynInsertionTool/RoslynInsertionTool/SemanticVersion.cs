@@ -38,7 +38,7 @@ namespace Roslyn.Insertion
         internal BuildVersion GetSuffixBuildVersion()
         {
             var parts = Suffix.Split('-');
-            return new BuildVersion(int.Parse(parts[parts.Length - 2]), int.Parse(parts[parts.Length - 1]));
+            return new BuildVersion(int.Parse(parts[2]), int.Parse(parts[3]));
         }
     }
 }
