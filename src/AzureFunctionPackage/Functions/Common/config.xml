@@ -33,7 +33,8 @@
     <merge from="dev15.9.x" to="dev16.0.x" />
     <merge from="dev16.0.x" to="master" />
 
-    <merge from="dev15.9-preview2" to="dev15.9.x" />
+    <merge from="dev15.9-preview2" to="dev15.9-preview3" />
+    <merge from="dev15.9-preview3" to="dev15.9.x" />
   </repo>
   <repo owner="dotnet" name="project-system">
     <merge from="dev15.0.x" to="dev15.8.x" />
