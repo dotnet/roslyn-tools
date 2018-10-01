@@ -67,7 +67,7 @@ namespace Roslyn.Insertion
                     {
                         CreateDummyCommit(cancellationToken);
                         PushChanges(dummyBranch, cancellationToken);
-                        pullRequest = await CreatePullRequestAsync(dummyBranch.FriendlyName, $"DUMMY INSERTION FOR {Options.InsertionName}", cancellationToken);
+                        pullRequest = await CreatePullRequestAsync(dummyBranch.FriendlyName, $"DUMMY INSERTION FOR {Options.InsertionName}", "Not Specified", cancellationToken);
                     }
                     catch (Exception ex)
                     {
@@ -294,7 +294,7 @@ namespace Roslyn.Insertion
                         try
                         {
                             branch = PushChanges(branch, buildVersion, cancellationToken);
-                            pullRequest = await CreatePullRequestAsync(branch.FriendlyName, prDescription, cancellationToken);
+                            pullRequest = await CreatePullRequestAsync(branch.FriendlyName, prDescription, buildVersion.ToString(), cancellationToken);
                             shouldRollBackGitChanges = false;
                         }
                         catch (EmptyCommitException ecx)

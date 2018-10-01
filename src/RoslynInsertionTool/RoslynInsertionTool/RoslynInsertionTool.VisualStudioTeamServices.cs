@@ -39,25 +39,25 @@ namespace Roslyn.Insertion
 
         private static TfsTeamProjectCollection ProjectCollection => LazyProjectCollection.Value;
 
-        private static GitPullRequest CreatePullRequest(string sourceBranch, string targetBranch, string description)
+        private static GitPullRequest CreatePullRequest(string sourceBranch, string targetBranch, string description, string buildToInsert)
         {
             Log.Trace($"Creating pull request sourceBranch:{sourceBranch} targetBranch:{targetBranch} description:{description}");
             return new GitPullRequest
             {
-                Title = $"{Options.InsertionName} '{Options.BranchName}/{Options.SpecificBuild}' Insertion into {Options.VisualStudioBranchName} ",
+                Title = $"{Options.InsertionName} '{Options.BranchName}/{buildToInsert}' Insertion into {Options.VisualStudioBranchName}",
                 Description = description,
                 SourceRefName = sourceBranch,
                 TargetRefName = targetBranch
             };
         }
 
-        private static async Task<GitPullRequest> CreatePullRequestAsync(string branchName, string message, CancellationToken cancellationToken)
+        private static async Task<GitPullRequest> CreatePullRequestAsync(string branchName, string message, string buildToInsert, CancellationToken cancellationToken)
         {
             var gitClient = ProjectCollection.GetClient<GitHttpClient>();
             Log.Trace($"Getting remote repository from {Options.VisualStudioBranchName} in {Options.TFSProjectName}");
             var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
             return await gitClient.CreatePullRequestAsync(
-                    CreatePullRequest("refs/heads/" + branchName, "refs/heads/" + Options.VisualStudioBranchName, message),
+                    CreatePullRequest("refs/heads/" + branchName, "refs/heads/" + Options.VisualStudioBranchName, message, buildToInsert),
                     repository.Id,
                     supportsIterations: null,
                     userState: null,
