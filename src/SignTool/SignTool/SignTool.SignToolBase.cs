@@ -36,7 +36,7 @@ namespace SignTool
 
             public void Sign(int round, IEnumerable<FileSignInfo> filesToSign, TextWriter textWriter)
             {
-                var buildFilePath = Path.Combine(AppPath, "build.proj");
+                var buildFilePath = Path.Combine(IntermediateOutputPath, "build.proj");
                 
                 var content = GenerateBuildFileContent(filesToSign);
                 File.WriteAllText(buildFilePath, content);
