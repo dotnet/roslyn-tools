@@ -44,7 +44,7 @@ namespace Roslyn.Insertion
             Log.Trace($"Creating pull request sourceBranch:{sourceBranch} targetBranch:{targetBranch} description:{description}");
             return new GitPullRequest
             {
-                Title = $"{Options.InsertionName} Insertion Into {Options.VisualStudioBranchName} ",
+                Title = $"{Options.InsertionName} '{Options.BranchName}/{Options.SpecificBuild}' Insertion into {Options.VisualStudioBranchName} ",
                 Description = description,
                 SourceRefName = sourceBranch,
                 TargetRefName = targetBranch
