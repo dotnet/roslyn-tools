@@ -49,12 +49,13 @@ steps:
     nuGetVersion: 4.0.0.2283
   condition: succeeded()
 
+# Note that insertion scripts currently depend on bin directory being uploaded to drops.
 - task: CopyPublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:
     CopyRoot: '$(Build.SourcesDirectory)'
     Contents: |
-     artifacts\bin\$(BuildConfiguration)
+     artifacts\bin
      artifacts\log\$(BuildConfiguration)
      artifacts\TestResults\$(BuildConfiguration)
      artifacts\SymStore\$(BuildConfiguration)
