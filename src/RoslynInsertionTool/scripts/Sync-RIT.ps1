@@ -45,4 +45,4 @@ $syncLocation = "E:\prebuilt\roslyn-tools\RIT"
 $arrayList = Get-ChildItem -Path "\\cpvsbuild\drops\roslyn\Roslyn-Tools\$syncBranchName"
 $latestBuild = [LogicalStringComparer]::Sort($arrayList)[-1].FullName
 
-robocopy "$latestBuild\bin\RIT\net46" $syncLocation /MIR /FFT /Z /XA:H /W:5
+robocopy "$latestBuild\bin\RIT\Release\net46" $syncLocation /MIR /FFT /Z /XA:H /W:5
