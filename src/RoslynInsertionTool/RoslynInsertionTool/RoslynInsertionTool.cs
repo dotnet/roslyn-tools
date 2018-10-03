@@ -349,7 +349,7 @@ namespace Roslyn.Insertion
 
                     try
                     {
-                        await QueueBuildPolicy(pullRequest, "CloudBuild - RPS");
+                        await QueueBuildPolicy(pullRequest, "CloudBuild - Request RPS");
                     }
                     catch (Exception ex)
                     {
