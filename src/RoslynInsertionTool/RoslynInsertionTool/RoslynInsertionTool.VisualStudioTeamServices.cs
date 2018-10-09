@@ -114,17 +114,25 @@ namespace Roslyn.Insertion
             var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
             var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, resultFilter: null);
 
-            return (await BuildsWithValidArtifactsAsync(buildClient, cancellationToken, from build in builds
+            return (await GetInsertableBuildsAsync(buildClient, cancellationToken, from build in builds
                     orderby build.FinishTime descending
                     select build)).FirstOrDefault();
         }
 
-        private static async Task<List<Build>> BuildsWithValidArtifactsAsync(BuildHttpClient buildClient, CancellationToken cancellationToken,
+        /// <summary>
+        /// Insertable builds have valid artifacts and are not marked as 'DoesNotRequireInsertion_[TargetBranchName]'.
+        /// </summary>
+        private static async Task<List<Build>> GetInsertableBuildsAsync(BuildHttpClient buildClient, CancellationToken cancellationToken,
                         IEnumerable<Build> builds)
         {
             List<Build> buildsWithValidArtifacts = new List<Build>();
             foreach (var build in builds)
             {
+                if (build.Tags?.Contains($"DoesNotRequireInsertion_{Options.VisualStudioBranchName}") == true)
+                {
+                    continue;
+                }
+
                 var artifacts = await buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken);
                 // A valid artifact would:
                 // 1. Have a resource
@@ -155,7 +163,7 @@ namespace Roslyn.Insertion
                 var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, BuildResult.Succeeded);
 
                 // Get the latest build with valid artifacts.
-                newestBuild = (await BuildsWithValidArtifactsAsync(buildClient, cancellationToken,
+                newestBuild = (await GetInsertableBuildsAsync(buildClient, cancellationToken,
                                     from build in builds
                                     orderby build.FinishTime descending
                                     select build)).FirstOrDefault();
@@ -238,7 +246,7 @@ namespace Roslyn.Insertion
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
 
             Debug.Assert(ReferenceEquals(build,
-                (await BuildsWithValidArtifactsAsync(buildClient, cancellationToken, new[] { build })).Single()));
+                (await GetInsertableBuildsAsync(buildClient, cancellationToken, new[] { build })).Single()));
 
             // Pull the build directory from the API
             var artifacts = await buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken);
