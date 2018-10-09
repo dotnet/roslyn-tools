@@ -51,7 +51,8 @@
     <merge from="release/2.1.3xx" to="release/2.1.4xx" />
     <merge from="release/2.1.4xx" to="release/2.1.5xx" />
     <merge from="release/2.1.5xx" to="release/2.2.1xx" />
-    <merge from="release/2.2.1xx" to="master" />
+    <merge from="release/2.2.1xx" to="release/2.2.2xx" />
+    <merge from="release/2.2.2xx" to="master" />
   </repo>
   <repo owner="dotnet" name="sdk">
     <merge from="release/2.0.0" to="release/2.1" />
@@ -61,7 +62,8 @@
     <merge from="release/2.1.3xx" to="release/2.1.4xx" />
     <merge from="release/2.1.4xx" to="release/2.1.5xx" />
     <merge from="release/2.1.5xx" to="release/2.2.1xx" />
-    <merge from="release/2.2.1xx" to="master" />
+    <merge from="release/2.2.1xx" to="release/2.2.2xx" />
+    <merge from="release/2.2.2xx" to="master" />
   </repo>
   <repo owner="Microsoft" name="visualfsharp">
     <merge from="dev15.8" to="dev15.9" />
