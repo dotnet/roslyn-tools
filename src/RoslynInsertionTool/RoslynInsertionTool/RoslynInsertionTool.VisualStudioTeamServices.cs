@@ -120,7 +120,7 @@ namespace Roslyn.Insertion
         }
 
         /// <summary>
-        /// Insertable builds have valid artifacts and are not marked as 'DoesNotRequireInsertion'.
+        /// Insertable builds have valid artifacts and are not marked as 'DoesNotRequireInsertion_[TargetBranchName]'.
         /// </summary>
         private static async Task<List<Build>> GetInsertableBuildsAsync(BuildHttpClient buildClient, CancellationToken cancellationToken,
                         IEnumerable<Build> builds)
@@ -128,7 +128,7 @@ namespace Roslyn.Insertion
             List<Build> buildsWithValidArtifacts = new List<Build>();
             foreach (var build in builds)
             {
-                if (build.Tags.Contains("DoesNotRequireInsertion"))
+                if (build.Tags.Contains($"DoesNotRequireInsertion_{Options.VisualStudioBranchName}"))
                 {
                     continue;
                 }
