@@ -11,7 +11,7 @@
         "Microsoft.TeamFoundationServer.ExtendedClient": "15.112.1",
         "Microsoft.WindowsAzure.ConfigurationManager": "3.2.1",
         "Newtonsoft.Json": "10.0.3",
-        "NLog": "4.4.0-betaV15",
+        "NLog": "4.4.0",
         "System.IdentityModel.Tokens.Jwt": "5.2.1",
         "System.IO.Compression.ZipFile":  "4.3.0",
         "System.ValueTuple": "4.3.1",
