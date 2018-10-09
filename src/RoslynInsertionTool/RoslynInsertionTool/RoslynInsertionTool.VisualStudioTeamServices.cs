@@ -128,7 +128,7 @@ namespace Roslyn.Insertion
             List<Build> buildsWithValidArtifacts = new List<Build>();
             foreach (var build in builds)
             {
-                if (build.Tags.Contains($"DoesNotRequireInsertion_{Options.VisualStudioBranchName}"))
+                if (build.Tags?.Contains($"DoesNotRequireInsertion_{Options.VisualStudioBranchName}") == true)
                 {
                     continue;
                 }
