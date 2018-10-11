@@ -24,10 +24,8 @@ Write-Host ""
 $vsbn = Read-Host -Prompt "Visual Sudio branch name (insertion destination)"
 
 $ic = "true"
-switch ($componentName) {
-    (($_ -eq "Live Unit Testing") -or ($_ -eq "Project System") -or ($_ -eq "F#")) {
-        $ic = "false"
-    }
+if (($componentName -eq "Live Unit Testing") -or ($componentName -eq "Project System") -or ($componentName -eq "F#")) {
+    $ic = "false"
 }
 
 $id = "false"
