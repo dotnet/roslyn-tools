@@ -59,10 +59,10 @@ Do-Insertion -component "F#"                -queueName "FSharp-Signed"         -
 #Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev15.8.x"         -toBranch "rel/d15.8" -insertCore "true"                       -queueValidation "true" -dropPath "server"
 
 # Dev15.9 Preview 4
-Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev15.9.x-vs-deps" -toBranch "lab/d15.9stg" -insertToolset "false" -insertDevdiv "false" -updatecorextlibraries "true"
-Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "dev15.9.x"         -toBranch "lab/d15.9stg" -insertCore "false"    -insertDevdiv "false" -queueValidation "true"
-Do-Insertion -component "Project System"    -queueName "DotNet-Project-System" -fromBranch "dev15.9.x"         -toBranch "lab/d15.9stg" -insertCore "false"    -insertDevdiv "false" -queueValidation "true" -updateassemblyversions "false"
-Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev15.9.x"         -toBranch "lab/d15.9stg" -insertCore "true"                           -queueValidation "true" -dropPath "server"
+#Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev15.9.x-vs-deps" -toBranch "lab/d15.9stg" -insertToolset "false" -insertDevdiv "false" -updatecorextlibraries "true"
+#Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "dev15.9.x"         -toBranch "lab/d15.9stg" -insertCore "false"    -insertDevdiv "false" -queueValidation "true"
+#Do-Insertion -component "Project System"    -queueName "DotNet-Project-System" -fromBranch "dev15.9.x"         -toBranch "lab/d15.9stg" -insertCore "false"    -insertDevdiv "false" -queueValidation "true" -updateassemblyversions "false"
+#Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev15.9.x"         -toBranch "lab/d15.9stg" -insertCore "true"                           -queueValidation "true" -dropPath "server"
 
 # Dev16 Preview 1
 Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev16.0.x-vs-deps" -toBranch "lab/d16.0stg" -insertToolset "true" -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
