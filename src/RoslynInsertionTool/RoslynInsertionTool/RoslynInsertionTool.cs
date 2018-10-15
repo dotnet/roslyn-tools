@@ -23,7 +23,7 @@ namespace Roslyn.Insertion
 
         private static RoslynInsertionToolOptions Options { get; set; }
 
-        public static async Task PerformInsertionAsync(
+        public static async Task<bool> PerformInsertionAsync(
             RoslynInsertionToolOptions options,
             CancellationToken cancellationToken)
         {
@@ -46,7 +46,7 @@ namespace Roslyn.Insertion
                 {
                     Console.WriteLine($"Could not authenticate with {Options.VSTSUri}");
                     Console.WriteLine(ex);
-                    return;
+                    return false;
                 }
 
                 Console.WriteLine($"Verification succeeded for {Options.VSTSUri}");
@@ -65,15 +65,16 @@ namespace Roslyn.Insertion
                     {
                         Console.WriteLine($"Unable to create pull request for '{dummyBranch.FriendlyName}'");
                         Console.WriteLine(ex);
-                        return;
+                        return false;
                     }
 
                     if (pullRequest == null)
                     {
                         Console.WriteLine($"Unable to create pull request for '{dummyBranch.FriendlyName}'");
+                        return false;
                     }
 
-                    return;
+                    return true;
                 }
 
                 // ********************** Get Last Insertion *****************************
@@ -135,7 +136,7 @@ namespace Roslyn.Insertion
                         onlyCopyIfFileDoesNotExistAtDestination: false,
                         cancellationToken: cancellationToken))
                     {
-                        return;
+                        return false;
                     }
                 }
 
@@ -172,7 +173,7 @@ namespace Roslyn.Insertion
                         onlyCopyIfFileDoesNotExistAtDestination: false,
                         cancellationToken: cancellationToken))
                     {
-                        return;
+                        return false;
                     }
                 }
 
@@ -237,7 +238,7 @@ namespace Roslyn.Insertion
                         if (!(await CanBuildPartitionAsync(partition, cancellationToken)))
                         {
                             Console.WriteLine($"Build of partition {partition} failed");
-                            return;
+                            return false;
                         }
 
                         Console.WriteLine($"Build of partition {partition} succeeded");
@@ -276,7 +277,7 @@ namespace Roslyn.Insertion
                         {
                             Console.WriteLine($"Unable to update pull request for '{branch.FriendlyName}'");
                             Console.WriteLine(ex);
-                            return;
+                            return false;
                         }
                     }
                     else
@@ -293,20 +294,20 @@ namespace Roslyn.Insertion
                         {
                             Console.WriteLine($"Unable to create pull request for '{branch.FriendlyName}'");
                             Console.WriteLine(ecx);
-                            return;
+                            return false;
                         }
                         catch (Exception ex)
                         {
                             Console.WriteLine($"Unable to create pull request for '{branch.FriendlyName}'");
                             Console.WriteLine(ex);
-                            return;
+                            return false;
                         }
                     }
 
                     if (pullRequest == null)
                     {
                         Console.WriteLine($"Unable to create pull request for '{branch.FriendlyName}'");
-                        return;
+                        return false;
                     }
                 }
 
@@ -319,7 +320,7 @@ namespace Roslyn.Insertion
                     if (pullRequest == null)
                     {
                         Console.WriteLine("Unable to create a validation build: no pull request.");
-                        return;
+                        return false;
                     }
 
                     try
@@ -342,10 +343,13 @@ namespace Roslyn.Insertion
                         Console.WriteLine(ex);
                     }
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
+                return false;
             }
             finally
             {

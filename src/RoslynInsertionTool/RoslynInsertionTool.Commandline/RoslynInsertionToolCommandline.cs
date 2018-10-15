@@ -18,7 +18,7 @@ using static Roslyn.Insertion.RoslynInsertionTool;
 
 partial class RoslynInsertionToolCommandline
 {
-    private static async Task MainAsync(string[] args, CancellationToken cancellationToken)
+    private static async Task<bool> MainAsync(string[] args, CancellationToken cancellationToken)
     {
         // ********************** Load Default Settings **************************
         var settings = Settings.Default;
@@ -225,19 +225,19 @@ partial class RoslynInsertionToolCommandline
         {
             Console.WriteLine("Failed to parse arguments.");
             Console.WriteLine(e.Message);
-            return;
+            return false;
         }
 
         if (extraArguments.Count > 0)
         {
             Console.WriteLine($"Unknown arguments: {string.Join(" ", extraArguments)}");
-            return;
+            return false;
         }
 
         if (showHelp)
         {
             parser.WriteOptionDescriptions(Console.Out);
-            return;
+            return true;
         }
 
         if (string.IsNullOrEmpty(options.Password))
@@ -252,7 +252,7 @@ partial class RoslynInsertionToolCommandline
             {
                 Console.WriteLine($"Failed to get credential");
                 Console.WriteLine(e.Message);
-                return;
+                return false;
             }
         }
 
@@ -260,12 +260,12 @@ partial class RoslynInsertionToolCommandline
         {
             Console.WriteLine(options.ValidationErrors);
             parser.WriteOptionDescriptions(Console.Out);
-            return;
+            return false;
         }
 
         Console.WriteLine($"Processing args succeeded");
 
-        await PerformInsertionAsync(options, cancellationToken);
+        return await PerformInsertionAsync(options, cancellationToken);
     }
 
     /// <summary>
