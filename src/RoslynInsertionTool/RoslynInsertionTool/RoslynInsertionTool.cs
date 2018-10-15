@@ -54,7 +54,7 @@ namespace Roslyn.Insertion
                 // ********************** Create dummy PR *****************************
                 if (Options.CreateDummyPr)
                 {
-                    var dummyBranch = GetLatestAndCreateBranch(cancellationToken);
+                    var dummyBranch = CreateBranch(cancellationToken);
                     try
                     {
                         CreateDummyCommit(cancellationToken);
@@ -114,11 +114,11 @@ namespace Roslyn.Insertion
                 }
                 else
                 {
-                    // ****************** Get Latest and Create Branch ***********************
-                    Console.WriteLine($"Getting Latest From {Options.VisualStudioBranchName} and Creating New Branch");
+                    // ****************** Create Branch ***********************
+                    Console.WriteLine("Creating New Branch");
                     branch = string.IsNullOrEmpty(Options.NewBranchName)
                         ? null
-                        : GetLatestAndCreateBranch(cancellationToken);
+                        : CreateBranch(cancellationToken);
                 }
 
                 shouldRollBackGitChanges = branch != null;

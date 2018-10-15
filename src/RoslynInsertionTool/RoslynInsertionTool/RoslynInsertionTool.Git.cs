@@ -62,12 +62,9 @@ namespace Roslyn.Insertion
             Console.WriteLine($"Committing took {watch.Elapsed.TotalSeconds} seconds");
         }
 
-        private static Branch CreateBranch(Repository enlistment, FetchOptions fetchOptions, CancellationToken cancellationToken)
+        private static Branch CreateBranch(Repository enlistment, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            // Fetch latest changes
-            FetchLatest(enlistment, fetchOptions);
 
             // Create branch and remote tracking branch
             CreateNewBranch(enlistment, cancellationToken, out string branchName, out var newLocalBranch);
@@ -92,15 +89,6 @@ namespace Roslyn.Insertion
             Console.WriteLine($"Creating branch took {watch.Elapsed.TotalSeconds} seconds");
         }
 
-        private static void FetchLatest(Repository enlistment, FetchOptions fetchOptions)
-        {
-            var origin = enlistment.Network.Remotes["origin"];
-            Console.WriteLine($"Fetching from {origin.Url}");
-            var watch = Stopwatch.StartNew();
-            enlistment.Fetch(origin.Name, GetFetchOptions());
-            Console.WriteLine($"Fetching took {watch.Elapsed.TotalSeconds} seconds");
-        }
-
         private static string GetAbsolutePathForEnlistment() => Path.GetFullPath(Options.EnlistmentPath);
 
         private static CheckoutOptions GetCheckoutOptions()
@@ -115,7 +103,7 @@ namespace Roslyn.Insertion
 
         private static Credentials GetCredentials()
         {
-            Console.WriteLine("Getting fetch options");
+            Console.WriteLine("Getting credentials");
             return new UsernamePasswordCredentials
             {
                 Username = Options.Username,
@@ -123,23 +111,12 @@ namespace Roslyn.Insertion
             };
         }
 
-        private static FetchOptions GetFetchOptions()
-        {
-            Console.WriteLine("Getting fetch options");
-            return new FetchOptions
-            {
-                CredentialsProvider = (url, usernameFromUrl, types) => GetCredentials(),
-                Prune = true,
-            };
-        }
-
-        private static Branch GetLatestAndCreateBranch(CancellationToken cancellationToken)
+        private static Branch CreateBranch(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             Console.WriteLine($"Loading git enlistment at {Options.EnlistmentPath}");
             var enlistment = Enlistment;
-            var fetchOptions = GetFetchOptions();
-            return CreateBranch(enlistment, fetchOptions, cancellationToken);
+            return CreateBranch(enlistment, cancellationToken);
         }
 
         private static PushOptions GetPushOptions()
@@ -176,7 +153,6 @@ namespace Roslyn.Insertion
                 branchToSwitchTo = branchToSwitchTo.Substring(RefsHeadsPrefix.Length);
             }
 
-            FetchLatest(Enlistment, GetFetchOptions());
             var destinationBranch = Enlistment.Branches[branchToSwitchTo];
             if (destinationBranch == null)
             {
