@@ -19,4 +19,4 @@ if ($insertDevDiv) {
     $idFlag = "false"
 }
 
-& .\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/vsbn=$visualStudioBranchName" "/bq=$buildQueueName" /ic=$icFlag /id=$idFlag /qv=true /updateexistingpr=$existingPr /u=vslsnap@microsoft.com /mr=vslsnap@microsoft.com "/ep=$enlistmentPath"
+& .\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/vsbn=$visualStudioBranchName" "/bq=$buildQueueName" /ic=$icFlag /id=$idFlag /qv=true /updateexistingpr=$existingPr /u=vslsnap@microsoft.com "/ep=$enlistmentPath"

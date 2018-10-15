@@ -32,6 +32,6 @@ $id = "false"
 # only rarely will DevDiv packages be inserted, and only for Roslyn
 
 cd E:\prebuilt\roslyn-tools\RIT
-Write-Host "Executing: & .\RIT.exe `"/in=$componentName`" `"/bn=$bn`" `"/vsbn=$vsbn`" `"/bq=$bq`" /ic=$ic /id=$id /qv=true /u=vslsnap@microsoft.com /mr=vslsnap@microsoft.com `"/ep=$EnlistmentPath`""
-                       & .\RIT.exe  "/in=$componentName"   "/bn=$bn"   "/vsbn=$vsbn"   "/bq=$bq"  /ic=$ic /id=$id /qv=true /u=vslsnap@microsoft.com /mr=vslsnap@microsoft.com  "/ep=$EnlistmentPath"
+Write-Host "Executing: & .\RIT.exe `"/in=$componentName`" `"/bn=$bn`" `"/vsbn=$vsbn`" `"/bq=$bq`" /ic=$ic /id=$id /qv=true /u=vslsnap@microsoft.com `"/ep=$EnlistmentPath`""
+                       & .\RIT.exe  "/in=$componentName"   "/bn=$bn"   "/vsbn=$vsbn"   "/bq=$bq"  /ic=$ic /id=$id /qv=true /u=vslsnap@microsoft.com  "/ep=$EnlistmentPath"
 pause

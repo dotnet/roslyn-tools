@@ -31,8 +31,6 @@ partial class RoslynInsertionToolCommandline
             .WithTFSProjectName(settings.TFSProjectName)
             .WithBuildDropPath(settings.BuildDropPath)
             .WithNewBranchName(settings.NewBranchName)
-            .WithEmailServerName(settings.EmailServerName)
-            .WithMailRecipient(settings.MailRecipient)
             .WithInsertCoreXTPackages(settings.InsertCoreXTPackages)
             .WithUpdateCoreXTLLibraries(settings.UpdateCoreXTLibraries)
             .WithInsertDevDivSourceFiles(settings.InsertDevDivSourceFiles)
@@ -115,16 +113,6 @@ partial class RoslynInsertionToolCommandline
                 "sb=|specificbuild=",
                 "Only the latest build is inserted by default, and `rit.exe` will exit if no discovered passing builds are newer than the currently inserted version. By specifying this setting `rit.exe` will skip this logic and insert the specified build.",
                 specificbuild => options = options.WithSpecificBuild(specificbuild)
-            },
-            {
-                "esn=|emailservername=",
-                $"Server to use to send status emails. Defaults to \"{options.EmailServerName}\".",
-                emailServerName => options = options.WithEmailServerName(emailServerName)
-            },
-            {
-                "mr=|mailrecipient=",
-                $"E-mail address to send status emails. Defaults to \"{options.MailRecipient}\".",
-                mailRecipient => options = options.WithMailRecipient(mailRecipient)
             },
             {
                 "ic=|insertcorextpackages=",

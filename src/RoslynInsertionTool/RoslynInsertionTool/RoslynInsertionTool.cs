@@ -33,8 +33,6 @@ namespace Roslyn.Insertion
             GitPullRequest pullRequest = null;
             var shouldRollBackGitChanges = false;
             var newPackageFiles = new List<string>();
-            var isInsertionCancelled = false;
-            var noProgressOnFailedBuilds = false;
 
             try
             {
@@ -293,13 +291,6 @@ namespace Roslyn.Insertion
                         }
                         catch (EmptyCommitException ecx)
                         {
-                            isInsertionCancelled = true;
-
-                            if (latestBuild != null && latestBuild.Result != BuildResult.Succeeded)
-                            {
-                                noProgressOnFailedBuilds = true;
-                            }
-
                             Console.WriteLine($"Unable to create pull request for '{branch.FriendlyName}'");
                             Console.WriteLine(ecx);
                             return;
@@ -354,11 +345,6 @@ namespace Roslyn.Insertion
             }
             catch (Exception ex)
             {
-                if (ex is OutdatedPackageException || ex is OperationCanceledException)
-                {
-                    isInsertionCancelled = true;
-                }
-
                 Console.WriteLine(ex);
             }
             finally
@@ -375,21 +361,6 @@ namespace Roslyn.Insertion
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(ex);
-                    }
-                }
-
-                // ********************* Send Status Mail ********************************
-                if (!string.IsNullOrEmpty(Options.EmailServerName) &&
-                    !string.IsNullOrEmpty(Options.MailRecipient))
-                {
-                    try
-                    {
-                        SendMail(pullRequest, newPackageFiles, isInsertionCancelled, noProgressOnFailedBuilds);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Unable to send mail, EmailServerName: '{Options.EmailServerName}', MailRecipient: '{Options.MailRecipient}'");
                         Console.WriteLine(ex);
                     }
                 }
@@ -465,59 +436,6 @@ namespace Roslyn.Insertion
             }
 
             return bodyHtml.ToString().Replace("\n", "<br/>");
-        }
-
-        private static void SendMail(GitPullRequest pullRequest, List<string> newPackageFiles,
-            bool isInsertionCancelled = false, bool noProgressOnFailedBuilds = false)
-        {
-            using (var mailClient = new SmtpClient(Options.EmailServerName))
-            {
-                mailClient.UseDefaultCredentials = true;
-
-                var from = new MailAddress(Options.Username);
-                var to = new MailAddress(Options.MailRecipient);
-                using (var mailMessage = new MailMessage(from, to))
-                {
-                    if (pullRequest != null)
-                    {
-                        mailMessage.Subject = $"{Options.InsertionName} insertion from {Options.BuildQueueName}/{Options.BranchName}/{Options.BuildConfig} into {Options.VisualStudioBranchName} SUCCEEDED";
-                        mailMessage.SubjectEncoding = Encoding.UTF8;
-                        mailMessage.IsBodyHtml = true;
-                        mailMessage.Body = GetHTMLSuccessMessage(pullRequest, newPackageFiles);
-                        mailMessage.BodyEncoding = Encoding.UTF8;
-                    }
-                    else
-                    {
-                        string insertionStatus;
-                        if (noProgressOnFailedBuilds || !isInsertionCancelled)
-                        {
-                            insertionStatus = "FAILED";
-                        }
-                        else
-                        {
-                            insertionStatus = "CANCELLED";
-                        }
-
-                        string body = $"Review attached log for details";
-                        if (noProgressOnFailedBuilds)
-                        {
-                            body = $"Latest successful build has already been inserted, but there are newer unsuccessful builds.";
-                        }
-
-
-                        mailMessage.Subject = $"{Options.InsertionName} insertion from {Options.BuildQueueName}/{Options.BranchName}/{Options.BuildConfig} into {Options.VisualStudioBranchName} {insertionStatus}";
-                        mailMessage.SubjectEncoding = Encoding.UTF8;
-                        mailMessage.Body = body;
-                    }
-
-                    if (File.Exists(Options.LogFileLocation))
-                    {
-                        mailMessage.Attachments.Add(new System.Net.Mail.Attachment(Options.LogFileLocation));
-                    }
-
-                    mailClient.Send(mailMessage);
-                }
-            }
         }
     }
 }

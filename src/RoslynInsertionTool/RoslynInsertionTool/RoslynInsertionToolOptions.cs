@@ -44,8 +44,6 @@ namespace Roslyn.Insertion
             string newBranchName,
             string buildDropPath,
             string specificBuild,
-            string emailServerName,
-            string mailRecipient,
             bool insertCoreXTPackages,
             bool updateCoreXTLibraries,
             bool updateAssemblyVersions,
@@ -77,8 +75,6 @@ namespace Roslyn.Insertion
             NewBranchName = newBranchName;
             BuildDropPath = buildDropPath;
             SpecificBuild = specificBuild;
-            EmailServerName = emailServerName;
-            MailRecipient = mailRecipient;
             InsertCoreXTPackages = insertCoreXTPackages;
             UpdateCoreXTLibraries = updateCoreXTLibraries;
             UpdateAssemblyVersions = updateAssemblyVersions;
@@ -112,8 +108,6 @@ namespace Roslyn.Insertion
             Optional<string> newBranchName = default,
             Optional<string> buildDropPath = default,
             Optional<string> specificBuild = default,
-            Optional<string> emailServerName = default,
-            Optional<string> mailRecipient = default,
             Optional<bool> insertCoreXTPackages = default,
             Optional<bool> updateCoreXTLibraries = default,
             Optional<bool> updateAssemblyVersions = default,
@@ -146,8 +140,6 @@ namespace Roslyn.Insertion
                 newBranchName: newBranchName.ValueOrFallback(NewBranchName),
                 buildDropPath: buildDropPath.ValueOrFallback(BuildDropPath),
                 specificBuild: specificBuild.ValueOrFallback(SpecificBuild),
-                emailServerName: emailServerName.ValueOrFallback(EmailServerName),
-                mailRecipient: mailRecipient.ValueOrFallback(MailRecipient),
                 insertCoreXTPackages: insertCoreXTPackages.ValueOrFallback(InsertCoreXTPackages),
                 updateCoreXTLibraries: updateCoreXTLibraries.ValueOrFallback(UpdateCoreXTLibraries),
                 updateAssemblyVersions: updateAssemblyVersions.ValueOrFallback(UpdateAssemblyVersions),
@@ -204,10 +196,6 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithSpecificBuild(string specificBuild) => Update(specificBuild: specificBuild);
 
-        public RoslynInsertionToolOptions WithEmailServerName(string emailServerName) => Update(emailServerName: emailServerName);
-
-        public RoslynInsertionToolOptions WithMailRecipient(string mailRecipient) => Update(mailRecipient: mailRecipient);
-
         public RoslynInsertionToolOptions WithPartitionsToBuild(params string[] partitionsToBuild) => Update(partitionsToBuild: partitionsToBuild);
 
         public RoslynInsertionToolOptions WithInsertCoreXTPackages(bool insertCoreXTPackages) => Update(insertCoreXTPackages: insertCoreXTPackages);
@@ -257,10 +245,6 @@ namespace Roslyn.Insertion
         public string SpecificBuild { get; }
 
         public string[] PartitionsToBuild { get; }
-
-        public string EmailServerName { get; }
-
-        public string MailRecipient { get; }
 
         public bool InsertCoreXTPackages { get; }
 
