@@ -1,4 +1,6 @@
-param([string] $enlistmentPath)
+param([string] $enlistmentPath,
+      [string] $clientId,
+      [string] $clientSecret)
 
 function Do-Insertion(
     $component,
@@ -25,7 +27,7 @@ function Do-Insertion(
         $dropPathFlag = "/dp=$dropPath"
     }
 
-    & .\RIT.exe "/ep=$enlistmentPath" "/in=$component" "/bn=$fromBranch" "/vsbn=$toBranch" "/bq=$queueName" /ic=$insertCore /uc=$updatecorextlibraries /ua=$updateassemblyversions /id=$insertDevdiv /qv=$queueValidation $toolsetFlag $dropPathFlag
+    & .\RIT.exe "/ep=$enlistmentPath" "/in=$component" "/bn=$fromBranch" "/vsbn=$toBranch" "/bq=$queueName" /ic=$insertCore /uc=$updatecorextlibraries /ua=$updateassemblyversions /id=$insertDevdiv /qv=$queueValidation "/ci=$clientId" "/cs=$clientSecret" $toolsetFlag $dropPathFlag
 }
 
 ###
