@@ -2,12 +2,12 @@
 
 using System;
 using System.Threading;
-
+using System.Threading.Tasks;
 using static System.Threading.Tasks.SingleThreadExecutor;
 
 partial class RoslynInsertionToolCommandline
 {
-    private static void Main(string[] args)
+    private static async Task<int> Main(string[] args)
     {
         using (var cancellationTokenSource = new CancellationTokenSource())
         {
@@ -17,7 +17,8 @@ partial class RoslynInsertionToolCommandline
                 o.Cancel = true;
             };
 
-            ExecuteTask(MainAsync(args, cancellationTokenSource.Token));
+            var passed = await MainAsync(args, cancellationTokenSource.Token);
+            return passed ? 0 : -1;
         }
     }
 }

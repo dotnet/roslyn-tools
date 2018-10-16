@@ -24,7 +24,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Services.Release.Client" Version="15.127.0-preview" />
     <PackageReference Include="Microsoft.WindowsAzure.ConfigurationManager" Version="3.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="NLog" Version="4.4.0-betaV15" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.1" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
     <PackageReference Include="System.ValueTuple" Version="4.3.1" />

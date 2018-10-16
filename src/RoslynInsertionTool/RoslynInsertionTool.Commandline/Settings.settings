@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Roslyn.Insertion" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="RoslynInsertionTool" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="UserName" Type="System.String" Scope="Application">
@@ -16,12 +16,6 @@
     </Setting>
     <Setting Name="NewBranchName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">dev/vslsnap/insertions/</Value>
-    </Setting>
-    <Setting Name="MailRecipient" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">mlinfraswat@microsoft.com</Value>
-    </Setting>
-    <Setting Name="EmailServerName" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">smtphost</Value>
     </Setting>
     <Setting Name="BuildQueueName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Roslyn-Signed</Value>
@@ -72,7 +66,7 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="LogFileLocation" Type="System.String" Scope="Application">
-      <Value profile="(Default)">rit.log</Value>
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

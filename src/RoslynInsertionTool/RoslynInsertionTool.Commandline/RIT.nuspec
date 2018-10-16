@@ -15,6 +15,6 @@
     <repository type="$RepositoryType$" url="$RepositoryUrl$" commit="$RepositoryCommit$" />
   </metadata>
   <files>
-    <file src="net46/**/*.*" target="tools" />
+    <file src="net46/**/*.*" target="tools" exclude="**/*.ps1" />
   </files>
 </package>

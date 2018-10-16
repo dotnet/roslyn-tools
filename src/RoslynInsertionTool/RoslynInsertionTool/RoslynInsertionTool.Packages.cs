@@ -43,7 +43,7 @@ namespace Roslyn.Insertion
 
                 var fileName = Path.GetFileName(packagePath);
 
-                Log.Info($"Processing package '{packagePath}'");
+                Console.WriteLine($"Processing package '{packagePath}'");
 
                 var package = PackageInfo.ParsePackageFileName(fileName);
 
@@ -55,7 +55,7 @@ namespace Roslyn.Insertion
 
                 if (!coreXT.TryGetPackageVersion(package, out var previousPackageVersion))
                 {
-                    Log.Info($"New package is being inserted: '{package}'");
+                    Console.WriteLine($"New package is being inserted: '{package}'");
 
                     coreXT.AddNewPackage(package);
                     newPackageFiles.Add(fileName);
@@ -100,11 +100,11 @@ namespace Roslyn.Insertion
 
             if (package.Version == previousPackageVersion)
             {
-                Log.Info($"Package '{package}' doesn't need to be inserted, version matches the one already inserted.");
+                Console.WriteLine($"Package '{package}' doesn't need to be inserted, version matches the one already inserted.");
             }
             else
             {
-                Log.Info($"Package '{package}' needs to be inserted, previously inserted version is {previousPackageVersion}");
+                Console.WriteLine($"Package '{package}' needs to be inserted, previously inserted version is {previousPackageVersion}");
 
                 // update .corext\Configs\default.config:
                 coreXT.UpdatePackageVersion(package);

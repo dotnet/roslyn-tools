@@ -1,3 +1,1 @@
-## The files in this directory will NOT be automatically updated to the server.
-
-## Please mirror changes between the server and source control.
+## The scripts in this directory are used to perform automatic insertions into the VS repo.

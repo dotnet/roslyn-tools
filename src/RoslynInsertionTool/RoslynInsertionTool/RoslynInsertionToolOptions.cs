@@ -44,8 +44,6 @@ namespace Roslyn.Insertion
             string newBranchName,
             string buildDropPath,
             string specificBuild,
-            string emailServerName,
-            string mailRecipient,
             bool insertCoreXTPackages,
             bool updateCoreXTLibraries,
             bool updateAssemblyVersions,
@@ -61,6 +59,8 @@ namespace Roslyn.Insertion
             bool createDummyPr,
             int updateExistingPr,
             string logFileLocation,
+            string clientId,
+            string clientSecret,
             params string[] partitionsToBuild)
         {
             EnlistmentPath = enlistmentPath;
@@ -75,8 +75,6 @@ namespace Roslyn.Insertion
             NewBranchName = newBranchName;
             BuildDropPath = buildDropPath;
             SpecificBuild = specificBuild;
-            EmailServerName = emailServerName;
-            MailRecipient = mailRecipient;
             InsertCoreXTPackages = insertCoreXTPackages;
             UpdateCoreXTLibraries = updateCoreXTLibraries;
             UpdateAssemblyVersions = updateAssemblyVersions;
@@ -92,6 +90,8 @@ namespace Roslyn.Insertion
             CreateDummyPr = createDummyPr;
             UpdateExistingPr = updateExistingPr;
             LogFileLocation = logFileLocation;
+            ClientId = clientId;
+            ClientSecret = clientSecret;
             PartitionsToBuild = partitionsToBuild;
         }
 
@@ -108,8 +108,6 @@ namespace Roslyn.Insertion
             Optional<string> newBranchName = default,
             Optional<string> buildDropPath = default,
             Optional<string> specificBuild = default,
-            Optional<string> emailServerName = default,
-            Optional<string> mailRecipient = default,
             Optional<bool> insertCoreXTPackages = default,
             Optional<bool> updateCoreXTLibraries = default,
             Optional<bool> updateAssemblyVersions = default,
@@ -125,6 +123,8 @@ namespace Roslyn.Insertion
             Optional<bool> createDummyPr = default,
             Optional<int> updateExistingPr = default,
             Optional<string> logFileLocation = default,
+            Optional<string> clientId = default,
+            Optional<string> clientSecret = default,
             Optional<string[]> partitionsToBuild = default)
         {
             return new RoslynInsertionToolOptions(
@@ -140,8 +140,6 @@ namespace Roslyn.Insertion
                 newBranchName: newBranchName.ValueOrFallback(NewBranchName),
                 buildDropPath: buildDropPath.ValueOrFallback(BuildDropPath),
                 specificBuild: specificBuild.ValueOrFallback(SpecificBuild),
-                emailServerName: emailServerName.ValueOrFallback(EmailServerName),
-                mailRecipient: mailRecipient.ValueOrFallback(MailRecipient),
                 insertCoreXTPackages: insertCoreXTPackages.ValueOrFallback(InsertCoreXTPackages),
                 updateCoreXTLibraries: updateCoreXTLibraries.ValueOrFallback(UpdateCoreXTLibraries),
                 updateAssemblyVersions: updateAssemblyVersions.ValueOrFallback(UpdateAssemblyVersions),
@@ -157,6 +155,8 @@ namespace Roslyn.Insertion
                 createDummyPr: createDummyPr.ValueOrFallback(CreateDummyPr),
                 updateExistingPr: updateExistingPr.ValueOrFallback(UpdateExistingPr),
                 logFileLocation: logFileLocation.ValueOrFallback(LogFileLocation),
+                clientId: clientId.ValueOrFallback(ClientId),
+                clientSecret: clientSecret.ValueOrFallback(ClientSecret),
                 partitionsToBuild: partitionsToBuild.ValueOrFallback(PartitionsToBuild));
         }
 
@@ -196,10 +196,6 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithSpecificBuild(string specificBuild) => Update(specificBuild: specificBuild);
 
-        public RoslynInsertionToolOptions WithEmailServerName(string emailServerName) => Update(emailServerName: emailServerName);
-
-        public RoslynInsertionToolOptions WithMailRecipient(string mailRecipient) => Update(mailRecipient: mailRecipient);
-
         public RoslynInsertionToolOptions WithPartitionsToBuild(params string[] partitionsToBuild) => Update(partitionsToBuild: partitionsToBuild);
 
         public RoslynInsertionToolOptions WithInsertCoreXTPackages(bool insertCoreXTPackages) => Update(insertCoreXTPackages: insertCoreXTPackages);
@@ -219,6 +215,10 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions WithUpdateExistingPr(int updateExistingPr) => Update(updateExistingPr: updateExistingPr);
 
         public RoslynInsertionToolOptions WithLogFileLocation(string logFileLocation) => Update(logFileLocation: logFileLocation);
+
+        public RoslynInsertionToolOptions WithClientId(string clientId) => Update(clientId: clientId);
+
+        public RoslynInsertionToolOptions WithClientSecret(string clientSecret) => Update(clientSecret: clientSecret);
 
         public string EnlistmentPath { get; }
 
@@ -245,10 +245,6 @@ namespace Roslyn.Insertion
         public string SpecificBuild { get; }
 
         public string[] PartitionsToBuild { get; }
-
-        public string EmailServerName { get; }
-
-        public string MailRecipient { get; }
 
         public bool InsertCoreXTPackages { get; }
 
@@ -279,6 +275,10 @@ namespace Roslyn.Insertion
         public int UpdateExistingPr { get; }
 
         public string LogFileLocation { get; }
+
+        public string ClientId { get; }
+
+        public string ClientSecret { get; }
 
         public bool Valid
         {

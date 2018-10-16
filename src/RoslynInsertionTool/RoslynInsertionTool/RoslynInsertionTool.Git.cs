@@ -18,7 +18,7 @@ namespace Roslyn.Insertion
         private static readonly Lazy<Repository> LazyEnlistment = new Lazy<Repository>(() =>
         {
             var absolutePath = GetAbsolutePathForEnlistment();
-            Log.Trace($"Creating git repository object for {absolutePath}");
+            Console.WriteLine($"Creating git repository object for {absolutePath}");
             return new Repository(absolutePath);
         });
 
@@ -32,18 +32,18 @@ namespace Roslyn.Insertion
         {
             cancellationToken.ThrowIfCancellationRequested();
             Stopwatch watch;
-            Log.Info($"Checking out branch {branchName}");
+            Console.WriteLine($"Checking out branch {branchName}");
             watch = Stopwatch.StartNew();
             newlocalBranch = enlistment.Checkout(newlocalBranch, GetCheckoutOptions());
-            Log.Trace($"Checking out branch took {watch.Elapsed.TotalSeconds} seconds");
+            Console.WriteLine($"Checking out branch took {watch.Elapsed.TotalSeconds} seconds");
 
             if (newlocalBranch.IsCurrentRepositoryHead)
             {
-                Log.Trace($"{branchName} is the current repository head.");
+                Console.WriteLine($"{branchName} is the current repository head.");
             }
             else
             {
-                Log.Trace($"{branchName} is NOT the current repository head.");
+                Console.WriteLine($"{branchName} is NOT the current repository head.");
             }
 
             return newlocalBranch;
@@ -55,19 +55,16 @@ namespace Roslyn.Insertion
 
             Stopwatch watch;
             cancellationToken.ThrowIfCancellationRequested();
-            Log.Info($"Committing file(s)");
+            Console.WriteLine($"Committing file(s)");
             watch = Stopwatch.StartNew();
             var commit = Enlistment.Commit(
                 message, InsertionToolSignature, InsertionToolSignature);
-            Log.Trace($"Committing took {watch.Elapsed.TotalSeconds} seconds");
+            Console.WriteLine($"Committing took {watch.Elapsed.TotalSeconds} seconds");
         }
 
-        private static Branch CreateBranch(Repository enlistment, FetchOptions fetchOptions, CancellationToken cancellationToken)
+        private static Branch CreateBranch(Repository enlistment, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            // Fetch latest changes
-            FetchLatest(enlistment, fetchOptions);
 
             // Create branch and remote tracking branch
             CreateNewBranch(enlistment, cancellationToken, out string branchName, out var newLocalBranch);
@@ -83,29 +80,20 @@ namespace Roslyn.Insertion
             Stopwatch watch;
             cancellationToken.ThrowIfCancellationRequested();
             branchName = $"{Options.NewBranchName}{Options.VisualStudioBranchName.Split('/').Last()}.{DateTime.Now:yyyyMMddHHmmss}";
-            Log.Info($"Creating new branch {branchName}");
+            Console.WriteLine($"Creating new branch {branchName}");
             var remoteTrackingBranchName = "origin/" + Options.VisualStudioBranchName;
             var remoteTrackingBranch = enlistment.Branches[remoteTrackingBranchName];
             watch = Stopwatch.StartNew();
             newlocalBranch = enlistment.CreateBranch(branchName, remoteTrackingBranch.Tip);
             newlocalBranch = enlistment.Branches.Update(newlocalBranch, b => { b.Remote = "origin"; b.UpstreamBranch = Options.VisualStudioBranchName; });
-            Log.Trace($"Creating branch took {watch.Elapsed.TotalSeconds} seconds");
-        }
-
-        private static void FetchLatest(Repository enlistment, FetchOptions fetchOptions)
-        {
-            var origin = enlistment.Network.Remotes["origin"];
-            Log.Info($"Fetching from {origin.Url}");
-            var watch = Stopwatch.StartNew();
-            enlistment.Fetch(origin.Name, GetFetchOptions());
-            Log.Trace($"Fetching took {watch.Elapsed.TotalSeconds} seconds");
+            Console.WriteLine($"Creating branch took {watch.Elapsed.TotalSeconds} seconds");
         }
 
         private static string GetAbsolutePathForEnlistment() => Path.GetFullPath(Options.EnlistmentPath);
 
         private static CheckoutOptions GetCheckoutOptions()
         {
-            Log.Trace("Getting checkout options");
+            Console.WriteLine("Getting checkout options");
             return new CheckoutOptions
             {
                 CheckoutModifiers = CheckoutModifiers.Force,
@@ -115,7 +103,7 @@ namespace Roslyn.Insertion
 
         private static Credentials GetCredentials()
         {
-            Log.Trace("Getting fetch options");
+            Console.WriteLine("Getting credentials");
             return new UsernamePasswordCredentials
             {
                 Username = Options.Username,
@@ -123,28 +111,17 @@ namespace Roslyn.Insertion
             };
         }
 
-        private static FetchOptions GetFetchOptions()
-        {
-            Log.Trace("Getting fetch options");
-            return new FetchOptions
-            {
-                CredentialsProvider = (url, usernameFromUrl, types) => GetCredentials(),
-                Prune = true,
-            };
-        }
-
-        private static Branch GetLatestAndCreateBranch(CancellationToken cancellationToken)
+        private static Branch CreateBranch(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Log.Trace($"Loading git enlistment at {Options.EnlistmentPath}");
+            Console.WriteLine($"Loading git enlistment at {Options.EnlistmentPath}");
             var enlistment = Enlistment;
-            var fetchOptions = GetFetchOptions();
-            return CreateBranch(enlistment, fetchOptions, cancellationToken);
+            return CreateBranch(enlistment, cancellationToken);
         }
 
         private static PushOptions GetPushOptions()
         {
-            Log.Trace("Getting push options");
+            Console.WriteLine("Getting push options");
             return new PushOptions
             {
                 CredentialsProvider = (url, usernameFromUrl, types) => GetCredentials()
@@ -157,7 +134,7 @@ namespace Roslyn.Insertion
             {
                 ExplicitPathsOptions = new ExplicitPathsOptions
                 {
-                    OnUnmatchedPath = (s) => Log.Error($"Path could not be matched '{s}'"),
+                    OnUnmatchedPath = (s) => Console.WriteLine($"Path could not be matched '{s}'"),
                     ShouldFailOnUnmatchedPath = true
                 },
                 IncludeIgnored = true
@@ -176,7 +153,6 @@ namespace Roslyn.Insertion
                 branchToSwitchTo = branchToSwitchTo.Substring(RefsHeadsPrefix.Length);
             }
 
-            FetchLatest(Enlistment, GetFetchOptions());
             var destinationBranch = Enlistment.Branches[branchToSwitchTo];
             if (destinationBranch == null)
             {
@@ -207,7 +183,7 @@ namespace Roslyn.Insertion
                 InsertionToolSignature,
                 InsertionToolSignature,
                 options);
-            Log.Trace($"Committing took {watch.Elapsed.TotalSeconds} seconds");
+            Console.WriteLine($"Committing took {watch.Elapsed.TotalSeconds} seconds");
         }
 
         private static Branch PushChanges(Branch branch, BuildVersion newRoslynVersion, CancellationToken cancellationToken, bool forcePush = false)
@@ -221,7 +197,7 @@ namespace Roslyn.Insertion
         {
             Stopwatch watch;
             cancellationToken.ThrowIfCancellationRequested();
-            Log.Info($"Pushing branch");
+            Console.WriteLine($"Pushing branch");
             watch = Stopwatch.StartNew();
             var destinationSpec = Enlistment.Refs["HEAD"].TargetIdentifier;
             if (forcePush)
@@ -230,7 +206,7 @@ namespace Roslyn.Insertion
             }
 
             Enlistment.Network.Push(Enlistment.Network.Remotes["origin"], destinationSpec, branch.CanonicalName, GetPushOptions());
-            Log.Trace($"Pushing took {watch.Elapsed.TotalSeconds} seconds");
+            Console.WriteLine($"Pushing took {watch.Elapsed.TotalSeconds} seconds");
             return Enlistment.Head;
         }
 
@@ -248,14 +224,14 @@ namespace Roslyn.Insertion
                 cancellationToken.ThrowIfCancellationRequested();
                 if (!isWhitespaceOnlyChange(Enlistment.Diff.Compare<Patch>(filesToStage)))
                 {
-                    Log.Info($"Staging {filesToStage.Count()} file(s)");
+                    Console.WriteLine($"Staging {filesToStage.Count()} file(s)");
                     var watch = Stopwatch.StartNew();
                     Enlistment.Stage(filesToStage, GetStageOptions());
-                    Log.Trace($"Staging took {watch.Elapsed.TotalSeconds} seconds");
+                    Console.WriteLine($"Staging took {watch.Elapsed.TotalSeconds} seconds");
                 }
                 else
                 {
-                    Log.Info("Only whitespace changes found");
+                    Console.WriteLine("Only whitespace changes found");
                 }
             }
 

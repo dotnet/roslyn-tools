@@ -6,13 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
-using NLog;
-
 namespace Roslyn.Insertion
 {
     internal sealed class VersionsUpdater
     {
-        public ILogger Log { get; }
         public string EnlistmentRoot { get; }
         public List<string> WarningMessages { get; }
 
@@ -28,9 +25,8 @@ namespace Roslyn.Insertion
         private string _versionsTemplateContent;
         private readonly string _versionsTemplateFullPath;
 
-        public VersionsUpdater(ILogger log, string enlistmentRoot, List<string> warningMessages)
+        public VersionsUpdater(string enlistmentRoot, List<string> warningMessages)
         {
-            Log = log;
             EnlistmentRoot = enlistmentRoot;
             WarningMessages = warningMessages;
 
@@ -283,7 +279,7 @@ namespace Roslyn.Insertion
                 var warnMsg = $"Found binding redirect to a newer version than inserting, in file '{fullPath}' for assembly '{assemblyName}'." +
                     $"Inserting version {newVersion}, found {previousVersion}.";
 
-                Log.Warn(warnMsg);
+                Console.WriteLine(warnMsg);
                 WarningMessages.Add(warnMsg);
             }
 

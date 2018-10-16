@@ -12,20 +12,14 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 using Mono.Options;
 
-using NLog;
-
 using Roslyn.Insertion;
 
 using static Roslyn.Insertion.RoslynInsertionTool;
 
 partial class RoslynInsertionToolCommandline
 {
-    public static Logger Log => LogManager.GetCurrentClassLogger();
-
-    private static async Task MainAsync(string[] args, CancellationToken cancellationToken)
+    private static async Task<bool> MainAsync(string[] args, CancellationToken cancellationToken)
     {
-        PrintSplashScreen();
-
         // ********************** Load Default Settings **************************
         var settings = Settings.Default;
         var options = new RoslynInsertionToolOptions()
@@ -37,8 +31,6 @@ partial class RoslynInsertionToolCommandline
             .WithTFSProjectName(settings.TFSProjectName)
             .WithBuildDropPath(settings.BuildDropPath)
             .WithNewBranchName(settings.NewBranchName)
-            .WithEmailServerName(settings.EmailServerName)
-            .WithMailRecipient(settings.MailRecipient)
             .WithInsertCoreXTPackages(settings.InsertCoreXTPackages)
             .WithUpdateCoreXTLLibraries(settings.UpdateCoreXTLibraries)
             .WithInsertDevDivSourceFiles(settings.InsertDevDivSourceFiles)
@@ -54,7 +46,7 @@ partial class RoslynInsertionToolCommandline
         // ************************ Process Arguments ****************************
         bool showHelp = false;
         cancellationToken.ThrowIfCancellationRequested();
-        Log.Trace($"Processing args: {Environment.NewLine}{string.Join(Environment.NewLine, args)}");
+        Console.WriteLine($"Processing args: {Environment.NewLine}{string.Join(Environment.NewLine, args)}");
         var parser = new OptionSet
         {
             {
@@ -121,16 +113,6 @@ partial class RoslynInsertionToolCommandline
                 "sb=|specificbuild=",
                 "Only the latest build is inserted by default, and `rit.exe` will exit if no discovered passing builds are newer than the currently inserted version. By specifying this setting `rit.exe` will skip this logic and insert the specified build.",
                 specificbuild => options = options.WithSpecificBuild(specificbuild)
-            },
-            {
-                "esn=|emailservername=",
-                $"Server to use to send status emails. Defaults to \"{options.EmailServerName}\".",
-                emailServerName => options = options.WithEmailServerName(emailServerName)
-            },
-            {
-                "mr=|mailrecipient=",
-                $"E-mail address to send status emails. Defaults to \"{options.MailRecipient}\".",
-                mailRecipient => options = options.WithMailRecipient(mailRecipient)
             },
             {
                 "ic=|insertcorextpackages=",
@@ -222,6 +204,16 @@ partial class RoslynInsertionToolCommandline
                     options = options.WithPartitionsToBuild(list.ToArray());
                 }
             },
+            {
+                "ci=|clientid=",
+                "The client ID to use for authentication token retreival.",
+                clientId => options = options.WithClientId(clientId)
+            },
+            {
+                "cs=|clientsecret",
+                "The client secret to use for authentication token retreival.",
+                clientSecret => options = options.WithClientSecret(clientSecret)
+            },
         };
 
         List<string> extraArguments = null;
@@ -231,98 +223,80 @@ partial class RoslynInsertionToolCommandline
         }
         catch (Exception e)
         {
-            Log.Error("Failed to parse arguments.");
-            Log.Error(e.Message);
-            return;
+            Console.WriteLine("Failed to parse arguments.");
+            Console.WriteLine(e.Message);
+            return false;
         }
 
         if (extraArguments.Count > 0)
         {
-            Log.Error($"Unknown arguments: {string.Join(" ", extraArguments)}");
-            return;
+            Console.WriteLine($"Unknown arguments: {string.Join(" ", extraArguments)}");
+            return false;
         }
 
         if (showHelp)
         {
             parser.WriteOptionDescriptions(Console.Out);
-            return;
+            return true;
         }
-
-        EnableFileLogging(options);
 
         if (string.IsNullOrEmpty(options.Password))
         {
-            Log.Trace($"Attempting to get credentials from KeyVault.");
+            Console.WriteLine($"Attempting to get credentials from KeyVault.");
             try
             {
-                var password = await GetSecret(settings.VsoSecretName);
+                var password = await GetSecret(settings.VsoSecretName, options);
                 options = options.WithPassword(password);
             }
             catch (Exception e)
             {
-                Log.Trace($"Failed to get credential");
-                Log.Trace(e.Message);
-                return;
+                Console.WriteLine($"Failed to get credential");
+                Console.WriteLine(e.Message);
+                return false;
             }
         }
 
         if (!options.Valid)
         {
-            Log.Error(options.ValidationErrors);
+            Console.WriteLine(options.ValidationErrors);
             parser.WriteOptionDescriptions(Console.Out);
-            return;
+            return false;
         }
 
-        Log.Trace($"Processing args succeeded");
+        Console.WriteLine($"Processing args succeeded");
 
-        await PerformInsertionAsync(options, Log, cancellationToken);
-    }
-
-    private static void EnableFileLogging(RoslynInsertionToolOptions options)
-    {
-        var logConfig = LogManager.Configuration;
-
-        // regular file logging
-        var fileTarget = new NLog.Targets.FileTarget("file") { FileName = options.LogFileLocation, Layout = logConfig.Variables["VerboseLayout"] };
-        logConfig.AddTarget(fileTarget);
-        logConfig.AddRule(NLog.LogLevel.Trace, NLog.LogLevel.Fatal, fileTarget);
-
-        // exception logging
-        var exceptionFilter = new NLog.Filters.ConditionBasedFilter() { Condition = "length('${exception}') > 0", Action = NLog.Filters.FilterResult.Ignore };
-        var exceptionFileTarget = new NLog.Targets.FileTarget("fileAsException") { FileName = options.LogFileLocation, Layout = logConfig.Variables["ExceptionVerboselayout"] };
-        var rule = new NLog.Config.LoggingRule("*", NLog.LogLevel.Trace, exceptionFileTarget);
-        rule.Filters.Add(exceptionFilter);
-        logConfig.LoggingRules.Add(rule);
-
-        logConfig.Reload();
+        return await PerformInsertionAsync(options, cancellationToken);
     }
 
     /// <summary>
     /// Gets the specified secret from the key vault;
     /// </summary>
-    private static async Task<string> GetSecret(string secretName)
+    private static async Task<string> GetSecret(string secretName, RoslynInsertionToolOptions options)
     {
-        var kv = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(GetAccessToken));
+        var kv = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(GetAccessTokenFunction(options.ClientId, options.ClientSecret)));
         var secret = await kv.GetSecretAsync(Settings.Default.KeyVaultUrl, secretName);
         return secret.Value;
     }
 
-    private static async Task<string> GetAccessToken(string authority, string resource, string scope)
+    private static Func<string, string, string, Task<string>> GetAccessTokenFunction(string clientId, string clientSecret)
     {
-        var context = new AuthenticationContext(authority);
-        AuthenticationResult authResult;
-        if (string.IsNullOrEmpty(WebConfigurationManager.AppSettings["ClientId"]))
+        return async (authority, resource, scope) =>
         {
-            // use default domain authentication
-            authResult = await context.AcquireTokenAsync(resource, Settings.Default.ApplicationId, new UserCredential());
-        }
-        else
-        {
-            // use client authentication; "ClientId" and "ClientSecret" are only available when run as a web job
-            var credentials = new ClientCredential(WebConfigurationManager.AppSettings["ClientId"], WebConfigurationManager.AppSettings["ClientSecret"]);
-            authResult = await context.AcquireTokenAsync(resource, credentials);
-        }
+            var context = new AuthenticationContext(authority);
+            AuthenticationResult authResult;
+            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+            {
+                // use default domain authentication
+                authResult = await context.AcquireTokenAsync(resource, Settings.Default.ApplicationId, new UserCredential());
+            }
+            else
+            {
+                // use client authentication from command line arguments
+                var credentials = new ClientCredential(clientId, clientSecret);
+                authResult = await context.AcquireTokenAsync(resource, credentials);
+            }
 
-        return authResult.AccessToken;
+            return authResult.AccessToken;
+        };
     }
 }

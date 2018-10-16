@@ -11,7 +11,7 @@ namespace Roslyn.Insertion
     {
         private static void UpdateAssemblyVersions(string artifactsFolder)
         {
-            var versionsUpdater = new VersionsUpdater(Log, GetAbsolutePathForEnlistment(), WarningMessages);
+            var versionsUpdater = new VersionsUpdater(GetAbsolutePathForEnlistment(), WarningMessages);
 
             foreach (var nameAndVersion in ReadAssemblyVersions(GetDevDivInsertionFilePath(artifactsFolder, "DependentAssemblyVersions.csv")))
             {
