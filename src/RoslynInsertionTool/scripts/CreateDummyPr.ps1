@@ -4,4 +4,9 @@ param([string] $enlistmentPath,
       [string] $componentName,
       [string] $visualStudioBranchName)
 
-& .\RIT.exe  "/in=$componentName" "/vsbn=$visualStudioBranchName" /createdummypr /u=vslsnap@microsoft.com "/ep=$enlistmentPath" "/ci=$clientId" "/cs=$clientSecret"
+. .\HelperFunctions.ps1
+
+EnsureRequiredValue -friendlyName "ComponentName" -value $componentName
+EnsureRequiredValue -friendlyName "VisualStudioBranchName" -value $visualStudioBranchName
+
+& .\RIT.exe "/in=$componentName" "/vsbn=$visualStudioBranchName" /createdummypr "/u=vslsnap@microsoft.com" "/ep=$enlistmentPath" "/ci=$clientId" "/cs=$clientSecret"
