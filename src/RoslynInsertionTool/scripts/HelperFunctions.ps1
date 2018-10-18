@@ -108,13 +108,13 @@ function GetSpecificBuildFlag([string] $specificBuild) {
     }
 }
 
-function GetUpdateAssemblyVersions([string] $visualStudioBranchName, [string] $updateAssemblyVersions) {
+function GetUpdateAssemblyVersions([string] $componentName, [string] $visualStudioBranchName, [string] $updateAssemblyVersions) {
     if (IsDefaultValue $updateAssemblyVersions) {
-        if ($visualStudioBranchName.StartsWith("rel/")) {
-            return "false"
+        if (($componentName -eq "Project System") -and (-not ($visualStudioBranchName.StartsWith("rel/")))) {
+            return "true"
         }
         else {
-            return "true"
+            return "false"
         }
     }
     else {
