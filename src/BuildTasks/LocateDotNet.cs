@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Arcade.Sdk
 {
@@ -34,6 +35,9 @@ namespace Microsoft.DotNet.Arcade.Sdk
 
         [Output]
         public string DotNetPath { get; set; }
+
+        [Output]
+        public string SdkVersion { get; set; }
 
         public override bool Execute()
         {
@@ -66,19 +70,35 @@ namespace Microsoft.DotNet.Arcade.Sdk
                 return;
             }
 
-            var sdkVersion = match.Groups[1].Value;
-
-            var fileName = (Path.DirectorySeparatorChar == '\\') ? "dotnet.exe" : "dotnet";
-            var dotNetDir = paths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault(p => File.Exists(Path.Combine(p, fileName)));
-
-            if (dotNetDir == null || !Directory.Exists(Path.Combine(dotNetDir, "sdk", sdkVersion)))
+            var minSdkVersionStr = match.Groups[1].Value;
+            if (!SemanticVersion.TryParse(minSdkVersionStr, out var minSdkVersion))
             {
-                Log.LogError($"Unable to find dotnet with SDK version '{sdkVersion}'");
+                Log.LogError($"DotNet version specified in '{globalJsonPath}' is invalid: {minSdkVersionStr}.");
                 return;
             }
 
+            var fileName = (Path.DirectorySeparatorChar == '\\') ? "dotnet.exe" : "dotnet";
+            var dotNetDir = paths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault(p => File.Exists(Path.Combine(p, fileName)));
+            if (dotNetDir == null)
+            {
+                Log.LogError($"Unable to find dotnet.");
+                return;
+            }
+
+            var skdPath = FindCompatibleSdk(dotNetDir, minSdkVersion);
+            if (skdPath == null)
+            {
+                Log.LogError($"Unable to find dotnet with SDK version '{minSdkVersion}' or higher.");
+                return;
+            }
+
+            SdkVersion = Path.GetFileName(skdPath);
             DotNetPath = Path.GetFullPath(Path.Combine(dotNetDir, fileName));
             BuildEngine4.RegisterTaskObject(s_cacheKey, new CacheEntry(lastWrite, paths, DotNetPath), RegisteredTaskObjectLifetime.Build, allowEarlyCollection: true);
         }
+
+        private string FindCompatibleSdk(string dotNetDir, SemanticVersion minVersion)
+            => Directory.EnumerateDirectories(Path.Combine(dotNetDir, "sdk"), "*", SearchOption.TopDirectoryOnly).
+                FirstOrDefault(dir => SemanticVersion.TryParse(Path.GetFileName(dir), out var sdkVersion) && sdkVersion >= minVersion);
     }
 }

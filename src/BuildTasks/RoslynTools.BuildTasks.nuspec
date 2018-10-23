@@ -16,8 +16,10 @@
   </metadata>
   <files>
     <file src="netcoreapp2.1\publish\RoslynTools.*" target="tools\netcoreapp2.1" />
+    <file src="netcoreapp2.1\publish\NuGet.Versioning.*" target="tools\netcoreapp2.1" />
     <file src="netcoreapp2.1\publish\System.*" target="tools\netcoreapp2.1" />
     <file src="net472\RoslynTools.*" target="tools\net472" />
+    <file src="net472\NuGet.Versioning.*" target="tools\net472" />
     <file src="net472\System.*" target="tools\net472" />
   </files>
 </package>
