@@ -36,7 +36,7 @@ function Do-Insertion(
 
 #Do-Insertion -component "F#" -queueName "FSharp-Signed" -fromBranch "dev15.8" -toBranch "rel/d15.8"    -insertCore "false" -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
 Do-Insertion -component "F#" -queueName "FSharp-Signed" -fromBranch "dev15.9" -toBranch "rel/d15.9" -insertCore "false" -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
-Do-Insertion -component "F#" -queueName "FSharp-Signed" -fromBranch "dev16.0" -toBranch "lab/d16.0stg" -insertCore "false" -insertDevdiv "false" -dropPath "\\cpvsbuild\drops\FSharp"
+Do-Insertion -component "F#" -queueName "FSharp-Signed" -fromBranch "dev16.0" -toBranch "rel/d16.0" -insertCore "false" -insertDevdiv "false" -dropPath "\\cpvsbuild\drops\FSharp"
 
 
 ###
@@ -56,7 +56,7 @@ Do-Insertion -component "Project System"    -queueName "DotNet-Project-System" -
 Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev15.9.x"         -toBranch "rel/d15.9" -insertCore "true"                           -queueValidation "true" -dropPath "server"
 
 # Dev16 Preview 1
-Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev16.0.x-vs-deps" -toBranch "lab/d16.0stg" -insertToolset "true" -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
-Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "dev16.0.x"         -toBranch "lab/d16.0stg" -insertCore "false"   -insertDevdiv "false" -queueValidation "true"
-Do-Insertion -component "Project System"    -queueName "DotNet-Project-System" -fromBranch "dev16.0.x"         -toBranch "lab/d16.0stg" -insertCore "true"    -insertDevdiv "false"   -updateassemblyversions "true" -queueValidation "true"
-Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev16.0.x"         -toBranch "lab/d16.0stg" -insertCore "true"    -queueValidation "true" -dropPath "server"
+Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev16.0.x-vs-deps" -toBranch "rel/d16.0" -insertToolset "true" -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
+Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "dev16.0.x"         -toBranch "rel/d16.0" -insertCore "false"   -insertDevdiv "false" -queueValidation "true"
+Do-Insertion -component "Project System"    -queueName "DotNet-Project-System" -fromBranch "dev16.0.x"         -toBranch "rel/d16.0" -insertCore "true"    -insertDevdiv "false"   -updateassemblyversions "true" -queueValidation "true"
+Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev16.0.x"         -toBranch "rel/d16.0" -insertCore "true"    -queueValidation "true" -dropPath "server"
