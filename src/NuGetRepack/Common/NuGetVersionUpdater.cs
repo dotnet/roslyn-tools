@@ -19,8 +19,6 @@ namespace Roslyn.Tools
 
     internal static class NuGetVersionUpdater
     {
-        private const string DefaultNuspecXmlns = "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd";
-
         private sealed class PackageInfo
         {
             public Package Package { get; }
@@ -127,14 +125,12 @@ namespace Roslyn.Tools
                 {
                     SemanticVersion packageVersion = null;
                     SemanticVersion newPackageVersion = null;
-                    string nuspecXmlns = DefaultNuspecXmlns;
+                    string nuspecXmlns = NuGetUtils.DefaultNuspecXmlns;
 
                     foreach (var part in package.GetParts())
                     {
                         string relativePath = part.Uri.OriginalString;
-                        ParsePartName(relativePath, out var fileName, out var dirName);
-
-                        if (dirName == "/" && fileName.EndsWith(".nuspec", StringComparison.OrdinalIgnoreCase))
+                        if (NuGetUtils.IsNuSpec(relativePath))
                         {
                             nuspecStream = part.GetStream(FileMode.Open, readOnly ? FileAccess.Read : FileAccess.ReadWrite);
                             nuspecXml = XDocument.Load(nuspecStream);
@@ -147,6 +143,7 @@ namespace Roslyn.Tools
                                     nuspecXmlns = xmlNsAttribute.Value;
                                 }
                             }
+
                             var metadata = nuspecXml.Element(XName.Get("package", nuspecXmlns))?.Element(XName.Get("metadata", nuspecXmlns));
                             if (metadata == null)
                             {
@@ -251,13 +248,6 @@ namespace Roslyn.Tools
 
                 packages.Add(packageId, packageInfo);
             }
-        }
-
-        private static void ParsePartName(string relativePath, out string fileName, out string dirName)
-        {
-            int lastSeparator = relativePath.LastIndexOf('/');
-            fileName = relativePath.Substring(lastSeparator + 1);
-            dirName = (lastSeparator == -1) ? "" : (lastSeparator == 0) ? "/" : relativePath.Substring(0, lastSeparator);
         }
 
         private static void UpdateDependencies(Dictionary<string, PackageInfo> packages, VersionTranslation translation, bool exactVersions, Func<string, string, string, bool> allowPreReleaseDependencyOpt)
