@@ -16,8 +16,15 @@ namespace Roslyn.Tools
     /// <summary>
     /// Replaces content of files in specified package with new content and updates version of the package.
     /// </summary>
+#if NET472
+    [LoadInSeparateAppDomain]
+    public sealed class ReplacePackageParts : AppDomainIsolatedTask
+    {
+        static ReplacePackageParts() => AssemblyResolution.Initialize();
+#else
     public sealed class ReplacePackageParts : Task
     {
+#endif
         /// <summary>
         /// Full path to the package to process.
         /// </summary>
@@ -59,8 +66,20 @@ namespace Roslyn.Tools
 
         public override bool Execute()
         {
-            ExecuteImpl();
-            return !Log.HasLoggedErrors;
+#if NET472
+            AssemblyResolution.Log = Log;
+#endif
+            try
+            {
+                ExecuteImpl();
+                return !Log.HasLoggedErrors;
+            }
+            finally
+            {
+#if NET472
+                AssemblyResolution.Log = null;
+#endif
+            }
         }
 
         private Dictionary<string, string> GetPartReplacementMap()

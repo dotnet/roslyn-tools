@@ -9,8 +9,15 @@ using Microsoft.Build.Utilities;
 
 namespace Roslyn.Tools
 {
-    public sealed class UpdatePackageVersionTask : Task
+#if NET472
+    [LoadInSeparateAppDomain]
+    public sealed class UpdatePackageVersionTask : AppDomainIsolatedTask
     {
+        static UpdatePackageVersionTask() => AssemblyResolution.Initialize();
+#else
+    public class UpdatePackageVersionTask : Task
+    {
+#endif
         public string VersionKind { get; set; }
 
         [Required]
@@ -25,8 +32,20 @@ namespace Roslyn.Tools
 
         public override bool Execute()
         {
-            ExecuteImpl();
-            return !Log.HasLoggedErrors;
+#if NET472
+            AssemblyResolution.Log = Log;
+#endif
+            try
+            {
+                ExecuteImpl();
+                return !Log.HasLoggedErrors;
+            }
+            finally
+            {
+#if NET472
+                AssemblyResolution.Log = null;
+#endif
+            }
         }
 
         private void ExecuteImpl()
