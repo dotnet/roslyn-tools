@@ -16,6 +16,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Common\NuGetVersionUpdater.cs" Link="NuGetVersionUpdater.cs" />
+    <Compile Include="..\Common\NuGetUtils.cs" Link="NuGetUtils.cs" />
   </ItemGroup>
 
   <ItemGroup>

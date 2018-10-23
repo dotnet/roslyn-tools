@@ -16,10 +16,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Common\NuGetVersionUpdater.cs" Link="NuGetVersionUpdater.cs" />
+    <Compile Include="..\Common\NuGetUtils.cs" Link="NuGetUtils.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NuGet.Versioning" Version="$(NuGetVersioningVersion)" />
+    <PackageReference Include="System.IO.Compression" Version="$(SystemIOCompressionVersion)" />
     <PackageReference Include="System.IO.Packaging" Version="$(SystemIOPackagingVersion)" />
     <PackageReference Include="System.ValueTuple" Version="$(SystemValueTupleVersion)" />
     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
