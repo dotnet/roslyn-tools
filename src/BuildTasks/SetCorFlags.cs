@@ -11,10 +11,14 @@ using Microsoft.Build.Utilities;
 
 namespace RoslynTools
 {
-    public sealed class SetCorFlags : Task
+#if NET472
+    [LoadInSeparateAppDomain]
+    public sealed class SetCorFlags : AppDomainIsolatedTask
     {
-#if NET461
         static SetCorFlags() => AssemblyResolution.Initialize();
+#else
+    public class SetCorFlags : Task
+    {
 #endif
         [Required]
         public string FilePath { get; set; }
@@ -30,8 +34,20 @@ namespace RoslynTools
 
         public override bool Execute()
         {
-            ExecuteImpl();
-            return !Log.HasLoggedErrors;
+#if NET472
+            AssemblyResolution.Log = Log;
+#endif
+            try
+            {
+                ExecuteImpl();
+                return !Log.HasLoggedErrors;
+            }
+            finally
+            {
+#if NET472
+                AssemblyResolution.Log = null;
+#endif
+            }
         }
 
         private void ExecuteImpl()

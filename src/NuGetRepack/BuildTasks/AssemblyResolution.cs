@@ -11,7 +11,7 @@ using System.Reflection;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace RoslynTools
+namespace Roslyn.Tools
 {
     internal static class AssemblyResolution
     {
