@@ -4,6 +4,10 @@
     <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Resources\*.cs" />
+    <None Include="Resources\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="System.IO.Compression" Version="$(SystemIOCompressionVersion)" />
     <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
   </ItemGroup>
@@ -62,8 +66,11 @@
     <EmbeddedResource Include="Resources\F.1.0.0.nupkg">
       <LogicalName>F.1.0.0.nupkg</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Signed.1.2.3.nupkg">
+      <LogicalName>Signed.1.2.3.nupkg</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CLI\NuGetRepack.csproj" />
+    <ProjectReference Include="..\BuildTasks\RoslynTools.NuGetRepack.BuildTasks.csproj" />
   </ItemGroup>
 </Project>

@@ -90,4 +90,11 @@ namespace TestResources
         public static byte[] F => ResourceLoader.GetOrCreateResource(ref s_F, NameF);
         public const string NameF = nameof(F) + "." + SemVer2 + ".nupkg";
     }
+
+    public static class MiscPackages
+    {
+        private static byte[] s_Signed;
+        public static byte[] Signed => ResourceLoader.GetOrCreateResource(ref s_Signed, NameSigned);
+        public const string NameSigned = "Signed.1.2.3.nupkg";
+    }
 }

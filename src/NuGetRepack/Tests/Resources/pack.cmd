@@ -5,3 +5,5 @@ NuGet.exe pack D.nuspec
 NuGet.exe pack E.nuspec
 NuGet.exe pack F.nuspec
 
+csc /target:library EmptyBinary.cs
+NuGet.exe pack Signed.nuspec

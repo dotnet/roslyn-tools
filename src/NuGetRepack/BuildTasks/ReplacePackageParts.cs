@@ -228,7 +228,7 @@ namespace Roslyn.Tools
                 }
 
                 // remove signature if present (the signature part is not accessible thru Package API):
-                using (var archive = new ZipArchive(File.Open(tempPackagePath, FileMode.Open, FileAccess.ReadWrite)))
+                using (var archive = new ZipArchive(File.Open(tempPackagePath, FileMode.Open, FileAccess.ReadWrite), ZipArchiveMode.Update))
                 {
                     archive.Entries.FirstOrDefault(e => e.FullName == NuGetUtils.SignaturePartUri)?.Delete();
                 }
