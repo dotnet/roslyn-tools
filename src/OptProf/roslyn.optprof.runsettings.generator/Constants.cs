@@ -28,7 +28,7 @@ namespace roslyn.optprof.runsettings.generator
     <TestContainers>
       {2}
     </TestContainers>
-    <TestCaseFilter>TestCategory=OptProf</TestCaseFilter>
+    <TestCaseFilter>{3}</TestCaseFilter>
   </SessionConfiguration>
   <DataCollectionRunSettings>
     <DataCollectors>

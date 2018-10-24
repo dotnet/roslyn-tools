@@ -82,14 +82,14 @@ namespace roslyn.optprof.runsettings.generator
 
             string buildUriString = GetBuildUriString(insertTargetBranch, buildNumber);
 
-            var (success, testContainerString) = GetContainerString(configFile);
+            var (success, testContainerString, testCaseFilterString) = GetContainerString(configFile);
             if (!success)
             {
                 console?.Error.WriteLine($"unable to read config file '{configFile}'");
                 return 1;
             }
 
-            var runSettings = string.Format(Constants.RunSettingsTemplate, dropUriString, buildUriString, testContainerString);
+            var runSettings = string.Format(Constants.RunSettingsTemplate, dropUriString, buildUriString, testContainerString, testCaseFilterString);
 
             if (!Directory.Exists(outputFolder))
             {
@@ -184,7 +184,7 @@ namespace roslyn.optprof.runsettings.generator
             }
         }
 
-        private static (bool, string) GetContainerString(string configFile)
+        private static (bool, string, string) GetContainerString(string configFile)
         {
             using (var file = File.OpenText(configFile))
             {
@@ -192,22 +192,29 @@ namespace roslyn.optprof.runsettings.generator
             }
         }
 
-        public static (bool, string) GetContainerString(StreamReader file)
+        public static (bool, string, string) GetContainerString(StreamReader file)
         {
             var (success, config) = Config.TryReadConfigFile(file);
             if (!success)
             {
-                return (false, null);
+                return (false, null, null);
             }
 
-            var result = string.Join(
+            var containers = string.Join(
                 Environment.NewLine,
                 config.Products
                   .SelectMany(x => x.Tests.Select(y => y.Container + ".dll"))
                   .Distinct()
                   .Select(x => $@"<TestContainer FileName=""{x}"" />"));
 
-            return (true, result);
+            var filters = string.Join(
+                "|",
+                config.Products
+                .SelectMany(x => x.Tests.SelectMany(y => y.TestCases))
+                .Distinct()
+                .Select(x => $"FullyQualifiedName={x}"));
+
+            return (true, containers, filters);
         }
     }
 }

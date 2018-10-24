@@ -7,14 +7,15 @@ namespace roslyn.optprof.unittests
     public class SettingsReaderTests
     {
         [Theory]
-        [InlineData(products_only, "<TestContainer FileName=\"DDRIT.RPS.CSharp.dll\" />\r\n<TestContainer FileName=\"VSPE.dll\" />")]
-        public void TestProductsOnly(string configFile, string output)
+        [InlineData(products_only, products_only_expectedContainerString, products_only_expectedTestCaseFilterString)]
+        public void TestProductsOnly(string configFile, string expectedContainerString, string expectedTestCaseFilterString)
         {
             using (var reader = new StreamReader(GenerateStreamFromString(configFile)))
             {
-                var (result, config) = Program.GetContainerString(reader);
+                var (result, actualContainerString, actualTestCaseFilterString) = Program.GetContainerString(reader);
                 Assert.True(result);
-                Assert.Equal(output, config);
+                Assert.Equal(expectedContainerString, actualContainerString);
+                Assert.Equal(expectedTestCaseFilterString, actualTestCaseFilterString);
             }
         }
 
@@ -27,6 +28,9 @@ namespace roslyn.optprof.unittests
             stream.Position = 0;
             return stream;
         }
+
+        public const string products_only_expectedContainerString = "<TestContainer FileName=\"DDRIT.RPS.CSharp.dll\" />\r\n<TestContainer FileName=\"VSPE.dll\" />";
+        public const string products_only_expectedTestCaseFilterString = "FullyQualifiedName=DDRIT.RPS.CSharp.CSharpTest.EditingAndDesigner|FullyQualifiedName=VSPE.OptProfTests.vs_perf_designtime_ide_searchtest|FullyQualifiedName=VSPE.OptProfTests.vs_perf_designtime_editor_intellisense_globalcompletionlist_cs|FullyQualifiedName=VSPE.OptProfTests.vs_asl_cs_scenario|FullyQualifiedName=VSPE.OptProfTests.vs_ddbvtqa_vbwi|FullyQualifiedName=VSPE.OptProfTests.vs_asl_vb_scenario|FullyQualifiedName=VSPE.OptProfTests.vs_env_solution_createnewproject_vb_winformsapp|FullyQualifiedName=DDRIT.RPS.CSharp.CSharpTest.BuildAndDebugging";
 
         public const string products_only = @"
 {
