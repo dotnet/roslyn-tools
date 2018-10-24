@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace roslyn.optprof.json
 {
@@ -6,5 +6,7 @@ namespace roslyn.optprof.json
     {
         [JsonProperty(PropertyName = "products")]
         public ProductOptProfTraining[] Products { get; set; }
+        [JsonProperty(PropertyName = "assemblies")]
+        public AssemblyOptProfTraining[] Assemblies { get; set; }
     }
 }

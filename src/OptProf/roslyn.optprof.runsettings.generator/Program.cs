@@ -1,6 +1,3 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using roslyn.optprof.lib;
 using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
@@ -8,13 +5,17 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using roslyn.optprof.json;
+using roslyn.optprof.lib;
 using YamlDotNet.RepresentationModel;
 
 namespace roslyn.optprof.runsettings.generator
 {
     public class Program
     {
-        static async Task<int> Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
             var parser = new CommandLineBuilder()
                 .UseParseDirective()
@@ -160,7 +161,7 @@ namespace roslyn.optprof.runsettings.generator
             {
                 var yaml = new YamlStream();
                 yaml.Load(stream);
-                var mapping =  (YamlMappingNode)yaml.Documents[0].RootNode;
+                var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
                 return (string)mapping["variables"]["InsertTargetBranchFullName"];
             }
         }
@@ -180,7 +181,7 @@ namespace roslyn.optprof.runsettings.generator
             {
                 var jsonContent = JObject.ReadFrom(reader);
                 var parts = ((string)((JArray)jsonContent).First["VSBuildVersion"]).Split('.');
-                return (true, parts[2]+"."+parts[3]);
+                return (true, parts[2] + "." + parts[3]);
             }
         }
 
@@ -200,21 +201,46 @@ namespace roslyn.optprof.runsettings.generator
                 return (false, null, null);
             }
 
-            var containers = string.Join(
-                Environment.NewLine,
-                config.Products
-                  .SelectMany(x => x.Tests.Select(y => y.Container + ".dll"))
-                  .Distinct()
-                  .Select(x => $@"<TestContainer FileName=""{x}"" />"));
-
-            var filters = string.Join(
-                "|",
-                config.Products
-                .SelectMany(x => x.Tests.SelectMany(y => y.TestCases))
-                .Distinct()
-                .Select(x => $"FullyQualifiedName={x}"));
+            var containers = GetTestContainers(config);
+            var filters = GetTestFilters(config);
 
             return (true, containers, filters);
+        }
+
+        private static string GetTestContainers(OptProfTrainingConfiguration config)
+        {
+            var productContainers = config.Products?.Any() == true
+              ? config.Products.SelectMany(x => x.Tests.Select(y => y.Container + ".dll"))
+              : Enumerable.Empty<string>();
+
+            var assemblyContainers = config.Assemblies?.Any() == true
+                ? config.Assemblies.SelectMany(x => x.Tests.Select(y => y.Container + ".dll"))
+                : Enumerable.Empty<string>();
+
+            return string.Join(
+                Environment.NewLine,
+                productContainers
+                    .Concat(assemblyContainers)
+                    .Distinct()
+                    .Select(x => $@"<TestContainer FileName=""{x}"" />"));
+        }
+
+        private static string GetTestFilters(json.OptProfTrainingConfiguration config)
+        {
+            var productTests = config.Products?.Any() == true
+                ? config.Products.SelectMany(x => x.Tests.SelectMany(y => y.TestCases))
+                : Enumerable.Empty<string>();
+
+            var assemblyTests = config.Assemblies?.Any() == true
+                ? config.Assemblies.SelectMany(x => x.Tests.SelectMany(y => y.TestCases))
+                : Enumerable.Empty<string>();
+
+            return string.Join(
+                "|",
+                productTests
+                    .Concat(assemblyTests)
+                    .Distinct()
+                    .Select(x => $"FullyQualifiedName={x}"));
         }
     }
 }

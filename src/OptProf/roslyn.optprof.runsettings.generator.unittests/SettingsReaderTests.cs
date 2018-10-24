@@ -8,6 +8,7 @@ namespace roslyn.optprof.unittests
     {
         [Theory]
         [InlineData(products_only, products_only_expectedContainerString, products_only_expectedTestCaseFilterString)]
+        [InlineData(assemblies_only, assemblies_only_expectedContainerString, assemblies_only_expectedTestCaseFilterString)]
         public void TestProductsOnly(string configFile, string expectedContainerString, string expectedTestCaseFilterString)
         {
             using (var reader = new StreamReader(GenerateStreamFromString(configFile)))
@@ -86,6 +87,75 @@ namespace roslyn.optprof.unittests
           ""container"": ""DDRIT.RPS.CSharp"",
           ""testCases"": [
             ""DDRIT.RPS.CSharp.CSharpTest.EditingAndDesigner""
+          ]
+        }
+      ]
+    }
+  ]
+}
+";
+
+        public const string assemblies_only_expectedContainerString = "<TestContainer FileName=\"DDRIT.RPS.CSharp.dll\" />";
+        public const string assemblies_only_expectedTestCaseFilterString = "FullyQualifiedName=DDRIT.RPS.CSharp.CSharpTest.BuildAndDebugging";
+
+
+        public const string assemblies_only = @"
+{
+  ""assemblies"" : [
+    {
+      ""assembly"": ""System.Collections.Immutable.dll"",
+      ""instrumentationArguments"": [
+        {
+          ""relativeInstallationFolder"": ""Common7/IDE/PrivateAssemblies"",
+          ""instrumentationExecutable"": ""Common7/IDE/vsn.exe""
+        },
+        {
+          ""relativeInstallationFolder"": ""MSBuild/15.0/Bin/Roslyn"",
+          ""instrumentationExecutable"": ""Common7/IDE/vsn.exe""
+        },
+        {
+          ""relativeInstallationFolder"": ""MSBuild/Current/Bin"",
+          ""instrumentationExecutable"": ""Common7/IDE/vsn.exe""
+        },
+        {
+          ""relativeInstallationFolder"": ""MSBuild/Current/Bin/amd64"",
+          ""instrumentationExecutable"": ""Common7/IDE/vsn.exe""
+        },
+        {
+          ""relativeInstallationFolder"": ""Common7/IDE/Extensions/TestPlatform"",
+          ""instrumentationExecutable"": ""Common7/IDE/vsn.exe""
+        }
+      ],
+      ""tests"": [
+        {
+          ""container"": ""DDRIT.RPS.CSharp"",
+          ""testCases"": [
+            ""DDRIT.RPS.CSharp.CSharpTest.BuildAndDebugging""
+          ]
+        }
+      ]
+    },
+    {
+      ""assembly"": ""System.Reflection.Metadata.dll"",
+      ""instrumentationArguments"": [
+        {
+          ""relativeInstallationFolder"": ""Common7/IDE/PrivateAssemblies"",
+          ""instrumentationExecutable"": ""Common7/IDE/vsn.exe""
+        },
+        {
+          ""relativeInstallationFolder"": ""MSBuild/15.0/Bin/Roslyn"",
+          ""instrumentationExecutable"": ""Common7/IDE/vsn.exe""
+        },
+        {
+          ""relativeInstallationFolder"": ""Common7/IDE/Extensions/TestPlatform"",
+          ""instrumentationExecutable"": ""Common7/IDE/vsn.exe""
+        }
+      ],
+      ""tests"": [
+        {
+          ""container"": ""DDRIT.RPS.CSharp"",
+          ""testCases"": [
+            ""DDRIT.RPS.CSharp.CSharpTest.BuildAndDebugging""
           ]
         }
       ]
