@@ -57,7 +57,7 @@ namespace Roslyn.Insertion
             bool runDDRITsInValidation,
             bool runRPSInValidation,
             bool createDummyPr,
-            int updateExistingPr,
+            int overwriteExistingPr,
             string logFileLocation,
             string clientId,
             string clientSecret,
@@ -88,7 +88,7 @@ namespace Roslyn.Insertion
             RunDDRITsInValidation = runDDRITsInValidation;
             RunRPSInValidation = runRPSInValidation;
             CreateDummyPr = createDummyPr;
-            UpdateExistingPr = updateExistingPr;
+            OverwriteExistingPr = overwriteExistingPr;
             LogFileLocation = logFileLocation;
             ClientId = clientId;
             ClientSecret = clientSecret;
@@ -121,7 +121,7 @@ namespace Roslyn.Insertion
             Optional<bool> runDDRITsInValidation = default,
             Optional<bool> runRPSInValidation = default,
             Optional<bool> createDummyPr = default,
-            Optional<int> updateExistingPr = default,
+            Optional<int> overwriteExistingPr = default,
             Optional<string> logFileLocation = default,
             Optional<string> clientId = default,
             Optional<string> clientSecret = default,
@@ -153,7 +153,7 @@ namespace Roslyn.Insertion
                 runDDRITsInValidation: runDDRITsInValidation.ValueOrFallback(RunDDRITsInValidation),
                 runRPSInValidation: runRPSInValidation.ValueOrFallback(RunRPSInValidation),
                 createDummyPr: createDummyPr.ValueOrFallback(CreateDummyPr),
-                updateExistingPr: updateExistingPr.ValueOrFallback(UpdateExistingPr),
+                overwriteExistingPr: overwriteExistingPr.ValueOrFallback(OverwriteExistingPr),
                 logFileLocation: logFileLocation.ValueOrFallback(LogFileLocation),
                 clientId: clientId.ValueOrFallback(ClientId),
                 clientSecret: clientSecret.ValueOrFallback(ClientSecret),
@@ -212,7 +212,7 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithCreateDummyPr(bool createDummyPr) => Update(createDummyPr: createDummyPr);
 
-        public RoslynInsertionToolOptions WithUpdateExistingPr(int updateExistingPr) => Update(updateExistingPr: updateExistingPr);
+        public RoslynInsertionToolOptions WithOverwriteExistingPr(int overwriteExistingPr) => Update(overwriteExistingPr: overwriteExistingPr);
 
         public RoslynInsertionToolOptions WithLogFileLocation(string logFileLocation) => Update(logFileLocation: logFileLocation);
 
@@ -272,7 +272,7 @@ namespace Roslyn.Insertion
 
         public bool CreateDummyPr { get; }
 
-        public int UpdateExistingPr { get; }
+        public int OverwriteExistingPr { get; }
 
         public string LogFileLocation { get; }
 
@@ -288,13 +288,13 @@ namespace Roslyn.Insertion
                 {
                     // only InsertionName and VisualStudioBranchName are required for creating a dummy pr
                     return
-                        UpdateExistingPr == 0 &&
+                        OverwriteExistingPr == 0 &&
                         !string.IsNullOrEmpty(InsertionName) &&
                         !string.IsNullOrEmpty(VisualStudioBranchName);
                 }
-                else if (UpdateExistingPr != 0)
+                else if (OverwriteExistingPr != 0)
                 {
-                    // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for updating an existing pr
+                    // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for overwriting an existing pr
                     return
                         !CreateDummyPr &&
                         !string.IsNullOrEmpty(InsertionName) &&
@@ -328,9 +328,9 @@ namespace Roslyn.Insertion
                 if (CreateDummyPr)
                 {
                     // only InsertionName and VisualStudioBranchName are required for creating a dummy pr
-                    if (UpdateExistingPr != 0)
+                    if (OverwriteExistingPr != 0)
                     {
-                        builder.AppendLine($"{nameof(CreateDummyPr).ToLowerInvariant()} and {nameof(UpdateExistingPr).ToLowerInvariant()} are mutually exclusive and cannot be specified together");
+                        builder.AppendLine($"{nameof(CreateDummyPr).ToLowerInvariant()} and {nameof(OverwriteExistingPr).ToLowerInvariant()} are mutually exclusive and cannot be specified together");
                     }
 
                     if (string.IsNullOrEmpty(InsertionName))
@@ -343,12 +343,12 @@ namespace Roslyn.Insertion
                         builder.AppendLine($"{nameof(VisualStudioBranchName).ToLowerInvariant()} is required");
                     }
                 }
-                else if (UpdateExistingPr != 0)
+                else if (OverwriteExistingPr != 0)
                 {
-                    // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for updating an existing pr
+                    // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for overwriting an existing pr
                     if (CreateDummyPr)
                     {
-                        builder.AppendLine($"{nameof(CreateDummyPr).ToLowerInvariant()} and {nameof(UpdateExistingPr).ToLowerInvariant()} are mutually exclusive and cannot be specified together");
+                        builder.AppendLine($"{nameof(CreateDummyPr).ToLowerInvariant()} and {nameof(OverwriteExistingPr).ToLowerInvariant()} are mutually exclusive and cannot be specified together");
                     }
 
                     if (string.IsNullOrEmpty(InsertionName))

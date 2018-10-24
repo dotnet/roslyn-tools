@@ -107,10 +107,10 @@ namespace Roslyn.Insertion
                 Branch branch = null;
 
                 cancellationToken.ThrowIfCancellationRequested();
-                if (Options.UpdateExistingPr != 0)
+                if (Options.OverwriteExistingPr != 0)
                 {
                     // ****************** Update existing PR ***********************
-                    pullRequest = await GetExistingPullRequestAsync(Options.UpdateExistingPr, cancellationToken);
+                    pullRequest = await GetExistingPullRequestAsync(Options.OverwriteExistingPr, cancellationToken);
                     branch = SwitchToBranchAndUpdate(pullRequest.SourceRefName, Options.VisualStudioBranchName);
                 }
                 else
@@ -264,13 +264,13 @@ namespace Roslyn.Insertion
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var prDescription = $"Updating {Options.InsertionName} to {buildVersion}";
-                    if (Options.UpdateExistingPr != 0 && pullRequest != null)
+                    if (Options.OverwriteExistingPr != 0 && pullRequest != null)
                     {
                         // update an existing pr
                         try
                         {
                             branch = PushChanges(branch, buildVersion, cancellationToken, forcePush: true);
-                            pullRequest = await UpdatePullRequestDescriptionAsync(Options.UpdateExistingPr, prDescription, cancellationToken);
+                            pullRequest = await UpdatePullRequestDescriptionAsync(Options.OverwriteExistingPr, prDescription, cancellationToken);
                             shouldRollBackGitChanges = false;
                         }
                         catch (Exception ex)
