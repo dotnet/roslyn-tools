@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -265,7 +266,13 @@ partial class RoslynInsertionToolCommandline
 
         Console.WriteLine($"Processing args succeeded");
 
-        return await PerformInsertionAsync(options, cancellationToken);
+        var (success, pullRequestId) = await PerformInsertionAsync(options, cancellationToken);
+        if (pullRequestId > 0)
+        {
+            File.WriteAllText("pullRequestId.txt", pullRequestId.ToString());
+        }
+
+        return success;
     }
 
     /// <summary>
