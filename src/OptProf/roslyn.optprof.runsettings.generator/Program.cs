@@ -12,7 +12,7 @@ using YamlDotNet.RepresentationModel;
 
 namespace roslyn.optprof.runsettings.generator
 {
-    class Program
+    public class Program
     {
         static async Task<int> Main(string[] args)
         {
@@ -188,21 +188,26 @@ namespace roslyn.optprof.runsettings.generator
         {
             using (var file = File.OpenText(configFile))
             {
-                var (success, config) = Config.TryReadConfigFile(file);
-                if (!success)
-                {
-                    return (false, null);
-                }
-
-                var result = string.Join(
-                    Environment.NewLine,
-                    config.Products
-                      .SelectMany(x => x.Tests.Select(y => y.Container + ".dll"))
-                      .Distinct()
-                      .Select(x => $@"<TestContainer FileName=""{x}"" />"));
-
-                return (true, result);
+                return GetContainerString(file);
             }
+        }
+
+        public static (bool, string) GetContainerString(StreamReader file)
+        {
+            var (success, config) = Config.TryReadConfigFile(file);
+            if (!success)
+            {
+                return (false, null);
+            }
+
+            var result = string.Join(
+                Environment.NewLine,
+                config.Products
+                  .SelectMany(x => x.Tests.Select(y => y.Container + ".dll"))
+                  .Distinct()
+                  .Select(x => $@"<TestContainer FileName=""{x}"" />"));
+
+            return (true, result);
         }
     }
 }

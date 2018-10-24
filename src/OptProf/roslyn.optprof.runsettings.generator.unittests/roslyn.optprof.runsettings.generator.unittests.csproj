@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\roslyn.optprof.lib\roslyn.optprof.lib.csproj" />
+    <ProjectReference Include="..\roslyn.optprof.runsettings.generator\roslyn.optprof.runsettings.generator.csproj" />
+  </ItemGroup>
+
+</Project>
