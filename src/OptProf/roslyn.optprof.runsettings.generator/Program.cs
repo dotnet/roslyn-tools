@@ -1,6 +1,3 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using roslyn.optprof.lib;
 using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
@@ -8,13 +5,17 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using roslyn.optprof.json;
+using roslyn.optprof.lib;
 using YamlDotNet.RepresentationModel;
 
 namespace roslyn.optprof.runsettings.generator
 {
-    class Program
+    public class Program
     {
-        static async Task<int> Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
             var parser = new CommandLineBuilder()
                 .UseParseDirective()
@@ -82,14 +83,14 @@ namespace roslyn.optprof.runsettings.generator
 
             string buildUriString = GetBuildUriString(insertTargetBranch, buildNumber);
 
-            var (success, testContainerString) = GetContainerString(configFile);
+            var (success, testContainerString, testCaseFilterString) = GetContainerString(configFile);
             if (!success)
             {
                 console?.Error.WriteLine($"unable to read config file '{configFile}'");
                 return 1;
             }
 
-            var runSettings = string.Format(Constants.RunSettingsTemplate, dropUriString, buildUriString, testContainerString);
+            var runSettings = string.Format(Constants.RunSettingsTemplate, dropUriString, buildUriString, testContainerString, testCaseFilterString);
 
             if (!Directory.Exists(outputFolder))
             {
@@ -160,7 +161,7 @@ namespace roslyn.optprof.runsettings.generator
             {
                 var yaml = new YamlStream();
                 yaml.Load(stream);
-                var mapping =  (YamlMappingNode)yaml.Documents[0].RootNode;
+                var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
                 return (string)mapping["variables"]["InsertTargetBranchFullName"];
             }
         }
@@ -180,29 +181,66 @@ namespace roslyn.optprof.runsettings.generator
             {
                 var jsonContent = JObject.ReadFrom(reader);
                 var parts = ((string)((JArray)jsonContent).First["VSBuildVersion"]).Split('.');
-                return (true, parts[2]+"."+parts[3]);
+                return (true, parts[2] + "." + parts[3]);
             }
         }
 
-        private static (bool, string) GetContainerString(string configFile)
+        private static (bool, string, string) GetContainerString(string configFile)
         {
             using (var file = File.OpenText(configFile))
             {
-                var (success, config) = Config.TryReadConfigFile(file);
-                if (!success)
-                {
-                    return (false, null);
-                }
-
-                var result = string.Join(
-                    Environment.NewLine,
-                    config.Products
-                      .SelectMany(x => x.Tests.Select(y => y.Container + ".dll"))
-                      .Distinct()
-                      .Select(x => $@"<TestContainer FileName=""{x}"" />"));
-
-                return (true, result);
+                return GetContainerString(file);
             }
+        }
+
+        public static (bool, string, string) GetContainerString(StreamReader file)
+        {
+            var (success, config) = Config.TryReadConfigFile(file);
+            if (!success)
+            {
+                return (false, null, null);
+            }
+
+            var containers = GetTestContainers(config);
+            var filters = GetTestFilters(config);
+
+            return (true, containers, filters);
+        }
+
+        private static string GetTestContainers(OptProfTrainingConfiguration config)
+        {
+            var productContainers = config.Products?.Any() == true
+              ? config.Products.SelectMany(x => x.Tests.Select(y => y.Container + ".dll"))
+              : Enumerable.Empty<string>();
+
+            var assemblyContainers = config.Assemblies?.Any() == true
+                ? config.Assemblies.SelectMany(x => x.Tests.Select(y => y.Container + ".dll"))
+                : Enumerable.Empty<string>();
+
+            return string.Join(
+                Environment.NewLine,
+                productContainers
+                    .Concat(assemblyContainers)
+                    .Distinct()
+                    .Select(x => $@"<TestContainer FileName=""{x}"" />"));
+        }
+
+        private static string GetTestFilters(json.OptProfTrainingConfiguration config)
+        {
+            var productTests = config.Products?.Any() == true
+                ? config.Products.SelectMany(x => x.Tests.SelectMany(y => y.TestCases))
+                : Enumerable.Empty<string>();
+
+            var assemblyTests = config.Assemblies?.Any() == true
+                ? config.Assemblies.SelectMany(x => x.Tests.SelectMany(y => y.TestCases))
+                : Enumerable.Empty<string>();
+
+            return string.Join(
+                "|",
+                productTests
+                    .Concat(assemblyTests)
+                    .Distinct()
+                    .Select(x => $"FullyQualifiedName={x}"));
         }
     }
 }
