@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
@@ -13,7 +14,7 @@ namespace roslyn.optprof
 {
     internal static class Program
     {
-        static async Task<int> Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
             var parser = new CommandLineBuilder()
                 .UseParseDirective()
@@ -48,40 +49,73 @@ namespace roslyn.optprof
             }
 
             var config = ReadConfigFile(configFile);
+
+            // Handle product entries
             foreach (var product in config.Products)
             {
                 string productName = product.Name;
                 string path = Path.Combine(insertionFolder, productName);
                 var jsonManifest = GetJsonManifest(path);
                 var fileEntries = Manifest.GetNgenEntriesFromJsonManifest(jsonManifest).ToArray();
+                await WriteEntriesAsync(outputFolder, product.Tests, fileEntries);
+            }
 
-                foreach (var test in product.Tests)
-                {
-                    var folder = Path.Combine(outputFolder, test.Container);
-                    var configurations = Path.Combine(folder, "Configurations");
-                    foreach (var fullyQualifiedName in test.TestCases)
-                    {
-                        var folderToWriteJsonEntires = Path.Combine(configurations, fullyQualifiedName);
-                        if (!Directory.Exists(folderToWriteJsonEntires))
-                        {
-                            Directory.CreateDirectory(folderToWriteJsonEntires);
-                        }
-
-                        await WriteEntriesAsync(fileEntries, folderToWriteJsonEntires);
-                    }
-                }
+            // Handle assembly entries
+            foreach (var assembly in config.Assemblies)
+            {
+                var assemblyEntries = GetAssemblyEntries(assembly).ToArray();
+                await WriteEntriesAsync(outputFolder, assembly.Tests, assemblyEntries);
             }
 
             return 0;
+        }
+
+        private static async Task WriteEntriesAsync(string outputFolder, OptProfTrainingTest[] tests, (string Technology, string RelativeInstallationPath, string InstrumentationArguments)[] fileEntries)
+        {
+            foreach (var test in tests)
+            {
+                var folder = Path.Combine(outputFolder, test.Container);
+                var configurations = Path.Combine(folder, "Configurations");
+                foreach (var fullyQualifiedName in test.TestCases)
+                {
+                    var folderToWriteJsonEntires = Path.Combine(configurations, fullyQualifiedName);
+                    if (!Directory.Exists(folderToWriteJsonEntires))
+                    {
+                        Directory.CreateDirectory(folderToWriteJsonEntires);
+                    }
+
+                    await WriteEntriesAsync(fileEntries, folderToWriteJsonEntires);
+                }
+            }
+        }
+
+        private static IEnumerable<(string Technology, string RelativeInstallationPath, string InstrumentationArguments)> GetAssemblyEntries(AssemblyOptProfTraining assembly)
+        {
+            foreach (var args in assembly.InstrumentationArguments)
+            {
+                string Technology = "IBC";
+                string RelativeInstallationPath = args.RelativeInstallationFolder.Replace("/", "\\") + $"\\{assembly.Assembly}";
+                string InstrumentationArguments = $"/ExeConfig:\"%VisualStudio.InstallationUnderTest.Path%\\{args.InstrumentationExecutable.Replace("/", "\\")}";
+                yield return (Technology, RelativeInstallationPath, InstrumentationArguments);
+            }
         }
 
         private static async Task WriteEntriesAsync((string Technology, string RelativeInstallationPath, string InstrumentationArguments)[] fileEntries, string folderToWriteJsonEntires)
         {
             foreach (var entry in fileEntries)
             {
-                var filename = Path.GetFileNameWithoutExtension(entry.RelativeInstallationPath) + ".IBC.json";
-                filename = Path.Combine(folderToWriteJsonEntires, filename);
-                await WriteEntryAsync(filename, entry);
+                var index = 0;
+                var filename = Path.GetFileNameWithoutExtension(entry.RelativeInstallationPath) + "." + index + ".IBC.json";
+                var fullFilename = Path.Combine(folderToWriteJsonEntires, filename);
+
+                while (File.Exists(fullFilename))
+                {
+                    index++;
+                    filename = Path.GetFileNameWithoutExtension(entry.RelativeInstallationPath) + "." + index + ".IBC.json";
+                    fullFilename = Path.Combine(folderToWriteJsonEntires, filename);
+                }
+
+                await WriteEntryAsync(fullFilename, entry);
             }
         }
 
