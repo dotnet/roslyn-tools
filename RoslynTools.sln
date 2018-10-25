@@ -64,7 +64,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "roslyn.optprof.runsettings.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildCleanupTool", "src\BuildCleanupTool\BuildCleanupTool.csproj", "{30A74B33-E707-4942-8B97-59D714106D94}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "roslyn.optprof.runsettings.generator.UnitTests", "src\OptProf\roslyn.optprof.runsettings.generator.unittests\roslyn.optprof.runsettings.generator.UnitTests.csproj", "{44B80D37-F395-40CF-8BB6-9AAEB5606672}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "roslyn.optprof.runsettings.generator.unittests", "src\OptProf\roslyn.optprof.runsettings.generator.unittests\roslyn.optprof.runsettings.generator.unittests.csproj", "{44B80D37-F395-40CF-8BB6-9AAEB5606672}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
