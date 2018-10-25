@@ -7,7 +7,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.DotNet.Arcade.Sdk
 {
-    public class SingleError : Task
+    public sealed class SingleError : Task
     {
         private static readonly string s_cacheKeyPrefix = "SingleError-F88E25C6-1488-4E81-A458-A0921794E6E3:";
 
@@ -16,22 +16,18 @@ namespace Microsoft.DotNet.Arcade.Sdk
 
         public override bool Execute()
         {
-            ExecuteImpl();
-            return !Log.HasLoggedErrors;
-        }
-
-        private void ExecuteImpl()
-        {
             var key = s_cacheKeyPrefix + Text;
 
             var errorReportedSentinel = BuildEngine4.GetRegisteredTaskObject(key, RegisteredTaskObjectLifetime.Build);
             if (errorReportedSentinel != null)
             {
-                return;
+                Log.LogMessage(MessageImportance.Low, Text);
+                return false;
             }
 
             BuildEngine4.RegisterTaskObject(key, new object(), RegisteredTaskObjectLifetime.Build, allowEarlyCollection: true);
             Log.LogError(Text);
+            return false;
         }
     }
 }
