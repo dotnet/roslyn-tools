@@ -204,11 +204,11 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
         /// If the given PR meets all requirements for auto-merge, merge the PR.
         /// </summary>
         /// <returns>
-        /// (true, null) if the PR was merged succesfully
-        /// (false, null) if the PR was not merged because it did not meet requirements
-        /// (false, error object) if an error was encountered while trying to merge the PR
+        /// (true, null, null) if the PR was merged succesfully
+        /// (false, message, null) if the PR was not merged because it did not meet requirements; message contains a description of the reason
+        /// (false, null, error object) if an error was encountered while trying to merge the PR
         /// </returns>
-        public async Task<(bool merged, HttpResponseMessage error)> MergeAutoMergeablePr(
+        public async Task<(bool merged, string message, HttpResponseMessage error)> MergeAutoMergeablePr(
             string repoOwner,
             string repoName,
             string prId)
@@ -217,47 +217,47 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             var prResponse = await _client.GetAsync(prUri);
             if (!prResponse.IsSuccessStatusCode)
             {
-                return (false, prResponse);
+                return (false, "Unable to get PR from GitHub", prResponse);
             }
 
             var prInfo = JObject.Parse(await prResponse.Content.ReadAsStringAsync());
             if ((string)prInfo["state"] != "open" ||
                 ((string)prInfo["mergeable"]).ToLower() != "true")
             {
-                return (false, null);
+                return (false, "PR is not open or not mergeable", null);
             }
 
             // Check that the PR is by 'dotnet-bot'. Eventually we will support created PRs
             // created by other users, but not right now.
             if ((string)prInfo["user"]["login"] != "dotnet-bot")
             {
-                return (false, null);
+                return (false, "PR not created by dotnet-bot", null);
             }
 
             // Check that the PR has a well-known 'auto-merge' label
             var prIssueResponse = await _client.GetAsync($"repos/{repoOwner}/{repoName}/issues/{prId}");
             if (!prIssueResponse.IsSuccessStatusCode)
             {
-                return (false, prIssueResponse);
+                return (false, "Unable to get PR labels", prIssueResponse);
             }
 
             var prIssueBody = JObject.Parse(await prIssueResponse.Content.ReadAsStringAsync());
             if (!prIssueBody["labels"].Any(label => (string)label["name"] == AutoMergeLabelText))
             {
-                return (false, null);
+                return (false, "PR does not have auto-merge label", null);
             }
 
             // Check that the PR has no rejections
             var reviewsResponse = await _client.GetAsync(prUri + "/reviews");
             if (!reviewsResponse.IsSuccessStatusCode)
             {
-                return (false, reviewsResponse);
+                return (false, "Unable to get PR rejection status", reviewsResponse);
             }
 
             var prReviews = JArray.Parse(await reviewsResponse.Content.ReadAsStringAsync());
             if (!prReviews.All(review => (string)review["state"] != "CHANGES_REQUESTED"))
             {
-                return (false, reviewsResponse);
+                return (false, "PR has requested changes", reviewsResponse);
             }
 
             // Check that there are no failing required tests
@@ -267,7 +267,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             var branchResponse = await _client.GetAsync($"/repos/{repoOwner}/{repoName}/branches/{baseBranchRef}");
             if (!branchResponse.IsSuccessStatusCode)
             {
-                return (false, branchResponse);
+                return (false, "Unable to get branch status", branchResponse);
             }
 
             var branchInfo = JObject.Parse(await branchResponse.Content.ReadAsStringAsync());
@@ -276,7 +276,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             var testStatusResponse = await _client.GetAsync($"repos/{repoOwner}/{repoName}/commits/{mergeBranchRef}/status");
             if (!testStatusResponse.IsSuccessStatusCode)
             {
-                return (false, testStatusResponse);
+                return (false, "Unable to get status of required checks", testStatusResponse);
             }
 
             var testStatusBody = JObject.Parse(await testStatusResponse.Content.ReadAsStringAsync());
@@ -287,7 +287,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             if (!requiredTests.Any() && statusDict.Any(kvp => !kvp.Value))
             {
                 // There is a failing non-required test
-                return (false, null);
+                return (false, "No required tests found, an optional check is failing", null);
             }
             else
             {
@@ -296,7 +296,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                     if (!statusDict.ContainsKey(test) || !statusDict[test])
                     {
                         // There is a failing required test
-                        return (false, null);
+                        return (false, $"Failing required status check '{test}'", null);
                     }
                 }
             }
@@ -315,7 +315,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                     reviewBody);
                 if (!approveResponse.IsSuccessStatusCode)
                 {
-                    return (false, approveResponse);
+                    return (false, "Unable to auto-approve PR", approveResponse);
                 }
             }
 
@@ -328,14 +328,14 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             var mergeResponse = await _client.PutAsyncAsJson(prUri + "/merge", mergeBody);
             if (!mergeResponse.IsSuccessStatusCode)
             {
-                return (false, mergeResponse);
+                return (false, "Auto-merge failed", mergeResponse);
             }
 
             // Delete the branch
             // Ignore failure if we couldn't
             _ = await _client.DeleteAsync($"repos/{repoOwner}/{repoName}/git/refs/heads/{mergeBranchRef}");
 
-            return (true, null);
+            return (true, null, null);
         }
     }
 }

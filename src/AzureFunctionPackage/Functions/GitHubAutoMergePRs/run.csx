@@ -32,18 +32,22 @@ private static async Task RunAsync(ExecutionContext context)
         foreach (var pr in autoMergeablePrs)
         {
             var prIdentifier = $"{owner}/{name}:{pr}";
-            var (merged, mergeError) = await gh.MergeAutoMergeablePr(owner, name, pr);
+            var (merged, message, mergeError) = await gh.MergeAutoMergeablePr(owner, name, pr);
             if (merged)
             {
                 Log.Info($"Auto-merged PR '{prIdentifier}'.");
             }
-            else if (mergeError == null)
+            else if (message != null)
             {
-                Log.Info($"PR '{prIdentifier}' not a candidate for auto-merging.");
+                Log.Info($"PR '{prIdentifier}' not a candidate for auto-merging: {message}");
+            }
+            else if (mergeError != null)
+            {
+                Log.Error($"Unable to auto-merge PR '{prIdentifier}': {await mergeError.Content.ReadAsStringAsync()}");
             }
             else
             {
-                Log.Error($"Unable to auto-merge PR '{prIdentifier}': {await mergeError.Content.ReadAsStringAsync()}");
+                Log.Error($"Unable to auto-merg PR '{prIdentifier}' for unknown reason.");
             }
         }
     }
