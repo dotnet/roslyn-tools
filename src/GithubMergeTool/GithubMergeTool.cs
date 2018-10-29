@@ -282,12 +282,13 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             var testStatusBody = JObject.Parse(await testStatusResponse.Content.ReadAsStringAsync());
             var statusDict = testStatusBody["statuses"].Select(t => ((string)t["context"], "success" == (string)t["state"]))
                 .ToDictionary(t => t.Item1, t => t.Item2);
+            var allStatusChecks = testStatusBody["statuses"].Select(t => ((string)t["context"], (string)t["state"])).ToList();
 
             // If there are no required tests, treat *any* test failure as a blocker
             if (!requiredTests.Any() && statusDict.Any(kvp => !kvp.Value))
             {
                 // There is a failing non-required test
-                return (false, "No required tests found, an optional check is failing", null);
+                return (false, $"No required tests found, an optional check is failing.  All checks: {string.Join(", ", allStatusChecks)}", null);
             }
             else
             {
@@ -296,7 +297,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                     if (!statusDict.ContainsKey(test) || !statusDict[test])
                     {
                         // There is a failing required test
-                        return (false, $"Failing required status check '{test}'", null);
+                        return (false, $"Failing required status check '{test}'.  All checks: {string.Join(", ", allStatusChecks)}", null);
                     }
                 }
             }
