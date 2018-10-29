@@ -1,0 +1,26 @@
+jobs:
+- job: Windows
+  pool:
+    vmImage: vs2017-win2016
+  strategy:
+    maxParallel: 2
+    matrix:
+      debug:
+        _configuration: Debug
+      release:
+        _configuration: Release
+  steps:
+  - script: .\eng\common\CIBuild.cmd -configuration $(_configuration) -prepareMachine
+
+- job: Linux
+  pool:
+    vmImage: ubuntu-16.04
+  strategy:
+    maxParallel: 2
+    matrix:
+      debug:
+        _configuration: Debug
+      release:
+        _configuration: Release
+  steps:
+  - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine
