@@ -50,19 +50,48 @@ steps:
   condition: succeeded()
 
 # Note that insertion scripts currently depend on bin directory being uploaded to drops.
-- task: CopyPublishBuildArtifacts@1
-  displayName: Publish Artifacts
+- task: PublishBuildArtifacts@1
+  displayName: Publish binaries
   inputs:
-    CopyRoot: '$(Build.SourcesDirectory)'
-    Contents: |
-     artifacts\bin
-     artifacts\log\$(BuildConfiguration)
-     artifacts\TestResults\$(BuildConfiguration)
-     artifacts\SymStore\$(BuildConfiguration)
-     artifacts\packages\$(BuildConfiguration)
-    ArtifactName: '$(Build.BuildNumber)'
-    ArtifactType: FilePath
-    TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)'
+    PathtoPublish: 'artifacts\bin'
+    ArtifactName: 'bin'
+    publishLocation: FilePath
+    TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)\$(Build.BuildNumber)'
+    Parallel: true
+    ParallelCount: 64
+  condition: succeededOrFailed()
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish logs
+  inputs:
+    PathtoPublish: 'artifacts\log\$(BuildConfiguration)'
+    ArtifactName: 'log'
+    publishLocation: FilePath
+    TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)\$(Build.BuildNumber)'
+    Parallel: true
+    ParallelCount: 64
+  condition: succeededOrFailed()
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish test results
+  inputs:
+    PathtoPublish: 'artifacts\TestResults\$(BuildConfiguration)'
+    ArtifactName: 'TestResults'
+    publishLocation: FilePath
+    TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)\$(Build.BuildNumber)'
+    Parallel: true
+    ParallelCount: 64
+  condition: succeededOrFailed()
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish packages
+  inputs:
+    PathtoPublish: 'artifacts\packages\$(BuildConfiguration)'
+    ArtifactName: 'packages'
+    publishLocation: FilePath
+    TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)\$(Build.BuildNumber)'
+    Parallel: true
+    ParallelCount: 64
   condition: succeededOrFailed()
 
 - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
