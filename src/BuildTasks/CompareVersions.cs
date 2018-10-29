@@ -29,13 +29,13 @@ namespace Microsoft.DotNet.Arcade.Sdk
         {
             if (!SemanticVersion.TryParse(Left, out var left))
             {
-                Log.LogError($"Invalid version: '{left}'");
+                Log.LogError($"Invalid version: '{Left}'");
                 return;
             }
 
             if (!SemanticVersion.TryParse(Right, out var right))
             {
-                Log.LogError($"Invalid version: '{right}'");
+                Log.LogError($"Invalid version: '{Right}'");
                 return;
             }
 
