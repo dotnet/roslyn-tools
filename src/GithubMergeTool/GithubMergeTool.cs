@@ -271,7 +271,8 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             }
 
             var branchInfo = JObject.Parse(await branchResponse.Content.ReadAsStringAsync());
-            IEnumerable<string> requiredTests = branchInfo["protection"]["required_status_checks"]["contexts"].Values<string>();
+            var requiredTests = branchInfo["protection"]["required_status_checks"]["contexts"].Values<string>()
+                .Where(rt => rt != "WIP"); // the 'WIP' check doesn't reliably report its status, but that shouldn't prevent an auto-merge from happening
 
             var testStatusResponse = await _client.GetAsync($"repos/{repoOwner}/{repoName}/commits/{mergeBranchRef}/status");
             if (!testStatusResponse.IsSuccessStatusCode)
