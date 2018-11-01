@@ -46,6 +46,7 @@ partial class RoslynInsertionToolCommandline
 
         // ************************ Process Arguments ****************************
         bool showHelp = false;
+        string pullRequestUrlFile = null;
         cancellationToken.ThrowIfCancellationRequested();
         Console.WriteLine($"Processing args: {Environment.NewLine}{string.Join(Environment.NewLine, args)}");
         var parser = new OptionSet
@@ -211,9 +212,14 @@ partial class RoslynInsertionToolCommandline
                 clientId => options = options.WithClientId(clientId)
             },
             {
-                "cs=|clientsecret",
+                "cs=|clientsecret=",
                 "The client secret to use for authentication token retreival.",
                 clientSecret => options = options.WithClientSecret(clientSecret)
+            },
+            {
+                "wpr=|writepullrequest=",
+                "Write the pull request URL to the specified file.",
+                prf => pullRequestUrlFile = prf
             },
         };
 
@@ -267,9 +273,9 @@ partial class RoslynInsertionToolCommandline
         Console.WriteLine($"Processing args succeeded");
 
         var (success, pullRequestId) = await PerformInsertionAsync(options, cancellationToken);
-        if (pullRequestId > 0)
+        if (success && pullRequestId > 0 && !string.IsNullOrEmpty(pullRequestUrlFile))
         {
-            File.WriteAllText("pullRequestId.txt", pullRequestId.ToString());
+            File.WriteAllText(pullRequestUrlFile, $"https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequest/{pullRequestId}");
         }
 
         return success;
