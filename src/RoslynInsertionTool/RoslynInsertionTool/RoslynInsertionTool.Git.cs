@@ -163,7 +163,12 @@ namespace Roslyn.Insertion
             }
 
             Enlistment.Checkout(branchToSwitchTo, GetCheckoutOptions());
-            var baseBranch = Enlistment.Branches.Single(b => b.FriendlyName == baseBranchName);
+            var baseBranch = Enlistment.Branches.FirstOrDefault(b => b.FriendlyName == baseBranchName);
+            if (baseBranch == null)
+            {
+                throw new ArgumentException($"Visual Studio branch {baseBranchName} not found.");
+            }
+
             Enlistment.Reset(ResetMode.Hard, baseBranch.Tip);
             var branch = Enlistment.Head;
             return branch;
