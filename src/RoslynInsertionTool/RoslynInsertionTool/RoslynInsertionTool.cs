@@ -125,22 +125,6 @@ namespace Roslyn.Insertion
 
                 shouldRollBackGitChanges = branch != null;
 
-                if (Options.UpdateCoreXTLibraries)
-                {
-                    // ************** Update paths to CoreFX libraries ************************
-                    cancellationToken.ThrowIfCancellationRequested();
-                    Console.WriteLine($"Update paths to CoreFX libraries");
-                    if (!await TryUpdateFileAsync(
-                        artifactsFolder,
-                        Path.Combine("ProductData", "ContractAssemblies.props"),
-                        buildVersion,
-                        onlyCopyIfFileDoesNotExistAtDestination: false,
-                        cancellationToken: cancellationToken))
-                    {
-                        return (false, 0);
-                    }
-                }
-
                 var coreXT = CoreXT.Load(GetAbsolutePathForEnlistment());
 
                 if(Options.InsertCoreXTPackages)
@@ -160,22 +144,6 @@ namespace Roslyn.Insertion
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating CoreXT default.config file");
                     coreXT.SaveConfig();
-                }
-
-                if (Options.UpdateCoreXTLibraries)
-                {
-                    // ************** Update paths to CoreFX libraries ************************
-                    cancellationToken.ThrowIfCancellationRequested();
-                    Console.WriteLine($"Update paths to CoreFX libraries");
-                    if (!await TryUpdateFileAsync(
-                        artifactsFolder,
-                        Path.Combine("ProductData", "ContractAssemblies.props"),
-                        buildVersion,
-                        onlyCopyIfFileDoesNotExistAtDestination: false,
-                        cancellationToken: cancellationToken))
-                    {
-                        return (false, 0);
-                    }
                 }
 
                 if (Options.UpdateCoreXTLibraries || Options.UpdateAssemblyVersions)
