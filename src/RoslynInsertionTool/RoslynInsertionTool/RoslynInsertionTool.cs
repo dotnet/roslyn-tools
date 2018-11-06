@@ -260,6 +260,7 @@ namespace Roslyn.Insertion
                             branch = PushChanges(branch, buildVersion, cancellationToken);
                             pullRequest = await CreatePullRequestAsync(branch.FriendlyName, prDescription, buildVersion.ToString(), cancellationToken);
                             shouldRollBackGitChanges = false;
+                            pullRequestId = pullRequest.PullRequestId;
                         }
                         catch (EmptyCommitException ecx)
                         {
