@@ -25,9 +25,9 @@ namespace Roslyn.Insertion
         {
             return from line in File.ReadAllLines(path)
                    let columns = line.Split(',')
-                   let version = Version.Parse(columns[1])
+                   let version = Version.Parse(columns[1].Trim().Substring("Version=".Length)) // trim Version= from the start
                    let fullVersion = new Version(version.Major, Math.Max(version.Minor, 0), Math.Max(version.Build, 0), Math.Max(version.Revision, 0))
-                   select new KeyValuePair<string, Version>(columns[0], fullVersion);
+                   select new KeyValuePair<string, Version>(columns[0].Trim(), fullVersion);
         }
     }
 }
