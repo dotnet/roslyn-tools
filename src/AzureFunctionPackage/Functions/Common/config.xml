@@ -27,7 +27,7 @@
     <merge from="dev15.9-preview2" to="dev15.9-preview2-vs-deps" />
     <merge from="dev15.9-preview3" to="dev15.9-preview3-vs-deps" />
     <merge from="dev16.0.x" to="dev16.0.x-vs-deps" />
-    <merge from="dev16.0-preview2" to="dev16.0-preview2-vs-deps />
+    <merge from="dev16.0-preview2" to="dev16.0-preview2-vs-deps" />
     <merge from="master" to="master-vs-deps" />
   </repo>
   <repo owner="dotnet" name="testimpact">
