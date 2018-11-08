@@ -221,6 +221,11 @@ partial class RoslynInsertionToolCommandline
                 "Write the pull request URL to the specified file.",
                 prf => pullRequestUrlFile = prf
             },
+            {
+                "tp=|titleprefix=",
+                "Prepend the generated pull request's title with the specified value.",
+                titlePrefix => options = options.WithTitlePrefix(titlePrefix)
+            },
         };
 
         List<string> extraArguments = null;

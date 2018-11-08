@@ -15,6 +15,7 @@ param([string] $enlistmentPath,
       [string] $updateAssemblyVersions,
       [string] $updateCoreXTLibraries,
       [string] $visualStudioBranchName,
+      [string] $titlePrefix,
       [string] $writePullRequest)
 
 . .\HelperFunctions.ps1
@@ -33,4 +34,4 @@ $specificBuildFlag = GetSpecificBuildFlag -specificBuild $specificBuild
 $updateAssemblyVersions = GetUpdateAssemblyVersions -componentName $componentName -visualStudioBranchName $visualStudioBranchName -updateAssemblyVersions $updateAssemblyVersions
 $updateCoreXTLibraries = GetUpdateCoreXTLibraries -componentName $componentName -updateCoreXTLibraries $updateCoreXTLibraries
 
-& .\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/ep=$enlistmentPath" "/wpr=$writePullRequest" $specificBuildFlag $toolsetFlag $dropPathFlag
+& .\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/ep=$enlistmentPath" "/tp=$titlePrefix" "/wpr=$writePullRequest" $specificBuildFlag $toolsetFlag $dropPathFlag

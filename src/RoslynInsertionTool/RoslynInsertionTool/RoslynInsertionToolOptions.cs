@@ -61,6 +61,7 @@ namespace Roslyn.Insertion
             string logFileLocation,
             string clientId,
             string clientSecret,
+            string titlePrefix,
             params string[] partitionsToBuild)
         {
             EnlistmentPath = enlistmentPath;
@@ -92,6 +93,7 @@ namespace Roslyn.Insertion
             LogFileLocation = logFileLocation;
             ClientId = clientId;
             ClientSecret = clientSecret;
+            TitlePrefix = titlePrefix;
             PartitionsToBuild = partitionsToBuild;
         }
 
@@ -125,6 +127,7 @@ namespace Roslyn.Insertion
             Optional<string> logFileLocation = default,
             Optional<string> clientId = default,
             Optional<string> clientSecret = default,
+            Optional<string> titlePrefix = default,
             Optional<string[]> partitionsToBuild = default)
         {
             return new RoslynInsertionToolOptions(
@@ -157,6 +160,7 @@ namespace Roslyn.Insertion
                 logFileLocation: logFileLocation.ValueOrFallback(LogFileLocation),
                 clientId: clientId.ValueOrFallback(ClientId),
                 clientSecret: clientSecret.ValueOrFallback(ClientSecret),
+                titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix),
                 partitionsToBuild: partitionsToBuild.ValueOrFallback(PartitionsToBuild));
         }
 
@@ -220,6 +224,8 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithClientSecret(string clientSecret) => Update(clientSecret: clientSecret);
 
+        public RoslynInsertionToolOptions WithTitlePrefix(string titlePrefix) => Update(titlePrefix: titlePrefix);
+
         public string EnlistmentPath { get; }
 
         public string Username { get; }
@@ -279,6 +285,8 @@ namespace Roslyn.Insertion
         public string ClientId { get; }
 
         public string ClientSecret { get; }
+
+        public string TitlePrefix { get; }
 
         public bool Valid
         {
