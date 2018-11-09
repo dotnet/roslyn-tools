@@ -15,7 +15,8 @@
     <merge from="dev15.7.x-vs-deps" to="dev15.8.x-vs-deps" />
     <merge from="dev15.8.x-vs-deps" to="dev15.9.x-vs-dep" />
     <merge from="dev15.9.x-vs-deps" to="dev16.0.x-vs-deps" />
-    <merge from="dev16.0.x-vs-deps" to="master-vs-deps" />
+    <merge from="dev16.0.x-vs-deps" to="dev16.0-preview2-vs-deps" />
+    <merge from="dev16.0-preview2-vs-deps" to="master-vs-deps" />
 
     <merge from="dev15.9-preview2-vs-deps" to="dev15.9.x-vs-deps" />
     <merge from="dev15.9-preview3-vs-deps" to="dev15.9.x-vs-deps" />
