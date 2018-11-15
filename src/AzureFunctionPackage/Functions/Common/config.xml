@@ -30,6 +30,9 @@
     <merge from="dev16.0.x" to="dev16.0.x-vs-deps" />
     <merge from="dev16.0-preview2" to="dev16.0-preview2-vs-deps" />
     <merge from="master" to="master-vs-deps" />
+      
+    <!-- Feature branches -->
+    <merge from="dev16.0-preview2" to="features/enhanced-using" />
   </repo>
   <repo owner="dotnet" name="testimpact">
     <merge from="dev15.8.x" to="dev15.9.x" />
