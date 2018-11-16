@@ -27,6 +27,14 @@ namespace Roslyn.Insertion
         public override int GetHashCode() => Version.GetHashCode() ^ Suffix.GetHashCode();
         public static bool operator ==(SemanticVersion x, SemanticVersion y) => x.Equals(y);
         public static bool operator !=(SemanticVersion x, SemanticVersion y) => !x.Equals(y);
+        public static bool operator <(SemanticVersion x, SemanticVersion y)
+            => x.Version < y.Version || (x.Version == y.Version && (x.Suffix.CompareTo(y.Suffix) < 0));
+        public static bool operator <=(SemanticVersion x, SemanticVersion y)
+            => x == y || x < y;
+        public static bool operator >(SemanticVersion x, SemanticVersion y)
+            => x.Version > y.Version || (x.Version == y.Version && (x.Suffix.CompareTo(y.Suffix) > 0));
+        public static bool operator >=(SemanticVersion x, SemanticVersion y)
+            => x == y || x > y;
 
         internal static SemanticVersion Parse(string str)
         {
