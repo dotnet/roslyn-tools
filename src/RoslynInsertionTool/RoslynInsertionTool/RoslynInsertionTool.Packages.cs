@@ -75,20 +75,16 @@ namespace Roslyn.Insertion
             CoreXT coreXT,
             PackageInfo package)
         {
-            if (package.Version.Version < previousPackageVersion.Version)
-            {
-                var message = $"The version of package '{package}' is older than previously inserted '{previousPackageVersion}'.";
-
-                if (package.IsRoslyn)
-                {
-                    throw new OutdatedPackageException(message, package, previousPackageVersion);
-                }
-
-                WarningMessages.Add(message);
-            }
-
             if (package.IsRoslyn)
             {
+                if (package.Version.Version < previousPackageVersion.Version)
+                {
+                    throw new OutdatedPackageException(
+                        $"The version of package '{package}' is older than previously inserted '{previousPackageVersion}'.",
+                        package,
+                        previousPackageVersion);
+                }
+
                 var packageBuildVersion = package.Version.GetSuffixBuildVersion();
 
                 if (packageBuildVersion.Build != buildVersion.FiveDigitBuildNumber ||
@@ -98,9 +94,9 @@ namespace Roslyn.Insertion
                 }
             }
 
-            if (package.Version == previousPackageVersion)
+            if (package.Version <= previousPackageVersion)
             {
-                Console.WriteLine($"Package '{package}' doesn't need to be inserted, version matches the one already inserted.");
+                Console.WriteLine($"Package '{package}' doesn't need to be inserted, version is lower than or equal to the one already inserted.");
             }
             else
             {
