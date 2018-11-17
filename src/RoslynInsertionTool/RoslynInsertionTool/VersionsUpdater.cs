@@ -157,8 +157,11 @@ namespace Roslyn.Insertion
             else if (attributes.Length == 1)
             {
                 var valueAttribute = attributes.Single();
-                ParseAndValidatePreviousVersion(newVersion, valueAttribute.Value, fullPath, "version.@name", assemblyName);
-                valueAttribute.SetValue(newVersion.ToFullVersion());
+                var oldVersion = ParseAndValidatePreviousVersion(newVersion, valueAttribute.Value, fullPath, "version.@name", assemblyName);
+                if (newVersion > oldVersion)
+                {
+                    valueAttribute.SetValue(newVersion.ToFullVersion());
+                }
             }
             else
             {
@@ -222,9 +225,12 @@ namespace Roslyn.Insertion
                     var versionStart = IndexOfOrThrow(line, '"') + 1;
                     var versionEnd = IndexOfOrThrow(line, '"', versionStart);
                     var versionStr = line.Substring(versionStart, versionEnd - versionStart);
-                    ParseAndValidatePreviousVersion(newVersion, versionStr, fullPath, variableName, assemblyName);
-                    newLine = line.Substring(0, versionStart) + newVersion.ToFullVersion() + line.Substring(versionEnd);
-                    sortedValueLines[lineIndex] = newLine;
+                    var oldVersion = ParseAndValidatePreviousVersion(newVersion, versionStr, fullPath, variableName, assemblyName);
+                    if (newVersion > oldVersion)
+                    {
+                        newLine = line.Substring(0, versionStart) + newVersion.ToFullVersion() + line.Substring(versionEnd);
+                        sortedValueLines[lineIndex] = newLine;
+                    }
                     valueUpdated = true;
                     break;
                 }
@@ -272,15 +278,6 @@ namespace Roslyn.Insertion
             if (!Version.TryParse(versionStringOpt, out var previousVersion))
             {
                 throw new InvalidDataException($"The value of {description} '{versionStringOpt}' doesn't have the expected format: '#.#.#.#' ('{fullPath}', binding redirect for '{assemblyName}')");
-            }
-
-            if (newVersion < previousVersion)
-            {
-                var warnMsg = $"Found binding redirect to a newer version than inserting, in file '{fullPath}' for assembly '{assemblyName}'." +
-                    $"Inserting version {newVersion}, found {previousVersion}.";
-
-                Console.WriteLine(warnMsg);
-                WarningMessages.Add(warnMsg);
             }
 
             return previousVersion;
