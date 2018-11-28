@@ -59,7 +59,7 @@ namespace RoslynTools
                     }
                     catch (Exception e)
                     {
-                        Log.LogErrorFromException(e);
+                        Log.LogErrorFromException(e, showStackTrace: true);
                         return false;
                     }
                 }
@@ -70,7 +70,7 @@ namespace RoslynTools
                 }
                 catch (Exception e)
                 {
-                    Log.LogErrorFromException(e);
+                    Log.LogErrorFromException(e, showStackTrace: true);
                 }
             }
             finally
