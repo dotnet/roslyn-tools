@@ -22,7 +22,7 @@ namespace BuildRetainer
                 { "BuildQueueName=", "The name of the build queue.", value => options.BuildQueueName = value },
                 { "ComponentName=", "The name of the inserted component.", value => options.ComponentName = value },
                 { "ClientId=", "The ID used to get Azure auth tokens.", value => options.ClientId = value },
-                { "ClientSecret=", "The secret used to get Azure auth tokens.", value => options.ClientId = value },
+                { "ClientSecret=", "The secret used to get Azure auth tokens.", value => options.ClientSecret = value },
                 { "h|?|help", "Show this message and exit.", value => showHelp = value != null }
             };
 
