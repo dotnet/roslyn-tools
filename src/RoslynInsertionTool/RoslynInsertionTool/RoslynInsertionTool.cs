@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Mail;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +12,6 @@ using LibGit2Sharp;
 
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
-using Microsoft.VisualStudio.Services.WebApi;
 
 namespace Roslyn.Insertion
 {
@@ -107,13 +105,13 @@ namespace Roslyn.Insertion
 
                 string artifactsFolder = await GetBuildDirectoryAsync(buildToInsert, cancellationToken);
                 Branch branch = null;
-
                 cancellationToken.ThrowIfCancellationRequested();
-                if (Options.OverwriteExistingPr != 0)
+                var useExistingPr = Options.UpdateExistingPr != 0;
+                if (useExistingPr)
                 {
                     // ****************** Update existing PR ***********************
-                    pullRequest = await GetExistingPullRequestAsync(Options.OverwriteExistingPr, cancellationToken);
-                    branch = SwitchToBranchAndUpdate(pullRequest.SourceRefName, Options.VisualStudioBranchName);
+                    pullRequest = await GetExistingPullRequestAsync(Options.UpdateExistingPr, cancellationToken);
+                    branch = SwitchToBranchAndUpdate(pullRequest.SourceRefName, Options.VisualStudioBranchName, overwriteExistingChanges: Options.OverwritePr);
                 }
                 else
                 {
@@ -235,13 +233,16 @@ namespace Roslyn.Insertion
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var prDescription = $"Updating {Options.InsertionName} to {buildVersion}";
-                    if (Options.OverwriteExistingPr != 0 && pullRequest != null)
+                    if (useExistingPr && pullRequest != null)
                     {
                         // update an existing pr
                         try
                         {
                             branch = PushChanges(branch, buildVersion, cancellationToken, forcePush: true);
-                            pullRequest = await UpdatePullRequestDescriptionAsync(Options.OverwriteExistingPr, prDescription, cancellationToken);
+                            if (Options.OverwritePr)
+                            {
+                                pullRequest = await UpdatePullRequestDescriptionAsync(Options.UpdateExistingPr, prDescription, cancellationToken);
+                            }
                             shouldRollBackGitChanges = false;
                             pullRequestId = pullRequest.PullRequestId;
                         }
