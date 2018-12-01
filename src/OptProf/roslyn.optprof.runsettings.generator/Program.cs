@@ -59,6 +59,10 @@ namespace roslyn.optprof.runsettings.generator
                     new[] { "-bn", "--buildNumber" },
                     "optinal override, otherwise picked up from environment variables.",
                     n => n.WithDefaultValue(() => null).ParseArgumentsAs<string>())
+                .AddOption(
+                    new[] { "-yf", "--yamlFileName" },
+                    "optinal override, otherwise uses .vsts-ci.yml",
+                    n => n.WithDefaultValue(() => ".vsts-ci.yml").ParseArgumentsAs<string>())
                 .AddVersionOption()
                 .OnExecute(typeof(Program).GetMethod(nameof(ExecuteAsync)))
                 .Build();
@@ -75,6 +79,7 @@ namespace roslyn.optprof.runsettings.generator
                                               string insertTargetBranch,
                                               string testsUrl,
                                               string buildNumber,
+                                              string yamlFileName,
                                               IConsole console = null)
         {
             await ValidateAsync(configFile, nameof(configFile), console);
@@ -87,7 +92,7 @@ namespace roslyn.optprof.runsettings.generator
 
             using (var config = File.OpenRead(configFile))
             {
-                return Execute(config, configFile, outputFolder, teamProject, repoName, sourceBranchName, buildId, insertTargetBranch, testsUrl, buildNumber, fileWriter, console);
+                return Execute(config, configFile, outputFolder, teamProject, repoName, sourceBranchName, buildId, insertTargetBranch, testsUrl, buildNumber, yamlFileName, fileWriter, console);
             }
         }
 
@@ -101,12 +106,13 @@ namespace roslyn.optprof.runsettings.generator
                                   string insertTargetBranch,
                                   string testsUrl,
                                   string buildNumber,
+                                  string yamlFileName,
                                   IFileWriter fileWriter,
                                   IConsole console = null)
         {
             string dropUriString = GetDropUriString(teamProject, repoName, sourceBranchName, buildId);
 
-            string buildUriString = GetBuildUriString(insertTargetBranch, testsUrl, buildNumber);
+            string buildUriString = GetBuildUriString(insertTargetBranch, testsUrl, buildNumber, yamlFileName);
 
             var (success, testContainerString, testCaseFilterString) = GetContainerString(config);
             if (!success)
@@ -122,7 +128,7 @@ namespace roslyn.optprof.runsettings.generator
 
 
 
-        private static string GetBuildUriString(string insertTargetBranch, string testsUrl, string buildNumber)
+        private static string GetBuildUriString(string insertTargetBranch, string testsUrl, string buildNumber, string yamlFileName)
         {
             if (testsUrl != null)
             {
@@ -131,7 +137,7 @@ namespace roslyn.optprof.runsettings.generator
 
             if (insertTargetBranch == null)
             {
-                insertTargetBranch = GetTargetBranch();
+                insertTargetBranch = GetTargetBranch(yamlFileName);
             }
 
             if (buildNumber == null)
@@ -177,10 +183,10 @@ namespace roslyn.optprof.runsettings.generator
             }
         }
 
-        private static string GetTargetBranch()
+        private static string GetTargetBranch(string yamlFileName)
         {
             var sourcesRoot = Environment.GetEnvironmentVariable("BUILD_SOURCESDIRECTORY");
-            var yamlFile = Path.Combine(sourcesRoot, ".vsts-ci.yml");
+            var yamlFile = Path.Combine(sourcesRoot, yamlFileName);
             using (var stream = File.OpenText(yamlFile))
             {
                 var yaml = new YamlStream();
