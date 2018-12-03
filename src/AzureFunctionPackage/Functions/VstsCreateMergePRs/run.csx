@@ -25,6 +25,10 @@ private static async Task MakeVstsPr(string repoName, string srcBranch, string d
     {
         Log.Info("PR created successfully");
     }
+    else if(errorMessage == null)
+    {
+        Log.Info("PR creation skipped. PR already exists or all commits are present in base branch.")
+    }
     else
     {
         Log.Error($"Could not create PR. {errorMessage}");

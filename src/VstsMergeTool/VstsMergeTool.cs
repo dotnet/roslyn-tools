@@ -70,6 +70,11 @@ namespace VstsMergeTool
                     return (false, "Previous auto merge is still in progress.");
                 }
 
+                if(!IsMergeRequired(branchInfo))
+                {
+                    return (false, null);
+                }
+
                 // Create a dummy branch 
                 await CreateNewBranch(branchInfo, Cts.Token);
 
@@ -197,6 +202,14 @@ namespace VstsMergeTool
             {
                 throw new Exception("Fail to create a new branch");
             }
+        }
+
+        private bool IsMergeRequired(IEnumerable<GitRef> branchInfo)
+        {
+            var sourceBranchSha = branchInfo.Where(branch => string.Equals(branch.Name, SourceBranch)).Select(branch => branch.ObjectId).FirstOrDefault();
+            var destBranchSha = branchInfo.Where(branch => string.Equals(branch.Name, DestBranch)).Select(branch => branch.ObjectId).FirstOrDefault();
+
+            return !string.Equals(sourceBranchSha, destBranchSha);
         }
 
         private async Task GetRepositoryId(string repoName, CancellationToken token)
