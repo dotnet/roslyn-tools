@@ -191,8 +191,58 @@ namespace roslyn.optprof.runsettings.generator
             {
                 var yaml = new YamlStream();
                 yaml.Load(stream);
-                var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
-                return (string)mapping["variables"]["InsertTargetBranchFullName"];
+                return GetTargetBranch(yaml);
+            }
+        }
+
+        public static string GetTargetBranch(YamlStream yaml)
+        {
+            var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
+
+            // The "variables" node can be stored in two places: root of YAML and under the
+            // jobs+jobs path. Need to look in both places here.
+            var branchNode = tryGetBranch(mapping);
+            if (branchNode != null)
+            {
+                return (string)branchNode;
+            }
+
+            if (mapping.Children.TryGetValue("jobs", out var node) && node is YamlSequenceNode jobs)
+            {
+                foreach (var job in jobs.OfType<YamlMappingNode>())
+                {
+                    branchNode = tryGetBranch(job);
+                    if (branchNode != null)
+                    {
+                        return (string)branchNode;
+                    }
+                }
+            }
+
+            throw new Exception("Unable to calculate the target branch");
+
+            YamlNode tryGetBranch(YamlMappingNode yamlNode)
+            {
+                return tryGetPath(yamlNode, "variables", "InsertTargetBranchFullName");
+            }
+
+            YamlNode tryGetPath(YamlMappingNode yamlNode, params string[] path)
+            {
+                YamlNode current = yamlNode;
+                for (var i = 0; i < path.Length; i++)
+                {
+                    if (!(current is YamlMappingNode mappingNode))
+                    {
+                        return null;
+                    }
+
+                    if (!mappingNode.Children.TryGetValue(path[i], out current))
+                    {
+                        return null;
+                    }
+                }
+
+                return current;
             }
         }
 
