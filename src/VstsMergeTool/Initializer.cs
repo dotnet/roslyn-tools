@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 using System;
-using NLog;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.TeamFoundation.Client;
@@ -13,8 +12,6 @@ namespace VstsMergeTool
 {
     public class Initializer
     {
-        private Logger logger;
-
         public VstsMergeTool MergeTool { get; }
 
         private TfsTeamProjectCollection ProjectCollection;
@@ -23,14 +20,23 @@ namespace VstsMergeTool
 
         public Initializer(string sourceBranch, string destBranch)
         {
-            logger = LogManager.GetCurrentClassLogger();
-            logger.Info($"Auto Merging tool start on {DateTime.Now:MM-dd-yyyy-HH-mm-ss}");
-            logger.Info($"Source branch: {sourceBranch}, Target Branch: {destBranch}");
+            Console.WriteLine($"Auto Merging tool start on {DateTime.Now:MM-dd-yyyy-HH-mm-ss}");
+            Console.WriteLine($"Source branch: {sourceBranch}, Target Branch: {destBranch}");
 
             string password = GetPassword(settings.VsoSecretName).Result;
             ProjectCollection = new TfsTeamProjectCollection(
-                new Uri($"https://{settings.AccountName}.visualstudio.com/{settings.TFSProjectName}"),
+                new Uri(settings.VSTSUrl),
                 new VssBasicCredential(settings.UserName, password));
+
+            try
+            {
+                ProjectCollection.Authenticate();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Could not authenticate with {settings.VSTSUrl}");
+                Console.WriteLine(ex);
+            }
 
             var gitClient = ProjectCollection.GetClient<GitHttpClient>();
             MergeTool = new VstsMergeTool(gitClient, sourceBranch, destBranch);

@@ -19,15 +19,15 @@ private static async Task MakeVstsPr(string repoName, string srcBranch, string d
 
     var vstsInitializer = new VstsMergeTool.Initializer(srcBranch, destBranch);
 
-    var response = await vstsInitializer.MergeTool.CreatePullRequest(); ;
+    var (prCreated, errorMessage) = await vstsInitializer.MergeTool.CreatePullRequest();
 
-    if (response)
+    if (prCreated)
     {
         Log.Info("PR created successfully");
     }
     else
     {
-        Log.Info("PR creation skipped. PR already exists or all commits are present in base branch");
+        Log.Error($"Could not create PR. {errorMessage}");
     }
 }
 
