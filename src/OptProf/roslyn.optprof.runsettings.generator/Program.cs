@@ -52,23 +52,28 @@ namespace roslyn.optprof.runsettings.generator
                     "optinal override, otherwise picked up from environment variables.",
                     b => b.WithDefaultValue(() => null).ParseArgumentsAs<string>())
                 .AddOption(
+                    new[] { "-t", "--testsUrl" },
+                    "optinal override, otherwise picked up from environment variables.",
+                    b => b.WithDefaultValue(() => null).ParseArgumentsAs<string>())
+                .AddOption(
                     new[] { "-bn", "--buildNumber" },
                     "optinal override, otherwise picked up from environment variables.",
                     n => n.WithDefaultValue(() => null).ParseArgumentsAs<string>())
                 .AddVersionOption()
-                .OnExecute(typeof(Program).GetMethod(nameof(Execute)))
+                .OnExecute(typeof(Program).GetMethod(nameof(ExecuteAsync)))
                 .Build();
 
             return await parser.InvokeAsync(args);
         }
 
-        public static async Task<int> Execute(string configFile,
+        public static async Task<int> ExecuteAsync(string configFile,
                                               string outputFolder,
                                               string teamProject,
                                               string repoName,
                                               string sourceBranchName,
                                               string buildId,
                                               string insertTargetBranch,
+                                              string testsUrl,
                                               string buildNumber,
                                               IConsole console = null)
         {
@@ -78,33 +83,52 @@ namespace roslyn.optprof.runsettings.generator
             {
                 return 1;
             }
+            var fileWriter = new FileWriter();
 
+            using (var config = File.OpenRead(configFile))
+            {
+                return Execute(config, configFile, outputFolder, teamProject, repoName, sourceBranchName, buildId, insertTargetBranch, testsUrl, buildNumber, fileWriter, console);
+            }
+        }
+
+        public static int Execute(Stream config,
+                                  string configPath,
+                                  string outputFolder,
+                                  string teamProject,
+                                  string repoName,
+                                  string sourceBranchName,
+                                  string buildId,
+                                  string insertTargetBranch,
+                                  string testsUrl,
+                                  string buildNumber,
+                                  IFileWriter fileWriter,
+                                  IConsole console = null)
+        {
             string dropUriString = GetDropUriString(teamProject, repoName, sourceBranchName, buildId);
 
-            string buildUriString = GetBuildUriString(insertTargetBranch, buildNumber);
+            string buildUriString = GetBuildUriString(insertTargetBranch, testsUrl, buildNumber);
 
-            var (success, testContainerString, testCaseFilterString) = GetContainerString(configFile);
+            var (success, testContainerString, testCaseFilterString) = GetContainerString(config);
             if (!success)
             {
-                console?.Error.WriteLine($"unable to read config file '{configFile}'");
+                console?.Error.WriteLine($"unable to read config file '{configPath}'");
                 return 1;
             }
 
             var runSettings = string.Format(Constants.RunSettingsTemplate, dropUriString, buildUriString, testContainerString, testCaseFilterString);
 
-            if (!Directory.Exists(outputFolder))
-            {
-                Directory.CreateDirectory(outputFolder);
-            }
-
-            var filePath = Path.Combine(outputFolder, "RoslynOptProf.runsettings");
-            File.WriteAllText(filePath, runSettings);
-
-            return 0;
+            return fileWriter.WriteOutFile(outputFolder, runSettings);
         }
 
-        private static string GetBuildUriString(string insertTargetBranch, string buildNumber)
+
+
+        private static string GetBuildUriString(string insertTargetBranch, string testsUrl, string buildNumber)
         {
+            if (testsUrl != null)
+            {
+                return $"vstsdrop:{testsUrl}";
+            }
+
             if (insertTargetBranch == null)
             {
                 insertTargetBranch = GetTargetBranch();
@@ -185,11 +209,11 @@ namespace roslyn.optprof.runsettings.generator
             }
         }
 
-        private static (bool, string, string) GetContainerString(string configFile)
+        private static (bool, string, string) GetContainerString(Stream config)
         {
-            using (var file = File.OpenText(configFile))
+            using (var reader = new StreamReader(config))
             {
-                return GetContainerString(file);
+                return GetContainerString(reader);
             }
         }
 
