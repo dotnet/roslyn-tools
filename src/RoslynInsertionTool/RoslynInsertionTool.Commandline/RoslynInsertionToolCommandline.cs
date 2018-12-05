@@ -182,7 +182,7 @@ partial class RoslynInsertionToolCommandline
                 updateExistingPr => options = options.WithUpdateExistingPr(int.Parse(updateExistingPr))
             },
             {
-                "opr=|overwritepr=",
+                "opr|overwritepr",
                 "Indicates that the PR specified by \"updateexistingpr\" needs to be overwritten.",
                 overwritePr => options = options.WithOverwritePr(true)
             },
