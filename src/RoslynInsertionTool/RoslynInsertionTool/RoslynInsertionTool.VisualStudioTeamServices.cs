@@ -282,7 +282,7 @@ namespace Roslyn.Insertion
             {
                 // Be judicious and clean up old artifacts so we do not eat up memory on the scheduler machine.
                 Directory.Delete(tempDirectory, recursive: true);
-                
+
                 // Sometimes a creation of a directory races with deletion since at least in .net 4.6 deletion is not a blocking call.
                 // Hence explictly waiting for the directory to be deleted before moving on.
                 Stopwatch w = Stopwatch.StartNew();

@@ -14,6 +14,7 @@ namespace Roslyn.Insertion
     static partial class RoslynInsertionTool
     {
         private const string RefsHeadsPrefix = "refs/heads/";
+        private const string RefsRemotesPrefix = "refs/remotes/";
 
         private static readonly Lazy<Repository> LazyEnlistment = new Lazy<Repository>(() =>
         {
@@ -101,6 +102,16 @@ namespace Roslyn.Insertion
             };
         }
 
+        private static FetchOptions GetFetchOptions()
+        {
+            Console.WriteLine("Getting fetch options");
+            return new FetchOptions()
+            {
+                CredentialsProvider = new LibGit2Sharp.Handlers.CredentialsHandler((_, __, ___) => GetCredentials()),
+                TagFetchMode = TagFetchMode.None
+            };
+        }
+
         private static Credentials GetCredentials()
         {
             Console.WriteLine("Getting credentials");
@@ -141,17 +152,16 @@ namespace Roslyn.Insertion
             };
         }
 
-        private static Branch SwitchToBranchAndUpdate(string branchToSwitchTo, string baseBranchName)
+        private static Branch SwitchToBranchAndUpdate(string branchToSwitchTo, string baseBranchName, bool overwriteExistingChanges)
         {
-            if (!baseBranchName.StartsWith("origin/"))
-            {
-                baseBranchName = "origin/" + baseBranchName;
-            }
-
             if (branchToSwitchTo.StartsWith(RefsHeadsPrefix))
             {
                 branchToSwitchTo = branchToSwitchTo.Substring(RefsHeadsPrefix.Length);
             }
+
+            var baselineBranchName = overwriteExistingChanges ? baseBranchName : branchToSwitchTo;
+
+            Console.WriteLine($"Switching to branch {branchToSwitchTo} resetting it to {baselineBranchName}");
 
             var destinationBranch = Enlistment.Branches[branchToSwitchTo];
             if (destinationBranch == null)
@@ -162,16 +172,22 @@ namespace Roslyn.Insertion
                 Enlistment.CreateBranch(branchToSwitchTo);
             }
 
+            //Fetch the latest from the server.
+            var remote = Enlistment.Network.Remotes["origin"];
+            Enlistment.Network.Fetch(remote, new[] { $"{baselineBranchName}:{RefsRemotesPrefix}origin/{baselineBranchName}" }, GetFetchOptions());
+
             Enlistment.Checkout(branchToSwitchTo, GetCheckoutOptions());
-            var baseBranch = Enlistment.Branches.FirstOrDefault(b => b.FriendlyName == baseBranchName);
-            if (baseBranch == null)
+
+            var remoteBaselineBranchName = baselineBranchName.StartsWith("origin/") ? baselineBranchName : $"origin/{baselineBranchName}";
+
+            var remoteBranch = Enlistment.Branches.FirstOrDefault(b => b.FriendlyName == remoteBaselineBranchName);
+            if (remoteBranch == null)
             {
-                throw new ArgumentException($"Visual Studio branch {baseBranchName} not found.");
+                throw new ArgumentException($"Visual Studio branch {remoteBaselineBranchName} not found.");
             }
 
-            Enlistment.Reset(ResetMode.Hard, baseBranch.Tip);
-            var branch = Enlistment.Head;
-            return branch;
+            Enlistment.Reset(ResetMode.Hard, remoteBranch.Tip);
+            return Enlistment.Head;
         }
 
         private static void CreateDummyCommit(CancellationToken cancellationToken)

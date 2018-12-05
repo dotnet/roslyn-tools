@@ -177,9 +177,14 @@ partial class RoslynInsertionToolCommandline
                 createDummyPr => options = options.WithCreateDummyPr(true)
             },
             {
-                "opr=|overwriteexistingpr=",
-                "Overwrite the specified existing PR with new build information.",
-                overwriteExistingPr => options = options.WithOverwriteExistingPr(int.Parse(overwriteExistingPr))
+                "upr=|updateexistingpr=",
+                "Update the specified existing PR with new build information.",
+                updateExistingPr => options = options.WithUpdateExistingPr(int.Parse(updateExistingPr))
+            },
+            {
+                "opr=|overwritepr=",
+                "Indicates that the PR specified by \"updateexistingpr\" needs to be overwritten.",
+                overwritePr => options = options.WithOverwritePr(true)
             },
             {
                 "ll=|loglocation=",

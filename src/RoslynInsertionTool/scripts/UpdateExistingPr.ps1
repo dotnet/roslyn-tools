@@ -16,7 +16,8 @@ param([string] $enlistmentPath,
       [string] $updateAssemblyVersions,
       [string] $updateCoreXTLibraries,
       [string] $visualStudioBranchName,
-      [string] $writePullRequest)
+      [string] $writePullRequest,
+      [bool] $overwritePullRequest)
 
 . .\HelperFunctions.ps1
 
@@ -35,4 +36,9 @@ $specificBuildFlag = GetSpecificBuildFlag -specificBuild $specificBuild
 $updateAssemblyVersions = GetUpdateAssemblyVersions -componentName $componentName -visualStudioBranchName $visualStudioBranchName -updateAssemblyVersions $updateAssemblyVersions
 $updateCoreXTLibraries = GetUpdateCoreXTLibraries -componentName $componentName -updateCoreXTLibraries $updateCoreXTLibraries
 
-& .\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/overwriteexistingpr=$existingPr" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/ep=$enlistmentPath" "/wpr=$writePullRequest" $specificBuildFlag $toolsetFlag $dropPathFlag
+if($overwritePullRequest)
+{
+  $overwritePrflag = "/overwritepr"
+}
+
+& .\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/ep=$enlistmentPath" "/wpr=$writePullRequest" $specificBuildFlag $toolsetFlag $dropPathFlag
