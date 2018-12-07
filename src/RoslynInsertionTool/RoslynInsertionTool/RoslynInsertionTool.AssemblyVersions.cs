@@ -11,11 +11,11 @@ namespace Roslyn.Insertion
     {
         private const string VersionEqualsPrefix = "Version=";
 
-        private static void UpdateAssemblyVersions(string artifactsFolder)
+        private static void UpdateAssemblyVersions(InsertionArtifacts artifacts)
         {
             var versionsUpdater = new VersionsUpdater(GetAbsolutePathForEnlistment(), WarningMessages);
 
-            foreach (var nameAndVersion in ReadAssemblyVersions(GetDevDivInsertionFilePath(artifactsFolder, "DependentAssemblyVersions.csv")))
+            foreach (var nameAndVersion in ReadAssemblyVersions(artifacts.GetDependentAssemblyVersionsFile()))
             {
                 versionsUpdater.UpdateComponentVersion(nameAndVersion.Key, nameAndVersion.Value);
             }

@@ -9,25 +9,12 @@ namespace Roslyn.Insertion
         // 20160314
         public int Build { get; }
 
-        public int FiveDigitBuildNumber { get; }
-
         // 1
         public int Revision { get; }
 
         public BuildVersion(int build, int revision)
         {
             Build = build;
-            FiveDigitBuildNumber = int.Parse(build.ToString().Substring(3));
-
-            if (FiveDigitBuildNumber > 65535)
-            {
-                // We need to correct for ymmdd to mmmdd numbering
-                var yearsToCorrect = FiveDigitBuildNumber / 10000 - 6;
-
-                // For each year, we'll subtract out 10000 and add 12 months
-                FiveDigitBuildNumber -= yearsToCorrect * (10000 - 1200);
-            }
-
             Revision = revision;
         }
 
@@ -67,7 +54,7 @@ namespace Roslyn.Insertion
             }
             else
             {
-                throw new FormatException($"BuildVersion shoudl be in the form of 12345678.9 or 12345678-9");
+                throw new FormatException($"BuildVersion should be in the form of 12345678.9 or 12345678-9");
             }
 
             return new BuildVersion(int.Parse(parts[0]), int.Parse(parts[1]));

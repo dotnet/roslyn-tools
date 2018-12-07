@@ -84,9 +84,8 @@ namespace Roslyn.Insertion
                 Build buildToInsert;
                 Build latestBuild = null;
                 bool retainBuild = false;
-                // Get the version from TFS build queue, e.g. Roslyn-Master-Signed-Release.
-                // We assume all CoreXT packages we build (Roslyn and all dependencies we
-                // insert) have the same version.
+
+                // Get the version from DevOps Pipelines queue, e.g. Roslyn-Master-Signed-Release.
                 if (string.IsNullOrEmpty(Options.SpecificBuild))
                 {
                     buildToInsert = await GetLatestPassedBuildAsync(cancellationToken);
@@ -103,7 +102,7 @@ namespace Roslyn.Insertion
                     buildToInsert = await GetSpecificBuildAsync(buildVersion, cancellationToken);
                 }
 
-                string artifactsFolder = await GetBuildDirectoryAsync(buildToInsert, cancellationToken);
+                var insertionArtifacts = await GetInsertionArtifactsAsync(buildToInsert, cancellationToken);
                 Branch branch = null;
                 cancellationToken.ThrowIfCancellationRequested();
                 var useExistingPr = Options.UpdateExistingPr != 0;
@@ -135,7 +134,7 @@ namespace Roslyn.Insertion
                     (success, newPackageFiles) = UpdatePackages(
                         buildVersion,
                         coreXT,
-                        GetPackagesDirPath(artifactsFolder),
+                        insertionArtifacts.GetPackagesDirectory(),
                         cancellationToken);
                     retainBuild |= success;
 
@@ -150,7 +149,7 @@ namespace Roslyn.Insertion
                     // ************** Update assembly versions ************************
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating assembly versions");
-                    UpdateAssemblyVersions(artifactsFolder);
+                    UpdateAssemblyVersions(insertionArtifacts);
 
                     // if we got this far then we definitely need to retain this build
                     retainBuild = true;
@@ -159,7 +158,7 @@ namespace Roslyn.Insertion
                 // *********** Update toolset ********************
                 if (Options.InsertToolset)
                 {
-                    UpdateToolsetPackage(artifactsFolder, buildVersion, cancellationToken);
+                    UpdateToolsetPackage(insertionArtifacts, buildVersion, cancellationToken);
                     retainBuild = true;
                 }
 
@@ -338,13 +337,13 @@ namespace Roslyn.Insertion
         }
 
         private static void UpdateToolsetPackage(
-            string artifactsFolder,
+            InsertionArtifacts artifacts,
             BuildVersion buildVersion,
             CancellationToken cancellationToken)
         {
             Console.WriteLine("Updating toolset compiler package");
 
-            var packagesDir = GetPackagesDirPath(artifactsFolder);
+            var packagesDir = artifacts.GetPackagesDirectory();
             var toolsetPackagePath = Directory.EnumerateFiles(packagesDir,
                 $"{PackageInfo.RoslynToolsetPackageName}*.nupkg",
                 SearchOption.AllDirectories).Single();
@@ -362,7 +361,7 @@ namespace Roslyn.Insertion
 
             // Update .corext/Configs/default.config
             cancellationToken.ThrowIfCancellationRequested();
-            Console.WriteLine("Updateing CoreXT config file");
+            Console.WriteLine("Updating CoreXT config file");
             coreXT.SaveConfig();
         }
 
