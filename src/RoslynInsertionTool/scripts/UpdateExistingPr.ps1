@@ -17,7 +17,7 @@ param([string] $enlistmentPath,
       [string] $updateCoreXTLibraries,
       [string] $visualStudioBranchName,
       [string] $writePullRequest,
-      [bool] $overwritePullRequest)
+      [switch] $overwritePR)
 
 . .\HelperFunctions.ps1
 
@@ -36,7 +36,7 @@ $specificBuildFlag = GetSpecificBuildFlag -specificBuild $specificBuild
 $updateAssemblyVersions = GetUpdateAssemblyVersions -componentName $componentName -visualStudioBranchName $visualStudioBranchName -updateAssemblyVersions $updateAssemblyVersions
 $updateCoreXTLibraries = GetUpdateCoreXTLibraries -componentName $componentName -updateCoreXTLibraries $updateCoreXTLibraries
 
-if($overwritePullRequest)
+if($overwritePR)
 {
   $overwritePrflag = "/overwritepr"
 }
