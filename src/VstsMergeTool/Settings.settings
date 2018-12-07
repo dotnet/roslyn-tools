@@ -23,5 +23,8 @@
     <Setting Name="ApplicationId" Type="System.String" Scope="Application">
       <Value Profile="(Default)">1950a258-227b-4e31-a9cf-717495945fc2</Value>
     </Setting>
+    <Setting Name="VSTSUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://devdiv.visualstudio.com/DefaultCollection</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
