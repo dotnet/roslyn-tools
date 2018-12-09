@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
 using System.IO;
@@ -14,7 +14,9 @@ namespace Roslyn.Insertion
             _binariesDirectory = binariesDirectory;
         }
 
-        internal static bool TryCreateFromLocalBuild(string buildDirectory, out InsertionArtifacts artifacts)
+        public static string GetArtifactName(string buildNumber) => buildNumber;
+
+        public static bool TryCreateFromLocalBuild(string buildDirectory, out InsertionArtifacts artifacts)
         {
             if (buildDirectory.EndsWith(@"Binaries\Debug", StringComparison.OrdinalIgnoreCase) ||
                 buildDirectory.EndsWith(@"Binaries\Release", StringComparison.OrdinalIgnoreCase))

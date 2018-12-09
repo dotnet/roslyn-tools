@@ -255,8 +255,8 @@ namespace Roslyn.Insertion
             var buildArtifacts = await buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken);
 
             // The artifact name passed to PublishBuildArtifacts task:
-            var arcadeArtifactName = "VSSetup " + build.BuildNumber;
-            var legacyArtifactName = build.BuildNumber;
+            var arcadeArtifactName = ArcadeInsertionArtifacts.ArtifactName;
+            var legacyArtifactName = LegacyInsertionArtifacts.GetArtifactName(build.BuildNumber);
 
             foreach (var artifact in buildArtifacts)
             {
