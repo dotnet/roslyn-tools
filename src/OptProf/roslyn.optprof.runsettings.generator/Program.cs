@@ -159,23 +159,45 @@ namespace roslyn.optprof.runsettings.generator
             return buildUriString;
         }
 
-        private static (bool, string) GetTestsUrl()
+        public static (bool, string) GetTestsUrl(string bootstrapperInfoPath = null)
         {
-            var stagingDirectory = Environment.GetEnvironmentVariable("BUILD_STAGINGDIRECTORY");
-            if (string.IsNullOrEmpty(stagingDirectory))
+            if (bootstrapperInfoPath == null)
             {
-                return (false, null);
+                var stagingDirectory = Environment.GetEnvironmentVariable("BUILD_STAGINGDIRECTORY");
+                if (string.IsNullOrEmpty(stagingDirectory))
+                {
+                    return (false, null);
+                }
+
+                bootstrapperInfoPath = Path.Combine(stagingDirectory, @"MicroBuild\Output\BootstrapperInfo.json");
             }
 
-            var bootstrapperInfoPath = Path.Combine(stagingDirectory, @"MicroBuild\Output\BootstrapperInfo.json");
-
             using (var file = File.OpenText(bootstrapperInfoPath))
-            using (var reader = new JsonTextReader(file))
+                return GetTestsUrl(file);
+        }
+
+        public static (bool, string) GetTestsUrl(StreamReader file)
+        {
+            try
             {
-                var jsonContent = JToken.ReadFrom(reader);
-                var buildDropPath = (string)((JArray)jsonContent).First["BuildDrop"];
-                var testsUri = $"vstsdrop:{buildDropPath.Replace(" /Products/", "/Tests/").Substring("https://vsdrop.corp.microsoft.com/file/v1/".Length)}";
-                return (true, testsUri);
+                using (var reader = new JsonTextReader(file))
+                {
+                    var jsonContent = JToken.ReadFrom(reader);
+                    var buildDropPath = (string)((JArray)jsonContent).First["BuildDrop"];
+                    if (buildDropPath.Contains("/Products/") && buildDropPath.Contains("https://vsdrop.corp.microsoft.com/file/v1/"))
+                    {
+                        var testsUri = $"vstsdrop:{buildDropPath.Replace("/Products/", "/Tests/").Substring("https://vsdrop.corp.microsoft.com/file/v1/".Length)}";
+                        return (true, testsUri);
+                    }
+                    else
+                    {
+                        return (false, null);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return (false, null);
             }
         }
 
