@@ -31,7 +31,7 @@ namespace Roslyn.Insertion
         // Currently this is the only release we trigger. We can easily move this over to options when we need this configurable.
         private const string ReleaseDefinitionName = "Roslyn";
 
-        private static readonly Lazy<TfsTeamProjectCollection> LazyProjectCollection = new Lazy<Microsoft.TeamFoundation.Client.TfsTeamProjectCollection>(() =>
+        private static readonly Lazy<TfsTeamProjectCollection> LazyProjectCollection = new Lazy<TfsTeamProjectCollection>(() =>
         {
             Console.WriteLine($"Creating TfsTeamProjectCollection object from {Options.VSTSUri}");
             return new TfsTeamProjectCollection(new Uri(Options.VSTSUri), new VssBasicCredential(Options.Username, Options.Password));
@@ -237,13 +237,13 @@ namespace Roslyn.Insertion
                     select build).FirstOrDefault();
         }
 
-        internal static async Task<string> GetBuildDirectoryAsync(Build build, CancellationToken cancellationToken)
+        internal static async Task<InsertionArtifacts> GetInsertionArtifactsAsync(Build build, CancellationToken cancellationToken)
         {
             // used for local testing:
-            if (Options.BuildDropPath.EndsWith(@"Binaries\Debug", StringComparison.OrdinalIgnoreCase) ||
-                Options.BuildDropPath.EndsWith(@"Binaries\Release", StringComparison.OrdinalIgnoreCase))
+            if (LegacyInsertionArtifacts.TryCreateFromLocalBuild(Options.BuildDropPath, out var artifacts) ||
+                ArcadeInsertionArtifacts.TryCreateFromLocalBuild(Options.BuildDropPath, out artifacts))
             {
-                return Options.BuildDropPath;
+                return artifacts;
             }
 
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
@@ -251,23 +251,38 @@ namespace Roslyn.Insertion
             Debug.Assert(ReferenceEquals(build,
                 (await GetInsertableBuildsAsync(buildClient, cancellationToken, new[] { build })).Single()));
 
-            // Pull the build directory from the API
-            var artifacts = await buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken);
-            foreach (var artifact in artifacts)
+            // Pull the VSSetup directory from artifacts store.
+            var buildArtifacts = await buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken);
+
+            // The artifact name passed to PublishBuildArtifacts task:
+            var arcadeArtifactName = ArcadeInsertionArtifacts.ArtifactName;
+            var legacyArtifactName = LegacyInsertionArtifacts.GetArtifactName(build.BuildNumber);
+
+            foreach (var artifact in buildArtifacts)
             {
-                // The drop path we're looking for is named the same as the build number
-                if (artifact.Name == build.BuildNumber)
+                if (artifact.Name == arcadeArtifactName)
                 {
                     // artifact.Resource.Data should be available and non-null due to BuildWithValidArtifactsAsync,
                     // which checks this precondition
-                    if(string.Compare(artifact.Resource.Type, "container", StringComparison.OrdinalIgnoreCase) == 0)
+                    if (!StringComparer.OrdinalIgnoreCase.Equals(artifact.Resource.Type, "container"))
+                    {
+                        throw new InvalidOperationException($"Could not find artifact '{arcadeArtifactName}' associated with build '{build.Id}'");
+                    }
+
+                    return new ArcadeInsertionArtifacts(await DownloadArtifactsAsync(buildClient, build, artifact, cancellationToken));
+                }
+                else if (artifact.Name == legacyArtifactName)
+                {
+                    // artifact.Resource.Data should be available and non-null due to BuildWithValidArtifactsAsync,
+                    // which checks this precondition
+                    if (string.Compare(artifact.Resource.Type, "container", StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         // This is a build where the artifacts are published to the artifacts server instead of a UNC path.
                         // Download this artifacts to a temp folder and provide that path instead.
-                        return await DownloadArtifactsAsync(buildClient, build, artifact, cancellationToken);
+                        return new LegacyInsertionArtifacts(await DownloadArtifactsAsync(buildClient, build, artifact, cancellationToken));
                     }
 
-                    return Path.Combine(artifact.Resource.Data, build.BuildNumber);
+                    return new LegacyInsertionArtifacts(Path.Combine(artifact.Resource.Data, build.BuildNumber));
                 }
             }
 

@@ -84,14 +84,6 @@ namespace Roslyn.Insertion
                         package,
                         previousPackageVersion);
                 }
-
-                var packageBuildVersion = package.Version.GetSuffixBuildVersion();
-
-                if (packageBuildVersion.Build != buildVersion.FiveDigitBuildNumber ||
-                    packageBuildVersion.Revision != buildVersion.Revision)
-                {
-                    throw new InvalidOperationException($"Package version for '{package.PackageName}:{package.Version}' inconsistent with build version '{buildVersion}'");
-                }
             }
 
             if (package.Version <= previousPackageVersion)

@@ -108,7 +108,9 @@ partial class RoslynInsertionToolCommandline
             },
             {
                 "dp=|droppath=",
-                $"Location where the signed binaries are dropped. Will use this path in combination with **branchname** to find signed binaries, unless the path ends with ```Binaries\\Debug``` or ```Binaries\\Release``` (for local testing purposes only). Defaults to \"{options.BuildDropPath}\".",
+                $"Location where the signed binaries are dropped. Will use this path in combination with **branchname** to find signed binaries, " +
+                $"unless the path ends with `artifacts\\VSSetup\\Debug` or `artifacts\\VSSetup\\Release` in Arcade repositories, or " +
+                $"`Binaries\\Debug` or `Binaries\\Release` in legacy repositories (for local testing purposes only). Defaults to \"{options.BuildDropPath}\".",
                 dropPath => options = options.WithBuildDropPath(dropPath)
             },
             {
