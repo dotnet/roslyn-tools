@@ -110,9 +110,9 @@ namespace roslyn.optprof.runsettings.generator
                                   IFileWriter fileWriter,
                                   IConsole console = null)
         {
-            string dropUriString = GetDropUriString(teamProject, repoName, sourceBranchName, buildId);
+            var dropUriString = GetDropUriString(teamProject, repoName, sourceBranchName, buildId);
 
-            string buildUriString = GetBuildUriString(insertTargetBranch, testsUrl, buildNumber, yamlFileName);
+            var buildUriString = GetBuildUriString(insertTargetBranch, testsUrl, buildNumber, yamlFileName);
 
             var (success, testContainerString, testCaseFilterString) = GetContainerString(config);
             if (!success)
@@ -130,9 +130,19 @@ namespace roslyn.optprof.runsettings.generator
 
         private static string GetBuildUriString(string insertTargetBranch, string testsUrl, string buildNumber, string yamlFileName)
         {
+            bool success;
             if (testsUrl != null)
             {
                 return $"vstsdrop:{testsUrl}";
+            }
+            else
+            {
+                (success, testsUrl) = GetTestsUrl();
+            }
+
+            if (success)
+            {
+                return testsUrl;
             }
 
             if (insertTargetBranch == null)
@@ -145,8 +155,28 @@ namespace roslyn.optprof.runsettings.generator
                 (_, buildNumber) = GetBuildNumber();
             }
 
-            string buildUriString = $"vstsdrop:Tests/DevDiv/VS/{insertTargetBranch}/{buildNumber}/x86ret";
+            var buildUriString = $"vstsdrop:Tests/DevDiv/VS/{insertTargetBranch}/{buildNumber}/x86ret";
             return buildUriString;
+        }
+
+        private static (bool, string) GetTestsUrl()
+        {
+            var stagingDirectory = Environment.GetEnvironmentVariable("BUILD_STAGINGDIRECTORY");
+            if (string.IsNullOrEmpty(stagingDirectory))
+            {
+                return (false, null);
+            }
+
+            var bootstrapperInfoPath = Path.Combine(stagingDirectory, @"MicroBuild\Output\BootstrapperInfo.json");
+
+            using (var file = File.OpenText(bootstrapperInfoPath))
+            using (var reader = new JsonTextReader(file))
+            {
+                var jsonContent = JToken.ReadFrom(reader);
+                var buildDropPath = (string)((JArray)jsonContent).First["BuildDrop"];
+                var testsUri = $"vstsdrop:{buildDropPath.Replace(" /Products/", "/Tests/").Substring("https://vsdrop.corp.microsoft.com/file/v1/".Length)}";
+                return (true, testsUri);
+            }
         }
 
         private static string GetDropUriString(string teamProject, string repoName, string sourceBranchName, string buildId)
@@ -259,7 +289,7 @@ namespace roslyn.optprof.runsettings.generator
             using (var file = File.OpenText(bootstrapperInfoPath))
             using (var reader = new JsonTextReader(file))
             {
-                var jsonContent = JObject.ReadFrom(reader);
+                var jsonContent = JToken.ReadFrom(reader);
                 var parts = ((string)((JArray)jsonContent).First["VSBuildVersion"]).Split('.');
                 return (true, parts[2] + "." + parts[3]);
             }
@@ -305,7 +335,7 @@ namespace roslyn.optprof.runsettings.generator
                     .Select(x => $@"<TestContainer FileName=""{x}"" />"));
         }
 
-        private static string GetTestFilters(json.OptProfTrainingConfiguration config)
+        private static string GetTestFilters(OptProfTrainingConfiguration config)
         {
             var productTests = config.Products?.Any() == true
                 ? config.Products.SelectMany(x => x.Tests.SelectMany(y => y.TestCases))
