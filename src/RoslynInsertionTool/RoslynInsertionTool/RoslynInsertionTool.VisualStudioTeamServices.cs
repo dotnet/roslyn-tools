@@ -136,15 +136,12 @@ namespace Roslyn.Insertion
                     continue;
                 }
 
+                // The artifact name passed to PublishBuildArtifacts task:
+                var arcadeArtifactName = ArcadeInsertionArtifacts.ArtifactName;
+                var legacyArtifactName = LegacyInsertionArtifacts.GetArtifactName(build.BuildNumber);
+
                 var artifacts = await buildClient.GetArtifactsAsync(build.Project.Id, build.Id, cancellationToken);
-                // A valid artifact would:
-                // 1. Have a resource
-                // 2. The resource would either point to a cpvsbuild path (or) be uploaded to the artifacts service with a build number label.
-                if (artifacts.Any(
-                    a => a.Resource != null &&
-                    a.Resource.Data != null &&
-                        (a.Resource.Data.Contains(Options.BuildDropPath) ||
-                            a.Resource.Data.Contains(build.BuildNumber))))
+                if (artifacts.Any(a => a.Name == arcadeArtifactName || a.Name == legacyArtifactName))
                 {
                     buildsWithValidArtifacts.Add(build);
                 }
