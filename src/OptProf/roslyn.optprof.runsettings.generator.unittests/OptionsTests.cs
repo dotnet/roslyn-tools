@@ -24,10 +24,7 @@ namespace roslyn.optprof.unittests
                 repoName: null,
                 sourceBranchName: null,
                 buildId: null,
-                insertTargetBranch: null,
                 testsUrl: null,
-                buildNumber: null,
-                yamlFileName: null,
                 console: null);
             Assert.True(result != 0);
         }

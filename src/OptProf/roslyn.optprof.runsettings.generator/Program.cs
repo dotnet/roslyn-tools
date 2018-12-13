@@ -48,21 +48,9 @@ namespace roslyn.optprof.runsettings.generator
                     "optinal override, otherwise picked up from environment variables.",
                     i => i.WithDefaultValue(() => null).ParseArgumentsAs<string>())
                 .AddOption(
-                    new[] { "-itb", "--insertTargetBranch" },
-                    "optinal override, otherwise picked up from environment variables.",
-                    b => b.WithDefaultValue(() => null).ParseArgumentsAs<string>())
-                .AddOption(
                     new[] { "-t", "--testsUrl" },
                     "optinal override, otherwise picked up from environment variables.",
                     b => b.WithDefaultValue(() => null).ParseArgumentsAs<string>())
-                .AddOption(
-                    new[] { "-bn", "--buildNumber" },
-                    "optinal override, otherwise picked up from environment variables.",
-                    n => n.WithDefaultValue(() => null).ParseArgumentsAs<string>())
-                .AddOption(
-                    new[] { "-yf", "--yamlFileName" },
-                    "optinal override, otherwise uses .vsts-ci.yml",
-                    n => n.WithDefaultValue(() => ".vsts-ci.yml").ParseArgumentsAs<string>())
                 .AddVersionOption()
                 .OnExecute(typeof(Program).GetMethod(nameof(ExecuteAsync)))
                 .Build();
@@ -76,10 +64,7 @@ namespace roslyn.optprof.runsettings.generator
                                               string repoName,
                                               string sourceBranchName,
                                               string buildId,
-                                              string insertTargetBranch,
                                               string testsUrl,
-                                              string buildNumber,
-                                              string yamlFileName,
                                               IConsole console = null)
         {
             await ValidateAsync(configFile, nameof(configFile), console);
@@ -92,7 +77,7 @@ namespace roslyn.optprof.runsettings.generator
 
             using (var config = File.OpenRead(configFile))
             {
-                return Execute(config, configFile, outputFolder, teamProject, repoName, sourceBranchName, buildId, insertTargetBranch, testsUrl, buildNumber, yamlFileName, fileWriter, console);
+                return Execute(config, configFile, outputFolder, teamProject, repoName, sourceBranchName, buildId, testsUrl, fileWriter, console);
             }
         }
 
@@ -103,16 +88,28 @@ namespace roslyn.optprof.runsettings.generator
                                   string repoName,
                                   string sourceBranchName,
                                   string buildId,
-                                  string insertTargetBranch,
                                   string testsUrl,
-                                  string buildNumber,
-                                  string yamlFileName,
                                   IFileWriter fileWriter,
                                   IConsole console = null)
         {
             var dropUriString = GetDropUriString(teamProject, repoName, sourceBranchName, buildId);
 
-            var buildUriString = GetBuildUriString(insertTargetBranch, testsUrl, buildNumber, yamlFileName);
+            var buildUriString = GetBuildUriString(testsUrl);
+            if (buildUriString == null)
+            {
+                var stagingDirectory = Environment.GetEnvironmentVariable("BUILD_STAGINGDIRECTORY");
+                var bootstrapperInfoPath = Path.Combine(stagingDirectory, @"MicroBuild\Output\BootstrapperInfo.json");
+
+                console?.Error.WriteLine($"unable to get the build URL");
+                console?.Error.WriteLine($"BUILD_STAGINGDIRECTORY: '{stagingDirectory}'");
+                var fileExists = File.Exists(bootstrapperInfoPath);
+                console?.Error.WriteLine($"BootstrapperInfo Path: '{bootstrapperInfoPath}' Exists: '{fileExists}'");
+                if (fileExists)
+                {
+                    console?.Error.WriteLine($"BootstrapperInfo Contents: {Environment.NewLine}{File.ReadAllText(bootstrapperInfoPath)}");
+                }
+                return 1;
+            }
 
             var (success, testContainerString, testCaseFilterString) = GetContainerString(config);
             if (!success)
@@ -128,7 +125,7 @@ namespace roslyn.optprof.runsettings.generator
 
 
 
-        private static string GetBuildUriString(string insertTargetBranch, string testsUrl, string buildNumber, string yamlFileName)
+        private static string GetBuildUriString(string testsUrl)
         {
             bool success;
             if (testsUrl != null)
@@ -140,23 +137,7 @@ namespace roslyn.optprof.runsettings.generator
                 (success, testsUrl) = GetTestsUrl();
             }
 
-            if (success)
-            {
-                return testsUrl;
-            }
-
-            if (insertTargetBranch == null)
-            {
-                insertTargetBranch = GetTargetBranch(yamlFileName);
-            }
-
-            if (buildNumber == null)
-            {
-                (_, buildNumber) = GetBuildNumber();
-            }
-
-            var buildUriString = $"vstsdrop:Tests/DevDiv/VS/{insertTargetBranch}/{buildNumber}/x86ret";
-            return buildUriString;
+            return success ? testsUrl : null;
         }
 
         public static (bool, string) GetTestsUrl(string bootstrapperInfoPath = null)
@@ -184,9 +165,9 @@ namespace roslyn.optprof.runsettings.generator
                 {
                     var jsonContent = JToken.ReadFrom(reader);
                     var buildDropPath = (string)((JArray)jsonContent).First["BuildDrop"];
-                    if (buildDropPath.Contains("/Products/") && buildDropPath.Contains("https://vsdrop.corp.microsoft.com/file/v1/"))
+                    if (buildDropPath.Contains("Products") && buildDropPath.Contains("https://vsdrop.corp.microsoft.com/file/v1/"))
                     {
-                        var testsUri = $"vstsdrop:{buildDropPath.Replace("/Products/", "/Tests/").Substring("https://vsdrop.corp.microsoft.com/file/v1/".Length)}";
+                        var testsUri = $"vstsdrop:{buildDropPath.Replace("Products", "Tests").Substring("https://vsdrop.corp.microsoft.com/file/v1/".Length)}";
                         return (true, testsUri);
                     }
                     else
