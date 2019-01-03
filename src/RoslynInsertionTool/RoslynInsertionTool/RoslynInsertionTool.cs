@@ -267,6 +267,8 @@ namespace Roslyn.Insertion
                         {
                             Console.WriteLine($"Unable to create pull request for '{branch.FriendlyName}'");
                             Console.WriteLine(ecx);
+                            // Since it was an empty commit there should not be anything to rollback.
+                            shouldRollBackGitChanges = false;
                             return (false, 0);
                         }
                         catch (Exception ex)
