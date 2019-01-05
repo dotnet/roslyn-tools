@@ -13,7 +13,7 @@ function Do-Insertion(
     $updateassemblyversions="false",
     $insertToolset="false",
     $queueValidation="true",
-    $dropPath=""
+    $dropPath="",
     $titlePrefix="[Auto Insertion]")
 {
     Write-Host "Performing $component $fromBranch Insertion into $toBranch..."
