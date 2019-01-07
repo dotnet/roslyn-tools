@@ -1,10 +1,9 @@
 using System.IO;
-using roslyn.optprof.runsettings.generator;
 using Xunit;
 
-namespace roslyn.optprof.unittests
+namespace roslyn.optprof.runsettings.generator.UnitTests
 {
-    public class GetTestsUrl
+    public class GetTestsDropName
     {
         [Theory]
         [InlineData(@"[{""BuildDrop"": ""https://vsdrop.corp.microsoft.com/file/v1/Products/42.42.42.42/42.42.42.42""}]", "Tests/42.42.42.42/42.42.42.42")]

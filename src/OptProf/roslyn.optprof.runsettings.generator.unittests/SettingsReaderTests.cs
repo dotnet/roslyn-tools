@@ -2,7 +2,7 @@ using System.IO;
 using roslyn.optprof.runsettings.generator;
 using Xunit;
 
-namespace roslyn.optprof.unittests
+namespace roslyn.optprof.runsettings.generator.UnitTests
 {
     public class SettingsReaderTests
     {
