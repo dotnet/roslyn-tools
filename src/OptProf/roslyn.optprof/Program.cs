@@ -129,16 +129,13 @@ namespace roslyn.optprof
 
         private static OptProfTrainingConfiguration ReadConfigFile(string pathToConfigFile)
         {
-            using (var file = File.OpenText(pathToConfigFile))
+            try
             {
-                var (success, config) = Config.TryReadConfigFile(file);
-                if (!success)
-                {
-                    // handle error case
-                    throw new Exception($"Unable to open the config file '{pathToConfigFile}'");
-                }
-
-                return config;
+                return Config.ReadConfigFile(File.ReadAllText(pathToConfigFile));
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Unable to open the config file '{pathToConfigFile}': {e.Message}");
             }
         }
 

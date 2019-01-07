@@ -8,18 +8,7 @@ namespace roslyn.optprof.lib
 {
     public static class Config
     {
-        public static (bool success, OptProfTrainingConfiguration config) TryReadConfigFile(TextReader configReader)
-        {
-            try
-            {
-                var config = JsonSerializer.CreateDefault().Deserialize<OptProfTrainingConfiguration>(configReader);
-                return (true, config);
-            }
-            catch (Exception)
-            {
-                return (false, null);
-            }
-
-        }
+        public static OptProfTrainingConfiguration ReadConfigFile(string configJson)
+            => JsonSerializer.CreateDefault().Deserialize<OptProfTrainingConfiguration>(new StringReader(configJson));
     }
 }

@@ -10,25 +10,11 @@ namespace roslyn.optprof.unittests
         [InlineData(products_only, products_only_expectedContainerString, products_only_expectedTestCaseFilterString)]
         [InlineData(assemblies_only, assemblies_only_expectedContainerString, assemblies_only_expectedTestCaseFilterString)]
         [InlineData(products_and_assemblies, products_and_assemblies_expectedContainerString, products_and_assemblies_expectedTestCaseFilterString)]
-        public void TestProductsOnly(string configFile, string expectedContainerString, string expectedTestCaseFilterString)
+        public void TestProductsOnly(string configJson, string expectedContainerString, string expectedTestCaseFilterString)
         {
-            using (var reader = new StreamReader(GenerateStreamFromString(configFile)))
-            {
-                var (result, actualContainerString, actualTestCaseFilterString) = Program.GetContainerString(reader);
-                Assert.True(result);
-                Assert.Equal(expectedContainerString, actualContainerString);
-                Assert.Equal(expectedTestCaseFilterString, actualTestCaseFilterString);
-            }
-        }
-
-        public Stream GenerateStreamFromString(string s)
-        {
-            var stream = new MemoryStream();
-            var writer = new StreamWriter(stream);
-            writer.Write(s);
-            writer.Flush();
-            stream.Position = 0;
-            return stream;
+            var (actualContainerString, actualTestCaseFilterString) = Program.GetContainerString(configJson, "config.json");
+            Assert.Equal(expectedContainerString, actualContainerString);
+            Assert.Equal(expectedTestCaseFilterString, actualTestCaseFilterString);
         }
 
         public const string products_only_expectedContainerString = "<TestContainer FileName=\"DDRIT.RPS.CSharp.dll\" />\r\n<TestContainer FileName=\"VSPE.dll\" />";
