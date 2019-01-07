@@ -15,6 +15,6 @@
     <repository type="$RepositoryType$" url="$RepositoryUrl$" commit="$RepositoryCommit$" />
   </metadata>
   <files>
-    <file src="net461\*.*" target="tools" />
+    <file src="net472\*.*" target="tools" />
   </files>
 </package>
