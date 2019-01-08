@@ -12,6 +12,7 @@ using LibGit2Sharp;
 
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
+using Microsoft.VisualStudio.Services.WebApi;
 
 namespace Roslyn.Insertion
 {
@@ -100,6 +101,15 @@ namespace Roslyn.Insertion
                 {
                     buildVersion = BuildVersion.FromString(Options.SpecificBuild);
                     buildToInsert = await GetSpecificBuildAsync(buildVersion, cancellationToken);
+                }
+
+                string commitSHA = buildToInsert.SourceVersion.Substring(0, 7);
+                string lastCommitUrl = string.Empty;
+                if (buildToInsert.Links.Links.ContainsKey("sourceVersionDisplayUri"))
+                {
+                    // Get a link to the commit the build was built from.
+                    var sourceLink = (ReferenceLink)buildToInsert.Links.Links["sourceVersionDisplayUri"];
+                    lastCommitUrl = sourceLink.Href;
                 }
 
                 var insertionArtifacts = await GetInsertionArtifactsAsync(buildToInsert, cancellationToken);
@@ -231,7 +241,7 @@ namespace Roslyn.Insertion
                 if (branch != null)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var prDescription = $"Updating {Options.InsertionName} to {buildVersion}";
+                    var prDescription = $"Updating {Options.InsertionName} to {buildVersion}. [({commitSHA})]({lastCommitUrl})";
                     if (useExistingPr && pullRequest != null)
                     {
                         // update an existing pr
