@@ -241,7 +241,7 @@ namespace Roslyn.Insertion
                 if (branch != null)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var prDescription = $"Updating {Options.InsertionName} to {buildVersion}. [({commitSHA})]({lastCommitUrl})";
+                    var prDescription = $"Updating {Options.InsertionName} to {buildVersion} ([{commitSHA}]({lastCommitUrl}))";
                     if (useExistingPr && pullRequest != null)
                     {
                         // update an existing pr
