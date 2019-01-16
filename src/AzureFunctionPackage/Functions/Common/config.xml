@@ -44,7 +44,8 @@
     <merge from="release/2.1.2xx" to="release/2.1.3xx" />
     <merge from="release/2.1.3xx" to="release/2.1.4xx" />
     <merge from="release/2.1.4xx" to="release/2.1.5xx" />
-    <merge from="release/2.1.5xx" to="release/2.2.1xx" />
+    <merge from="release/2.1.5xx" to="release/2.1.6xx" />
+    <merge from="release/2.1.6xx" to="release/2.2.1xx" />
     <merge from="release/2.2.1xx" to="release/2.2.2xx" />
     <merge from="release/2.2.2xx" to="master" />
   </repo>
@@ -55,7 +56,8 @@
     <merge from="release/2.1.2xx" to="release/2.1.3xx" />
     <merge from="release/2.1.3xx" to="release/2.1.4xx" />
     <merge from="release/2.1.4xx" to="release/2.1.5xx" />
-    <merge from="release/2.1.5xx" to="release/2.2.1xx" />
+    <merge from="release/2.1.5xx" to="release/2.1.6xx" />
+    <merge from="release/2.1.6xx" to="release/2.2.1xx" />
     <merge from="release/2.2.1xx" to="release/2.2.2xx" />
     <merge from="release/2.2.2xx" to="master" />
   </repo>
