@@ -134,7 +134,7 @@ git reset --hard upstream/{destBranch}
 git merge upstream/{srcBranch}
 # Fix merge conflicts
 git commit
-git push {prBranchName} --force
+git push upstream {prBranchName} --force
 ```
 
 Once all conflicts are resolved and all the tests pass, you are free to merge the pull request.";
