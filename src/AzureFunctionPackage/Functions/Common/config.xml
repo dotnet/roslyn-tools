@@ -22,6 +22,7 @@
     <!-- Feature branches -->
     <merge from="dev16.0-preview2" to="features/enhanced-using" />
     <merge from="master" to="features/editorconfig-in-compiler" />
+    <merge from="master" to="features/NullableDogfood" />
   </repo>
   <repo owner="dotnet" name="testimpact">
     <merge from="dev15.8.x" to="dev15.9.x" />
