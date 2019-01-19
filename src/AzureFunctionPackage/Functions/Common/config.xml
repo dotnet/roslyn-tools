@@ -20,7 +20,6 @@
     <merge from="dev16.1-preview1" to="dev16.1-preview1-vs-deps" />
 
     <!-- Feature branches -->
-    <merge from="dev16.0-preview2" to="features/enhanced-using" />
     <merge from="master" to="features/editorconfig-in-compiler" />
     <merge from="master" to="features/NullableDogfood" />
   </repo>
