@@ -49,14 +49,16 @@ function Do-Insertion(
 #Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "dev15.8.x"         -toBranch "rel/d15.8" -insertCore "false" -insertDevdiv "false" -queueValidation "true"
 #Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev15.8.x"         -toBranch "rel/d15.8" -insertCore "true"                       -queueValidation "true" -dropPath "server"
 
-# Dev15.9 Preview 4
+# Dev15.9 Preview 9
 Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev15.9.x-vs-deps"        -toBranch "rel/d15.9"    -insertToolset "false" -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
 
 # Dev16 Preview 2
-Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev16.0-preview2-vs-deps" -toBranch "rel/d16.0"    -insertToolset "false" -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
 Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev16.0-preview2"         -toBranch "rel/d16.0"    -insertCore "true"     -queueValidation "true" -dropPath "server"
 
 # Dev16 Preview 3
+Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev16.0-preview3-vs-deps" -toBranch "rel/d16.0"    -insertToolset "false" -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
+
+# Dev16 Preview 4
 Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "master-vs-deps"           -toBranch "lab/d16.0stg" -insertToolset "true"  -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
 Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "dev16.0.x"                -toBranch "lab/d16.0stg" -insertCore "false"    -insertDevdiv "false"   -queueValidation "true"
 Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "master"                   -toBranch "lab/d16.0stg" -insertCore "true"     -queueValidation "true" -dropPath "server"
