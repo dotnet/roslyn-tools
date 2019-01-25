@@ -49,7 +49,7 @@ function Do-Insertion(
 #Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "dev15.8.x"         -toBranch "rel/d15.8" -insertCore "false" -insertDevdiv "false" -queueValidation "true"
 #Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev15.8.x"         -toBranch "rel/d15.8" -insertCore "true"                       -queueValidation "true" -dropPath "server"
 
-# Dev15.9 Preview 9
+# Dev15.9
 Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "dev15.9.x-vs-deps"        -toBranch "rel/d15.9"    -insertToolset "false" -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
 
 # Dev16 Preview 2
