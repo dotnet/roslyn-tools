@@ -32,6 +32,10 @@ namespace GithubMergeTool
                 "user-agent",
                 "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2;)");
 
+            // Needed to call the check-runs endpoint
+            client.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/vnd.github.antiope-preview+json"));
+
             _client = client;
         }
 
@@ -274,16 +278,28 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             var requiredTests = branchInfo["protection"]["required_status_checks"]["contexts"].Values<string>()
                 .Where(rt => rt != "WIP"); // the 'WIP' check doesn't reliably report its status, but that shouldn't prevent an auto-merge from happening
 
+            // Get CLA status
             var testStatusResponse = await _client.GetAsync($"repos/{repoOwner}/{repoName}/commits/{mergeBranchRef}/status");
             if (!testStatusResponse.IsSuccessStatusCode)
             {
-                return (false, "Unable to get status of required checks", testStatusResponse);
+                return (false, "Unable to get status of required test checks", testStatusResponse);
             }
 
             var testStatusBody = JObject.Parse(await testStatusResponse.Content.ReadAsStringAsync());
-            var statusDict = testStatusBody["statuses"].Select(t => ((string)t["context"], "success" == (string)t["state"]))
-                .ToDictionary(t => t.Item1, t => t.Item2);
-            var allStatusChecks = testStatusBody["statuses"].Select(t => ((string)t["context"], (string)t["state"])).ToList();
+            var statuses = testStatusBody["statuses"].Select(t => ((string)t["context"], (string)t["state"]));
+
+            // Get Roslyn-CI status
+            var runChecksResponse = await _client.GetAsync($"repos/{repoOwner}/{repoName}/commits/{mergeBranchRef}/check-runs");
+            if (!runChecksResponse.IsSuccessStatusCode)
+            {
+                return (false, "Unable to get status of required run checks", runChecksResponse);
+            }
+
+            var checkRunsBody = JObject.Parse(await runChecksResponse.Content.ReadAsStringAsync());
+            var checks = checkRunsBody["check_runs"].Select(c => ((string)c["name"], (string)c["conclusion"]));
+
+            var allStatusChecks = statuses.Concat(checks).ToList();
+            var statusDict = allStatusChecks.ToDictionary(t => t.Item1, t => "success" == t.Item2);
 
             // If there are no required tests, treat *any* test failure as a blocker
             if (!requiredTests.Any() && statusDict.Any(kvp => !kvp.Value))
