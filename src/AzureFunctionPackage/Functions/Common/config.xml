@@ -3,16 +3,19 @@
     <!-- Roslyn branches (non-vs-deps) (flowing between releases) -->
     <merge from="dev15.0.x" to="dev15.9.x" />
     <merge from="dev15.9.x" to="dev16.0" />
+    <merge from="dev16.0-preview3" to="dev16.0" />
     <merge from="dev16.0" to="master" />
 
     <!-- Roslyn branches (between vs-deps branches) -->
     <merge from="dev15.0.x-vs-deps" to="dev15.9.x-vs-deps" />
     <merge from="dev15.9.x-vs-deps" to="dev16.0-vs-deps" />
+    <merge from="dev16.0-preview3-vs-deps" to="dev16.0-vs-deps" />
     <merge from="dev16.0-vs-deps" to="master-vs-deps" />
 
     <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
     <merge from="dev15.0.x" to="dev15.0.x-vs-deps" />
     <merge from="dev15.9.x" to="dev15.9.x-vs-deps" />
+    <merge from="dev16.0-preview3" to="dev16.0-preview3-vs-deps" />
     <merge from="dev16.0" to="dev16.0-vs-deps" />
     <merge from="master" to="master-vs-deps" />
 
