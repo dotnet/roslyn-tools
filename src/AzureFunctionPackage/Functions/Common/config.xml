@@ -66,6 +66,12 @@
     <merge from="release/2.2.2xx" to="release/3.0.1xx" />
     <merge from="release/3.0.1xx" to="master" />
   </repo>
+  <repo owner="dotnet" name="toolset">
+    <merge from="release/3.0.1xx" to="master" />
+  </repo>
+  <repo owner="dotnet" name="core-sdk">
+    <merge from="release/3.0.1xx" to="master" />
+  </repo>
   <repo owner="Microsoft" name="visualfsharp">
     <!-- shipped branches back to master -->
     <merge from="dev15.8" to="master" />
