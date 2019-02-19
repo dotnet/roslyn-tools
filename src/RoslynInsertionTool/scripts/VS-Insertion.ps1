@@ -39,7 +39,7 @@ function Do-Insertion(
 #Do-Insertion -component "F#" -queueName "FSharp-Signed" -fromBranch "dev15.9" -toBranch "rel/d15.9" -insertCore "false" -insertDevdiv "false" -queueValidation "true" -dropPath "\\cpvsbuild\drops\FSharp"
 # disabled until RPS tests are reliable again
 #Do-Insertion -component "F#" -queueName "FSharp-Signed" -fromBranch "dev16.0" -toBranch "lab/d16.0stg"    -insertCore "false" -insertDevdiv "false" -dropPath "\\cpvsbuild\drops\FSharp"
-Do-Insertion -component "F#" -queueName "FSharp-Signed" -fromBranch "dev16.1" -toBranch "lab/ml"    -insertCore "false" -insertDevdiv "false" -dropPath "\\cpvsbuild\drops\FSharp"
+#Do-Insertion -component "F#" -queueName "FSharp-Signed" -fromBranch "dev16.1" -toBranch "lab/ml"    -insertCore "false" -insertDevdiv "false" -dropPath "\\cpvsbuild\drops\FSharp"
 
 ###
 ### Non-F# Insertions (handled by the Infrastructure Team)
