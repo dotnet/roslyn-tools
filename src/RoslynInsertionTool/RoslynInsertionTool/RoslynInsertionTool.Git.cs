@@ -6,8 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-
+using System.Threading.Tasks;
 using LibGit2Sharp;
+using Microsoft.TeamFoundation.SourceControl.WebApi;
 
 namespace Roslyn.Insertion
 {
@@ -80,7 +81,7 @@ namespace Roslyn.Insertion
         {
             Stopwatch watch;
             cancellationToken.ThrowIfCancellationRequested();
-            branchName = $"{Options.NewBranchName}{Options.VisualStudioBranchName.Split('/').Last()}.{DateTime.Now:yyyyMMddHHmmss}";
+            branchName = GetNewBranchName();
             Console.WriteLine($"Creating new branch {branchName}");
             var remoteTrackingBranchName = "origin/" + Options.VisualStudioBranchName;
             var remoteTrackingBranch = enlistment.Branches[remoteTrackingBranchName];
@@ -89,6 +90,8 @@ namespace Roslyn.Insertion
             newlocalBranch = enlistment.Branches.Update(newlocalBranch, b => { b.Remote = "origin"; b.UpstreamBranch = Options.VisualStudioBranchName; });
             Console.WriteLine($"Creating branch took {watch.Elapsed.TotalSeconds} seconds");
         }
+
+        private static string GetNewBranchName() => $"{Options.NewBranchName}{Options.VisualStudioBranchName.Split('/').Last()}.{DateTime.Now:yyyyMMddHHmmss}";
 
         private static string GetAbsolutePathForEnlistment() => Path.GetFullPath(Options.EnlistmentPath);
 
@@ -190,21 +193,51 @@ namespace Roslyn.Insertion
             return Enlistment.Head;
         }
 
-        private static void CreateDummyCommit(CancellationToken cancellationToken)
+        private static async Task<GitPullRequest> CreatePlaceholderBranchAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var message = $"DUMMY INSERTION FOR {Options.InsertionName}";
-            var options = new CommitOptions()
+            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+            var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
+
+            var refs = await gitClient.GetRefsAsync(
+                repository.Id,
+                filter: $"heads/{Options.VisualStudioBranchName}",
+                cancellationToken: cancellationToken);
+            GitRef sourceBranch = refs.Single();
+
+            var branchName = GetNewBranchName();
+
+            _ = await gitClient.CreatePushAsync(new GitPush()
             {
-                AllowEmptyCommit = true
-            };
-            var watch = Stopwatch.StartNew();
-            var commit = Enlistment.Commit(
-                message,
-                InsertionToolSignature,
-                InsertionToolSignature,
-                options);
-            Console.WriteLine($"Committing took {watch.Elapsed.TotalSeconds} seconds");
+                RefUpdates = new[] {
+                    new GitRefUpdate()
+                    {
+                        Name = $"refs/heads/{branchName}",
+                        OldObjectId = sourceBranch.ObjectId,
+                    }
+                },
+                Commits = new[] {
+                    new GitCommitRef()
+                    {
+                        Comment = $"PLACEHOLDER INSERTION FOR {Options.InsertionName}",
+                        Changes = new GitChange[]
+                        {
+                            new GitChange()
+                            {
+                                ChangeType = VersionControlChangeType.Delete,
+                                Item = new GitItem() { Path = "/Init.ps1" }
+                            },
+                        }
+                    },
+                },
+            }, repository.Id, cancellationToken: cancellationToken);
+
+            return await CreatePullRequestAsync(
+                branchName,
+                $"PLACEHOLDER INSERTION FOR {Options.InsertionName}",
+                "Not Specified",
+                Options.TitlePrefix,
+                cancellationToken);
         }
 
         private static Branch PushChanges(Branch branch, BuildVersion newRoslynVersion, CancellationToken cancellationToken, bool forcePush = false)

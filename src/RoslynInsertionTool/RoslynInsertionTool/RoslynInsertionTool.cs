@@ -54,23 +54,20 @@ namespace Roslyn.Insertion
                 // ********************** Create dummy PR *****************************
                 if (Options.CreateDummyPr)
                 {
-                    var dummyBranch = CreateBranch(cancellationToken);
                     try
                     {
-                        CreateDummyCommit(cancellationToken);
-                        PushChanges(dummyBranch, cancellationToken);
-                        pullRequest = await CreatePullRequestAsync(dummyBranch.FriendlyName, $"DUMMY INSERTION FOR {Options.InsertionName}", "Not Specified", options.TitlePrefix, cancellationToken);
+                        pullRequest = await CreatePlaceholderBranchAsync(cancellationToken);
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Unable to create pull request for '{dummyBranch.FriendlyName}'");
+                        Console.WriteLine($"Unable to create placeholder PR for '{options.VisualStudioBranchName}'");
                         Console.WriteLine(ex);
                         return (false, 0);
                     }
 
                     if (pullRequest == null)
                     {
-                        Console.WriteLine($"Unable to create pull request for '{dummyBranch.FriendlyName}'");
+                        Console.WriteLine($"Unable to create placeholder PR for '{options.VisualStudioBranchName}'");
                         return (false, 0);
                     }
 
