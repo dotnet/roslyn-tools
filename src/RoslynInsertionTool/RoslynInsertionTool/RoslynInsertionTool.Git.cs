@@ -203,7 +203,7 @@ namespace Roslyn.Insertion
                 repository.Id,
                 filter: $"heads/{Options.VisualStudioBranchName}",
                 cancellationToken: cancellationToken);
-            GitRef sourceBranch = refs.Single();
+            GitRef sourceBranch = refs.Single(r => r.Name == $"refs/heads/{Options.VisualStudioBranchName}");
 
             var branchName = GetNewBranchName();
 
