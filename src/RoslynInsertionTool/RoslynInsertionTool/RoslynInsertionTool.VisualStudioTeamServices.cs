@@ -586,5 +586,46 @@ namespace Roslyn.Insertion
 
             return logText;
         }
+
+        internal static async Task<IEnumerable<GitCommit>> GetChangesBetweenBuildsAsync(Build oldbuild, Build newBuild, CancellationToken cancellationToken)
+        {
+            var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
+            var changes = await buildClient.GetChangesBetweenBuildsAsync(project: Options.TFSProjectName,
+                                                                         fromBuildId: oldbuild.Id,
+                                                                         toBuildId: newBuild.Id,
+                                                                         cancellationToken: cancellationToken);
+            return changes.Select(change => new GitCommit
+            {
+                Author = change.Author.DisplayName,
+                CommitDate = change.Timestamp.Value,
+                Message = change.Message,
+                CommitId = change.Id,
+                RemoteUrl = change.DisplayUri.AbsoluteUri,
+            });
+        }
+
+        internal static string AppendChangesToDescription(string prDescription, IEnumerable<GitCommit> changes)
+        {
+            var description = new StringBuilder(prDescription + Environment.NewLine);
+            var separator = Environment.NewLine.ToCharArray();
+            description.AppendLine($@"---
+| Commit | Message | Author | Date |
+| ------ | ------- | ------ | ---- |
+{string.Join("\n", changes.Select(x => $"| [{x.CommitId.Substring(0, 8)}]({x.RemoteUrl}) | {x.Message.Split(separator).First()} | {x.Author} | {x.CommitDate} |"))}"
+            );
+
+            //max size for description
+            return description.Length >= 3500 ? prDescription : description.ToString();
+        }
+
+
+        internal struct GitCommit
+        {
+            public string Author { get; set; }
+            public DateTime CommitDate { get; set; }
+            public string Message { get; set; }
+            public string CommitId { get; set; }
+            public string RemoteUrl { get; set; }
+        }
     }
 }
