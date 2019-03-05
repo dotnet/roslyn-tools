@@ -265,6 +265,8 @@ namespace Roslyn.Insertion
                         Console.WriteLine($"Create Pull Request");
                         try
                         {
+                            var changes = await GetChangesBetweenBuildsAsync(buildToInsert, cancellationToken);
+                            prDescription = AppendChangesToDescription(prDescription, changes);
                             branch = PushChanges(branch, buildVersion, cancellationToken);
                             pullRequest = await CreatePullRequestAsync(branch.FriendlyName, prDescription, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
                             shouldRollBackGitChanges = false;
