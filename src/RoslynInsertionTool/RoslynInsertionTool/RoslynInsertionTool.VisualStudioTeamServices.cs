@@ -587,13 +587,13 @@ namespace Roslyn.Insertion
             return logText;
         }
 
-        internal static async Task<IEnumerable<GitCommit>> GetChangesBetweenBuildsAsync(Build oldbuild, Build newBuild, CancellationToken cancellationToken)
+        internal static async Task<IEnumerable<GitCommit>> GetChangesBetweenBuildsAsync(Build build, CancellationToken cancellationToken)
         {
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
-            var changes = await buildClient.GetChangesBetweenBuildsAsync(project: Options.TFSProjectName,
-                                                                         fromBuildId: oldbuild.Id,
-                                                                         toBuildId: newBuild.Id,
-                                                                         cancellationToken: cancellationToken);
+            var changes = await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
+                                                                buildId: build.Id,
+                                                                cancellationToken: cancellationToken);
+
             return changes.Select(change => new GitCommit
             {
                 Author = change.Author.DisplayName,
@@ -606,6 +606,11 @@ namespace Roslyn.Insertion
 
         internal static string AppendChangesToDescription(string prDescription, IEnumerable<GitCommit> changes)
         {
+            if (!changes.Any())
+            {
+                return prDescription;
+            }
+
             var description = new StringBuilder(prDescription + Environment.NewLine);
             var separator = Environment.NewLine.ToCharArray();
             description.AppendLine($@"---
