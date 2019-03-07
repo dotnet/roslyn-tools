@@ -46,6 +46,7 @@
     <MonoOptionsVersion>5.3.0.1</MonoOptionsVersion>
 
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
+    <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>
 
   <PropertyGroup>
