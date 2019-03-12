@@ -170,6 +170,8 @@ namespace Roslyn.Insertion
                 }
 
                 // *********** Update .corext\Configs\components.json ********************
+
+                BuildVersion oldComponentVersion = default;
                 if (Options.InsertWillowPackages)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -181,6 +183,10 @@ namespace Roslyn.Insertion
                     {
                         if (coreXT.TryGetComponentByName(newComponent.Name, out var oldComponent))
                         {
+                            if (oldComponent.BuildVersion != default)
+                            {
+                                oldComponentVersion = oldComponent.BuildVersion;
+                            }
                             coreXT.UpdateComponent(newComponent);
                             shouldSave = true;
                         }
@@ -265,7 +271,9 @@ namespace Roslyn.Insertion
                         Console.WriteLine($"Create Pull Request");
                         try
                         {
-                            var changes = await GetChangesBetweenBuildsAsync(buildToInsert, cancellationToken);
+                            var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
+                            var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild ?? buildToInsert, buildToInsert, cancellationToken);
+                            prDescription = AppendDiffToDescription(prDescription, diffLink);
                             prDescription = AppendChangesToDescription(prDescription, changes);
                             branch = PushChanges(branch, buildVersion, cancellationToken);
                             pullRequest = await CreatePullRequestAsync(branch.FriendlyName, prDescription, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
