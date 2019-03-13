@@ -23,6 +23,7 @@ using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Change = Microsoft.TeamFoundation.Build.WebApi.Change;
 
 namespace Roslyn.Insertion
 {
@@ -587,21 +588,43 @@ namespace Roslyn.Insertion
             return logText;
         }
 
-        internal static async Task<IEnumerable<GitCommit>> GetChangesBetweenBuildsAsync(Build build, CancellationToken cancellationToken)
+        internal static async Task<(IEnumerable<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
         {
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
             var changes = await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
-                                                                buildId: build.Id,
-                                                                cancellationToken: cancellationToken);
+                                                                 buildId: tobuild.Id,
+                                                                 cancellationToken: cancellationToken);
+            Change firstChange, lastChange;
+            if (fromBuild.Id != tobuild.Id)
+            {
+                firstChange = (await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
+                                                                      buildId: fromBuild.Id,
+                                                                      cancellationToken: cancellationToken)).Last();
 
-            return changes.Select(change => new GitCommit
+                lastChange = (await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
+                                                                     buildId: tobuild.Id,
+                                                                     cancellationToken: cancellationToken)).Last();
+            }
+            else
+            {
+                firstChange = changes.First();
+                lastChange = changes.Last();
+            }
+
+            var from = firstChange.Id.Substring(0, 8);
+            var to = lastChange.Id.Substring(0, 8);
+            var organization = firstChange.DisplayUri.AbsoluteUri.Split('/')[3];
+            var repo = firstChange.DisplayUri.AbsoluteUri.Split('/')[4];
+            var diffLink = $@"https://github.com/{organization}/{repo}/compare/{from}..{to}";
+
+            return (changes.Select(change => new GitCommit
             {
                 Author = change.Author.DisplayName,
                 CommitDate = change.Timestamp.Value,
                 Message = change.Message,
                 CommitId = change.Id,
                 RemoteUrl = change.DisplayUri.AbsoluteUri,
-            });
+            }), diffLink);
         }
 
         internal static string AppendChangesToDescription(string prDescription, IEnumerable<GitCommit> changes)
@@ -614,6 +637,7 @@ namespace Roslyn.Insertion
             var description = new StringBuilder(prDescription + Environment.NewLine);
             var separator = Environment.NewLine.ToCharArray();
             description.AppendLine($@"---
+Changes associated with this build (most recent commits):
 | Commit | Message | Author | Date |
 | ------ | ------- | ------ | ---- |
 {string.Join("\n", changes.Select(x => $"| [{x.CommitId.Substring(0, 8)}]({x.RemoteUrl}) | {x.Message.Split(separator).First()} | {x.Author} | {x.CommitDate} |"))}"
@@ -623,6 +647,14 @@ namespace Roslyn.Insertion
             return description.Length >= 3500 ? prDescription : description.ToString();
         }
 
+        internal static string AppendDiffToDescription(string prDescription, string diffLink)
+        {
+            var diff = $"[View Complete Diff of Changes]({diffLink})";
+            var description = new StringBuilder(prDescription + Environment.NewLine);
+            description.AppendLine("---");
+            description.AppendLine(diff);
+            return description.Length >= 3500 ? prDescription : description.ToString();
+        }
 
         internal struct GitCommit
         {
