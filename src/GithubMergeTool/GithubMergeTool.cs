@@ -268,16 +268,6 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             var mergeBranchRef = (string)prInfo["head"]["ref"];
             var baseBranchRef = (string)prInfo["base"]["ref"];
 
-            var branchResponse = await _client.GetAsync($"/repos/{repoOwner}/{repoName}/branches/{baseBranchRef}");
-            if (!branchResponse.IsSuccessStatusCode)
-            {
-                return (false, "Unable to get branch status", branchResponse);
-            }
-
-            var branchInfo = JObject.Parse(await branchResponse.Content.ReadAsStringAsync());
-            var requiredTests = branchInfo["protection"]["required_status_checks"]["contexts"].Values<string>()
-                .Where(rt => rt != "WIP"); // the 'WIP' check doesn't reliably report its status, but that shouldn't prevent an auto-merge from happening
-
             // Get CLA status
             var testStatusResponse = await _client.GetAsync($"repos/{repoOwner}/{repoName}/commits/{mergeBranchRef}/status");
             if (!testStatusResponse.IsSuccessStatusCode)
@@ -300,6 +290,16 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
 
             var allStatusChecks = statuses.Concat(checks).ToList();
             var statusDict = allStatusChecks.ToDictionary(t => t.Item1, t => "success" == t.Item2);
+
+            var branchResponse = await _client.GetAsync($"/repos/{repoOwner}/{repoName}/branches/{baseBranchRef}");
+            if (!branchResponse.IsSuccessStatusCode)
+            {
+                return (false, "Unable to get branch status", branchResponse);
+            }
+
+            var branchInfo = JObject.Parse(await branchResponse.Content.ReadAsStringAsync());
+            var requiredTests = branchInfo["protection"]["required_status_checks"]["contexts"].Values<string>()
+                .Where(rt => rt != "WIP"); // the 'WIP' check doesn't reliably report its status, but that shouldn't prevent an auto-merge from happening
 
             // If there are no required tests, treat *any* test failure as a blocker
             if (!requiredTests.Any() && statusDict.Any(kvp => !kvp.Value))
