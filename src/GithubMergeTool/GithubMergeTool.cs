@@ -182,6 +182,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
         }
 
         public const string AutoMergeLabelText = "Auto-Merge If Tests Pass";
+        private static readonly string[] AlwaysRequiredTests = { "roslyn-integration-CI" };
 
         /// <summary>
         /// Fetch the list of PRs that have been marked with the <see cref="AutoMergeLabelText"/>
@@ -299,7 +300,9 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
 
             var branchInfo = JObject.Parse(await branchResponse.Content.ReadAsStringAsync());
             var requiredTests = branchInfo["protection"]["required_status_checks"]["contexts"].Values<string>()
-                .Where(rt => rt != "WIP"); // the 'WIP' check doesn't reliably report its status, but that shouldn't prevent an auto-merge from happening
+                .Concat(AlwaysRequiredTests.Where(statusDict.ContainsKey))
+                .Where(rt => rt != "WIP") // the 'WIP' check doesn't reliably report its status, but that shouldn't prevent an auto-merge from happening
+                .Distinct();
 
             // If there are no required tests, treat *any* test failure as a blocker
             if (!requiredTests.Any() && statusDict.Any(kvp => !kvp.Value))
