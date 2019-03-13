@@ -603,7 +603,7 @@ namespace Roslyn.Insertion
 
                 lastChange = (await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
                                                                      buildId: tobuild.Id,
-                                                                     cancellationToken: cancellationToken)).Last();
+                                                                     cancellationToken: cancellationToken)).First();
             }
             else
             {
@@ -615,7 +615,7 @@ namespace Roslyn.Insertion
             var to = lastChange.Id.Substring(0, 8);
             var organization = firstChange.DisplayUri.AbsoluteUri.Split('/')[3];
             var repo = firstChange.DisplayUri.AbsoluteUri.Split('/')[4];
-            var diffLink = $@"https://github.com/{organization}/{repo}/compare/{from}..{to}";
+            var diffLink = $@"https://github.com/{organization}/{repo}/compare/{from}..{to}?w=1";
 
             return (changes.Select(change => new GitCommit
             {
