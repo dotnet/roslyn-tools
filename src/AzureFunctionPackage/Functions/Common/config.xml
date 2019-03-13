@@ -81,5 +81,9 @@
     <merge from="master" to="dev16.1" />
     <merge from="dev16.0" to="dev16.1" />
     <merge from="master" to="nullness" />
+
+    <!-- fsharp5 -->
+    <merge from="dev16.0" to="fsharp5" />
+    <merge from="master" to="fsharp5" />
   </repo>
 </config>
