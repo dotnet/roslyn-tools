@@ -603,7 +603,7 @@ namespace Roslyn.Insertion
 
                 lastChange = (await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
                                                                      buildId: tobuild.Id,
-                                                                     cancellationToken: cancellationToken)).Last();
+                                                                     cancellationToken: cancellationToken)).First();
             }
             else
             {
