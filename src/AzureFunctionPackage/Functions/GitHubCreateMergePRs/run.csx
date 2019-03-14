@@ -40,7 +40,7 @@ private static async Task MakeGithubPr(
     }
 }
 
-private static async Task RunAsync(ExecutionContext context)
+private static async Task RunAsync(ExecutionContext context, bool isManualRun)
 {
     var gh = new GithubMergeTool.GithubMergeTool("dotnet-bot@users.noreply.github.com", await GetSecret("dotnet-bot-github-auth-token"));
     var configPath = Path.Combine(context.FunctionDirectory, "config.xml");
@@ -54,8 +54,8 @@ private static async Task RunAsync(ExecutionContext context)
             var fromBranch = merge.Attribute("from").Value;
             var toBranch = merge.Attribute("to").Value;
 
-            var frequency = merge.Attribute("frequency")?.Value ?? "daily";
-            if (frequency == "weekly" && DateTime.Now.DayOfWeek != DayOfWeek.Sunday)
+            var frequency = merge.Attribute("frequency")?.Value;
+            if (!isManualRun && frequency == "weekly" && DateTime.Now.DayOfWeek != DayOfWeek.Sunday)
             {
                 continue;
             }
@@ -71,6 +71,8 @@ public static void Run(TimerInfo myTimer, TraceWriter log, ExecutionContext cont
     Log = log;
 
     log.Info($"C# Timer trigger function executed at: {DateTime.Now}");
+    
+    var isManualRun = DateTime.Now < myTimer.ScheduleStatus.Next;
 
-    RunAsync(context).GetAwaiter().GetResult();
+    RunAsync(context, isManualRun).GetAwaiter().GetResult();
 }
