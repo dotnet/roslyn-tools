@@ -53,6 +53,13 @@ private static async Task RunAsync(ExecutionContext context)
         {
             var fromBranch = merge.Attribute("from").Value;
             var toBranch = merge.Attribute("to").Value;
+
+            var frequency = merge.Attribute("frequency")?.Value ?? "daily";
+            if (frequency == "weekly" && DateTime.Now.DayOfWeek != DayOfWeek.Sunday)
+            {
+                continue;
+            }
+
             var addAutoMergeLabel = bool.Parse(merge.Attribute("addAutoMergeLabel")?.Value ?? "true");
             await MakeGithubPr(gh, owner, name, fromBranch, toBranch, addAutoMergeLabel);
         }
