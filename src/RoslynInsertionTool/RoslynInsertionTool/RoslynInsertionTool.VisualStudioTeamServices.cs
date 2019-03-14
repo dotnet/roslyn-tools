@@ -7,11 +7,11 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.Policy.WebApi;
@@ -31,6 +31,9 @@ namespace Roslyn.Insertion
     {
         // Currently this is the only release we trigger. We can easily move this over to options when we need this configurable.
         private const string ReleaseDefinitionName = "Roslyn";
+
+        private static readonly Regex IsMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
+        private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)$");
 
         private static readonly Lazy<TfsTeamProjectCollection> LazyProjectCollection = new Lazy<TfsTeamProjectCollection>(() =>
         {
@@ -615,16 +618,25 @@ namespace Roslyn.Insertion
             var to = lastChange.Id.Substring(0, 8);
             var organization = firstChange.DisplayUri.AbsoluteUri.Split('/')[3];
             var repo = firstChange.DisplayUri.AbsoluteUri.Split('/')[4];
-            var diffLink = $@"https://github.com/{organization}/{repo}/compare/{from}..{to}?w=1";
 
-            return (changes.Select(change => new GitCommit
+            var githubClient = new HttpClient();
+            var comparisonUrl = $@"https://api.github.com/repos/{organization}/{repo}/compare/{from}..{to}";
+            var comparisonJson = await githubClient.GetStringAsync(comparisonUrl);
+            var comparison = GitHubComparison.FromJson(comparisonJson);
+
+            return (comparison.Commits.Where(isPRMerge).Select(commit => commit.Commit), comparison.DiffUrl.AbsoluteUri);
+
+            bool isPRMerge(GitHubCommit change)
             {
-                Author = change.Author.DisplayName,
-                CommitDate = change.Timestamp.Value,
-                Message = change.Message,
-                CommitId = change.Id,
-                RemoteUrl = change.DisplayUri.AbsoluteUri,
-            }), diffLink);
+                // Exclude auto-merges
+                if (change.Commit.Author.Name == "dotnet-automerge-bot")
+                {
+                    return false;
+                }
+
+                return IsMergePRCommit.Match(change.Commit.Message).Success ||
+                    IsSquashedPRCommit.Match(change.Commit.Message).Success;
+            }
         }
 
         internal static string AppendChangesToDescription(string prDescription, IEnumerable<GitCommit> changes)
@@ -637,10 +649,10 @@ namespace Roslyn.Insertion
             var description = new StringBuilder(prDescription + Environment.NewLine);
             var separator = Environment.NewLine.ToCharArray();
             description.AppendLine($@"---
-Changes associated with this build (most recent commits):
+New PR merge commits associated with this insertion:
 | Commit | Message | Author | Date |
 | ------ | ------- | ------ | ---- |
-{string.Join("\n", changes.Select(x => $"| [{x.CommitId.Substring(0, 8)}]({x.RemoteUrl}) | {x.Message.Split(separator).First()} | {x.Author} | {x.CommitDate} |"))}"
+{string.Join("\n", changes.Select(x => $"| [{x.Tree.Sha.Substring(0, 8)}]({x.Url}) | {x.Message.Split(separator).First()} | {x.Author} | {x.Author.Date} |"))}"
             );
 
             //max size for description
@@ -654,15 +666,6 @@ Changes associated with this build (most recent commits):
             description.AppendLine("---");
             description.AppendLine(diff);
             return description.Length >= 3500 ? prDescription : description.ToString();
-        }
-
-        internal struct GitCommit
-        {
-            public string Author { get; set; }
-            public DateTime CommitDate { get; set; }
-            public string Message { get; set; }
-            public string CommitId { get; set; }
-            public string RemoteUrl { get; set; }
         }
     }
 }
