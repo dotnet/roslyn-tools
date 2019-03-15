@@ -272,11 +272,9 @@ namespace Roslyn.Insertion
                         try
                         {
                             var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
-                            var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild ?? buildToInsert, buildToInsert, cancellationToken);
-                            prDescription = AppendDiffToDescription(prDescription, diffLink);
-                            prDescription = AppendChangesToDescription(prDescription, changes);
                             branch = PushChanges(branch, buildVersion, cancellationToken);
                             pullRequest = await CreatePullRequestAsync(branch.FriendlyName, prDescription, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
+                            await CreateChangesCommentAsync(pullRequest, oldBuild ?? buildToInsert, buildToInsert, cancellationToken);
                             shouldRollBackGitChanges = false;
                             pullRequestId = pullRequest.PullRequestId;
                         }

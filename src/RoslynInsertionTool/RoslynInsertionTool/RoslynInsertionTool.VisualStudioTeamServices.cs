@@ -32,9 +32,6 @@ namespace Roslyn.Insertion
         // Currently this is the only release we trigger. We can easily move this over to options when we need this configurable.
         private const string ReleaseDefinitionName = "Roslyn";
 
-        private static readonly Regex IsMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
-        private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)$");
-
         private static readonly Lazy<TfsTeamProjectCollection> LazyProjectCollection = new Lazy<TfsTeamProjectCollection>(() =>
         {
             Console.WriteLine($"Creating TfsTeamProjectCollection object from {Options.VSTSUri}");
@@ -591,7 +588,14 @@ namespace Roslyn.Insertion
             return logText;
         }
 
-        internal static async Task<(IEnumerable<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
+        internal static async Task CreateChangesCommentAsync(GitPullRequest pullRequest, Build oldBuild, Build buildToInsert, CancellationToken cancellationToken)
+        {
+            var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild ?? buildToInsert, buildToInsert, cancellationToken);
+            var message = CreateChangesMessage(changes, diffLink);
+            await AddCommentToPullRequest(pullRequest, message, cancellationToken);
+        }
+
+        private static async Task<(IEnumerable<Commit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
         {
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
             var changes = await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
@@ -614,58 +618,60 @@ namespace Roslyn.Insertion
                 lastChange = changes.Last();
             }
 
-            var from = firstChange.Id.Substring(0, 8);
-            var to = lastChange.Id.Substring(0, 8);
-            var organization = firstChange.DisplayUri.AbsoluteUri.Split('/')[3];
-            var repo = firstChange.DisplayUri.AbsoluteUri.Split('/')[4];
+            var fromSha = firstChange.Id.Substring(0, 8);
+            var toSha = lastChange.Id.Substring(0, 8);
+            var fromUrl = firstChange.DisplayUri.AbsoluteUri;
 
-            var githubClient = new HttpClient();
-            var comparisonUrl = $@"https://api.github.com/repos/{organization}/{repo}/compare/{from}..{to}";
-            var comparisonJson = await githubClient.GetStringAsync(comparisonUrl);
-            var comparison = GitHubComparison.FromJson(comparisonJson);
-
-            return (comparison.Commits.Where(isPRMerge).Select(commit => commit.Commit), comparison.DiffUrl.AbsoluteUri);
-
-            bool isPRMerge(GitHubCommit change)
-            {
-                // Exclude auto-merges
-                if (change.Commit.Author.Name == "dotnet-automerge-bot")
-                {
-                    return false;
-                }
-
-                return IsMergePRCommit.Match(change.Commit.Message).Success ||
-                    IsSquashedPRCommit.Match(change.Commit.Message).Success;
-            }
+            bool isGitHubProject = false;
+            return isGitHubProject
+                ? await GetGitHubMergeCommitsAndDiffUrlAsync(fromSha, toSha, fromUrl)
+                : await GetAzureDevOpsMergeCommitsAndDiffUrlAsync(fromSha, toSha, fromUrl);
         }
 
-        internal static string AppendChangesToDescription(string prDescription, IEnumerable<GitCommit> changes)
-        {
-            if (!changes.Any())
-            {
-                return prDescription;
-            }
-
-            var description = new StringBuilder(prDescription + Environment.NewLine);
-            var separator = Environment.NewLine.ToCharArray();
-            description.AppendLine($@"---
-New PR merge commits associated with this insertion:
-| Commit | Message | Author | Date |
-| ------ | ------- | ------ | ---- |
-{string.Join("\n", changes.Select(x => $"| [{x.Tree.Sha.Substring(0, 8)}]({x.Url}) | {x.Message.Split(separator).First()} | {x.Author} | {x.Author.Date} |"))}"
-            );
-
-            //max size for description
-            return description.Length >= 3500 ? prDescription : description.ToString();
-        }
-
-        internal static string AppendDiffToDescription(string prDescription, string diffLink)
+        private static string CreateChangesMessage(IEnumerable<Commit> changes, string diffLink)
         {
             var diff = $"[View Complete Diff of Changes]({diffLink})";
-            var description = new StringBuilder(prDescription + Environment.NewLine);
-            description.AppendLine("---");
-            description.AppendLine(diff);
-            return description.Length >= 3500 ? prDescription : description.ToString();
+
+            if (!changes.Any())
+            {
+                return diff;
+            }
+
+            var message = new StringBuilder(diff + Environment.NewLine);
+            var separator = Environment.NewLine.ToCharArray();
+
+            message.AppendLine($@"---
+PR merge commits associated with this insertion:
+| Commit | Message | Author | Date |
+| ------ | ------- | ------ | ---- |
+{string.Join("\n", changes.Select(x => $"| [{x.Sha.Substring(0, 8)}]({x.Url}) | {x.Message.Split(separator).First()} | {x.Author} | {x.Date} |"))}"
+            );
+
+            return message.ToString();
+        }
+
+        private static async Task<GitPullRequestCommentThread> AddCommentToPullRequest(GitPullRequest pullRequest, string message, CancellationToken cancellationToken)
+        {
+            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+            Console.WriteLine($"Getting remote repository from {Options.VisualStudioBranchName} in {Options.TFSProjectName}");
+            var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
+            return await gitClient.CreateThreadAsync(
+                    CreatePullRequestCommentThread(message),
+                    repository.Id,
+                    pullRequest.PullRequestId,
+                    userState: null,
+                    cancellationToken);
+        }
+
+        private static GitPullRequestCommentThread CreatePullRequestCommentThread(string comment)
+        {
+            return new GitPullRequestCommentThread
+            {
+                Comments = new List<Comment>
+                {
+                    new Comment() { Content = comment}
+                }
+            };
         }
     }
 }

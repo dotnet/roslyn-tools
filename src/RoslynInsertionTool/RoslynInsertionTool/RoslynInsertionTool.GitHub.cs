@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
-
 using System.Globalization;
+using System.Linq;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -9,7 +12,49 @@ namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
-        public partial class GitHubComparison
+        private static readonly Regex IsMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
+        private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)$");
+
+        internal static async Task<(IEnumerable<Commit>, string)> GetGitHubMergeCommitsAndDiffUrlAsync(string fromSha, string toSha, string fromUrl)
+        {
+            var from = fromSha.Substring(0, 8);
+            var to = toSha.Substring(0, 8);
+            var organization = fromUrl.Split('/')[3];
+            var repo = fromUrl.Split('/')[4];
+
+            var githubClient = new HttpClient();
+            var comparisonUrl = $@"https://api.github.com/repos/{organization}/{repo}/compare/{from}..{to}";
+            var comparisonJson = await githubClient.GetStringAsync(comparisonUrl);
+            var comparison = GitHubComparison.FromJson(comparisonJson);
+
+            return (comparison.Commits.Where(isPRMerge).Select(commit => CreateCommit(commit.Commit)), comparison.DiffUrl.AbsoluteUri);
+
+            bool isPRMerge(GitHubCommit change)
+            {
+                // Exclude auto-merges
+                if (change.Commit.Author.Name == "dotnet-automerge-bot")
+                {
+                    return false;
+                }
+
+                return IsMergePRCommit.Match(change.Commit.Message).Success ||
+                    IsSquashedPRCommit.Match(change.Commit.Message).Success;
+            }
+
+            Commit CreateCommit(GitCommit gitCommit)
+            {
+                return new Commit
+                {
+                    Sha = gitCommit.Tree.Sha,
+                    Author = gitCommit.Author.Name,
+                    Date = gitCommit.Author.Date.Date,
+                    Message = gitCommit.Message,
+                    Url = gitCommit.Url
+                };
+            }
+        }
+
+        private partial class GitHubComparison
         {
             [JsonProperty("url")]
             public Uri Url { get; set; }
@@ -51,7 +96,7 @@ namespace Roslyn.Insertion
             public GitFile[] Files { get; set; }
         }
 
-        public partial class GitHubCommit
+        private class GitHubCommit
         {
             [JsonProperty("url")]
             public Uri Url { get; set; }
@@ -81,7 +126,7 @@ namespace Roslyn.Insertion
             public GitTree[] Parents { get; set; }
         }
 
-        public partial class GitHubAuthor
+        private class GitHubAuthor
         {
             [JsonProperty("login")]
             public string Login { get; set; }
@@ -138,7 +183,7 @@ namespace Roslyn.Insertion
             public bool SiteAdmin { get; set; }
         }
 
-        public partial class GitCommit
+        private class GitCommit
         {
             [JsonProperty("url")]
             public Uri Url { get; set; }
@@ -162,7 +207,7 @@ namespace Roslyn.Insertion
             public GitVerification Verification { get; set; }
         }
 
-        public partial class GitAuthor
+        private class GitAuthor
         {
             [JsonProperty("name")]
             public string Name { get; set; }
@@ -174,7 +219,7 @@ namespace Roslyn.Insertion
             public DateTimeOffset Date { get; set; }
         }
 
-        public partial class GitTree
+        private class GitTree
         {
             [JsonProperty("url")]
             public Uri Url { get; set; }
@@ -183,7 +228,7 @@ namespace Roslyn.Insertion
             public string Sha { get; set; }
         }
 
-        public partial class GitVerification
+        private class GitVerification
         {
             [JsonProperty("verified")]
             public bool Verified { get; set; }
@@ -198,7 +243,7 @@ namespace Roslyn.Insertion
             public object Payload { get; set; }
         }
 
-        public partial class GitFile
+        private class GitFile
         {
             [JsonProperty("sha")]
             public string Sha { get; set; }
@@ -231,12 +276,12 @@ namespace Roslyn.Insertion
             public string Patch { get; set; }
         }
 
-        public partial class GitHubComparison
+        private partial class GitHubComparison
         {
-            public static GitHubComparison FromJson(string json) => JsonConvert.DeserializeObject<GitHubComparison>(json, Converter.Settings);
+            public static GitHubComparison FromJson(string json) => JsonConvert.DeserializeObject<GitHubComparison>(json, GitHubConverter.Settings);
         }
 
-        internal static class Converter
+        private static class GitHubConverter
         {
             public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
             {
