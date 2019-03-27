@@ -40,7 +40,7 @@ private static async Task MakeGithubPr(
     }
 }
 
-private static async Task RunAsync(ExecutionContext context)
+private static async Task RunAsync(ExecutionContext context, bool isAutomatedRun)
 {
     var gh = new GithubMergeTool.GithubMergeTool("dotnet-bot@users.noreply.github.com", await GetSecret("dotnet-bot-github-auth-token"));
     var configPath = Path.Combine(context.FunctionDirectory, "config.xml");
@@ -53,6 +53,13 @@ private static async Task RunAsync(ExecutionContext context)
         {
             var fromBranch = merge.Attribute("from").Value;
             var toBranch = merge.Attribute("to").Value;
+
+            var frequency = merge.Attribute("frequency")?.Value;
+            if (isAutomatedRun && frequency == "weekly" && DateTime.Now.DayOfWeek != DayOfWeek.Sunday)
+            {
+                continue;
+            }
+
             var addAutoMergeLabel = bool.Parse(merge.Attribute("addAutoMergeLabel")?.Value ?? "true");
             await MakeGithubPr(gh, owner, name, fromBranch, toBranch, addAutoMergeLabel);
         }
@@ -65,5 +72,8 @@ public static void Run(TimerInfo myTimer, TraceWriter log, ExecutionContext cont
 
     log.Info($"C# Timer trigger function executed at: {DateTime.Now}");
 
-    RunAsync(context).GetAwaiter().GetResult();
+    var automatedRunStartTime = myTimer.ScheduleStatus.Next;
+    var isAutomatedRun = DateTime.Now >= automatedRunStartTime;
+
+    RunAsync(context, isAutomatedRun).GetAwaiter().GetResult();
 }
