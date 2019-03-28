@@ -35,6 +35,10 @@ $specificBuildFlag = GetSpecificBuildFlag -specificBuild $specificBuild
 $updateAssemblyVersions = GetUpdateAssemblyVersions -componentName $componentName -visualStudioBranchName $visualStudioBranchName -updateAssemblyVersions $updateAssemblyVersions
 $updateCoreXTLibraries = GetUpdateCoreXTLibraries -componentName $componentName -updateCoreXTLibraries $updateCoreXTLibraries
 
-For ($i = 0; $i -lt $insertionCount; $i++)  {
+if ($insertionCount -lt 1) {
+    $insertionCount = 1
+}
+
+for ($i = 0; $i -lt $insertionCount; $i++) {
     & .\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/ep=$enlistmentPath" "/tp=$titlePrefix" "/wpr=$writePullRequest" $specificBuildFlag $toolsetFlag $dropPathFlag
 }
