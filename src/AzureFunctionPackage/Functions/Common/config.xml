@@ -86,4 +86,9 @@
     <merge from="dev16.0" to="fsharp5" />
     <merge from="master" to="fsharp5" />
   </repo>
+    
+  <!-- roslyn-analyzer branches -->
+  <repo owner="dotnet" name="roslyn-analyzers">
+    <merge from="2.9.x" to="master" />
+  </repo>
 </config>
