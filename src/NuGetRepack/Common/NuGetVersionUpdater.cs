@@ -104,6 +104,7 @@ namespace Roslyn.Tools
             {
                 Package package;
                 string tempPathOpt;
+                bool isDotnetTool = false;
                 if (readOnly)
                 {
                     tempPathOpt = null;
@@ -173,6 +174,8 @@ namespace Roslyn.Tools
                                 throw new InvalidOperationException($"Can only update pre-release packages: '{packagePath}' has release version");
                             }
 
+                            isDotnetTool = IsDotnetTool(nuspecXmlns, metadata);
+
                             switch (translation)
                             {
                                 case VersionTranslation.Release:
@@ -215,6 +218,13 @@ namespace Roslyn.Tools
                         }
                     }
 
+                    if (isDotnetTool)
+                    {
+                        // skip repack DotnetTool since it has version embedded in executable
+                        // and repack does not support it
+                        continue;
+                    }
+
                     if (nuspecStream == null)
                     {
                         throw new InvalidDataException($"'{packagePath}' is missing .nuspec file");
@@ -248,6 +258,25 @@ namespace Roslyn.Tools
 
                 packages.Add(packageId, packageInfo);
             }
+        }
+
+        private static bool IsDotnetTool(string nuspecXmlns, XElement metadata)
+        {
+            var packageTypesElement = metadata.Element(XName.Get("packageTypes", nuspecXmlns));
+            if (packageTypesElement != null)
+            {
+                foreach (var packageType in packageTypesElement.Elements(XName.Get("packageType", nuspecXmlns)) ?? Array.Empty<XElement>())
+                {
+                    var name = packageType.Attribute("name");
+
+                    if (string.Equals(name?.Value, "DotnetTool", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private static void UpdateDependencies(Dictionary<string, PackageInfo> packages, VersionTranslation translation, bool exactVersions, Func<string, string, string, bool> allowPreReleaseDependencyOpt)

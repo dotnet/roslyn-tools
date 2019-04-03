@@ -151,5 +151,26 @@ namespace Roslyn.Tools.Tests
 
             Directory.Delete(dir, recursive: true);
         }
+
+        [Fact]
+        public void TestDotnetToolValidation()
+        {
+            var dir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var outputDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(dir);
+
+            string dotnet_tool;
+            File.WriteAllBytes(dotnet_tool = Path.Combine(dir, TestResources.MiscPackages.NameDotnetTool), TestResources.MiscPackages.DotnetTool);
+            string normal_package_b_daily;
+            File.WriteAllBytes(normal_package_b_daily = Path.Combine(dir, TestResources.DailyBuildPackages.NameB), TestResources.DailyBuildPackages.B);
+
+            NuGetVersionUpdater.Run(new[] { dotnet_tool, normal_package_b_daily }, outDirectoryOpt: outputDir, VersionTranslation.Release, exactVersions: false);
+
+            // Only contain normal package. dotnet tool package is skipped
+            Assert.Single(Directory.EnumerateFiles(outputDir), fullPath => Path.GetFileNameWithoutExtension(fullPath) == "B.1.0.0");
+
+            Directory.Delete(dir, recursive: true);
+            Directory.Delete(outputDir, recursive: true);
+        }
     }
 }
