@@ -23,7 +23,6 @@
     <merge from="master" to="features/editorconfig-in-compiler" />
     <merge from="master" to="features/lspSupport" />
     <merge from="master" to="features/NullableDogfood" frequency="weekly" />
-    <merge from="master" to="features/readonly-members" />
     <merge from="master" to="demos/records" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
