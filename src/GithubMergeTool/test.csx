@@ -3,7 +3,7 @@
 // README: This is a simple test script for trying out local changes.
 // Nothing in this file runs in production.
 
-#r "../../artifacts/Debug/bin/GithubMergeTool/net46/GithubMergeTool.dll"
+#r "../../artifacts/bin/GithubMergeTool/Debug/net46/GithubMergeTool.dll"
 
 using System;
 using System.Net;
@@ -21,7 +21,7 @@ private static async Task MakeGithubPr(
 {
     Console.WriteLine($"Merging from {srcBranch} to {destBranch}");
 
-    var (prCreated, error) = await gh.CreateMergePr(repoOwner, repoName, srcBranch, destBranch);
+    var (prCreated, error) = await gh.CreateMergePr(repoOwner, repoName, srcBranch, destBranch, addAutoMergeLabel: false, isAutoTriggered: false);
 
     if (prCreated)
     {
