@@ -96,5 +96,9 @@ namespace TestResources
         private static byte[] s_Signed;
         public static byte[] Signed => ResourceLoader.GetOrCreateResource(ref s_Signed, NameSigned);
         public const string NameSigned = "Signed.1.2.3.nupkg";
+
+        private static byte[] s_DotneTool;
+        public static byte[] DotnetTool => ResourceLoader.GetOrCreateResource(ref s_DotneTool, NameDotnetTool);
+        public const string NameDotnetTool = "DotnetTool.1.0.0-beta-12345-01.nupkg";
     }
 }
