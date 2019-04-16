@@ -65,3 +65,4 @@ Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -
 
 # Dev16.1 Preview 3
 Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "master-vs-deps"           -toBranch "lab/d16.1stg" -insertToolset "true"  -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
+Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "master"                   -toBranch "lab/d16.1stg" -insertCore "true"     -queueValidation "true" -dropPath "server"
