@@ -70,14 +70,9 @@
   </repo>
   <repo owner="Microsoft" name="visualfsharp">
     <!-- shipped branches back to master -->
-    <merge from="dev15.8" to="master" />
-    <merge from="dev15.9" to="master" />
+    <merge from="dev16.0" to="master" />
 
     <!-- regular branch flow -->
-    <merge from="dev15.8" to="dev15.9" />
-    <merge from="dev15.9" to="dev16.0" />
-    <merge from="dev16.0-preview1" to="dev16.0" />
-    <merge from="dev16.0" to="master" />
     <merge from="master" to="dev16.1" />
     <merge from="master" to="nullness" />
 
