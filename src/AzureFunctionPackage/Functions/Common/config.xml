@@ -73,7 +73,6 @@
     <merge from="dev16.0" to="master" />
 
     <!-- regular branch flow -->
-    <merge from="master" to="dev16.1" />
     <merge from="master" to="nullness" />
 
     <!-- fsharp5 -->
