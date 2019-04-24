@@ -50,5 +50,8 @@ namespace Roslyn.Insertion
 
         public override string GetDependentAssemblyVersionsFile()
             => Path.Combine(_binariesDirectory, "DevDivInsertionFiles", "DependentAssemblyVersions.csv");
+
+        public override string[] GetOptProfPropertyFiles()
+            => Array.Empty<string>();
     }
 }

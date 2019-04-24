@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Roslyn.Insertion
 {
@@ -42,5 +43,8 @@ namespace Roslyn.Insertion
 
         public override string GetDependentAssemblyVersionsFile()
             => Path.Combine(_vsSetupDirectory, "DevDivPackages", "DependentAssemblyVersions.csv");
+
+        public override string[] GetOptProfPropertyFiles()
+            => Directory.EnumerateFiles(Path.Combine(_vsSetupDirectory, "Insertion", "OptProf"), "*.props", SearchOption.TopDirectoryOnly).ToArray();
     }
 }

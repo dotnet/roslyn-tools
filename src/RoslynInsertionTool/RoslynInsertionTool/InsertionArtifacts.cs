@@ -7,5 +7,6 @@ namespace Roslyn.Insertion
     {
         public abstract string GetPackagesDirectory();
         public abstract string GetDependentAssemblyVersionsFile();
+        public abstract string[] GetOptProfPropertyFiles();
     }
 }
