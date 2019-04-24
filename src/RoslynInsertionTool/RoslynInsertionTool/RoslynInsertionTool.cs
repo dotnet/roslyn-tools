@@ -154,8 +154,11 @@ namespace Roslyn.Insertion
                     // *********** Copy OptimizationInputs.props file ***********************
                     foreach (var propsFile in insertionArtifacts.GetOptProfPropertyFiles())
                     {
-                        var targetFilePath = Path.Combine(enlistmentRoot, @"src\Tests\config\runsettings\Official\OptProf", Path.GetFileName(propsFile));
+                        var targetDirectory = Path.Combine(enlistmentRoot, @"src\Tests\config\runsettings\Official\OptProf\External");
+                        var targetFilePath = Path.Combine(targetDirectory, Path.GetFileName(propsFile));
+
                         Console.WriteLine($"Updating {targetFilePath}");
+                        Directory.CreateDirectory(targetDirectory);
                         File.Copy(propsFile, targetFilePath, overwrite: true);
                     }
                 }
