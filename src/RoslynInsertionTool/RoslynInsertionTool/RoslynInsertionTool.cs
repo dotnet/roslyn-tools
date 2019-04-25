@@ -130,9 +130,10 @@ namespace Roslyn.Insertion
 
                 shouldRollBackGitChanges = branch != null;
 
-                var coreXT = CoreXT.Load(GetAbsolutePathForEnlistment());
+                var enlistmentRoot = GetAbsolutePathForEnlistment();
+                var coreXT = CoreXT.Load(enlistmentRoot);
 
-                if(Options.InsertCoreXTPackages)
+                if (Options.InsertCoreXTPackages)
                 {
                     // ************** Update Nuget Packages For Branch************************
                     cancellationToken.ThrowIfCancellationRequested();
@@ -149,6 +150,17 @@ namespace Roslyn.Insertion
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating CoreXT default.config file");
                     coreXT.SaveConfig();
+
+                    // *********** Copy OptimizationInputs.props file ***********************
+                    foreach (var propsFile in insertionArtifacts.GetOptProfPropertyFiles())
+                    {
+                        var targetDirectory = Path.Combine(enlistmentRoot, @"src\Tests\config\runsettings\Official\OptProf\External");
+                        var targetFilePath = Path.Combine(targetDirectory, Path.GetFileName(propsFile));
+
+                        Console.WriteLine($"Updating {targetFilePath}");
+                        Directory.CreateDirectory(targetDirectory);
+                        File.Copy(propsFile, targetFilePath, overwrite: true);
+                    }
                 }
 
                 if (Options.UpdateCoreXTLibraries || Options.UpdateAssemblyVersions)
