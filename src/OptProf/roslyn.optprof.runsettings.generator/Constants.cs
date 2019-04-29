@@ -41,6 +41,9 @@ namespace roslyn.optprof.runsettings.generator
       <DataCollector uri=""datacollector://microsoft/DevDiv/TestExtensions/LingeringProcessCollector/v1"" friendlyName=""Lingering Process Collector"" enabled=""True"">
         <Configuration>
           <KillLingeringProcesses>true</KillLingeringProcesses>
+          <ShutdownCommands>
+            <ShutdownCommand Process=""VBCSCompiler"" Command=""%ProcessPath%"" Arguments=""-shutdown"" Timeout=""60000"" />
+          </ShutdownCommands>
           <LoggingBehavior>Warning</LoggingBehavior>
           <WhiteList>
             <ProcessName>conhost</ProcessName>
