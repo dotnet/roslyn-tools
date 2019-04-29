@@ -42,7 +42,7 @@ namespace roslyn.optprof.runsettings.generator
         <Configuration>
           <KillLingeringProcesses>true</KillLingeringProcesses>
           <ShutdownCommands>
-            <ShutdownCommand Process="VBCSCompiler" Command="%ProcessPath%" Arguments="-shutdown" Timeout="60000" />
+            <ShutdownCommand Process=""VBCSCompiler"" Command=""%ProcessPath%"" Arguments=""-shutdown"" Timeout=""60000"" />
           </ShutdownCommands>
           <LoggingBehavior>Warning</LoggingBehavior>
           <WhiteList>
