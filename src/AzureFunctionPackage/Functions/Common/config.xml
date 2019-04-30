@@ -4,8 +4,8 @@
     <merge from="dev15.0.x" to="dev15.9.x" />
     <merge from="dev15.9.x" to="dev16.0" />
     <merge from="dev16.0" to="dev16.1-preview3" />
-    <merge from="dev16.1-preview3" to="releases/dev16.1" />
-    <merge from="releases/dev16.1" to="master" />
+    <merge from="dev16.1-preview3" to="release/dev16.1" />
+    <merge from="release/dev16.1" to="master" />
 
     <!-- Roslyn branches (between vs-deps branches) -->
     <merge from="dev15.0.x-vs-deps" to="dev15.9.x-vs-deps" />
@@ -19,7 +19,7 @@
     <merge from="dev15.9.x" to="dev15.9.x-vs-deps" />
     <merge from="dev16.0" to="dev16.0-vs-deps" />
     <merge from="dev16.1-preview3" to="dev16.1-preview3-vs-deps" />
-    <merge from="releases/dev16.1" to="releases/dev16.1-vs-deps" />
+    <merge from="release/dev16.1" to="releases/dev16.1-vs-deps" />
     <merge from="master" to="master-vs-deps" />
 
     <!-- Feature branches -->
