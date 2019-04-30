@@ -15,9 +15,17 @@ namespace Roslyn.Insertion
         {
             var versionsUpdater = new VersionsUpdater(GetAbsolutePathForEnlistment(), WarningMessages);
 
-            foreach (var nameAndVersion in ReadAssemblyVersions(artifacts.GetDependentAssemblyVersionsFile()))
+            var pathToDependentAssemblyVersionsFile = artifacts.GetDependentAssemblyVersionsFile();
+            if (File.Exists(pathToDependentAssemblyVersionsFile))
             {
-                versionsUpdater.UpdateComponentVersion(nameAndVersion.Key, nameAndVersion.Value);
+                foreach (var nameAndVersion in ReadAssemblyVersions(pathToDependentAssemblyVersionsFile))
+                {
+                    versionsUpdater.UpdateComponentVersion(nameAndVersion.Key, nameAndVersion.Value);
+                }
+            }
+            else
+            {
+                Console.WriteLine($"No dependent-assembly-versions file found at path '{pathToDependentAssemblyVersionsFile}'");
             }
 
             versionsUpdater.Save();
