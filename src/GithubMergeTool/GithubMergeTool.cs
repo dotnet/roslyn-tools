@@ -339,9 +339,11 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
 
             // Merge the PR
             var mergeSha = (string)prInfo["head"]["sha"];
+            var baseSha = (string)prInfo["base"]["sha"];
             var mergeBody = $@"
 {{
-    ""sha"": ""{mergeSha}""
+    ""head"": ""{mergeSha}"",
+    ""base"": ""{baseSha}""
 }}";
             var mergeResponse = await _client.PutAsyncAsJson(prUri + "/merge", mergeBody);
             if (!mergeResponse.IsSuccessStatusCode)
