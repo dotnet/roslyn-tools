@@ -86,7 +86,6 @@
     
   <!-- roslyn-analyzer branches -->
   <repo owner="dotnet" name="roslyn-analyzers">
-    <merge from="2.9.x" to="master" />
     <merge from="master" to="3.x" />
   </repo>
 </config>
