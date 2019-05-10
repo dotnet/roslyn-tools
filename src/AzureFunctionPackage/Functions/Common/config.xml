@@ -92,4 +92,9 @@
   <repo owner="dotnet" name="roslyn-analyzers">
     <merge from="master" to="3.x" />
   </repo>
+    
+  <!-- testimpact branches -->
+  <repo owner="dotnet" name="testimpact">
+    <merge from="dev16.2-preview1" to="master" />
+  </repo>
 </config>
