@@ -80,12 +80,12 @@
     <merge from="dev16.0" to="master" />
 
     <!-- regular branch flow -->
-    <merge from="dev16.1" to="dev16.2" />
-    <merge from="master" to="dev16.2" />
+    <merge from="dev16.1" to="release/dev16.2" />
+    <merge from="master" to="release/dev16.2" />
     <merge from="master" to="nullness" />
 
     <!-- fsharp5 -->
-    <merge from="dev16.2" to="fsharp5" />
+    <merge from="release/dev16.2" to="fsharp5" />
   </repo>
     
   <!-- roslyn-analyzer branches -->
