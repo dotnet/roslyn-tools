@@ -75,7 +75,7 @@
   <repo owner="dotnet" name="core-sdk">
     <merge from="release/3.0.1xx" to="master" />
   </repo>
-  <repo owner="Microsoft" name="visualfsharp">
+  <repo owner="dotnet" name="fsharp">
     <!-- shipped branches back to master -->
     <merge from="dev16.0" to="master" />
 
