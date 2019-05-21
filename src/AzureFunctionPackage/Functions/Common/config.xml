@@ -83,12 +83,12 @@
     <!-- regular branch flow -->
     <merge from="dev16.1" to="release/dev16.2" />
     <merge from="master" to="release/dev16.2" />
-    <merge from="master" to="nullness" />
+    <merge from="master" to="feature/nullness" />
 
     <!-- language versions -->
-    <merge from="release/dev16.2" to="fsharp47" />
-    <merge from="release/dev16.2" to="fsharp5" />
-    <merge from="fsharp47" to="fsharp5" />
+    <merge from="release/dev16.2" to="release/fsharp47" />
+    <merge from="release/dev16.2" to="release/fsharp5" />
+    <merge from="release/fsharp47" to="release/fsharp5" />
   </repo>
     
   <!-- roslyn-analyzer branches -->
