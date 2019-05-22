@@ -84,7 +84,14 @@
     <merge from="dev16.1" to="release/dev16.2" />
     <merge from="master" to="release/dev16.2" />
     <merge from="master" to="feature/nullness" />
-
+    <merge from="master" to="feature/ext" />
+    <merge from="master" to="feature/implicit-yields" />
+    <merge from="master" to="feature/open-static-classes" />
+    <merge from="master" to="feature/relax-indents" />
+    <merge from="master" to="feature/nameof" />
+    <merge from="master" to="feature/witness-passing" />
+    <merge from="master" to="feature/tasks" />
+      
     <!-- language versions -->
     <merge from="release/dev16.2" to="release/fsharp47" />
     <merge from="release/dev16.2" to="release/fsharp5" />
