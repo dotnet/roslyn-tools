@@ -31,6 +31,7 @@
     <merge from="master-vs-deps" to="features/razorSupport2" />
     <merge from="master" to="features/NullableDogfood" frequency="weekly" />
     <merge from="master" to="demos/records" />
+    <merge from="master" to="features/param-nullchecking" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
     <merge from="dev16.0.x" to="master" />
