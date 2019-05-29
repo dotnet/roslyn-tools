@@ -127,7 +127,7 @@ The RepoToolset requires bootstrapper scripts to be present in the repo.
 The scripts in this directory shall be present and the same across all repositories using RepoToolset.
 
 #### /eng/SignToolData.json: Sign Tool configuration
-Teh file is present in the repo and describes how build outputs should be signed.
+The file is present in the repo and describes how build outputs should be signed.
 
 #### /eng/Versions.props: A single file listing component versions and used tools
 The file is present in the repo and defines versions of all dependencies used in the repository, the NuGet feeds they should be restored from and the version of the components produced by the repo build.
