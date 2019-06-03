@@ -55,7 +55,8 @@ namespace GithubMergeTool
             string repoName,
             string srcBranch,
             string destBranch,
-            bool addAutoMergeLabel = false)
+            bool addAutoMergeLabel,
+            bool isAutoTriggered)
         {
             string prTitle = $"Merge {srcBranch} to {destBranch}";
             string prBranchName = $"merges/{srcBranch}-to-{destBranch}";
@@ -128,9 +129,11 @@ namespace GithubMergeTool
             const string newLine = @"
 ";
 
+            string autoTriggeredMessage = isAutoTriggered ? "" : $@"(created from a manual run of the PR generation tool)\n";
+
             var prMessage = $@"
 This is an automatically generated pull request from {srcBranch} into {destBranch}.
-
+{autoTriggeredMessage}
 ``` bash
 git fetch --all
 git checkout {prBranchName}

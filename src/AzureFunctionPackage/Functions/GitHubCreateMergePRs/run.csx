@@ -19,11 +19,12 @@ private static async Task MakeGithubPr(
     string repoName,
     string srcBranch,
     string destBranch,
-    bool addAutoMergeLabel = false)
+    bool addAutoMergeLabel,
+    bool isAutomatedRun)
 {
     Log.Info($"Merging {repoName} from {srcBranch} to {destBranch}");
 
-    var (prCreated, error) = await gh.CreateMergePr(repoOwner, repoName, srcBranch, destBranch, addAutoMergeLabel);
+    var (prCreated, error) = await gh.CreateMergePr(repoOwner, repoName, srcBranch, destBranch, addAutoMergeLabel, isAutomatedRun);
 
     if (prCreated)
     {
@@ -61,7 +62,7 @@ private static async Task RunAsync(ExecutionContext context, bool isAutomatedRun
             }
 
             var addAutoMergeLabel = bool.Parse(merge.Attribute("addAutoMergeLabel")?.Value ?? "true");
-            await MakeGithubPr(gh, owner, name, fromBranch, toBranch, addAutoMergeLabel);
+            await MakeGithubPr(gh, owner, name, fromBranch, toBranch, addAutoMergeLabel, isAutomatedRun);
         }
     }
 }
