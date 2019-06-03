@@ -105,6 +105,6 @@
     
   <!-- testimpact branches -->
   <repo owner="dotnet" name="testimpact">
-    <merge from="dev16.2-preview1" to="master" />
+    <merge from="dev16.2-preview2" to="master" />
   </repo>
 </config>
