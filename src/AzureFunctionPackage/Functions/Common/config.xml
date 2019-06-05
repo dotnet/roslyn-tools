@@ -25,12 +25,11 @@
     <merge from="master" to="master-vs-deps" />
 
     <!-- Feature branches -->
-    <merge from="dev16.1-preview2" to="features/editorconfig-in-compiler" />
-    <merge from="master" to="features/lspSupport" />
-    <merge from="master-vs-deps" to="features/razorSupport2" />
-    <merge from="master" to="features/NullableDogfood" frequency="weekly" />
-    <merge from="master" to="demos/records" />
-    <merge from="master" to="features/param-nullchecking" />
+    <merge from="master" to="features/lspSupport" owners="hechang,dabarbet" />
+    <merge from="master-vs-deps" to="features/razorSupport2" owners="hechang" />
+    <merge from="master" to="features/NullableDogfood" owners="chucks" frequency="weekly" />
+    <merge from="master" to="demos/records" owners="angocke" />
+    <merge from="master" to="features/param-nullchecking" owners="t-laro" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
     <merge from="dev16.0.x" to="master" />
