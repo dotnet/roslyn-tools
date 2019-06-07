@@ -106,4 +106,9 @@
   <repo owner="dotnet" name="testimpact">
     <merge from="dev16.2-preview2" to="master" />
   </repo>
+    
+  <!-- msbuild language service branches -->
+  <repo owner="dotnet" name="msbuild-language-service">
+    <merge from="master" to="dev/prototype" />
+  </repo>
 </config>
