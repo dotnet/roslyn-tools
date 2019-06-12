@@ -61,12 +61,11 @@ Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -
 Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "dev16.2-preview2"         -toBranch "rel/d16.2"    -insertCore "true"     -queueValidation "true" -dropPath "server"
 
 # Dev 16.2 Preview 3
-Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "release/dev16.2-preview3-vs-deps"  -toBranch "lab/d16.2stg" -insertToolset "true"  -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
-Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "master"          -toBranch "lab/d16.2stg" -insertCore "true"     -queueValidation "true" -dropPath "server"
-Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "master"          -toBranch "lab/d16.2stg" -insertCore "false"    -insertDevdiv "false"   -queueValidation "true"
+Do-Insertion -component "VS Unit Testing"   -queueName "VSUnitTesting-Signed"  -fromBranch "master"                   -toBranch "lab/d16.2stg" -insertCore "true"     -queueValidation "true" -dropPath "server"
+Do-Insertion -component "Live Unit Testing" -queueName "TestImpact-Signed"     -fromBranch "master"                   -toBranch "lab/d16.2stg" -insertCore "false"    -insertDevdiv "false"   -queueValidation "true"
 
 # Dev 16.2 Preview 4
-# Uncomment when devision snaps #Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "master-vs-deps"  -toBranch "lab/d16.2stg" -insertToolset "true"  -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
+Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "master-vs-deps"                    -toBranch "lab/d16.2stg" -insertToolset "true"  -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
 
 # Dev 16.3 Preview 1
-Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "release/dev16.3-preview1-vs-deps"  -toBranch "master" -insertToolset "true"  -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
+Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "release/dev16.3-preview1-vs-deps"  -toBranch "master"       -insertToolset "true"  -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
