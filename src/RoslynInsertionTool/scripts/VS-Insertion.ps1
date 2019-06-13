@@ -59,8 +59,12 @@ Do-Insertion -component "Roslyn"  -queueName "Roslyn-Signed"  -fromBranch "dev16
 Do-Insertion -component "Roslyn"  -queueName "Roslyn-Signed"  -fromBranch "release/dev16.1-vs-deps"  -toBranch "rel/d16.1"  -insertToolset "false"  -insertDevdiv "false"  -updatecorextlibraries "true"  -queueValidation "true"
 
 ## Testing insertion on successful Signed Build
+
+# Dev 16.2 Preview 3
+#Do-Insertion -component "Roslyn"  -queueName "Roslyn-Signed"  -fromBranch "release/dev16.2-preview3-vs-deps"  -toBranch "rel/d16.2"     -insertToolset "false"  -insertDevdiv "false"  -updatecorextlibraries "true"  -queueValidation "true"
+
 # Dev 16.2 Preview 4
-#Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "master-vs-deps"                    -toBranch "lab/d16.2stg" -insertToolset "true"  -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
+#Do-Insertion -component "Roslyn"  -queueName "Roslyn-Signed"  -fromBranch "master-vs-deps"                    -toBranch "lab/d16.2stg"  -insertToolset "true"   -insertDevdiv "false"  -updatecorextlibraries "true"  -queueValidation "true"
 
 # Dev 16.3 Preview 1
-#Do-Insertion -component "Roslyn"            -queueName "Roslyn-Signed"         -fromBranch "release/dev16.3-preview1-vs-deps"  -toBranch "master"       -insertToolset "true"  -insertDevdiv "false"   -updatecorextlibraries "true" -queueValidation "true"
+#Do-Insertion -component "Roslyn"  -queueName "Roslyn-Signed"  -fromBranch "release/dev16.3-preview1-vs-deps"  -toBranch "master"        -insertToolset "true"   -insertDevdiv "false"  -updatecorextlibraries "true"  -queueValidation "true"
