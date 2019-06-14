@@ -85,7 +85,6 @@
 
     <!-- regular branch flow -->
     <merge from="release/dev16.2" to="release/dev16.3" />
-    <merge from="master" to="release/dev16.2" />
     <merge from="master" to="release/dev16.3" />
     <merge from="master" to="feature/nullness" />
     <merge from="master" to="feature/ext" />
