@@ -49,6 +49,9 @@ private static async Task RunAsync(ExecutionContext context)
             {
                 Log.Error($"Unable to auto-merg PR '{prIdentifier}' for unknown reason.");
             }
+            
+            // Delay in order to avoid triggering GitHub rate limiting
+            await Task.Delay(5000);
         }
     }
 }
