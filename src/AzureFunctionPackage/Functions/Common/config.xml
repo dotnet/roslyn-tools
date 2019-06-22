@@ -96,8 +96,8 @@
     <merge from="master" to="feature/tasks" />
       
     <!-- language versions -->
-    <merge from="release/dev16.2" to="release/fsharp47" />
-    <merge from="release/dev16.2" to="release/fsharp5" />
+    <merge from="release/dev16.3" to="release/fsharp47" />
+    <merge from="release/dev16.3" to="release/fsharp5" />
     <merge from="release/fsharp47" to="release/fsharp5" />
   </repo>
     
