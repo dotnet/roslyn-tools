@@ -47,10 +47,11 @@ function Do-Insertion(
 
 # Dev 16.2 Preview 4
 Do-Insertion -component "VS Unit Testing"    -queueName "VSUnitTesting-Signed"  -fromBranch "dev16.2.x"  -toBranch "lab/d16.2stg"  -insertCore "true"   -queueValidation "true"  -dropPath "server"
-Do-Insertion -component "Live Unit Testing"  -queueName "TestImpact-Signed"     -fromBranch "master"  -toBranch "lab/d16.2stg"  -insertCore "false"  -insertDevdiv "false"    -queueValidation "true"
+Do-Insertion -component "Live Unit Testing"  -queueName "TestImpact-Signed"     -fromBranch "dev16.2.x"  -toBranch "lab/d16.2stg"  -insertCore "false"  -insertDevdiv "false"    -queueValidation "true"
 
 # Dev 16.3 Preview 1
 Do-Insertion -component "VS Unit Testing"    -queueName "VSUnitTesting-Signed"  -fromBranch "master"  -toBranch "master"  -insertCore "true"   -queueValidation "true"  -dropPath "server"
+Do-Insertion -component "Live Unit Testing"  -queueName "TestImpact-Signed"     -fromBranch "master"  -toBranch "master"  -insertCore "false"  -insertDevdiv "false"    -queueValidation "true"
 
 ###
 ### Roslyn Insertions
