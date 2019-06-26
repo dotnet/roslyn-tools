@@ -4,27 +4,26 @@
     <merge from="dev15.0.x" to="dev15.9.x" />
     <merge from="dev15.9.x" to="dev16.0" />
     <merge from="dev16.0" to="release/dev16.1" />
-    <merge from="release/dev16.1" to="release/dev16.2-preview2" />
-    <merge from="release/dev16.2-preview2" to="release/dev16.2-preview3" />
-    <merge from="release/dev16.2-preview3" to="master" />
+    <merge from="release/dev16.1" to="release/dev16.2" />
+    <merge from="release/dev16.2" to="release/dev16.3-preview1" />
+    <merge from="release/dev16.3-preview1" to="master" />
 
     <!-- Roslyn branches (between vs-deps branches) -->
     <merge from="dev15.0.x-vs-deps" to="dev15.9.x-vs-deps" />
     <merge from="dev15.9.x-vs-deps" to="dev16.0-vs-deps" />
     <merge from="dev16.0-vs-deps" to="release/dev16.1-vs-deps" />
-    <merge from="release/dev16.1-vs-deps" to="release/dev16.2-preview2-vs-deps" />
-    <merge from="release/dev16.2-preview2-vs-deps" to="release/dev16.2-preview3-vs-deps" />
-    <merge from="release/dev16.2-preview3-vs-deps" to="master-vs-deps" />
+    <merge from="release/dev16.1-vs-deps" to="release/dev16.2-vs-deps" />
+    <merge from="release/dev16.2-vs-deps" to="release/dev16.3-preview1-vs-deps" />
+    <merge from="release/dev16.3-preview1-vs-deps" to="master-vs-deps" />
       
     <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
     <merge from="dev15.0.x" to="dev15.0.x-vs-deps" />
     <merge from="dev15.9.x" to="dev15.9.x-vs-deps" />
     <merge from="dev16.0" to="dev16.0-vs-deps" />
     <merge from="release/dev16.1" to="release/dev16.1-vs-deps" />
-    <merge from="release/dev16.2-preview2" to="release/dev16.2-preview2-vs-deps" />
-    <merge from="release/dev16.2-preview3" to="release/dev16.2-preview3-vs-deps" />
-    <merge from="master" to="master-vs-deps" />
+    <merge from="release/dev16.2" to="release/dev16.2-vs-deps" />
     <merge from="release/dev16.3-preview1" to="release/dev16.3-preview1-vs-deps" />
+    <merge from="master" to="master-vs-deps" />
 
     <!-- Feature branches -->
     <merge from="master" to="features/lspSupport" owners="hechang,dabarbet" />
