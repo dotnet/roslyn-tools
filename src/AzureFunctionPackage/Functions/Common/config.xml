@@ -87,10 +87,6 @@
     <merge from="master" to="release/dev16.3" />
     <merge from="master" to="feature/nullness" />
     <merge from="master" to="feature/ext" />
-    <merge from="master" to="feature/implicit-yields" />
-    <merge from="master" to="feature/open-static-classes" />
-    <merge from="master" to="feature/relax-indents" />
-    <merge from="master" to="feature/nameof" />
     <merge from="master" to="feature/witness-passing" />
     <merge from="master" to="feature/tasks" />
       
