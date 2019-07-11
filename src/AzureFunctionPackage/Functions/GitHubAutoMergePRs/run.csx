@@ -32,6 +32,7 @@ private static async Task RunAsync(ExecutionContext context)
         foreach (var pr in autoMergeablePrs)
         {
             var prIdentifier = $"{owner}/{name}:{pr}";
+            Log.Info("Checking " + prIdentifier);
             var (merged, message, mergeError) = await gh.MergeAutoMergeablePr(owner, name, pr);
             if (merged)
             {
