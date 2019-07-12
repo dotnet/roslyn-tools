@@ -23,13 +23,19 @@
       <Output TaskParameter="ConsoleOutput" PropertyName="_VsInstallDir" />
     </Exec>
 
+    <PropertyGroup>
+      <!-- VS2019 and later place msbuild.exe under "MSBuild\Current", while VS2017 places it under "MSBuild\15.0". -->
+      <_MSBuildExePath Condition="Exists('$(_VsInstallDir)\MSBuild\Current\Bin\msbuild.exe')">$(_VsInstallDir)\MSBuild\Current\Bin\msbuild.exe</_MSBuildExePath>
+      <_MSBuildExePath Condition="'$(_MSBuildExePath)' == ''">$(_VsInstallDir)\MSBuild\15.0\Bin\msbuild.exe</_MSBuildExePath>
+    </PropertyGroup>
+
     <ItemGroup>
       <SignToolArgs Include='-outputconfig "$(OutputConfigFile)"' Condition="'$(OutputConfigFile)' != ''" />      
       <SignToolArgs Include='-nugetPackagesPath "$(NuGetPackageRoot)\"' />
       <SignToolArgs Include='-intermediateOutputPath "$(ArtifactsObjDir)\"' />
       <SignToolArgs Include='-config "$(ConfigFile)"' />
       <SignToolArgs Include='-test' Condition="'$(RealSign)' != 'true'" />
-      <SignToolArgs Include='-msbuildpath "$(_VsInstallDir)\MSBuild\15.0\Bin\msbuild.exe"' Condition="'$(RealSign)' == 'true'"/>
+      <SignToolArgs Include='-msbuildpath "$(_MSBuildExePath)"' Condition="'$(RealSign)' == 'true'"/>
       <SignToolArgs Include='"$(ArtifactsConfigurationDir)\"' />
     </ItemGroup>
     
