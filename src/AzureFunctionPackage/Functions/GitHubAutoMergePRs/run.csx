@@ -33,22 +33,32 @@ private static async Task RunAsync(ExecutionContext context)
         {
             var prIdentifier = $"{owner}/{name}:{pr}";
             Log.Info("Checking " + prIdentifier);
-            var (merged, message, mergeError) = await gh.MergeAutoMergeablePr(owner, name, pr);
-            if (merged)
+            try 
             {
-                Log.Info($"Auto-merged PR '{prIdentifier}'.");
+                var (merged, message, mergeError) = await gh.MergeAutoMergeablePr(owner, name, pr);
+                
+                if (merged)
+                {
+                    Log.Info($"Auto-merged PR '{prIdentifier}'.");
+                }
+                else if (message != null)
+                {
+                    Log.Info($"PR '{prIdentifier}' not a candidate for auto-merging: {message}");
+                }
+                else if (mergeError != null)
+                {
+                    Log.Error($"Unable to auto-merge PR '{prIdentifier}': {await mergeError.Content.ReadAsStringAsync()}");
+                }
+                else
+                {
+                    Log.Error($"Unable to auto-merg PR '{prIdentifier}' for unknown reason.");
+                }
             }
-            else if (message != null)
+            catch (Exception ex)
             {
-                Log.Info($"PR '{prIdentifier}' not a candidate for auto-merging: {message}");
-            }
-            else if (mergeError != null)
-            {
-                Log.Error($"Unable to auto-merge PR '{prIdentifier}': {await mergeError.Content.ReadAsStringAsync()}");
-            }
-            else
-            {
-                Log.Error($"Unable to auto-merg PR '{prIdentifier}' for unknown reason.");
+                // If a specific merge fails, we don't want to fail all merges. Log the exception
+                // and continue trying to merge other PRs 
+                Log.Error(ex);
             }
             
             // Delay in order to avoid triggering GitHub rate limiting
