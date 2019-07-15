@@ -26,7 +26,6 @@
     <merge from="master" to="master-vs-deps" />
 
     <!-- Feature branches -->
-    <merge from="master" to="features/lspSupport" owners="hechang,dabarbet" />
     <merge from="master-vs-deps" to="features/razorSupport2" owners="hechang" />
     <merge from="master" to="features/NullableDogfood" owners="chucks" frequency="weekly" />
     <merge from="master" to="demos/records" owners="angocke" />
