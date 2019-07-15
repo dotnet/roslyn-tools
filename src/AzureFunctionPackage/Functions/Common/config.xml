@@ -31,6 +31,7 @@
     <merge from="master" to="features/NullableDogfood" owners="chucks" frequency="weekly" />
     <merge from="master" to="demos/records" owners="angocke" />
     <merge from="master" to="features/param-nullchecking" owners="t-laro" />
+    <merge from="master" to="features/compilerNext" owners="angocke" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
     <merge from="dev16.0.x" to="master" />
