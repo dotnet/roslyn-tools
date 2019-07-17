@@ -58,7 +58,7 @@ private static async Task RunAsync(ExecutionContext context)
             {
                 // If a specific merge fails, we don't want to fail all merges. Log the exception
                 // and continue trying to merge other PRs 
-                Log.Error(ex);
+                Log.Error(ex?.ToString());
             }
             
             // Delay in order to avoid triggering GitHub rate limiting
