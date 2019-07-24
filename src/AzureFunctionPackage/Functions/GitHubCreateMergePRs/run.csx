@@ -62,10 +62,19 @@ private static async Task RunAsync(ExecutionContext context, bool isAutomatedRun
             }
 
             var addAutoMergeLabel = bool.Parse(merge.Attribute("addAutoMergeLabel")?.Value ?? "true");
-            await MakeGithubPr(gh, owner, name, fromBranch, toBranch, addAutoMergeLabel, isAutomatedRun);
-            
-            // Delay in order to avoid triggering GitHub rate limiting
-            await Task.Delay(4000);
+            try
+            {
+                await MakeGithubPr(gh, owner, name, fromBranch, toBranch, addAutoMergeLabel, isAutomatedRun);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error creating merge PR.", ex);
+            }
+            finally
+            {
+                // Delay in order to avoid triggering GitHub rate limiting
+                await Task.Delay(4000);
+            }
         }
     }
 }
