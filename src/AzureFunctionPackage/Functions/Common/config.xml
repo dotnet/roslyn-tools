@@ -104,6 +104,7 @@
   <!-- testimpact branches -->
   <repo owner="dotnet" name="testimpact">
     <merge from="dev16.2.x" to="master" />
+    <merge from="master" to="dev16.4.x" />
   </repo>
     
   <!-- msbuild language service branches -->
