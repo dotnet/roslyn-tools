@@ -16,6 +16,7 @@
     <merge from="release/dev16.1-vs-deps" to="release/dev16.2-vs-deps" />
     <merge from="release/dev16.2-vs-deps" to="release/dev16.3-preview2-vs-deps" />
     <merge from="release/dev16.3-preview2-vs-deps" to="master-vs-deps" />
+    <merge from="master-vs-deps" to="release/dev16.4-preview1-vs-deps" />
       
     <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
     <merge from="dev15.0.x" to="dev15.0.x-vs-deps" />
@@ -25,6 +26,7 @@
     <merge from="release/dev16.2" to="release/dev16.2-vs-deps" />
     <merge from="release/dev16.3-preview1" to="release/dev16.3-preview1-vs-deps" />
     <merge from="master" to="master-vs-deps" />
+    <merge from="release/dev16.4-preview1" to="release/dev16.4-preview1-vs-deps" />
 
     <!-- Feature branches -->
     <merge from="master-vs-deps" to="features/razorSupport2" owners="hechang" />
