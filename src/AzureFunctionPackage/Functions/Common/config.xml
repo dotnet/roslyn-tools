@@ -112,7 +112,7 @@
     <merge from="master" to="dev/prototype" />
   </repo>
     
-  <!-- msbuild language service branches -->
+  <!-- dotnet format service branches -->
   <repo owner="dotnet" name="format">
     <merge from="master" to="feature/analyzers" />
   </repo>
