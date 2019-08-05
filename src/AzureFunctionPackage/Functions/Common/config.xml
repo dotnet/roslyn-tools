@@ -85,9 +85,9 @@
     <!-- shipped branches back to master -->
     <merge from="dev16.0" to="master" /><!-- latest LTS -->
     <merge from="release/dev16.2" to="master" /><!-- latest RTM -->
+    <merge from="release/dev16.3" to="release/dev16.4" /><!-- locked down pending release -->
 
     <!-- regular branch flow -->
-    <merge from="master" to="release/dev16.3" />
     <merge from="master" to="release/fsharp48" />
     <merge from="master" to="feature/nullness" />
     <merge from="master" to="feature/ext" />
@@ -95,8 +95,7 @@
     <merge from="master" to="feature/tasks" />
       
     <!-- language versions -->
-    <merge from="release/fsharp47" to="release/dev16.3" />
-    <merge from="release/dev16.3" to="release/fsharp48" />
+    <merge from="release/dev16.4" to="release/fsharp48" />
     <merge from="release/fsharp48" to="release/fsharp5" />
   </repo>
     
