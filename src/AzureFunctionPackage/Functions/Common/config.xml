@@ -88,15 +88,13 @@
     <merge from="release/dev16.3" to="release/dev16.4" /><!-- locked down pending release -->
 
     <!-- regular branch flow -->
-    <merge from="master" to="release/fsharp48" />
     <merge from="master" to="feature/nullness" />
     <merge from="master" to="feature/ext" />
     <merge from="master" to="feature/witness-passing" />
     <merge from="master" to="feature/tasks" />
       
     <!-- language versions -->
-    <merge from="release/dev16.4" to="release/fsharp48" />
-    <merge from="release/fsharp48" to="release/fsharp5" />
+    <merge from="release/dev16.4" to="release/fsharp5" />
   </repo>
     
   <!-- roslyn-analyzer branches -->
