@@ -28,12 +28,6 @@
     <merge from="release/dev16.3-preview2" to="release/dev16.3-preview2-vs-deps" />
     <merge from="master" to="master-vs-deps" />
     <merge from="release/dev16.4-preview1" to="release/dev16.4-preview1-vs-deps" />
-
-    <!-- Feature branches -->
-    <merge from="master-vs-deps" to="features/razorSupport2" owners="hechang" />
-    <merge from="master" to="features/NullableDogfood" owners="chucks" frequency="weekly" />
-    <merge from="master" to="demos/records" owners="angocke" />
-    <merge from="master" to="features/param-nullchecking" owners="t-laro" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
     <merge from="dev16.0.x" to="master" />
