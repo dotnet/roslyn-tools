@@ -44,7 +44,8 @@ namespace Roslyn.Insertion
                 Title = $"{prefix}{Options.InsertionName} '{Options.BranchName}/{buildToInsert}' Insertion into {Options.VisualStudioBranchName}",
                 Description = description,
                 SourceRefName = sourceBranch,
-                TargetRefName = targetBranch
+                TargetRefName = targetBranch,
+                IsDraft = true,
             };
         }
 

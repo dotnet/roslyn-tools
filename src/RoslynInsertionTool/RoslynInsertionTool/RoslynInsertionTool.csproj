@@ -15,18 +15,18 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.3" />
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.13.8" />
-    <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="15.127.0-preview" />
-    <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="15.127.0-preview" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="15.127.0-preview" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="15.127.0-preview" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.Release.Client" Version="15.127.0-preview" />
-    <PackageReference Include="Microsoft.WindowsAzure.ConfigurationManager" Version="3.2.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.0.5" />
+    <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="16.155.0-preview" />
+    <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="16.155.0-preview" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="16.155.0-preview" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="16.155.0-preview" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.Release.Client" Version="16.155.0-preview" />
+    <PackageReference Include="Microsoft.WindowsAzure.ConfigurationManager" Version="3.2.3" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.5.0" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.3.1" />
-    <PackageReference Include="WindowsAzure.ServiceBus" Version="3.3.2" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
+    <PackageReference Include="WindowsAzure.ServiceBus" Version="5.2.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AsyncProcess\AsyncProcess.csproj" />

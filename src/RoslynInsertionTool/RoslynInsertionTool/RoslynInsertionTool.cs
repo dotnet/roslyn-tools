@@ -216,7 +216,7 @@ namespace Roslyn.Insertion
                     Console.WriteLine("Marking inserted build for retention.");
                     buildToInsert.KeepForever = true;
                     var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
-                    await buildClient.UpdateBuildAsync(buildToInsert, buildToInsert.Id);
+                    await buildClient.UpdateBuildAsync(buildToInsert);
                 }
 
                 // ************* Bail out if there are no changes ************************
