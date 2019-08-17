@@ -184,7 +184,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             return (true, null);
         }
 
-        public const string AutoMergeLabelText = "auto-merge";
+        public const string AutoMergeLabelText = "Auto-Merge If Tests Pass";
 
         /// <summary>
         /// Fetch the list of PRs that have been marked with the <see cref="AutoMergeLabelText"/>
