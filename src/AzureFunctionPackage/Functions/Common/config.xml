@@ -49,8 +49,10 @@
     <merge from="release/2.1.5xx" to="release/2.2.1xx" />
     <merge from="release/2.2.1xx" to="release/2.2.2xx" />
     <merge from="release/2.1.6xx" to="release/2.2.2xx" />
-    <merge from="release/2.2.2xx" to="release/3.0.1xx" />
-    <merge from="release/3.0.1xx" to="master" />
+    <merge from="release/2.2.2xx" to="release/3.0.100-preview9" />
+    <merge from="release/3.0.100-preview9" to="release/3.0.1xx" />
+    <merge from="release/3.0.1xx" to="release/3.1.1xx" />
+    <merge from="release/3.1.1xx" to="master" />
   </repo>
   <repo owner="dotnet" name="sdk">
     <merge from="release/2.0.0" to="release/2.1" />
@@ -63,14 +65,20 @@
     <merge from="release/2.1.5xx" to="release/2.2.1xx" />
     <merge from="release/2.2.1xx" to="release/2.2.2xx" />
     <merge from="release/2.1.6xx" to="release/2.2.2xx" />
-    <merge from="release/2.2.2xx" to="release/3.0.1xx" />
-    <merge from="release/3.0.1xx" to="master" />
+    <merge from="release/2.2.2xx" to="release/3.0.100-preview9" />
+    <merge from="release/3.0.100-preview9" to="release/3.0.1xx" />
+    <merge from="release/3.0.1xx" to="release/3.1.1xx" />
+    <merge from="release/3.1.1xx" to="master" />
   </repo>
   <repo owner="dotnet" name="toolset">
-    <merge from="release/3.0.1xx" to="master" />
+    <merge from="release/3.0.100-preview9" to="release/3.0.1xx" />
+    <merge from="release/3.0.1xx" to="release/3.1.1xx" />
+    <merge from="release/3.1.1xx" to="master" />
   </repo>
   <repo owner="dotnet" name="core-sdk">
-    <merge from="release/3.0.1xx" to="master" />
+    <merge from="release/3.0.100-preview9" to="release/3.0.1xx" />
+    <merge from="release/3.0.1xx" to="release/3.1.1xx" />
+    <merge from="release/3.1.1xx" to="master" />
   </repo>
   <repo owner="dotnet" name="fsharp">
     <!-- shipped branches back to master -->
