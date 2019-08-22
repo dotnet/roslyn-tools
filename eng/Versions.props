@@ -39,7 +39,7 @@
     <MicrosoftAzureKeyVaultVersion>3.0.0</MicrosoftAzureKeyVaultVersion>
     <MicrosoftBuildVersion>15.6.82</MicrosoftBuildVersion>
     <MicrosoftBuildTasksCoreVersion>15.6.82</MicrosoftBuildTasksCoreVersion>
-    <MicrosoftIdentityModelClientsActiveDirectoryVersion>3.19.8</MicrosoftIdentityModelClientsActiveDirectoryVersion>
+    <MicrosoftIdentityModelClientsActiveDirectoryVersion>5.2.0</MicrosoftIdentityModelClientsActiveDirectoryVersion>
     <MicrosoftTeamFoundationServerClientVersion>15.112.1</MicrosoftTeamFoundationServerClientVersion>
     <MicrosoftVisualStudioServicesClientVersion>15.112.1</MicrosoftVisualStudioServicesClientVersion>
     <MicrosoftVisualStudioServicesDistributedTaskClientVersion>15.112.1-preview</MicrosoftVisualStudioServicesDistributedTaskClientVersion>
