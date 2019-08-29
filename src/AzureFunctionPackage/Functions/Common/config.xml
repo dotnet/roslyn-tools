@@ -91,6 +91,8 @@
     <merge from="master" to="feature/witness-passing" />
     <merge from="master" to="feature/tasks" />
     <merge from="master" to="feature/fsi-packagemanagement" />
+    <merge from="master" to="feature/kernel" />
+    <merge from="release/dev16.4" to="feature/kernel" />
       
     <!-- language versions -->
     <merge from="release/dev16.4" to="release/fsharp5" />
