@@ -96,6 +96,9 @@
       
     <!-- language versions -->
     <merge from="release/dev16.4" to="release/fsharp5" />
+    <merge from="master" to="release/fsharp5" />
+    <merge from="release/fsharp5" to="release/kernel" />
+
   </repo>
     
   <!-- roslyn-analyzer branches -->
