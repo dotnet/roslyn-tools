@@ -58,5 +58,6 @@ Do-Insertion -component "Live Unit Testing"  -queueName "TestImpact-Signed"     
 #Do-Insertion -component "Roslyn"  -queueName "Roslyn-Signed"  -fromBranch "dev16.0-vs-deps"          -toBranch "rel/d16.0"  -insertToolset "false"  -insertDevdiv "false"  -updatecorextlibraries "true"  -queueValidation "true"
 #Do-Insertion -component "Roslyn"  -queueName "Roslyn-Signed"  -fromBranch "release/dev16.3-vs-deps"  -toBranch "rel/d16.3"  -insertToolset "false"  -insertDevdiv "false"  -updatecorextlibraries "true"  -queueValidation "true"
 
-# Dev 16.4 Preview 1 - Disabled while testing insertion on successful Signed Build
-#Do-Insertion -component "Roslyn"  -queueName "Roslyn-Signed"  -fromBranch "master-vs-deps"           -toBranch "master"     -insertToolset "true"   -insertDevdiv "false"  -updatecorextlibraries "true"  -queueValidation "true"
+# Dev 16.4 Previews - Disabled while testing insertion on successful Signed Build
+#Do-Insertion -component "Roslyn"  -queueName "Roslyn-Signed"  -fromBranch "release/dev16.4-preview1-vs-deps"  -toBranch "rel/16.4"  -insertToolset "false"  -insertDevdiv "false"  -updatecorextlibraries "true"  -queueValidation "true"
+#Do-Insertion -component "Roslyn"  -queueName "Roslyn-Signed"  -fromBranch "master-vs-deps"                    -toBranch "master"    -insertToolset "true"   -insertDevdiv "false"  -updatecorextlibraries "true"  -queueValidation "true"
