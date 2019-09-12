@@ -1,6 +1,6 @@
 param([string] $enlistmentPath,
-    [string] $clientId,
-    [string] $clientSecret)
+      [string] $clientId,
+      [string] $clientSecret)
 
 function Do-Insertion(
     $component,
@@ -14,7 +14,8 @@ function Do-Insertion(
     $insertToolset = "false",
     $queueValidation = "true",
     $dropPath = "",
-    $titlePrefix = "[Auto Insertion]") {
+    $titlePrefix = "[Auto Insertion]")
+{
     Write-Host "Performing $component $fromBranch Insertion into $toBranch..."
 
     $toolsetFlag = ""
