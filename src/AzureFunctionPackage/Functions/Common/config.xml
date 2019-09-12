@@ -26,7 +26,7 @@
     <merge from="release/dev16.2" to="release/dev16.2-vs-deps" />
     <merge from="release/dev16.3" to="release/dev16.3-vs-deps" />
     <merge from="release/dev16.4-preview1" to="release/dev16.4-preview1-vs-deps" />
-   <merge from="master" to="master-vs-deps" />
+    <merge from="master" to="master-vs-deps" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
     <merge from="dev16.0.x" to="master" />
