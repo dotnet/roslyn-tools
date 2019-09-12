@@ -7,14 +7,14 @@ function Do-Insertion(
     $queueName,
     $fromBranch,
     $toBranch,
-    $insertCore = "true",
-    $insertDevdiv = "true",
-    $updatecorextlibraries = "false",
-    $updateassemblyversions = "false",
-    $insertToolset = "false",
-    $queueValidation = "true",
-    $dropPath = "",
-    $titlePrefix = "[Auto Insertion]")
+    $insertCore="true",
+    $insertDevdiv="true",
+    $updatecorextlibraries="false",
+    $updateassemblyversions="false",
+    $insertToolset="false",
+    $queueValidation="true",
+    $dropPath="",
+    $titlePrefix="[Auto Insertion]")
 {
     Write-Host "Performing $component $fromBranch Insertion into $toBranch..."
 
