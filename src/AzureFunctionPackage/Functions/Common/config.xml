@@ -39,7 +39,6 @@
     <merge from="dev16.2.x" to="dev16.3.x" />
     <merge from="dev16.3.x" to="dev16.4.x" />
     <merge from="dev16.4.x" to="master" />
-    <merge from="master" to="feature/TempPE" />
   </repo>
   <repo owner="dotnet" name="cli">
     <merge from="release/2.0.0" to="release/2.1.1xx" />
