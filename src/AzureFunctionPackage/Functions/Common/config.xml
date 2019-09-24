@@ -90,7 +90,7 @@
     <!-- releases -->
     <merge from="dev16.0" to="master" /><!-- latest LTS -->
     <merge from="release/dev16.3" to="master" /><!-- latest RTM -->
-    <merge from="release/dev16.3" to="release/dev16.4" /><!-- next release; locked down pending release -->
+    <merge from="master" to="release/dev16.4" /><!-- next release -->
 
     <!-- regular branch flow -->
     <merge from="master" to="feature/nullness" />
