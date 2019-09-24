@@ -87,10 +87,10 @@
     <merge from="release/3.1.1xx" to="master" />
   </repo>
   <repo owner="dotnet" name="fsharp">
-    <!-- shipped branches back to master -->
+    <!-- releases -->
     <merge from="dev16.0" to="master" /><!-- latest LTS -->
-    <merge from="release/dev16.2" to="master" /><!-- latest RTM -->
-    <merge from="release/dev16.3" to="release/dev16.4" /><!-- locked down pending release -->
+    <merge from="release/dev16.3" to="master" /><!-- latest RTM -->
+    <merge from="release/dev16.3" to="release/dev16.4" /><!-- next release; locked down pending release -->
 
     <!-- regular branch flow -->
     <merge from="master" to="feature/nullness" />
@@ -105,7 +105,6 @@
     <merge from="release/dev16.4" to="release/fsharp5" />
     <merge from="master" to="release/fsharp5" />
     <merge from="release/fsharp5" to="feature/kernel" />
-
   </repo>
 
   <!-- roslyn-analyzer branches -->
