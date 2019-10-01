@@ -336,7 +336,7 @@ namespace Roslyn.Insertion
 
                     try
                     {
-                        await QueueBuildPolicy(pullRequest, "CloudBuild - Request RPS");
+                        await QueueBuildPolicy(pullRequest, "Request Perf DDRITs");
                     }
                     catch (Exception ex)
                     {
