@@ -111,7 +111,7 @@
 
   <!-- roslyn-analyzer branches -->
   <repo owner="dotnet" name="roslyn-analyzers">
-    <merge from="master" to="3.x" />
+    <merge from="2.9.x" to="master" />
   </repo>
 
   <!-- testimpact branches -->
