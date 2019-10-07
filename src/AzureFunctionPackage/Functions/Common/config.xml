@@ -9,7 +9,7 @@
     <merge from="release/dev16.3" to="release/dev16.4-preview1" />
     <merge from="release/dev16.4-preview1" to="release/dev16.4-preview2" />
     <merge from="release/dev16.4-preview2" to="master" />
-    <merge from="master" to="dev16.5-preview1" />
+    <merge from="master" to="release/dev16.5-preview1" />
 
     <!-- Roslyn branches (between vs-deps branches) -->
     <merge from="dev15.0.x-vs-deps" to="dev15.9.x-vs-deps" />
