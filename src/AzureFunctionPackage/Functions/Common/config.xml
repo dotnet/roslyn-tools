@@ -34,6 +34,7 @@
       
     <!-- Roslyn feature branches -->
     <merge from="master" to="features/local-function-attributes" owners="rikkigibson" />
+    <merge from="master" to="features/static-lambdas" owners="jcouv" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
     <merge from="dev16.0.x" to="master" />
