@@ -5,4 +5,16 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="config.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="config.xml" />
+  </ItemGroup>
+
 </Project>
