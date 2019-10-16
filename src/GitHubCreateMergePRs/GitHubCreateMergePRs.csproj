@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GithubMergeTool\GithubMergeTool.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="config.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="config.xml" />
+  </ItemGroup>
+
+</Project>

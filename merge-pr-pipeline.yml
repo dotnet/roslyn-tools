@@ -1,0 +1,31 @@
+# Pipeline to create Github merge PRs using the dotnet bot.
+
+variables:
+# Variable group for the bot secret.
+- group: RoslynMergeBot
+- name: isDryRun
+  value: false
+- name: isAutomated
+  value: true
+
+schedules:
+- cron: "0 */12 * * *"
+  displayName: Roslyn Merge Tool
+  branches:
+    include:
+    - master
+  always: true
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET Core sdk'
+  inputs:
+    packageType: sdk
+    version: 2.1.401
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+- script: dotnet run -p $(Build.SourcesDirectory)/src/GitHubCreateMergePRs/GitHubCreateMergePRs.csproj --isDryRun=$(isDryRun) --isAutomated=$(isAutomated) --githubToken=$(dotnet-bot-github-auth-token)
+  displayName: 'Run GitHub Create Merge PRs'
