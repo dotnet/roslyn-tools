@@ -25,13 +25,6 @@ steps:
             /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
   displayName: Build
 
-- task: MSBuild@1
-  displayName: Package Azure Functions
-  inputs:
-    solution: src\AzureFunctionPackage\AzureFunctionPackage.csproj
-    configuration: $(BuildConfiguration)
-    msbuildArguments: /t:Restore;Build
-
 - task: PublishTestResults@1
   displayName: Publish Test Results
   inputs:
@@ -106,13 +99,3 @@ steps:
     publishLocation: FilePath
     TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)'
   condition: succeededOrFailed()
-
-- task: AzureRmWebAppDeployment@4
-  displayName: Publish Azure Functions
-  inputs:
-    connectionType: AzureRM
-    azureSubscription: 'Roslyn Infrastructure Azure Resource Management'
-    appType: functionApp
-    webAppName: roslyn-infra-functions
-    Package: 'artifacts/bin/AzureFunctionPackage/$(BuildConfiguration)/AzureFunctionPackage.zip'
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'master'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
