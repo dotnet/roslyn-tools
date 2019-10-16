@@ -10,6 +10,7 @@ variables:
 
 # Make sure the pipeline doesn't build on commits.
 trigger: none
+pr: none
 
 schedules:
 - cron: "0 */12 * * *"
