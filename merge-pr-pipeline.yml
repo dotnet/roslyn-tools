@@ -8,6 +8,9 @@ variables:
 - name: isAutomated
   value: true
 
+# Make sure the pipeline doesn't build on commits.
+trigger: none
+
 schedules:
 - cron: "0 */12 * * *"
   displayName: Roslyn Merge Tool
