@@ -49,24 +49,10 @@
     <merge from="dev16.4.x" to="master" />
   </repo>
   <repo owner="dotnet" name="cli">
-    <merge from="release/2.1.5xx" to="release/2.1.6xx" />
-    <merge from="release/2.1.5xx" to="release/2.2.1xx" />
-    <merge from="release/2.1.6xx" to="release/2.1.8xx" />
-    <merge from="release/2.1.8xx" to="release/2.2.4xx" />
-    <merge from="release/2.2.1xx" to="release/2.2.2xx" />
-    <merge from="release/2.2.2xx" to="release/2.2.4xx" />
-    <merge from="release/2.2.4xx" to="release/3.0.1xx" />
     <merge from="release/3.0.1xx" to="release/3.1.1xx" />
     <merge from="release/3.1.1xx" to="master" />
   </repo>
   <repo owner="dotnet" name="sdk">
-    <merge from="release/2.1.5xx" to="release/2.1.6xx" />
-    <merge from="release/2.1.5xx" to="release/2.2.1xx" />
-    <merge from="release/2.1.6xx" to="release/2.1.8xx" />
-    <merge from="release/2.1.8xx" to="release/2.2.4xx" />
-    <merge from="release/2.2.1xx" to="release/2.2.2xx" />
-    <merge from="release/2.2.2xx" to="release/2.2.4xx" />
-    <merge from="release/2.2.4xx" to="release/3.0.1xx" />
     <merge from="release/3.0.1xx" to="release/3.1.1xx" />
     <merge from="release/3.1.1xx" to="master" />
   </repo>
