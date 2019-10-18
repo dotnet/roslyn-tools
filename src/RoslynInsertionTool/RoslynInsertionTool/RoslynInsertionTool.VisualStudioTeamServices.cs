@@ -16,6 +16,7 @@ using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.Policy.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
+using Microsoft.VisualStudio.Services.Client;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Clients;
@@ -35,6 +36,12 @@ namespace Roslyn.Insertion
         private static readonly Lazy<TfsTeamProjectCollection> LazyProjectCollection = new Lazy<TfsTeamProjectCollection>(() =>
         {
             Console.WriteLine($"Creating TfsTeamProjectCollection object from {Options.VSTSUri}");
+
+            if (Options.IsLocal)
+            {
+                return new TfsTeamProjectCollection(new Uri(Options.VSTSUri), new VssClientCredentials());
+            }
+
             return new TfsTeamProjectCollection(new Uri(Options.VSTSUri), new VssBasicCredential(Options.Username, Options.Password));
         });
 
@@ -407,14 +414,13 @@ namespace Roslyn.Insertion
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    Task.Delay(5 * 1000, cancellationToken).Wait();
+                    Task.Delay(5000, cancellationToken).Wait();
 
                     environmentStatus = GetReleaseEnvironment(projectName, release.Id, environmentId, releaseClient, cancellationToken).Status;
 
-                    if(!(environmentStatus.Equals(EnvironmentStatus.InProgress)
-                          || environmentStatus.Equals(EnvironmentStatus.Queued)
-                          || environmentStatus.Equals(EnvironmentStatus.NotStarted)
-                          || environmentStatus.Equals(EnvironmentStatus.Scheduled)))
+                    if (environmentStatus != EnvironmentStatus.InProgress
+                        && environmentStatus != EnvironmentStatus.Queued
+                        && environmentStatus != EnvironmentStatus.Scheduled)
                     {
                         break;
                     }

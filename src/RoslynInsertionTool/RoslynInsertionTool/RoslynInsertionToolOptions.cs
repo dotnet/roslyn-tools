@@ -59,6 +59,7 @@ namespace Roslyn.Insertion
             bool createDummyPr,
             int updateExistingPr,
             bool overwritePr,
+            bool isLocal,
             string logFileLocation,
             string clientId,
             string clientSecret,
@@ -92,6 +93,7 @@ namespace Roslyn.Insertion
             CreateDummyPr = createDummyPr;
             UpdateExistingPr = updateExistingPr;
             OverwritePr = overwritePr;
+            IsLocal = isLocal;
             LogFileLocation = logFileLocation;
             ClientId = clientId;
             ClientSecret = clientSecret;
@@ -127,6 +129,7 @@ namespace Roslyn.Insertion
             Optional<bool> createDummyPr = default,
             Optional<int> updateExistingPr = default,
             Optional<bool> overwritePr = default,
+            Optional<bool> isLocal = default,
             Optional<string> logFileLocation = default,
             Optional<string> clientId = default,
             Optional<string> clientSecret = default,
@@ -161,6 +164,7 @@ namespace Roslyn.Insertion
                 createDummyPr: createDummyPr.ValueOrFallback(CreateDummyPr),
                 updateExistingPr: updateExistingPr.ValueOrFallback(UpdateExistingPr),
                 overwritePr: overwritePr.ValueOrFallback(OverwritePr),
+                isLocal: isLocal.ValueOrFallback(IsLocal),
                 logFileLocation: logFileLocation.ValueOrFallback(LogFileLocation),
                 clientId: clientId.ValueOrFallback(ClientId),
                 clientSecret: clientSecret.ValueOrFallback(ClientSecret),
@@ -232,6 +236,8 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithTitlePrefix(string titlePrefix) => Update(titlePrefix: titlePrefix);
 
+        public RoslynInsertionToolOptions WithIsLocal(bool isLocal) => Update(isLocal: isLocal);
+
         public string EnlistmentPath { get; }
 
         public string Username { get; }
@@ -288,6 +294,8 @@ namespace Roslyn.Insertion
 
         public bool OverwritePr { get; }
 
+        public bool IsLocal { get; }
+
         public string LogFileLocation { get; }
 
         public string ClientId { get; }
@@ -321,11 +329,12 @@ namespace Roslyn.Insertion
                 }
                 else
                 {
+                    var hasCredentials = (!string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password)) || IsLocal;
+
                     return
                         !OverwritePr &&
                         !string.IsNullOrEmpty(EnlistmentPath) &&
-                        !string.IsNullOrEmpty(Username) &&
-                        !string.IsNullOrEmpty(Password) &&
+                        hasCredentials &&
                         !string.IsNullOrEmpty(VisualStudioBranchName) &&
                         !string.IsNullOrEmpty(BuildQueueName) &&
                         !string.IsNullOrEmpty(BranchName) &&

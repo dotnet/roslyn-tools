@@ -233,6 +233,11 @@ partial class RoslynInsertionToolCommandline
                 "Prepend the generated pull request's title with the specified value.",
                 titlePrefix => options = options.WithTitlePrefix(titlePrefix)
             },
+            {
+                "local",
+                "Run the tool in local mode (prompt for login instead of providing username and password).",
+                isLocal => options = options.WithIsLocal(true)
+            },
         };
 
         List<string> extraArguments = null;
@@ -259,7 +264,11 @@ partial class RoslynInsertionToolCommandline
             return true;
         }
 
-        if (string.IsNullOrEmpty(options.Password))
+        if (options.IsLocal)
+        {
+            Console.WriteLine("Running in local mode using client credentials (will prompt for login).");
+        }
+        else if (string.IsNullOrEmpty(options.Password))
         {
             Console.WriteLine($"Attempting to get credentials from KeyVault.");
             try

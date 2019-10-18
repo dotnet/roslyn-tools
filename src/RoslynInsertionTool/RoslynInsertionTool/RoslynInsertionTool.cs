@@ -296,6 +296,10 @@ namespace Roslyn.Insertion
                                 Console.WriteLine("Could not create diff links.");
                             }
 
+                            Console.WriteLine("---PR description---");
+                            Console.WriteLine(prDescription);
+                            Console.WriteLine("---End PR description---");
+
                             branch = PushChanges(branch, buildVersion, cancellationToken);
                             pullRequest = await CreatePullRequestAsync(branch.FriendlyName, prDescription, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
                             shouldRollBackGitChanges = false;

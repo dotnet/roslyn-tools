@@ -118,6 +118,13 @@ namespace Roslyn.Insertion
         private static Credentials GetCredentials()
         {
             Console.WriteLine("Getting credentials");
+
+            if (Options.IsLocal)
+            {
+                // TODO: local mode doesn't work when actually pushing yet
+                return new DefaultCredentials();
+            }
+
             return new UsernamePasswordCredentials
             {
                 Username = Options.Username,
