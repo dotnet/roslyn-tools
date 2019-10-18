@@ -68,7 +68,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "roslyn.optprof.runsettings.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildRetainer", "src\BuildRetainer\BuildRetainer.csproj", "{DAD4C83F-8C86-4099-AA2A-EFCF1F5D5459}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubCreateMergePRs", "src\GitHubCreateMergePRs\GitHubCreateMergePRs.csproj", "{491D6953-5267-463F-9796-E9906B2FE516}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubCreateMergePRs", "src\GitHubCreateMergePRs\GitHubCreateMergePRs.csproj", "{491D6953-5267-463F-9796-E9906B2FE516}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PRFinder", "src\RoslynInsertionTool\PRFinder\PRFinder.csproj", "{15BE78E3-355F-4B15-ABB4-FA750B2D846B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -368,6 +370,18 @@ Global
 		{491D6953-5267-463F-9796-E9906B2FE516}.Release|x64.Build.0 = Release|Any CPU
 		{491D6953-5267-463F-9796-E9906B2FE516}.Release|x86.ActiveCfg = Release|Any CPU
 		{491D6953-5267-463F-9796-E9906B2FE516}.Release|x86.Build.0 = Release|Any CPU
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B}.Debug|x64.Build.0 = Debug|Any CPU
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B}.Debug|x86.Build.0 = Debug|Any CPU
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B}.Release|x64.ActiveCfg = Release|Any CPU
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B}.Release|x64.Build.0 = Release|Any CPU
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B}.Release|x86.ActiveCfg = Release|Any CPU
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -395,6 +409,7 @@ Global
 		{30A74B33-E707-4942-8B97-59D714106D94} = {54B3835F-17DD-4749-B40D-1533BD81D36C}
 		{44B80D37-F395-40CF-8BB6-9AAEB5606672} = {821F3F43-E221-4507-95BD-64843868AC11}
 		{DAD4C83F-8C86-4099-AA2A-EFCF1F5D5459} = {54B3835F-17DD-4749-B40D-1533BD81D36C}
+		{15BE78E3-355F-4B15-ABB4-FA750B2D846B} = {54B3835F-17DD-4749-B40D-1533BD81D36C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {738CC66D-49E2-4B21-835F-94170D22A29D}
