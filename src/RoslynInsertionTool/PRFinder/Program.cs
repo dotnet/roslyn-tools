@@ -91,10 +91,5 @@ namespace PRFinder
 
             return 0;
         }
-
-        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
