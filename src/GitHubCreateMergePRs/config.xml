@@ -50,7 +50,6 @@
   </repo>
   <repo owner="dotnet" name="cli">
     <merge from="release/3.0.1xx" to="release/3.1.1xx" />
-    <merge from="release/3.1.1xx" to="master" />
   </repo>
   <repo owner="dotnet" name="sdk">
     <merge from="release/3.0.1xx" to="release/3.1.1xx" />
@@ -63,6 +62,7 @@
   </repo>
   <repo owner="dotnet" name="toolset">
     <merge from="release/3.0.1xx" to="release/3.1.1xx" />
+    <merge from="release/3.1.1xx" to="master" />
   </repo>
   <repo owner="dotnet" name="core-sdk">
     <merge from="release/3.0.1xx" to="release/3.1.1xx" />
