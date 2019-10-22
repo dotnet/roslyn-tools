@@ -81,6 +81,7 @@
     <merge from="master" to="feature/ext" />
     <merge from="master" to="feature/witness-passing" />
     <merge from="master" to="feature/tasks" />
+    <merge from="master" to="feature/and-bang" />
     <merge from="master" to="feature/fsi-packagemanagement" />
 
     <!-- language versions -->
