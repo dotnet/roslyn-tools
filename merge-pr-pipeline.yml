@@ -4,13 +4,16 @@ variables:
 # Variable group for the bot secret.
 - group: RoslynMergeBot
 - name: isDryRun
-  value: false
+  value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: isAutomated
   value: true
 
 # Make sure the pipeline doesn't build on commits.
 trigger: none
-pr: none
+
+# Trigger dryrun on PRs to master.
+pr:
+- master
 
 schedules:
 - cron: "0 */12 * * *"
