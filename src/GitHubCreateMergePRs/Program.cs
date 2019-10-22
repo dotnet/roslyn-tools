@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         // Default when no args passed in.
         var isDryRun = true;
@@ -31,7 +33,7 @@ public class Program
 
         Console.WriteLine($"Executing with {nameof(isDryRun)}={isDryRun}, {nameof(isAutomated)}={isAutomated}, {nameof(githubToken)}={githubToken}");
         var config = GetConfig();
-        RunAsync(config, isAutomated, isDryRun, githubToken).GetAwaiter().GetResult();
+        await RunAsync(config, isAutomated, isDryRun, githubToken);
     }
 
     private static string GetArgumentValue(string arg)
@@ -49,14 +51,20 @@ public class Program
         }
     }
 
-    private static async Task MakeGithubPr(
+    /// <summary>
+    /// Make requests to github to merge a source branch into a destination branch.
+    /// </summary>
+    /// <returns>true if we encounter a recoverable error, false if unrecoverable.</returns>
+    private static async Task<bool> MakeGithubPr(
         GithubMergeTool.GithubMergeTool gh,
         string repoOwner,
         string repoName,
         string srcBranch,
         string destBranch,
         bool addAutoMergeLabel,
-        bool isAutomatedRun)
+        bool isAutomatedRun,
+        bool isDryRun,
+        string githubToken)
     {
         Console.WriteLine($"Merging {repoName} from {srcBranch} to {destBranch}");
 
@@ -74,12 +82,39 @@ public class Program
         {
             Console.WriteLine($"##vso[task.logissue type=error]Error creating PR. GH response code: {error.StatusCode}");
             Console.WriteLine($"##vso[task.logissue type=error]{await error.Content.ReadAsStringAsync()}");
+
+            // Github rate limits are much lower for unauthenticated users.  We will definitely hit a rate limit
+            // If we hit it during a dryrun, just bail out.
+            if (isDryRun && string.IsNullOrWhiteSpace(githubToken))
+            {
+                if (TryGetRemainingRateLimit(error.Headers, out var remainingRateLimit) && remainingRateLimit == 0)
+                {
+                    Console.WriteLine($"##vso[task.logissue type=error]Hit GitHub rate limit in dryrun with no auth token.  Bailing out.");
+                    return false;
+                }
+            }
         }
+
+        return true;
     }
 
-    private static async Task RunAsync(XDocument config, bool isAutomatedRun, bool isDryRun, string githubAuthToken)
+    private static bool TryGetRemainingRateLimit(HttpResponseHeaders headers, out int remainingRateLimit)
     {
-        var gh = new GithubMergeTool.GithubMergeTool("dotnet-bot@users.noreply.github.com", githubAuthToken, isDryRun);
+        if (headers.TryGetValues("X-RateLimit-Remaining", out var remainingValues))
+        {
+            if (int.TryParse(remainingValues.First(), out remainingRateLimit))
+            {
+                return true;
+            }
+        }
+
+        remainingRateLimit = -1;
+        return false;
+    }
+
+    private static async Task RunAsync(XDocument config, bool isAutomatedRun, bool isDryRun, string githubToken)
+    {
+        var gh = new GithubMergeTool.GithubMergeTool("dotnet-bot@users.noreply.github.com", githubToken, isDryRun);
         foreach (var repo in config.Root.Elements("repo"))
         {
             var owner = repo.Attribute("owner").Value;
@@ -98,7 +133,12 @@ public class Program
                 var addAutoMergeLabel = bool.Parse(merge.Attribute("addAutoMergeLabel")?.Value ?? "true");
                 try
                 {
-                    await MakeGithubPr(gh, owner, name, fromBranch, toBranch, addAutoMergeLabel, isAutomatedRun);
+                    bool shouldContinue = await MakeGithubPr(gh, owner, name, fromBranch, toBranch, addAutoMergeLabel,
+                        isAutomatedRun, isDryRun, githubToken);
+                    if (!shouldContinue)
+                    {
+                        return;
+                    }
                 }
                 catch (Exception ex)
                 {
