@@ -6,8 +6,7 @@
     <merge from="dev16.0" to="release/dev16.1" />
     <merge from="release/dev16.1" to="release/dev16.2" />
     <merge from="release/dev16.2" to="release/dev16.3" />
-    <merge from="release/dev16.3" to="release/dev16.4-preview1" />
-    <merge from="release/dev16.4-preview1" to="release/dev16.4-preview2" />
+    <merge from="release/dev16.3" to="release/dev16.4-preview2" />
     <merge from="release/dev16.4-preview2" to="release/dev16.4" />
     <merge from="release/dev16.4" to="master" />
 
@@ -17,8 +16,7 @@
     <merge from="dev16.0-vs-deps" to="release/dev16.1-vs-deps" />
     <merge from="release/dev16.1-vs-deps" to="release/dev16.2" />
     <merge from="release/dev16.2" to="release/dev16.3-vs-deps" />
-    <merge from="release/dev16.3-vs-deps" to="release/dev16.4-preview1-vs-deps" />
-    <merge from="release/dev16.4-preview1-vs-deps" to="release/dev16.4-preview2-vs-deps" />
+    <merge from="release/dev16.3-vs-deps" to="release/dev16.4-preview2-vs-deps" />
     <merge from="release/dev16.4-preview2-vs-deps" to="release/dev16.4-vs-deps" />
     <merge from="release/dev16.4-vs-deps" to="master-vs-deps" />
 
@@ -29,7 +27,6 @@
     <merge from="release/dev16.1" to="release/dev16.1-vs-deps" />
     <!-- Roslyn does not have a dev16.2-vs-deps branch as it was merged back into dev16.2 -->
     <merge from="release/dev16.3" to="release/dev16.3-vs-deps" />
-    <merge from="release/dev16.4-preview1" to="release/dev16.4-preview1-vs-deps" />
     <merge from="release/dev16.4-preview2" to="release/dev16.4-preview2-vs-deps" />
     <merge from="release/dev16.4" to="release/dev16.4-vs-deps" />
     <merge from="master" to="master-vs-deps" />
