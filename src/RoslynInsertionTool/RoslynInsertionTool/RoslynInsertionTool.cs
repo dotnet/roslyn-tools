@@ -237,20 +237,6 @@ namespace Roslyn.Insertion
                     }
                 }
 
-                // ********************* Trigger a release *****************************
-                Console.WriteLine($"Triggering a release for the build {buildToInsert.BuildNumber}");
-
-                var release = await CreateReleaseAsync(buildToInsert, cancellationToken);
-
-                // The timeout for the below wait is primarily dependent on:
-                // 1. The release task itself - Since its currently only triggering symbol archival,
-                //    it should not be very long but this should increase when more time intesive tasks are added to the release.
-                // 2. The availability of machines to run the release on. This could be a problem at peak pool load
-                //    where getting a machine can take upto an hour or more.
-                WaitForReleaseCompletion(release, TimeSpan.FromMinutes(10), cancellationToken);
-
-                Console.WriteLine($"Release succesfully triggered");
-
                 // ********************* Create pull request *****************************
                 var pullRequestId = 0;
                 if (branch != null)
