@@ -261,16 +261,27 @@ partial class RoslynInsertionToolCommandline
 
         if (string.IsNullOrEmpty(options.Password))
         {
-            Console.WriteLine($"Attempting to get credentials from KeyVault.");
-            try
+            if (!string.IsNullOrEmpty(options.ClientId) && !string.IsNullOrEmpty(options.ClientSecret))
             {
-                var password = await GetSecret(settings.VsoSecretName, options);
-                options = options.WithPassword(password);
+                Console.WriteLine($"Attempting to get credentials from KeyVault.");
+                try
+                {
+                    var password = await GetSecret(settings.VsoSecretName, options);
+                    options = options.WithPassword(password);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Failed to get credential");
+                    Console.WriteLine(e.Message);
+                    return false;
+                }
             }
-            catch (Exception e)
+            else
             {
-                Console.WriteLine($"Failed to get credential");
-                Console.WriteLine(e.Message);
+                Console.Error.WriteLine("No password provided and no client secret for KeyVault provided.");
+                Console.Error.WriteLine("If you want to develop the tool locally, do the following:");
+                Console.Error.WriteLine("1. Go to https://devdiv.visualstudio.com/_usersSettings/tokens and generate a token.");
+                Console.Error.WriteLine("2. Add the command line arguments `/username=myusername@microsoft.com /password=myauthtoken`");
                 return false;
             }
         }

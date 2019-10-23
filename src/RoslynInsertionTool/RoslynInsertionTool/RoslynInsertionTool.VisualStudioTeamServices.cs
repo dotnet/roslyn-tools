@@ -158,7 +158,7 @@ namespace Roslyn.Insertion
             Console.WriteLine($"Get Latest Passed Build");
             try
             {
-                Console.WriteLine($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.BuildQueueName}");
+                Console.WriteLine($"Getting latest passing build for project {Options.TFSProjectName}, queue {Options.BuildQueueName}, and branch {Options.BranchName}");
                 var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
                 var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
                 var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, BuildResult.Succeeded);

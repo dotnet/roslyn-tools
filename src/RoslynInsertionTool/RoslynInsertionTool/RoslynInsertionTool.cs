@@ -22,8 +22,7 @@ namespace Roslyn.Insertion
 
         private static RoslynInsertionToolOptions Options { get; set; }
 
-        /// <returns>A tuple containing (success, pullRequestId).</returns>
-        public static async Task<(bool, int)> PerformInsertionAsync(
+        public static async Task<(bool success, int pullRequestId)> PerformInsertionAsync(
             RoslynInsertionToolOptions options,
             CancellationToken cancellationToken)
         {
@@ -332,6 +331,12 @@ namespace Roslyn.Insertion
                 }
 
                 return (true, pullRequestId);
+            }
+            catch (RepositoryNotFoundException ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                Console.Error.WriteLine(@"Please ensure a VS enlistment exists at the given path, or pass the `/enlistmentpath=C:\path\to\VS` argument on the command line.");
+                return (false, 0);
             }
             catch (Exception ex)
             {
