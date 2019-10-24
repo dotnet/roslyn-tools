@@ -7,10 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using System.Xml.Linq;
 using LibGit2Sharp;
 
 using Microsoft.TeamFoundation.Build.WebApi;
+using Microsoft.TeamFoundation.Client.CommandLine;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 
@@ -18,6 +19,8 @@ namespace Roslyn.Insertion
 {
     public static partial class RoslynInsertionTool
     {
+        public static readonly Guid VSRepoId = new Guid("a290117c-5a8a-40f7-bc2c-f14dbe3acf6d");
+
         private static List<string> WarningMessages { get; } = new List<string>();
 
         private static RoslynInsertionToolOptions Options { get; set; }
@@ -29,13 +32,10 @@ namespace Roslyn.Insertion
             Options = options;
             Console.WriteLine($"{Environment.NewLine}New Insertion Into {Options.VisualStudioBranchName} Started{Environment.NewLine}");
 
-            GitPullRequest pullRequest = null;
-            var shouldRollBackGitChanges = false;
             var newPackageFiles = new List<string>();
 
             try
             {
-                // Verify that the arguments we were passed authenticate correctly
                 Console.WriteLine($"Verifying given authentication for {Options.VSTSUri}");
                 try
                 {
@@ -53,9 +53,10 @@ namespace Roslyn.Insertion
                 // ********************** Create dummy PR *****************************
                 if (Options.CreateDummyPr)
                 {
+                    GitPullRequest dummyPR;
                     try
                     {
-                        pullRequest = await CreatePlaceholderBranchAsync(cancellationToken);
+                        dummyPR = await CreatePlaceholderBranchAsync(cancellationToken);
                     }
                     catch (Exception ex)
                     {
@@ -64,13 +65,13 @@ namespace Roslyn.Insertion
                         return (false, 0);
                     }
 
-                    if (pullRequest == null)
+                    if (dummyPR == null)
                     {
                         Console.WriteLine($"Unable to create placeholder PR for '{options.VisualStudioBranchName}'");
                         return (false, 0);
                     }
 
-                    return (true, pullRequest.PullRequestId);
+                    return (true, dummyPR.PullRequestId);
                 }
 
                 // ********************** Get Last Insertion *****************************
@@ -109,35 +110,20 @@ namespace Roslyn.Insertion
                 }
 
                 var insertionArtifacts = await GetInsertionArtifactsAsync(buildToInsert, cancellationToken);
-                Branch branch = null;
-                cancellationToken.ThrowIfCancellationRequested();
-                var useExistingPr = Options.UpdateExistingPr != 0;
-                if (useExistingPr)
-                {
-                    // ****************** Update existing PR ***********************
-                    pullRequest = await GetExistingPullRequestAsync(Options.UpdateExistingPr, cancellationToken);
-                    branch = SwitchToBranchAndUpdate(pullRequest.SourceRefName, Options.VisualStudioBranchName, overwriteExistingChanges: Options.OverwritePr);
-                }
-                else
-                {
-                    // ****************** Create Branch ***********************
-                    Console.WriteLine("Creating New Branch");
-                    branch = string.IsNullOrEmpty(Options.NewBranchName)
-                        ? null
-                        : CreateBranch(cancellationToken);
-                }
 
-                shouldRollBackGitChanges = branch != null;
+                cancellationToken.ThrowIfCancellationRequested();
 
                 var enlistmentRoot = GetAbsolutePathForEnlistment();
-                var coreXT = CoreXT.Load(enlistmentRoot);
 
+                var allChanges = new List<GitChange>();
+
+                var coreXT = CoreXT.Load(ProjectCollection.GetClient<GitHttpClient>(), Options);
                 if (Options.InsertCoreXTPackages)
                 {
                     // ************** Update Nuget Packages For Branch************************
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating Nuget Packages");
-                    bool success = false;
+                    bool success;
                     (success, newPackageFiles) = UpdatePackages(
                         buildVersion,
                         coreXT,
@@ -145,20 +131,22 @@ namespace Roslyn.Insertion
                         cancellationToken);
                     retainBuild |= success;
 
-                    // ************ Update .corext\Configs\default.config ********************
-                    cancellationToken.ThrowIfCancellationRequested();
-                    Console.WriteLine($"Updating CoreXT default.config file");
-                    coreXT.SaveConfig();
-
                     // *********** Copy OptimizationInputs.props file ***********************
                     foreach (var propsFile in insertionArtifacts.GetOptProfPropertyFiles())
                     {
-                        var targetDirectory = Path.Combine(enlistmentRoot, @"src\Tests\config\runsettings\Official\OptProf\External");
-                        var targetFilePath = Path.Combine(targetDirectory, Path.GetFileName(propsFile));
-
-                        Console.WriteLine($"Updating {targetFilePath}");
-                        Directory.CreateDirectory(targetDirectory);
-                        File.Copy(propsFile, targetFilePath, overwrite: true);
+                        var targetFilePath = "src/Tests/config/runsettings/Official/OptProf/External/" + Path.GetFileName(propsFile);
+                        var content = File.ReadAllText(propsFile);
+                        var change = new GitChange
+                        {
+                            ChangeType = VersionControlChangeType.Edit,
+                            Item = new GitItem { Path = targetFilePath },
+                            NewContent = new ItemContent()
+                            {
+                                Content = content,
+                                ContentType = ItemContentType.RawText
+                            }
+                        };
+                        allChanges.Add(change);
                     }
                 }
 
@@ -167,7 +155,8 @@ namespace Roslyn.Insertion
                     // ************** Update assembly versions ************************
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating assembly versions");
-                    UpdateAssemblyVersions(insertionArtifacts);
+                    var assemblyVersionChanges = UpdateAssemblyVersions(insertionArtifacts);
+                    allChanges.AddRange(assemblyVersionChanges);
 
                     // if we got this far then we definitely need to retain this build
                     retainBuild = true;
@@ -176,9 +165,15 @@ namespace Roslyn.Insertion
                 // *********** Update toolset ********************
                 if (Options.InsertToolset)
                 {
-                    UpdateToolsetPackage(insertionArtifacts, buildVersion, cancellationToken);
+                    UpdateToolsetPackage(coreXT, insertionArtifacts, buildVersion);
                     retainBuild = true;
                 }
+
+                // ************ Update .corext\Configs\default.config ********************
+                cancellationToken.ThrowIfCancellationRequested();
+                Console.WriteLine($"Updating CoreXT default.config file");
+                var configChange = coreXT.SaveConfig();
+                allChanges.Add(configChange);
 
                 // *********** Update .corext\Configs\components.json ********************
 
@@ -204,7 +199,8 @@ namespace Roslyn.Insertion
                     }
                     if (shouldSave)
                     {
-                        coreXT.SaveComponents();
+                        var allComponentChanges = coreXT.SaveComponents();
+                        allChanges.AddRange(allComponentChanges);
                         retainBuild = true;
                     }
                 }
@@ -221,88 +217,95 @@ namespace Roslyn.Insertion
                 // ********************* Verify Build Completes **************************
                 if (Options.PartitionsToBuild != null)
                 {
-                    Console.WriteLine($"Verifying build succeeds with changes");
-                    foreach (var partition in Options.PartitionsToBuild)
-                    {
-                        Console.WriteLine($"Starting build of {partition}");
-
-                        if (!(await CanBuildPartitionAsync(partition, cancellationToken)))
-                        {
-                            Console.WriteLine($"Build of partition {partition} failed");
-                            return (false, 0);
-                        }
-
-                        Console.WriteLine($"Build of partition {partition} succeeded");
-                    }
+                    // TODO: remove PartitionsToBuild command line option
                 }
 
-                // ********************* Create pull request *****************************
-                var pullRequestId = 0;
-                if (branch != null)
+                // ********************* Create push *************************************
+                var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+                var branches = await gitClient.GetRefsAsync(
+                    VSRepoId,
+                    filter: $"heads/{Options.VisualStudioBranchName}",
+                    cancellationToken: cancellationToken);
+                var baseBranch = branches.Single(b => b.Name == $"refs/heads/{Options.VisualStudioBranchName}");
+
+                var newBranchName = string.IsNullOrEmpty(Options.NewBranchName) ? Options.NewBranchName : GetNewBranchName();
+                var newBranch = new GitRefUpdate
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var prDescription = $"Updating {Options.InsertionName} to {buildVersion} ([{commitSHA}]({lastCommitUrl}))";
-                    if (useExistingPr && pullRequest != null)
-                    {
-                        // update an existing pr
-                        try
-                        {
-                            branch = PushChanges(branch, buildVersion, cancellationToken, forcePush: true);
-                            if (Options.OverwritePr)
-                            {
-                                pullRequest = await UpdatePullRequestDescriptionAsync(Options.UpdateExistingPr, prDescription, cancellationToken);
-                            }
-                            shouldRollBackGitChanges = false;
-                            pullRequestId = pullRequest.PullRequestId;
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Unable to update pull request for '{branch.FriendlyName}'");
-                            Console.WriteLine(ex);
-                            return (false, 0);
-                        }
-                    }
-                    else
-                    {
-                        // create a new PR
-                        Console.WriteLine($"Create Pull Request");
-                        try
-                        {
-                            try
-                            {
-                                var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
-                                var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild ?? buildToInsert, buildToInsert, cancellationToken);
-                                prDescription = AppendDiffToDescription(prDescription, diffLink);
-                                prDescription = AppendChangesToDescription(prDescription, oldBuild ?? buildToInsert, changes);
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine("##vso[task.logissue type=warning] Failed to create diff links.");
-                                Console.WriteLine($"##vso[task.logissue type=warning] {e.Message}");
-                            }
+                    Name = $"refs/heads/{newBranchName}",
+                    OldObjectId = baseBranch.ObjectId
+                };
 
-                            branch = PushChanges(branch, buildVersion, cancellationToken);
-                            pullRequest = await CreatePullRequestAsync(branch.FriendlyName, prDescription, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
-                            shouldRollBackGitChanges = false;
-                            pullRequestId = pullRequest.PullRequestId;
-                        }
-                        catch (EmptyCommitException ecx)
-                        {
-                            Console.WriteLine($"Unable to create pull request for '{branch.FriendlyName}'");
-                            Console.WriteLine(ecx);
-                            return (false, 0);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Unable to create pull request for '{branch.FriendlyName}'");
-                            Console.WriteLine(ex);
-                            return (false, 0);
-                        }
-                    }
+                var commit = new GitCommitRef
+                {
+                    Comment = $"Updating {Options.InsertionName} to {buildVersion}",
+                    Changes = allChanges
+                };
+                var push = new GitPush
+                {
+                    RefUpdates = new[] { newBranch },
+                    Commits = new[] { commit }
+                };
 
-                    if (pullRequest == null)
+                // TODO: do we need to specify --force? how can we do that?
+                push = await gitClient.CreatePushAsync(push, VSRepoId, cancellationToken: cancellationToken);
+
+                // ********************* Create pull request *****************************
+                var pullRequestId = Options.UpdateExistingPr;
+                var useExistingPr = pullRequestId != 0;
+
+                var prDescription = $"Updating {Options.InsertionName} to {buildVersion} ([{commitSHA}]({lastCommitUrl}))";
+                try
+                {
+                    // TODO: maybe skip if useExistingPR && !Options.OverwritePR
+                    var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
+                    var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild ?? buildToInsert, buildToInsert, cancellationToken);
+                    prDescription = AppendDiffToDescription(prDescription, diffLink);
+                    prDescription = AppendChangesToDescription(prDescription, oldBuild ?? buildToInsert, changes);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("##vso[task.logissue type=warning] Failed to create diff links.");
+                    Console.WriteLine($"##vso[task.logissue type=warning] {e.Message}");
+                }
+
+                GitPullRequest pullRequest;
+                if (useExistingPr)
+                {
+                    pullRequest = await gitClient.GetPullRequestByIdAsync(pullRequestId, cancellationToken: cancellationToken);
+                    try
                     {
-                        Console.WriteLine($"Unable to create pull request for '{branch.FriendlyName}'");
+                        if (Options.OverwritePr)
+                        {
+                            pullRequest = await UpdatePullRequestDescriptionAsync(pullRequestId, prDescription, cancellationToken);
+                        }
+                        pullRequestId = pullRequest.PullRequestId;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Unable to update pull request for '{pullRequest.SourceRefName}'");
+                        Console.WriteLine(ex);
+                        return (false, 0);
+                    }
+                }
+                else
+                {
+                    // create a new PR
+                    Console.WriteLine($"Create Pull Request");
+                    try
+                    {
+                        pullRequest = await CreatePullRequestAsync(newBranchName, prDescription, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
+                        if (pullRequest == null)
+                        {
+                            Console.WriteLine($"Unable to create pull request for '{newBranchName}'");
+                            return (false, 0);
+                        }
+
+                        pullRequestId = pullRequest.PullRequestId;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Unable to create pull request for '{newBranchName}'");
+                        Console.WriteLine(ex);
                         return (false, 0);
                     }
                 }
@@ -312,20 +315,13 @@ namespace Roslyn.Insertion
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Create Validation Build");
-
-                    if (pullRequest == null)
-                    {
-                        Console.WriteLine("Unable to create a validation build: no pull request.");
-                        return (false, 0);
-                    }
-
                     try
                     {
                         await QueueBuildPolicy(pullRequest, "Request Perf DDRITs");
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Unable to create a CloudBuild validation build for '{pullRequest.SourceRefName}'");
+                        Console.WriteLine($"Unable to create a CloudBuild validation build for '{newBranchName}'");
                         Console.WriteLine(ex);
                     }
                 }
@@ -345,30 +341,14 @@ namespace Roslyn.Insertion
             }
             finally
             {
-                // ********************* Rollback Git Changes ****************************
-                if (shouldRollBackGitChanges)
-                {
-                    try
-                    {
-                        Console.WriteLine("Rolling back git changes");
-                        var rollBackCommit = Enlistment.Branches[Options.VisualStudioBranchName].Commits.First();
-                        Enlistment.Reset(ResetMode.Hard, rollBackCommit);
-                        Enlistment.RemoveUntrackedFiles();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
-                    }
-                }
-
                 Options = null;
             }
         }
 
         private static void UpdateToolsetPackage(
+            CoreXT coreXT,
             InsertionArtifacts artifacts,
-            BuildVersion buildVersion,
-            CancellationToken cancellationToken)
+            BuildVersion buildVersion)
         {
             Console.WriteLine("Updating toolset compiler package");
 
@@ -380,20 +360,20 @@ namespace Roslyn.Insertion
             var fileName = Path.GetFileName(toolsetPackagePath);
             var package = PackageInfo.ParsePackageFileName(fileName);
 
-            var coreXT = CoreXT.Load(GetAbsolutePathForEnlistment());
             if (!coreXT.TryGetPackageVersion(package, out var previousPackageVersion))
             {
                 throw new Exception("Toolset package is not installed in this enlistment");
             }
 
             UpdatePackage(previousPackageVersion, buildVersion, coreXT, package);
-
-            // Update .corext/Configs/default.config
-            cancellationToken.ThrowIfCancellationRequested();
-            Console.WriteLine("Updating CoreXT config file");
-            coreXT.SaveConfig();
         }
 
+        public static string ToFullString(this XDocument document)
+        {
+            return document.Declaration.ToString() + Environment.NewLine + document.ToString();
+        }
+
+        // TODO: either delete or actually use this
         private static string GetHTMLSuccessMessage(GitPullRequest pullRequest, List<string> newPackageFiles)
         {
             const string greenSpan = "<span style =\"color: green\">";
