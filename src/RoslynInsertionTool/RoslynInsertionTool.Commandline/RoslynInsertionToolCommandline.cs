@@ -28,7 +28,7 @@ partial class RoslynInsertionToolCommandline
             .WithVSTSUrl(settings.VSTSUrl)
             .WithBuildQueueName(settings.BuildQueueName)
             .WithBuildConfig(settings.BuildConfig)
-            .WithEnlistmentPath(settings.EnlistmentPath)
+            .WithEnlistmentPath(settings.EnlistmentPath) // TODO delete
             .WithTFSProjectName(settings.TFSProjectName)
             .WithBuildDropPath(settings.BuildDropPath)
             .WithNewBranchName(settings.NewBranchName)

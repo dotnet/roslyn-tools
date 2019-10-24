@@ -15,7 +15,7 @@ namespace Roslyn.Insertion
         private static GitChange[] UpdateAssemblyVersions(InsertionArtifacts artifacts)
         {
             var gitClient = ProjectCollection.GetClient<GitHttpClient>();
-            var versionsUpdater = new VersionsUpdater(gitClient, Options, GetAbsolutePathForEnlistment(), WarningMessages);
+            var versionsUpdater = new VersionsUpdater(gitClient, Options, WarningMessages);
 
             var pathToDependentAssemblyVersionsFile = artifacts.GetDependentAssemblyVersionsFile();
             if (File.Exists(pathToDependentAssemblyVersionsFile))

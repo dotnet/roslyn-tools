@@ -12,40 +12,28 @@ namespace Roslyn.Insertion
 {
     internal sealed class VersionsUpdater
     {
-        public string EnlistmentRoot { get; }
         public List<string> WarningMessages { get; }
 
         private const string ConfigPath = "src/VSSDK/VSIntegration/IsoShell/Templates/VSShellTemplate/VSShellIso/VSShellStubExe/Stub.exe.config";
         private readonly XDocument _configXml;
-        private readonly string _configFullPath;
 
         private const string VersionsPath = "src/ProductData/versions.xml";
         private readonly XDocument _versionsXml;
 
         private const string VersionsTemplatePath = "src/ProductData/AssemblyVersions.tt";
         private string _versionsTemplateContent;
-        private readonly GitHttpClient _gitClient;
-        private readonly RoslynInsertionToolOptions _options;
 
-        public VersionsUpdater(GitHttpClient gitClient, RoslynInsertionToolOptions options, string enlistmentRoot, List<string> warningMessages)
+        public VersionsUpdater(GitHttpClient gitClient, RoslynInsertionToolOptions options, List<string> warningMessages)
         {
-            _gitClient = gitClient;
-            _options = options;
-
-            // TODO: remove enlistmentRoot and everything depending on it
-            EnlistmentRoot = enlistmentRoot;
             WarningMessages = warningMessages;
-
-            // this is a template which can't currently be templated:
-            _configFullPath = Path.Combine(enlistmentRoot, ConfigPath);
 
             var vsRepoId = RoslynInsertionTool.VSRepoId;
             var vsBranch = options.VisualStudioBranchName;
             var version = new GitVersionDescriptor { Version = vsBranch, VersionType = GitVersionType.Branch };
 
+            // TODO: consider refactoring into a CreateAsync or similar method to avoid .Result
             var configXmlContent = gitClient.GetItemContentAsync(vsRepoId, ConfigPath, download: true, versionDescriptor: version).Result;
             _configXml = XDocument.Load(configXmlContent);
-
 
             var versionsXmlContent = gitClient.GetItemContentAsync(vsRepoId, VersionsPath, download: true, versionDescriptor: version).Result;
             _versionsXml = XDocument.Load(versionsXmlContent);
@@ -104,8 +92,6 @@ namespace Roslyn.Insertion
         {
             const string ns = "urn:schemas-microsoft-com:asm.v1";
 
-            var fullPath = _configFullPath;
-
             var dependentAssemblies = _configXml?.Root?.
                 Element("runtime")?.
                 Element(XName.Get("assemblyBinding", ns))?.
@@ -113,7 +99,7 @@ namespace Roslyn.Insertion
 
             if (dependentAssemblies == null)
             {
-                throw new InvalidDataException($"File '{fullPath}' doesn't have expected format.");
+                throw new InvalidDataException($"File '{ConfigPath}' doesn't have expected format.");
             }
 
             var dependentAssembly = dependentAssemblies.FirstOrDefault(n => n.Element(XName.Get("assemblyIdentity", ns)).Attribute("name").Value == assemblyName);
@@ -130,13 +116,13 @@ namespace Roslyn.Insertion
             if (!TryParseVersionRange(oldVersionAttribute?.Value, out var oldVersionInAttributeLow, out var oldVersionInAttributeHigh) ||
                 oldVersionInAttributeLow != new Version(0, 0, 0, 0))
             {
-                throw new InvalidDataException($"The value of attribute oldVersion '{oldVersionAttribute?.Value}' doesn't have the expected format: '0.0.0.0-#.#.#.#' ('{fullPath}', binding redirect for '{assemblyName}')");
+                throw new InvalidDataException($"The value of attribute oldVersion '{oldVersionAttribute?.Value}' doesn't have the expected format: '0.0.0.0-#.#.#.#' ('{ConfigPath}', binding redirect for '{assemblyName}')");
             }
 
-            var newVersionInAttribute = ParseAndValidatePreviousVersion(newVersion, newVersionAttribute?.Value, fullPath, "@newVersion", assemblyName);
+            var newVersionInAttribute = ParseAndValidatePreviousVersion(newVersion, newVersionAttribute?.Value, ConfigPath, "@newVersion", assemblyName);
             if (oldVersionInAttributeHigh != newVersionInAttribute)
             {
-                throw new InvalidDataException($"The value of @newVersion should be equal to the end of the @oldVersion range ('{fullPath}', binding redirect for '{assemblyName}')");
+                throw new InvalidDataException($"The value of @newVersion should be equal to the end of the @oldVersion range ('{ConfigPath}', binding redirect for '{assemblyName}')");
             }
 
             var newVersionStr = newVersion.ToFullVersion().ToString();

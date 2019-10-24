@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using LibGit2Sharp;
 
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.Client.CommandLine;
@@ -112,8 +111,6 @@ namespace Roslyn.Insertion
                 var insertionArtifacts = await GetInsertionArtifactsAsync(buildToInsert, cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
-
-                var enlistmentRoot = GetAbsolutePathForEnlistment();
 
                 var allChanges = new List<GitChange>();
 
@@ -327,12 +324,6 @@ namespace Roslyn.Insertion
                 }
 
                 return (true, pullRequestId);
-            }
-            catch (RepositoryNotFoundException ex)
-            {
-                Console.Error.WriteLine(ex.Message);
-                Console.Error.WriteLine(@"Please ensure a VS enlistment exists at the given path, or pass the `/enlistmentpath=C:\path\to\VS` argument on the command line.");
-                return (false, 0);
             }
             catch (Exception ex)
             {
