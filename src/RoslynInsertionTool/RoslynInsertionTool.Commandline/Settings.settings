@@ -23,9 +23,6 @@
     <Setting Name="BuildConfig" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Release</Value>
     </Setting>
-    <Setting Name="EnlistmentPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\VS</Value>
-    </Setting>
     <Setting Name="InsertCoreXTPackages" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">True</Value>
     </Setting>

@@ -32,7 +32,6 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions() { }
 
         private RoslynInsertionToolOptions(
-            string enlistmentPath,
             string username,
             string password,
             string visualStudioBranchName,
@@ -65,7 +64,6 @@ namespace Roslyn.Insertion
             string titlePrefix,
             params string[] partitionsToBuild)
         {
-            EnlistmentPath = enlistmentPath;
             Username = username;
             Password = password;
             VisualStudioBranchName = visualStudioBranchName;
@@ -100,7 +98,6 @@ namespace Roslyn.Insertion
         }
 
         public RoslynInsertionToolOptions Update(
-            Optional<string> enlistmentPath = default,
             Optional<string> username = default,
             Optional<string> password = default,
             Optional<string> visualStudioBranchName = default,
@@ -134,7 +131,6 @@ namespace Roslyn.Insertion
             Optional<string[]> partitionsToBuild = default)
         {
             return new RoslynInsertionToolOptions(
-                enlistmentPath: enlistmentPath.ValueOrFallback(EnlistmentPath),
                 username: username.ValueOrFallback(Username),
                 password: password.ValueOrFallback(Password),
                 visualStudioBranchName: visualStudioBranchName.ValueOrFallback(VisualStudioBranchName),
@@ -175,8 +171,6 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions WithValidationBuildQueueName(string validationBuildQueueName) => Update(validationBuildQueueName: validationBuildQueueName);
 
         public RoslynInsertionToolOptions WithQueueValidationBuild(bool queueValidationBuild) => Update(queueValidationBuild: queueValidationBuild);
-
-        public RoslynInsertionToolOptions WithEnlistmentPath(string enlistmentPath) => Update(enlistmentPath: enlistmentPath);
 
         public RoslynInsertionToolOptions WithInsertToolset(bool insertToolset) => Update(insertToolset: insertToolset);
 
@@ -231,8 +225,6 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions WithClientSecret(string clientSecret) => Update(clientSecret: clientSecret);
 
         public RoslynInsertionToolOptions WithTitlePrefix(string titlePrefix) => Update(titlePrefix: titlePrefix);
-
-        public string EnlistmentPath { get; }
 
         public string Username { get; }
 
@@ -323,7 +315,6 @@ namespace Roslyn.Insertion
                 {
                     return
                         !OverwritePr &&
-                        !string.IsNullOrEmpty(EnlistmentPath) &&
                         !string.IsNullOrEmpty(Username) &&
                         !string.IsNullOrEmpty(Password) &&
                         !string.IsNullOrEmpty(VisualStudioBranchName) &&
@@ -395,11 +386,6 @@ namespace Roslyn.Insertion
                     if(OverwritePr)
                     {
                         builder.AppendLine($"{nameof(OverwritePr).ToLowerInvariant()} can only be used with {nameof(UpdateExistingPr).ToLowerInvariant()}.");
-                    }
-
-                    if (string.IsNullOrEmpty(EnlistmentPath))
-                    {
-                        builder.AppendLine($"{nameof(EnlistmentPath).ToLowerInvariant()} is required");
                     }
 
                     if (string.IsNullOrEmpty(Username))

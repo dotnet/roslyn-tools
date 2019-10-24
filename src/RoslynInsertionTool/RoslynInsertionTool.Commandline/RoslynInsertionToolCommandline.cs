@@ -28,7 +28,6 @@ partial class RoslynInsertionToolCommandline
             .WithVSTSUrl(settings.VSTSUrl)
             .WithBuildQueueName(settings.BuildQueueName)
             .WithBuildConfig(settings.BuildConfig)
-            .WithEnlistmentPath(settings.EnlistmentPath) // TODO delete
             .WithTFSProjectName(settings.TFSProjectName)
             .WithBuildDropPath(settings.BuildDropPath)
             .WithNewBranchName(settings.NewBranchName)
@@ -60,11 +59,6 @@ partial class RoslynInsertionToolCommandline
                 "t|toolsetupdate",
                 "Updates the Roslyn toolset used in the VS branch.",
                 t => options = options.WithInsertToolset(true)
-            },
-            {
-                "ep=|enlistmentpath=",
-                "This is the absolute path to the Visual Studio enlistment on the machine that is running rit.exe.",
-                enlistmentPath => options = options.WithEnlistmentPath(enlistmentPath)
             },
             {
                 "u=|username=",
