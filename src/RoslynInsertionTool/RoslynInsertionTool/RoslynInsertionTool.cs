@@ -273,12 +273,12 @@ namespace Roslyn.Insertion
                                 var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
                                 var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild ?? buildToInsert, buildToInsert, cancellationToken);
                                 prDescription = AppendDiffToDescription(prDescription, diffLink);
-                                prDescription = AppendChangesToDescription(prDescription, changes);
+                                prDescription = AppendChangesToDescription(prDescription, oldBuild ?? buildToInsert, changes);
                             }
-                            catch
+                            catch (Exception e)
                             {
-                                // TODO: Get diff links and commit histories working https://github.com/dotnet/roslyn-tools/issues/502
-                                Console.WriteLine("Could not create diff links.");
+                                Console.WriteLine("##vso[task.logissue type=warning] Failed to create diff links.");
+                                Console.WriteLine($"##vso[task.logissue type=warning] {e.Message}");
                             }
 
                             branch = PushChanges(branch, buildVersion, cancellationToken);
