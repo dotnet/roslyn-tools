@@ -519,7 +519,7 @@ namespace Roslyn.Insertion
                             Author = d.commit.author.name,
                             CommitDate = DateTime.Parse(d.commit.author.date),
                             Message = d.commit.message,
-                            CommitId = d.commit.sha,
+                            CommitId = d.sha,
                             RemoteUrl = d.html_url
                         })
                     // show HEAD first, base last
