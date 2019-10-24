@@ -535,7 +535,6 @@ namespace Roslyn.Insertion
         private static readonly Regex IsMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
         private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)$");
 
-#nullable enable
         internal static string AppendChangesToDescription(string prDescription, Build oldBuild, List<GitCommit> changes)
         {
             if (!changes.Any())
@@ -585,7 +584,6 @@ namespace Roslyn.Insertion
 
             return description.ToString();
         }
-#nullable restore
 
         internal static string AppendDiffToDescription(string prDescription, string diffLink)
         {
