@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -470,46 +471,72 @@ namespace Roslyn.Insertion
             return logText;
         }
 
-        internal static async Task<(IEnumerable<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
+        internal static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
         {
-            var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
-            var changes = await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
-                                                                 buildId: tobuild.Id,
-                                                                 cancellationToken: cancellationToken);
-            Change firstChange, lastChange;
-            if (fromBuild.Id != tobuild.Id)
-            {
-                firstChange = (await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
-                                                                      buildId: fromBuild.Id,
-                                                                      cancellationToken: cancellationToken)).Last();
 
-                lastChange = (await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
-                                                                     buildId: tobuild.Id,
-                                                                     cancellationToken: cancellationToken)).First();
+            if (tobuild.Repository.Type == "GitHub")
+            {
+                var repoId = tobuild.Repository.Id; // e.g. dotnet/roslyn
+
+                var fromSHA = fromBuild.SourceVersion.Substring(0, 7);
+                var toSHA = tobuild.SourceVersion.Substring(0, 7);
+
+                var restEndpoint = $"https://api.github.com/repos/{repoId}/compare/{fromSHA}...{toSHA}";
+                var client = new HttpClient();
+                var request = new HttpRequestMessage(HttpMethod.Get, restEndpoint);
+                request.Headers.Add("User-Agent", "RoslynInsertionTool");
+
+                var response = await client.SendAsync(request);
+                var content = await response.Content.ReadAsStringAsync();
+
+                // https://developer.github.com/v3/repos/commits/
+                var data = JsonConvert.DeserializeAnonymousType(content, new
+                {
+                    commits = new[]
+                    {
+                        new
+                        {
+                            sha = "",
+                            commit = new
+                            {
+                                author = new
+                                {
+                                    name = "",
+                                    email = "",
+                                    date = ""
+                                },
+                                message = ""
+                            },
+                            html_url = ""
+                        }
+                    }
+                });
+
+                var result = data.commits
+                    .Select(d =>
+                        new GitCommit()
+                        {
+                            Author = d.commit.author.name,
+                            CommitDate = DateTime.Parse(d.commit.author.date),
+                            Message = d.commit.message,
+                            CommitId = d.commit.sha,
+                            RemoteUrl = d.html_url
+                        })
+                    // show HEAD first, base last
+                    .Reverse()
+                    .ToList();
+
+                return (result, $"https://github.com/{repoId}/compare/{fromSHA}...{toSHA}?w=1");
             }
-            else
-            {
-                firstChange = changes.First();
-                lastChange = changes.Last();
-            }
 
-            var from = firstChange.Id.Substring(0, 8);
-            var to = lastChange.Id.Substring(0, 8);
-            var organization = firstChange.DisplayUri.AbsoluteUri.Split('/')[3];
-            var repo = firstChange.DisplayUri.AbsoluteUri.Split('/')[4];
-            var diffLink = $@"https://github.com/{organization}/{repo}/compare/{from}...{to}?w=1";
-
-            return (changes.Select(change => new GitCommit
-            {
-                Author = change.Author.DisplayName,
-                CommitDate = change.Timestamp.Value,
-                Message = change.Message,
-                CommitId = change.Id,
-                RemoteUrl = change.DisplayUri.AbsoluteUri,
-            }), diffLink);
+            throw new NotSupportedException("Only builds created from GitHub repos support enumerating commits.");
         }
 
-        internal static string AppendChangesToDescription(string prDescription, IEnumerable<GitCommit> changes)
+        private static readonly Regex IsMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
+        private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)$");
+
+#nullable enable
+        internal static string AppendChangesToDescription(string prDescription, Build oldBuild, List<GitCommit> changes)
         {
             if (!changes.Any())
             {
@@ -517,17 +544,48 @@ namespace Roslyn.Insertion
             }
 
             var description = new StringBuilder(prDescription + Environment.NewLine);
-            var separator = Environment.NewLine.ToCharArray();
-            description.AppendLine($@"---
-Changes associated with this build (most recent commits):
-| Commit | Message | Author | Date |
-| ------ | ------- | ------ | ---- |
-{string.Join("\n", changes.Select(x => $"| [{x.CommitId.Substring(0, 8)}]({x.RemoteUrl}) | {x.Message.Split(separator).First()} | {x.Author} | {x.CommitDate} |"))}"
-            );
 
-            //max size for description
-            return description.Length >= 3500 ? prDescription : description.ToString();
+            var firstCommit = changes[0];
+            var repoURL = $"http://github.com/{oldBuild.Repository.Id}";
+            description.AppendLine($@"Changes since [{oldBuild.SourceVersion.Substring(0, 7)}]({firstCommit.RemoteUrl})");
+
+            foreach (var commit in changes)
+            {
+                // Exclude auto-merges
+                if (commit.Author == "dotnet-automerge-bot")
+                {
+                    continue;
+                }
+
+                var match = IsMergePRCommit.Match(commit.Message);
+
+                if (!match.Success)
+                {
+                    match = IsSquashedPRCommit.Match(commit.Message);
+                }
+
+                if (!match.Success)
+                {
+                    continue;
+                }
+
+                var prNumber = match.Groups[1].Value;
+
+                var firstLine = commit.Message.Split('\n')[0];
+                var prLink = $@"- [{firstLine}]({repoURL}/pull/{prNumber})";
+
+                description.AppendLine(prLink);
+
+                if (description.Length > 3500)
+                {
+                    description.AppendLine("Changelog truncated due to description length limit.");
+                    break;
+                }
+            }
+
+            return description.ToString();
         }
+#nullable restore
 
         internal static string AppendDiffToDescription(string prDescription, string diffLink)
         {
