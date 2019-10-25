@@ -112,9 +112,16 @@ namespace Roslyn.Insertion
 
                 cancellationToken.ThrowIfCancellationRequested();
 
+                var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+                var branches = await gitClient.GetRefsAsync(
+                    VSRepoId,
+                    filter: $"heads/{Options.VisualStudioBranchName}",
+                    cancellationToken: cancellationToken);
+                var baseBranch = branches.Single(b => b.Name == $"refs/heads/{Options.VisualStudioBranchName}");
+
                 var allChanges = new List<GitChange>();
 
-                var coreXT = CoreXT.Load(ProjectCollection.GetClient<GitHttpClient>(), Options);
+                var coreXT = CoreXT.Load(gitClient, baseBranch.ObjectId);
                 if (Options.InsertCoreXTPackages)
                 {
                     // ************** Update Nuget Packages For Branch************************
@@ -152,7 +159,7 @@ namespace Roslyn.Insertion
                     // ************** Update assembly versions ************************
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating assembly versions");
-                    var assemblyVersionChanges = UpdateAssemblyVersions(insertionArtifacts);
+                    var assemblyVersionChanges = UpdateAssemblyVersions(gitClient, baseBranch.ObjectId, insertionArtifacts);
                     allChanges.AddRange(assemblyVersionChanges);
 
                     // if we got this far then we definitely need to retain this build
@@ -212,13 +219,6 @@ namespace Roslyn.Insertion
                 }
 
                 // ********************* Create push *************************************
-                var gitClient = ProjectCollection.GetClient<GitHttpClient>();
-                var branches = await gitClient.GetRefsAsync(
-                    VSRepoId,
-                    filter: $"heads/{Options.VisualStudioBranchName}",
-                    cancellationToken: cancellationToken);
-                var baseBranch = branches.Single(b => b.Name == $"refs/heads/{Options.VisualStudioBranchName}");
-
                 var newBranchName = string.IsNullOrEmpty(Options.NewBranchName) ? Options.NewBranchName : GetNewBranchName();
                 var newBranch = new GitRefUpdate
                 {

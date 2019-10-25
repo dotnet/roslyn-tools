@@ -313,14 +313,10 @@ namespace Roslyn.Insertion
 
             using (Stream s = await buildClient.GetArtifactContentZipAsync(Options.TFSProjectName, build.Id, artifact.Name, cancellationToken))
             {
-                using (var fs = File.OpenWrite(archiveDownloadPath))
+                using (ZipArchive archive = new ZipArchive(s))
                 {
-                    // Using the default buffer size.
-                    await s.CopyToAsync(fs, 81920, cancellationToken);
+                    archive.ExtractToDirectory(tempDirectory);
                 }
-
-                ZipFile.ExtractToDirectory(archiveDownloadPath, tempDirectory);
-                File.Delete(archiveDownloadPath);
             }
 
             Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds/1000} seconds");

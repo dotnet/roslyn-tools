@@ -61,8 +61,7 @@ namespace Roslyn.Insertion
             string logFileLocation,
             string clientId,
             string clientSecret,
-            string titlePrefix,
-            params string[] partitionsToBuild)
+            string titlePrefix)
         {
             Username = username;
             Password = password;

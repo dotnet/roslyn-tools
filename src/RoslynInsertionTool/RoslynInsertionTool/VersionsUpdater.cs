@@ -23,13 +23,12 @@ namespace Roslyn.Insertion
         private const string VersionsTemplatePath = "src/ProductData/AssemblyVersions.tt";
         private string _versionsTemplateContent;
 
-        public VersionsUpdater(GitHttpClient gitClient, RoslynInsertionToolOptions options, List<string> warningMessages)
+        public VersionsUpdater(GitHttpClient gitClient, string commitId, List<string> warningMessages)
         {
             WarningMessages = warningMessages;
 
             var vsRepoId = RoslynInsertionTool.VSRepoId;
-            var vsBranch = options.VisualStudioBranchName;
-            var version = new GitVersionDescriptor { Version = vsBranch, VersionType = GitVersionType.Branch };
+            var version = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
 
             // TODO: consider refactoring into a CreateAsync or similar method to avoid .Result
             var configXmlContent = gitClient.GetItemContentAsync(vsRepoId, ConfigPath, download: true, versionDescriptor: version).Result;

@@ -27,10 +27,10 @@ namespace Roslyn.Insertion
             ConfigDocument = config;
         }
 
-        public static CoreXT Load(GitHttpClient gitClient, RoslynInsertionToolOptions options)
+        public static CoreXT Load(GitHttpClient gitClient, string commitId)
         {
             var vsRepoId = RoslynInsertionTool.VSRepoId;
-            var vsBranch = new GitVersionDescriptor { VersionType = GitVersionType.Branch, Version = options.VisualStudioBranchName };
+            var vsBranch = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
 
             var defaultConfigStream = gitClient.GetItemContentAsync(
                 vsRepoId,
@@ -44,7 +44,7 @@ namespace Roslyn.Insertion
             ComponentFileToDocumentMap = new Dictionary<string, JObject>(StringComparer.OrdinalIgnoreCase);
             dirtyFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            PopulateComponentJsonMaps();
+            PopulateComponentJsonMaps(gitClient, commitId);
 
             return new CoreXT(defaultConfigDocument);
         }
@@ -197,9 +197,11 @@ namespace Roslyn.Insertion
             }
         }
 
-        private static void PopulateComponentJsonMaps()
+        private static void PopulateComponentJsonMaps(
+            GitHttpClient gitClient,
+            string commitId)
         {
-            var mainComponentsJsonDocument = GetJsonDocumentForComponentsFile(ComponentsJsonPath);
+            var mainComponentsJsonDocument = GetJsonDocumentForComponentsFile(gitClient, commitId, ComponentsJsonPath);
             if (mainComponentsJsonDocument != null)
             {
                 ComponentFileToDocumentMap[ComponentsJsonPath] = mainComponentsJsonDocument;
@@ -215,8 +217,8 @@ namespace Roslyn.Insertion
 
                         if (!string.IsNullOrEmpty(subComponentFileName))
                         {
-                            var componentsJSONPath = Path.Combine(".corext", "Configs", subComponentFileName);
-                            var jDoc = GetJsonDocumentForComponentsFile(componentsJSONPath);
+                            var componentsJSONPath = ".corext/Configs/" + subComponentFileName;
+                            var jDoc = GetJsonDocumentForComponentsFile(gitClient, commitId, componentsJSONPath);
 
                             if (jDoc != null && !ComponentFileToDocumentMap.ContainsKey(componentsJSONPath))
                             {
@@ -254,25 +256,25 @@ namespace Roslyn.Insertion
         }
 
         private static JObject GetJsonDocumentForComponentsFile(
+            GitHttpClient gitClient,
+            string commitId,
             string componentsJSONPath)
         {
             JObject jsonDocument = null;
 
-            if (File.Exists(componentsJSONPath))
+            var versionDescriptor = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
+            try
             {
-                try
+                using (var filestream = gitClient.GetItemContentAsync(RoslynInsertionTool.VSRepoId, path: componentsJSONPath, versionDescriptor: versionDescriptor).Result)
+                using (var streamReader = new StreamReader(filestream))
+                using (var reader = new JsonTextReader(streamReader))
                 {
-                    using (var filestream = new FileStream(componentsJSONPath, FileMode.Open, FileAccess.ReadWrite))
-                    using (var streamReader = new StreamReader(filestream))
-                    using (var reader = new JsonTextReader(streamReader))
-                    {
-                        jsonDocument = (JObject)JToken.ReadFrom(reader);
-                    }
+                    jsonDocument = (JObject)JToken.ReadFrom(reader);
                 }
-                catch (Exception e)
-                {
-                    throw new IOException($"Unable to load file from '{componentsJSONPath}'", e);
-                }
+            }
+            catch (Exception e)
+            {
+                throw new IOException($"Unable to load file from '{componentsJSONPath}'", e);
             }
 
             return jsonDocument;
