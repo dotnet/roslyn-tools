@@ -10,4 +10,4 @@ param([string] $clientId,
 EnsureRequiredValue -friendlyName "ComponentName" -value $componentName
 EnsureRequiredValue -friendlyName "VisualStudioBranchName" -value $visualStudioBranchName
 
-& .\RIT.exe "/in=$componentName" "/vsbn=$visualStudioBranchName" /createdummypr "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest"
+& $PSScriptRoot\RIT.exe "/in=$componentName" "/vsbn=$visualStudioBranchName" /createdummypr "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest"

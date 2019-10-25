@@ -40,4 +40,4 @@ if($overwritePR)
   $overwritePrflag = "/overwritepr"
 }
 
-& .\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/wpr=$writePullRequest" $specificBuildFlag $toolsetFlag $dropPathFlag
+& $PSScriptRoot\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/wpr=$writePullRequest" $specificBuildFlag $toolsetFlag $dropPathFlag

@@ -27,7 +27,7 @@ function Do-Insertion(
         $dropPathFlag = "/dp=$dropPath"
     }
 
-    & .\RIT.exe "/in=$component" "/bn=$fromBranch" "/vsbn=$toBranch" "/bq=$queueName" /ic=$insertCore /uc=$updatecorextlibraries /ua=$updateassemblyversions /id=$insertDevdiv /qv=$queueValidation "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" $toolsetFlag $dropPathFlag
+    & $PSScriptRoot\RIT.exe "/in=$component" "/bn=$fromBranch" "/vsbn=$toBranch" "/bq=$queueName" /ic=$insertCore /uc=$updatecorextlibraries /ua=$updateassemblyversions /id=$insertDevdiv /qv=$queueValidation "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" $toolsetFlag $dropPathFlag
 }
 
 ###
