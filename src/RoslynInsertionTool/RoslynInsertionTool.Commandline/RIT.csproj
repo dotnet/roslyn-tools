@@ -18,15 +18,12 @@
     <IsPackable>true</IsPackable>
     <NuspecFile>RIT.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
 
     <PackageId>RoslynTools.VisualStudioInsertionTool</PackageId>
     <PackageDescription>Tool for inserting Roslyn binaries into the Visual Studio repo.</PackageDescription>
     <PackageTags>Roslyn Build Tool</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
-
-    <!-- "The script file '{0}' is not recognized by NuGet..." -->
-    <!-- We don't care as the script shouldn't run on install of RIT but should be included as a runnable utility. -->
-    <NoWarn>NU5111</NoWarn> 
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
