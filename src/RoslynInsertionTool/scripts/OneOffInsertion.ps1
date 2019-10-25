@@ -18,7 +18,7 @@ param([string] $clientId,
       [string] $writePullRequest,
       [int] $insertionCount)
 
-. .\HelperFunctions.ps1
+. $PSScriptRoot\HelperFunctions.ps1
 
 EnsureRequiredValue -friendlyName "ComponentName" -value $componentName
 EnsureRequiredValue -friendlyName "ComponentBranchName" -value $componentBranchName
