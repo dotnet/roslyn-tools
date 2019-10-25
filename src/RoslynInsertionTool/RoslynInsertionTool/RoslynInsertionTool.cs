@@ -211,12 +211,6 @@ namespace Roslyn.Insertion
                     await buildClient.UpdateBuildAsync(buildToInsert, buildToInsert.Id);
                 }
 
-                // ********************* Verify Build Completes **************************
-                if (Options.PartitionsToBuild != null)
-                {
-                    // TODO: remove PartitionsToBuild command line option
-                }
-
                 // ********************* Create push *************************************
                 var gitClient = ProjectCollection.GetClient<GitHttpClient>();
                 var branches = await gitClient.GetRefsAsync(
@@ -243,7 +237,6 @@ namespace Roslyn.Insertion
                     Commits = new[] { commit }
                 };
 
-                // TODO: do we need to specify --force? how can we do that?
                 push = await gitClient.CreatePushAsync(push, VSRepoId, cancellationToken: cancellationToken);
 
                 // ********************* Create pull request *****************************
@@ -251,18 +244,20 @@ namespace Roslyn.Insertion
                 var useExistingPr = pullRequestId != 0;
 
                 var prDescription = $"Updating {Options.InsertionName} to {buildVersion} ([{commitSHA}]({lastCommitUrl}))";
-                try
+                if (!useExistingPr || Options.OverwritePr)
                 {
-                    // TODO: maybe skip if useExistingPR && !Options.OverwritePR
-                    var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
-                    var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild ?? buildToInsert, buildToInsert, cancellationToken);
-                    prDescription = AppendDiffToDescription(prDescription, diffLink);
-                    prDescription = AppendChangesToDescription(prDescription, oldBuild ?? buildToInsert, changes);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("##vso[task.logissue type=warning] Failed to create diff links.");
-                    Console.WriteLine($"##vso[task.logissue type=warning] {e.Message}");
+                    try
+                    {
+                        var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
+                        var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild ?? buildToInsert, buildToInsert, cancellationToken);
+                        prDescription = AppendDiffToDescription(prDescription, diffLink);
+                        prDescription = AppendChangesToDescription(prDescription, oldBuild ?? buildToInsert, changes);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("##vso[task.logissue type=warning] Failed to create diff links.");
+                        Console.WriteLine($"##vso[task.logissue type=warning] {e.Message}");
+                    }
                 }
 
                 GitPullRequest pullRequest;
@@ -362,47 +357,6 @@ namespace Roslyn.Insertion
         public static string ToFullString(this XDocument document)
         {
             return document.Declaration.ToString() + Environment.NewLine + document.ToString();
-        }
-
-        // TODO: either delete or actually use this
-        private static string GetHTMLSuccessMessage(GitPullRequest pullRequest, List<string> newPackageFiles)
-        {
-            const string greenSpan = "<span style =\"color: green\">";
-            const string redSpan = "<span style =\"color: red\">";
-            const string orangeSpan = "<span style =\"color: OrangeRed\">";
-            const string endSpan = "</span>";
-
-            var bodyHtml = new StringBuilder();
-            bodyHtml.AppendLine();
-            bodyHtml.AppendLine($"{greenSpan} Insertion Succeeded {endSpan}");
-            bodyHtml.AppendLine();
-            bodyHtml.AppendLine($"Review pull request <a href=\"{Options.VSTSUri}/{Options.TFSProjectName}/_git/VS/pullrequest/{pullRequest.PullRequestId}\">here</a>");
-            bodyHtml.AppendLine();
-
-            if (newPackageFiles.Count > 0)
-            {
-                foreach (var packageFileName in newPackageFiles)
-                {
-                    bodyHtml.AppendLine($"{redSpan} New package(s) inserted {packageFileName}{endSpan}");
-                }
-
-                bodyHtml.AppendLine($@"Make sure the following files as well as all appid\**\*.config.tt files are updated appropriately:");
-                foreach (var path in VersionsUpdater.RelativeFilePaths)
-                {
-                    bodyHtml.AppendLine(path);
-                }
-            }
-
-            if (WarningMessages.Count > 0)
-            {
-                bodyHtml.AppendLine("NOTE there were unexpected warnings during this insertion:");
-                foreach (var message in WarningMessages)
-                {
-                    bodyHtml.AppendLine($"{orangeSpan}{message}{endSpan}");
-                }
-            }
-
-            return bodyHtml.ToString().Replace("\n", "<br/>");
         }
     }
 }

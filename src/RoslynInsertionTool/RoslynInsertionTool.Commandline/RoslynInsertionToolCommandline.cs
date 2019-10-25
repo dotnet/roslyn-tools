@@ -188,26 +188,6 @@ partial class RoslynInsertionToolCommandline
                 logFileLocation => options = options.WithLogFileLocation(logFileLocation)
             },
             {
-                "parts=|partitions=",
-                "A set of folders relative to **enlistmentpath** that should successfully build after we have inserted. List should be separated by `;`.",
-                partitionsToBuild =>
-                {
-                    var list = options.PartitionsToBuild?.ToList() ?? new List<string>();
-                    list.AddRange(partitionsToBuild.Split(';'));
-                    options = options.WithPartitionsToBuild(list.ToArray());
-                }
-            },
-            {
-                "part=|partition=",
-                "*Can be specified more than once.* A folder relative to **enlistmentpath** that should successfully build after we have inserted.",
-                partitionToBuild =>
-                {
-                    var list = options.PartitionsToBuild?.ToList() ?? new List<string>();
-                    list.Add(partitionToBuild);
-                    options = options.WithPartitionsToBuild(list.ToArray());
-                }
-            },
-            {
                 "ci=|clientid=",
                 "The client ID to use for authentication token retreival.",
                 clientId => options = options.WithClientId(clientId)

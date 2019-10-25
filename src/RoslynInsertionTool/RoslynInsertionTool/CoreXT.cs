@@ -44,7 +44,7 @@ namespace Roslyn.Insertion
             ComponentFileToDocumentMap = new Dictionary<string, JObject>(StringComparer.OrdinalIgnoreCase);
             dirtyFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            PopulateComponentJsonMaps(gitClient, options);
+            PopulateComponentJsonMaps();
 
             return new CoreXT(defaultConfigDocument);
         }
@@ -126,7 +126,6 @@ namespace Roslyn.Insertion
         public void UpdatePackageVersion(PackageInfo packageInfo)
         {
             var versionAttribute = GetVersionAttribute(packageInfo);
-            var currentVersion = GetPackageVersion(versionAttribute); // TODO: remove dead local
             versionAttribute.SetValue(packageInfo.Version.ToString());
         }
 
@@ -198,9 +197,9 @@ namespace Roslyn.Insertion
             }
         }
 
-        private static void PopulateComponentJsonMaps(GitHttpClient gitClient, RoslynInsertionToolOptions options)
+        private static void PopulateComponentJsonMaps()
         {
-            var mainComponentsJsonDocument = GetJsonDocumentForComponentsFile(gitClient, options, ComponentsJsonPath);
+            var mainComponentsJsonDocument = GetJsonDocumentForComponentsFile(ComponentsJsonPath);
             if (mainComponentsJsonDocument != null)
             {
                 ComponentFileToDocumentMap[ComponentsJsonPath] = mainComponentsJsonDocument;
@@ -217,7 +216,7 @@ namespace Roslyn.Insertion
                         if (!string.IsNullOrEmpty(subComponentFileName))
                         {
                             var componentsJSONPath = Path.Combine(".corext", "Configs", subComponentFileName);
-                            var jDoc = GetJsonDocumentForComponentsFile(gitClient, options, componentsJSONPath);
+                            var jDoc = GetJsonDocumentForComponentsFile(componentsJSONPath);
 
                             if (jDoc != null && !ComponentFileToDocumentMap.ContainsKey(componentsJSONPath))
                             {
@@ -255,13 +254,10 @@ namespace Roslyn.Insertion
         }
 
         private static JObject GetJsonDocumentForComponentsFile(
-            GitHttpClient gitClient,
-            RoslynInsertionToolOptions options,
             string componentsJSONPath)
         {
             JObject jsonDocument = null;
 
-            // TODO: use gitClient
             if (File.Exists(componentsJSONPath))
             {
                 try

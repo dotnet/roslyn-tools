@@ -94,7 +94,6 @@ namespace Roslyn.Insertion
             ClientId = clientId;
             ClientSecret = clientSecret;
             TitlePrefix = titlePrefix;
-            PartitionsToBuild = partitionsToBuild;
         }
 
         public RoslynInsertionToolOptions Update(
@@ -127,8 +126,7 @@ namespace Roslyn.Insertion
             Optional<string> logFileLocation = default,
             Optional<string> clientId = default,
             Optional<string> clientSecret = default,
-            Optional<string> titlePrefix = default,
-            Optional<string[]> partitionsToBuild = default)
+            Optional<string> titlePrefix = default)
         {
             return new RoslynInsertionToolOptions(
                 username: username.ValueOrFallback(Username),
@@ -160,8 +158,7 @@ namespace Roslyn.Insertion
                 logFileLocation: logFileLocation.ValueOrFallback(LogFileLocation),
                 clientId: clientId.ValueOrFallback(ClientId),
                 clientSecret: clientSecret.ValueOrFallback(ClientSecret),
-                titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix),
-                partitionsToBuild: partitionsToBuild.ValueOrFallback(PartitionsToBuild));
+                titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix));
         }
 
         public RoslynInsertionToolOptions WithRunRPSInValidation(bool runRPSInValidation) => Update(runRPSInValidation: runRPSInValidation);
@@ -197,8 +194,6 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions WithBuildDropPath(string buildDropPath) => Update(buildDropPath: buildDropPath);
 
         public RoslynInsertionToolOptions WithSpecificBuild(string specificBuild) => Update(specificBuild: specificBuild);
-
-        public RoslynInsertionToolOptions WithPartitionsToBuild(params string[] partitionsToBuild) => Update(partitionsToBuild: partitionsToBuild);
 
         public RoslynInsertionToolOptions WithInsertCoreXTPackages(bool insertCoreXTPackages) => Update(insertCoreXTPackages: insertCoreXTPackages);
 
@@ -247,8 +242,6 @@ namespace Roslyn.Insertion
         public string BuildDropPath { get; }
 
         public string SpecificBuild { get; }
-
-        public string[] PartitionsToBuild { get; }
 
         public bool InsertCoreXTPackages { get; }
 
