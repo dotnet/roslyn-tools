@@ -1,5 +1,4 @@
-param([string] $enlistmentPath,
-      [string] $clientId,
+param([string] $clientId,
       [string] $clientSecret,
       [string] $requiredValueSentinel,
       [string] $defaultValueSentinel,

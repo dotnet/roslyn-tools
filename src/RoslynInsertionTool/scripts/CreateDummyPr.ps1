@@ -1,12 +1,11 @@
-param([string] $enlistmentPath,
-      [string] $clientId,
+param([string] $clientId,
       [string] $clientSecret,
       [string] $componentName,
       [string] $visualStudioBranchName,
       [string] $titlePrefix,
       [string] $writePullRequest)
 
-. .\HelperFunctions.ps1
+. $PSScriptRoot\HelperFunctions.ps1
 
 EnsureRequiredValue -friendlyName "ComponentName" -value $componentName
 EnsureRequiredValue -friendlyName "VisualStudioBranchName" -value $visualStudioBranchName
