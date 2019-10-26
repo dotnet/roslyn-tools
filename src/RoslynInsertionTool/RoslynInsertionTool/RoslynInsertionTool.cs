@@ -227,13 +227,18 @@ namespace Roslyn.Insertion
                 if (useExistingPr)
                 {
                     pullRequest = await gitClient.GetPullRequestByIdAsync(pullRequestId, cancellationToken: cancellationToken);
-                    insertionBranchName = pullRequest.SourceRefName;
+                    insertionBranchName = pullRequest.SourceRefName.Substring("refs/heads/".Length);
 
-                    var refs = await gitClient.GetRefsAsync(VSRepoId, filter: insertionBranchName.Substring("refs/".Length), cancellationToken: cancellationToken);
-                    var insertionBranch = refs.Single(r => r.Name == insertionBranchName);
+                    var refs = await gitClient.GetRefsAsync(VSRepoId, filter: $"heads/{insertionBranchName}", cancellationToken: cancellationToken);
+                    var insertionBranch = refs.Single(r => r.Name == $"refs/heads/{insertionBranchName}");
 
                     // update existing PR branch back to base before pushing new commit
-                    var updateToBase = new GitRefUpdate { OldObjectId = insertionBranch.ObjectId, NewObjectId = baseBranch.ObjectId, Name = insertionBranchName };
+                    var updateToBase = new GitRefUpdate
+                    {
+                        OldObjectId = insertionBranch.ObjectId,
+                        NewObjectId = baseBranch.ObjectId,
+                        Name = $"refs/heads/{insertionBranchName}"
+                    };
                     await gitClient.UpdateRefsAsync(new[] { updateToBase }, VSRepoId, cancellationToken: cancellationToken);
                 }
                 else
@@ -244,7 +249,7 @@ namespace Roslyn.Insertion
 
                 var insertionBranchUpdate = new GitRefUpdate
                 {
-                    Name = insertionBranchName,
+                    Name = $"refs/heads/{insertionBranchName}",
                     OldObjectId = baseBranch.ObjectId
                 };
 
@@ -286,7 +291,11 @@ namespace Roslyn.Insertion
                     {
                         if (Options.OverwritePr)
                         {
-                            pullRequest = await UpdatePullRequestDescriptionAsync(pullRequestId, prDescription, cancellationToken);
+                            pullRequest = await gitClient.UpdatePullRequestAsync(
+                                new GitPullRequest { Description = prDescription },
+                                VSRepoId,
+                                pullRequestId,
+                                cancellationToken: cancellationToken);
                         }
                         pullRequestId = pullRequest.PullRequestId;
                     }
