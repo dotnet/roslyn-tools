@@ -42,8 +42,8 @@ namespace Roslyn.Insertion
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Could not authenticate with {Options.VSTSUri}");
-                    Console.WriteLine(ex);
+                    LogError($"Could not authenticate with {Options.VSTSUri}");
+                    LogError(ex);
                     return (false, 0);
                 }
 
@@ -59,14 +59,14 @@ namespace Roslyn.Insertion
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Unable to create placeholder PR for '{options.VisualStudioBranchName}'");
-                        Console.WriteLine(ex);
+                        LogError($"Unable to create placeholder PR for '{options.VisualStudioBranchName}'");
+                        LogError(ex);
                         return (false, 0);
                     }
 
                     if (dummyPR == null)
                     {
-                        Console.WriteLine($"Unable to create placeholder PR for '{options.VisualStudioBranchName}'");
+                        LogError($"Unable to create placeholder PR for '{options.VisualStudioBranchName}'");
                         return (false, 0);
                     }
 
@@ -219,10 +219,32 @@ namespace Roslyn.Insertion
                 }
 
                 // ********************* Create push *************************************
-                var newBranchName = string.IsNullOrEmpty(Options.NewBranchName) ? Options.NewBranchName : GetNewBranchName();
-                var newBranch = new GitRefUpdate
+                var pullRequestId = Options.UpdateExistingPr;
+                var useExistingPr = pullRequestId != 0;
+
+                GitPullRequest pullRequest;
+                string insertionBranchName;
+                if (useExistingPr)
                 {
-                    Name = $"refs/heads/{newBranchName}",
+                    pullRequest = await gitClient.GetPullRequestByIdAsync(pullRequestId, cancellationToken: cancellationToken);
+                    insertionBranchName = pullRequest.SourceRefName;
+
+                    var refs = await gitClient.GetRefsAsync(VSRepoId, filter: insertionBranchName.Substring("refs/".Length), cancellationToken: cancellationToken);
+                    var insertionBranch = refs.Single(r => r.Name == insertionBranchName);
+
+                    // update existing PR branch back to base before pushing new commit
+                    var updateToBase = new GitRefUpdate { OldObjectId = insertionBranch.ObjectId, NewObjectId = baseBranch.ObjectId, Name = insertionBranchName };
+                    await gitClient.UpdateRefsAsync(new[] { updateToBase }, VSRepoId, cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    pullRequest = null;
+                    insertionBranchName = GetNewBranchName();
+                }
+
+                var insertionBranchUpdate = new GitRefUpdate
+                {
+                    Name = insertionBranchName,
                     OldObjectId = baseBranch.ObjectId
                 };
 
@@ -233,15 +255,13 @@ namespace Roslyn.Insertion
                 };
                 var push = new GitPush
                 {
-                    RefUpdates = new[] { newBranch },
+                    RefUpdates = new[] { insertionBranchUpdate },
                     Commits = new[] { commit }
                 };
 
-                push = await gitClient.CreatePushAsync(push, VSRepoId, cancellationToken: cancellationToken);
+                await gitClient.CreatePushAsync(push, VSRepoId, cancellationToken: cancellationToken);
 
                 // ********************* Create pull request *****************************
-                var pullRequestId = Options.UpdateExistingPr;
-                var useExistingPr = pullRequestId != 0;
 
                 var prDescription = $"Updating {Options.InsertionName} to {buildVersion} ([{commitSHA}]({lastCommitUrl}))";
                 if (!useExistingPr || Options.OverwritePr)
@@ -255,15 +275,13 @@ namespace Roslyn.Insertion
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine("##vso[task.logissue type=warning] Failed to create diff links.");
-                        Console.WriteLine($"##vso[task.logissue type=warning] {e.Message}");
+                        LogWarning("Failed to create diff links.");
+                        LogWarning(e.Message);
                     }
                 }
 
-                GitPullRequest pullRequest;
                 if (useExistingPr)
                 {
-                    pullRequest = await gitClient.GetPullRequestByIdAsync(pullRequestId, cancellationToken: cancellationToken);
                     try
                     {
                         if (Options.OverwritePr)
@@ -274,8 +292,8 @@ namespace Roslyn.Insertion
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Unable to update pull request for '{pullRequest.SourceRefName}'");
-                        Console.WriteLine(ex);
+                        LogError($"Unable to update pull request for '{pullRequest.SourceRefName}'");
+                        LogError(ex);
                         return (false, 0);
                     }
                 }
@@ -285,10 +303,10 @@ namespace Roslyn.Insertion
                     Console.WriteLine($"Create Pull Request");
                     try
                     {
-                        pullRequest = await CreatePullRequestAsync(newBranchName, prDescription, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
+                        pullRequest = await CreatePullRequestAsync(insertionBranchName, prDescription, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
                         if (pullRequest == null)
                         {
-                            Console.WriteLine($"Unable to create pull request for '{newBranchName}'");
+                            LogError($"Unable to create pull request for '{insertionBranchName}'");
                             return (false, 0);
                         }
 
@@ -296,8 +314,8 @@ namespace Roslyn.Insertion
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Unable to create pull request for '{newBranchName}'");
-                        Console.WriteLine(ex);
+                        LogError($"Unable to create pull request for '{insertionBranchName}'");
+                        LogError(ex);
                         return (false, 0);
                     }
                 }
@@ -313,8 +331,8 @@ namespace Roslyn.Insertion
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Unable to create a CloudBuild validation build for '{newBranchName}'");
-                        Console.WriteLine(ex);
+                        LogWarning($"Unable to create a CloudBuild validation build for '{insertionBranchName}'");
+                        LogWarning(ex);
                     }
                 }
 
@@ -322,13 +340,23 @@ namespace Roslyn.Insertion
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                LogError(ex);
                 return (false, 0);
             }
             finally
             {
                 Options = null;
             }
+        }
+
+        private static void LogWarning(object message)
+        {
+            Console.WriteLine("##vso[task.logissue type=warning] " + message);
+        }
+
+        private static void LogError(object message)
+        {
+            Console.WriteLine("##vso[task.logissue type=error] " + message);
         }
 
         private static void UpdateToolsetPackage(

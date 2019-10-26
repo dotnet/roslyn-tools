@@ -13,7 +13,7 @@ namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
-        private static string GetNewBranchName() => $"{Options.NewBranchName}{Options.VisualStudioBranchName.Split('/').Last()}.{DateTime.Now:yyyyMMddHHmmss}";
+        private static string GetNewBranchName() => $"refs/heads/{Options.NewBranchName}{Options.VisualStudioBranchName.Split('/').Last()}.{DateTime.Now:yyyyMMddHHmmss}";
 
         private static async Task<GitPullRequest> CreatePlaceholderBranchAsync(CancellationToken cancellationToken)
         {
@@ -34,7 +34,7 @@ namespace Roslyn.Insertion
                 RefUpdates = new[] {
                     new GitRefUpdate()
                     {
-                        Name = $"refs/heads/{branchName}",
+                        Name = branchName,
                         OldObjectId = sourceBranch.ObjectId,
                     }
                 },
