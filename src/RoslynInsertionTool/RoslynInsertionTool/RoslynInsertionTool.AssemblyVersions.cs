@@ -12,7 +12,7 @@ namespace Roslyn.Insertion
     {
         private const string VersionEqualsPrefix = "Version=";
 
-        private static GitChange[] UpdateAssemblyVersions(GitHttpClient gitClient, string commitId, InsertionArtifacts artifacts)
+        private static List<GitChange> UpdateAssemblyVersions(GitHttpClient gitClient, string commitId, InsertionArtifacts artifacts)
         {
             var versionsUpdater = new VersionsUpdater(gitClient, commitId, WarningMessages);
 

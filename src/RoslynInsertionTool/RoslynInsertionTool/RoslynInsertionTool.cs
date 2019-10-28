@@ -395,5 +395,12 @@ namespace Roslyn.Insertion
         {
             return document.Declaration.ToString() + Environment.NewLine + document.ToString();
         }
+
+        public static bool IsWhiteSpaceOnlyChange(string s1, string s2)
+        {
+            return removeNewlines(s1) == removeNewlines(s2);
+
+            string removeNewlines(string s) => s.Replace("\r\n", "").Replace("\n", "");
+        }
     }
 }

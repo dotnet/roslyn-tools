@@ -15,12 +15,17 @@ namespace Roslyn.Insertion
         public List<string> WarningMessages { get; }
 
         private const string ConfigPath = "src/VSSDK/VSIntegration/IsoShell/Templates/VSShellTemplate/VSShellIso/VSShellStubExe/Stub.exe.config";
+
+        private readonly string _configXmlOriginal;
         private readonly XDocument _configXml;
 
         private const string VersionsPath = "src/ProductData/versions.xml";
+
+        private readonly string _versionsXmlOriginal;
         private readonly XDocument _versionsXml;
 
         private const string VersionsTemplatePath = "src/ProductData/AssemblyVersions.tt";
+        private readonly string _versionsTemplateOriginal;
         private string _versionsTemplateContent;
 
         public VersionsUpdater(GitHttpClient gitClient, string commitId, List<string> warningMessages)
@@ -30,18 +35,24 @@ namespace Roslyn.Insertion
             var vsRepoId = RoslynInsertionTool.VSRepoId;
             var version = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
 
+            // TODO: change streams to 'using var' once we update the .NET SDK version just for hygiene.
+            // https://github.com/dotnet/roslyn-tools/issues/577
+
             // TODO: consider refactoring into a CreateAsync or similar method to avoid .Result
             var configXmlContent = gitClient.GetItemContentAsync(vsRepoId, ConfigPath, download: true, versionDescriptor: version).Result;
-            _configXml = XDocument.Load(configXmlContent);
+            _configXmlOriginal = new StreamReader(configXmlContent).ReadToEnd();
+            _configXml = XDocument.Parse(_configXmlOriginal);
 
             var versionsXmlContent = gitClient.GetItemContentAsync(vsRepoId, VersionsPath, download: true, versionDescriptor: version).Result;
-            _versionsXml = XDocument.Load(versionsXmlContent);
+            _versionsXmlOriginal = new StreamReader(versionsXmlContent).ReadToEnd();
+            _versionsXml = XDocument.Parse(_versionsXmlOriginal);
 
             // template defining version variables that flow to .config.tt files:
             var versionsTemplateContent = gitClient.GetItemContentAsync(vsRepoId, VersionsTemplatePath, download: true, versionDescriptor: version).Result;
             using (StreamReader reader = new StreamReader(versionsTemplateContent))
             {
-                _versionsTemplateContent = reader.ReadToEnd();
+                _versionsTemplateOriginal = reader.ReadToEnd();
+                _versionsTemplateContent = _versionsTemplateOriginal;
             }
         }
 
@@ -55,29 +66,41 @@ namespace Roslyn.Insertion
             }
         }
 
-        public GitChange[] GetChanges()
+        public List<GitChange> GetChanges()
         {
-            var changes = new[]
+            var changes = new List<GitChange>();
+
+            var configXmlString = _configXml.ToFullString();
+            if (!RoslynInsertionTool.IsWhiteSpaceOnlyChange(_configXmlOriginal, configXmlString))
             {
-                new GitChange
+                changes.Add(new GitChange
                 {
                     ChangeType = VersionControlChangeType.Edit,
                     Item = new GitItem { Path = ConfigPath },
-                    NewContent = new ItemContent() { Content = _configXml.ToFullString(), ContentType = ItemContentType.RawText }
-                },
-                new GitChange
+                    NewContent = new ItemContent() { Content = configXmlString, ContentType = ItemContentType.RawText }
+                });
+            }
+
+            var versionsXmlString = _versionsXml.ToFullString();
+            if (!RoslynInsertionTool.IsWhiteSpaceOnlyChange(_versionsXmlOriginal, versionsXmlString))
+            {
+                changes.Add(new GitChange
                 {
                     ChangeType = VersionControlChangeType.Edit,
                     Item = new GitItem { Path = VersionsPath },
-                    NewContent = new ItemContent() { Content = _versionsXml.ToFullString(), ContentType = ItemContentType.RawText }
-                },
-                new GitChange
+                    NewContent = new ItemContent() { Content = versionsXmlString, ContentType = ItemContentType.RawText }
+                });
+            }
+
+            if (!RoslynInsertionTool.IsWhiteSpaceOnlyChange(_versionsTemplateOriginal, _versionsTemplateContent))
+            {
+                changes.Add(new GitChange
                 {
                     ChangeType = VersionControlChangeType.Edit,
                     Item = new GitItem { Path = VersionsTemplatePath },
                     NewContent = new ItemContent() { Content = _versionsTemplateContent, ContentType = ItemContentType.RawText }
-                }
-            };
+                });
+            }
 
             return changes;
         }
