@@ -393,7 +393,7 @@ namespace Roslyn.Insertion
 
         public static string ToFullString(this XDocument document)
         {
-            return document.Declaration.ToString() + Environment.NewLine + document.ToString();
+            return document.Declaration.ToString() + Environment.NewLine + document.ToString() + Environment.NewLine;
         }
 
         public static bool IsWhiteSpaceOnlyChange(string s1, string s2)
