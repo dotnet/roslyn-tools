@@ -139,18 +139,17 @@ namespace Roslyn.Insertion
                     foreach (var propsFile in insertionArtifacts.GetOptProfPropertyFiles())
                     {
                         var targetFilePath = "src/Tests/config/runsettings/Official/OptProf/External/" + Path.GetFileName(propsFile);
-                        var content = File.ReadAllText(propsFile);
-                        var change = new GitChange
+
+                        var version = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = baseBranch.ObjectId };
+                        var stream = await gitClient.GetItemContentAsync(VSRepoId, targetFilePath, download: true, versionDescriptor: version);
+                        var originalContent = new StreamReader(stream).ReadToEnd();
+
+                        var newContent = File.ReadAllText(propsFile);
+
+                        if (GetChangeOpt(targetFilePath, originalContent, newContent) is GitChange change)
                         {
-                            ChangeType = VersionControlChangeType.Edit,
-                            Item = new GitItem { Path = targetFilePath },
-                            NewContent = new ItemContent()
-                            {
-                                Content = content,
-                                ContentType = ItemContentType.RawText
-                            }
-                        };
-                        allChanges.Add(change);
+                            allChanges.Add(change);
+                        }
                     }
                 }
 
@@ -176,8 +175,10 @@ namespace Roslyn.Insertion
                 // ************ Update .corext\Configs\default.config ********************
                 cancellationToken.ThrowIfCancellationRequested();
                 Console.WriteLine($"Updating CoreXT default.config file");
-                var configChange = coreXT.SaveConfig();
-                allChanges.Add(configChange);
+                if (coreXT.SaveConfigOpt() is GitChange configChange)
+                {
+                    allChanges.Add(configChange);
+                }
 
                 // *********** Update .corext\Configs\components.json ********************
 
@@ -216,6 +217,13 @@ namespace Roslyn.Insertion
                     buildToInsert.KeepForever = true;
                     var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
                     await buildClient.UpdateBuildAsync(buildToInsert, buildToInsert.Id);
+                }
+
+                // ************* Bail out if there are no changes ************************
+                if (!allChanges.Any())
+                {
+                    LogWarning("No meaningful changes since the last insertion was merged. PR will not be created or updated.");
+                    return (true, 0);
                 }
 
                 // ********************* Create push *************************************
@@ -393,7 +401,7 @@ namespace Roslyn.Insertion
 
         public static string ToFullString(this XDocument document)
         {
-            return document.Declaration.ToString() + Environment.NewLine + document.ToString() + Environment.NewLine;
+            return document.Declaration.ToString() + document.ToString();
         }
 
         public static bool IsWhiteSpaceOnlyChange(string s1, string s2)
@@ -401,6 +409,23 @@ namespace Roslyn.Insertion
             return removeNewlines(s1) == removeNewlines(s2);
 
             string removeNewlines(string s) => s.Replace("\r\n", "").Replace("\n", "");
+        }
+
+        public static GitChange GetChangeOpt(string path, string originalText, string newText)
+        {
+            if (!IsWhiteSpaceOnlyChange(originalText, newText))
+            {
+                return new GitChange
+                {
+                    ChangeType = VersionControlChangeType.Edit,
+                    Item = new GitItem { Path = path },
+                    NewContent = new ItemContent() { Content = newText, ContentType = ItemContentType.RawText }
+                };
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

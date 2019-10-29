@@ -41,11 +41,11 @@ namespace Roslyn.Insertion
             // TODO: consider refactoring into a CreateAsync or similar method to avoid .Result
             var configXmlContent = gitClient.GetItemContentAsync(vsRepoId, ConfigPath, download: true, versionDescriptor: version).Result;
             _configXmlOriginal = new StreamReader(configXmlContent).ReadToEnd();
-            _configXml = XDocument.Parse(_configXmlOriginal);
+            _configXml = XDocument.Parse(_configXmlOriginal, LoadOptions.PreserveWhitespace);
 
             var versionsXmlContent = gitClient.GetItemContentAsync(vsRepoId, VersionsPath, download: true, versionDescriptor: version).Result;
             _versionsXmlOriginal = new StreamReader(versionsXmlContent).ReadToEnd();
-            _versionsXml = XDocument.Parse(_versionsXmlOriginal);
+            _versionsXml = XDocument.Parse(_versionsXmlOriginal, LoadOptions.PreserveWhitespace);
 
             // template defining version variables that flow to .config.tt files:
             var versionsTemplateContent = gitClient.GetItemContentAsync(vsRepoId, VersionsTemplatePath, download: true, versionDescriptor: version).Result;
@@ -70,36 +70,19 @@ namespace Roslyn.Insertion
         {
             var changes = new List<GitChange>();
 
-            var configXmlString = _configXml.ToFullString();
-            if (!RoslynInsertionTool.IsWhiteSpaceOnlyChange(_configXmlOriginal, configXmlString))
+            if (RoslynInsertionTool.GetChangeOpt(ConfigPath, _configXmlOriginal, _configXml.ToFullString()) is GitChange configChange)
             {
-                changes.Add(new GitChange
-                {
-                    ChangeType = VersionControlChangeType.Edit,
-                    Item = new GitItem { Path = ConfigPath },
-                    NewContent = new ItemContent() { Content = configXmlString, ContentType = ItemContentType.RawText }
-                });
+                changes.Add(configChange);
             }
 
-            var versionsXmlString = _versionsXml.ToFullString();
-            if (!RoslynInsertionTool.IsWhiteSpaceOnlyChange(_versionsXmlOriginal, versionsXmlString))
+            if (RoslynInsertionTool.GetChangeOpt(VersionsPath, _versionsXmlOriginal, _versionsXml.ToFullString()) is GitChange versionsChange)
             {
-                changes.Add(new GitChange
-                {
-                    ChangeType = VersionControlChangeType.Edit,
-                    Item = new GitItem { Path = VersionsPath },
-                    NewContent = new ItemContent() { Content = versionsXmlString, ContentType = ItemContentType.RawText }
-                });
+                changes.Add(versionsChange);
             }
 
-            if (!RoslynInsertionTool.IsWhiteSpaceOnlyChange(_versionsTemplateOriginal, _versionsTemplateContent))
+            if (RoslynInsertionTool.GetChangeOpt(VersionsTemplatePath, _versionsTemplateOriginal, _versionsTemplateContent) is GitChange versionsTemplateChange)
             {
-                changes.Add(new GitChange
-                {
-                    ChangeType = VersionControlChangeType.Edit,
-                    Item = new GitItem { Path = VersionsTemplatePath },
-                    NewContent = new ItemContent() { Content = _versionsTemplateContent, ContentType = ItemContentType.RawText }
-                });
+                changes.Add(versionsTemplateChange);
             }
 
             return changes;
