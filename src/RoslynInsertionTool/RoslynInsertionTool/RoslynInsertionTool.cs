@@ -419,7 +419,8 @@ namespace Roslyn.Insertion
                 {
                     ChangeType = VersionControlChangeType.Edit,
                     Item = new GitItem { Path = path },
-                    NewContent = new ItemContent() { Content = newText, ContentType = ItemContentType.RawText }
+                    // VS uses `* text=auto` which means that all files are normalized to LF line endings on checkin.
+                    NewContent = new ItemContent() { Content = newText.Replace("\r\n", "\n"), ContentType = ItemContentType.RawText }
                 };
             }
             else

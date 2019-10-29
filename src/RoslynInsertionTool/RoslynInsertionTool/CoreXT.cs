@@ -69,7 +69,9 @@ namespace Roslyn.Insertion
                         continue;
                     }
 
-                    if (RoslynInsertionTool.GetChangeOpt(kvp.Key, original, doc.ToString(Formatting.Indented)) is GitChange change)
+                    // Preserve trailing newline if present
+                    var newText = doc.ToString(Formatting.Indented) + (original.EndsWith("\n") ? "\n" : "");
+                    if (RoslynInsertionTool.GetChangeOpt(kvp.Key, original, newText) is GitChange change)
                     {
                         changes.Add(change);
                     }
