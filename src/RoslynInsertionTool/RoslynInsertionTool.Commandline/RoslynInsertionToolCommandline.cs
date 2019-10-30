@@ -28,7 +28,6 @@ partial class RoslynInsertionToolCommandline
             .WithVSTSUrl(settings.VSTSUrl)
             .WithBuildQueueName(settings.BuildQueueName)
             .WithBuildConfig(settings.BuildConfig)
-            .WithEnlistmentPath(settings.EnlistmentPath)
             .WithTFSProjectName(settings.TFSProjectName)
             .WithBuildDropPath(settings.BuildDropPath)
             .WithNewBranchName(settings.NewBranchName)
@@ -60,11 +59,6 @@ partial class RoslynInsertionToolCommandline
                 "t|toolsetupdate",
                 "Updates the Roslyn toolset used in the VS branch.",
                 t => options = options.WithInsertToolset(true)
-            },
-            {
-                "ep=|enlistmentpath=",
-                "This is the absolute path to the Visual Studio enlistment on the machine that is running rit.exe.",
-                enlistmentPath => options = options.WithEnlistmentPath(enlistmentPath)
             },
             {
                 "u=|username=",
@@ -192,26 +186,6 @@ partial class RoslynInsertionToolCommandline
                 "ll=|loglocation=",
                 "The location of the log file to be written.  Defaults to `rit.log`.",
                 logFileLocation => options = options.WithLogFileLocation(logFileLocation)
-            },
-            {
-                "parts=|partitions=",
-                "A set of folders relative to **enlistmentpath** that should successfully build after we have inserted. List should be separated by `;`.",
-                partitionsToBuild =>
-                {
-                    var list = options.PartitionsToBuild?.ToList() ?? new List<string>();
-                    list.AddRange(partitionsToBuild.Split(';'));
-                    options = options.WithPartitionsToBuild(list.ToArray());
-                }
-            },
-            {
-                "part=|partition=",
-                "*Can be specified more than once.* A folder relative to **enlistmentpath** that should successfully build after we have inserted.",
-                partitionToBuild =>
-                {
-                    var list = options.PartitionsToBuild?.ToList() ?? new List<string>();
-                    list.Add(partitionToBuild);
-                    options = options.WithPartitionsToBuild(list.ToArray());
-                }
             },
             {
                 "ci=|clientid=",

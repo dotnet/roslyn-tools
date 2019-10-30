@@ -18,21 +18,13 @@ using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.Policy.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
-using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
-using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Clients;
-using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts;
-using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Change = Microsoft.TeamFoundation.Build.WebApi.Change;
 
 namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
-        // Currently this is the only release we trigger. We can easily move this over to options when we need this configurable.
-        private const string ReleaseDefinitionName = "Roslyn";
-
         private static readonly Lazy<TfsTeamProjectCollection> LazyProjectCollection = new Lazy<TfsTeamProjectCollection>(() =>
         {
             Console.WriteLine($"Creating TfsTeamProjectCollection object from {Options.VSTSUri}");
@@ -69,32 +61,6 @@ namespace Roslyn.Insertion
                     cancellationToken);
         }
 
-        private static async Task<GitPullRequest> GetExistingPullRequestAsync(int pullRequestId, CancellationToken cancellationToken)
-        {
-            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
-            var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
-            return await gitClient.GetPullRequestAsync(
-                repositoryId: repository.Id,
-                pullRequestId: pullRequestId,
-                cancellationToken: cancellationToken);
-        }
-
-        private static async Task<GitPullRequest> UpdatePullRequestDescriptionAsync(int pullRequestId, string newDescription, CancellationToken cancellationToken)
-        {
-            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
-            var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
-            var pullRequest = new GitPullRequest()
-            {
-                Description = newDescription
-            };
-            return await gitClient.UpdatePullRequestAsync(
-                pullRequest,
-                repository.Id,
-                pullRequestId,
-                userState: null,
-                cancellationToken: cancellationToken);
-        }
-
         private static async Task<IEnumerable<Build>> GetBuildsFromTFSAsync(BuildHttpClient buildClient, List<BuildDefinitionReference> definitions, CancellationToken cancellationToken, BuildResult? resultFilter = null)
         {
             IEnumerable<Build> builds = await GetBuildsFromTFSByBranchAsync(buildClient, definitions, Options.BranchName, resultFilter, cancellationToken);
@@ -105,12 +71,12 @@ namespace Roslyn.Insertion
         private static async Task<List<Build>> GetBuildsFromTFSByBranchAsync(BuildHttpClient buildClient, List<BuildDefinitionReference> definitions, string branchName, BuildResult? resultFilter, CancellationToken cancellationToken)
         {
             return await buildClient.GetBuildsAsync(
-                                    project: Options.TFSProjectName,
-                                    definitions: definitions.Select(d => d.Id),
-                                    branchName: branchName,
-                                    statusFilter: BuildStatus.Completed,
-                                    resultFilter: resultFilter,
-                                    cancellationToken: cancellationToken);
+                project: Options.TFSProjectName,
+                definitions: definitions.Select(d => d.Id),
+                branchName: branchName,
+                statusFilter: BuildStatus.Completed,
+                resultFilter: resultFilter,
+                cancellationToken: cancellationToken);
         }
 
         private static async Task<Build> GetLatestBuildAsync(CancellationToken cancellationToken)
@@ -127,8 +93,10 @@ namespace Roslyn.Insertion
         /// <summary>
         /// Insertable builds have valid artifacts and are not marked as 'DoesNotRequireInsertion_[TargetBranchName]'.
         /// </summary>
-        private static async Task<List<Build>> GetInsertableBuildsAsync(BuildHttpClient buildClient, CancellationToken cancellationToken,
-                        IEnumerable<Build> builds)
+        private static async Task<List<Build>> GetInsertableBuildsAsync(
+            BuildHttpClient buildClient,
+            CancellationToken cancellationToken,
+            IEnumerable<Build> builds)
         {
             List<Build> buildsWithValidArtifacts = new List<Build>();
             foreach (var build in builds)
@@ -312,15 +280,13 @@ namespace Roslyn.Insertion
             Stopwatch watch = Stopwatch.StartNew();
 
             using (Stream s = await buildClient.GetArtifactContentZipAsync(Options.TFSProjectName, build.Id, artifact.Name, cancellationToken))
+            using (MemoryStream ms = new MemoryStream())
             {
-                using (var fs = File.OpenWrite(archiveDownloadPath))
+                await s.CopyToAsync(ms);
+                using (ZipArchive archive = new ZipArchive(ms))
                 {
-                    // Using the default buffer size.
-                    await s.CopyToAsync(fs, 81920, cancellationToken);
+                    archive.ExtractToDirectory(tempDirectory);
                 }
-
-                ZipFile.ExtractToDirectory(archiveDownloadPath, tempDirectory);
-                File.Delete(archiveDownloadPath);
             }
 
             Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds/1000} seconds");

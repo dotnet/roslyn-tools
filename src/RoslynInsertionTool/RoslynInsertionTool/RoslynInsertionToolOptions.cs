@@ -32,7 +32,6 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions() { }
 
         private RoslynInsertionToolOptions(
-            string enlistmentPath,
             string username,
             string password,
             string visualStudioBranchName,
@@ -62,10 +61,8 @@ namespace Roslyn.Insertion
             string logFileLocation,
             string clientId,
             string clientSecret,
-            string titlePrefix,
-            params string[] partitionsToBuild)
+            string titlePrefix)
         {
-            EnlistmentPath = enlistmentPath;
             Username = username;
             Password = password;
             VisualStudioBranchName = visualStudioBranchName;
@@ -96,11 +93,9 @@ namespace Roslyn.Insertion
             ClientId = clientId;
             ClientSecret = clientSecret;
             TitlePrefix = titlePrefix;
-            PartitionsToBuild = partitionsToBuild;
         }
 
         public RoslynInsertionToolOptions Update(
-            Optional<string> enlistmentPath = default,
             Optional<string> username = default,
             Optional<string> password = default,
             Optional<string> visualStudioBranchName = default,
@@ -130,11 +125,9 @@ namespace Roslyn.Insertion
             Optional<string> logFileLocation = default,
             Optional<string> clientId = default,
             Optional<string> clientSecret = default,
-            Optional<string> titlePrefix = default,
-            Optional<string[]> partitionsToBuild = default)
+            Optional<string> titlePrefix = default)
         {
             return new RoslynInsertionToolOptions(
-                enlistmentPath: enlistmentPath.ValueOrFallback(EnlistmentPath),
                 username: username.ValueOrFallback(Username),
                 password: password.ValueOrFallback(Password),
                 visualStudioBranchName: visualStudioBranchName.ValueOrFallback(VisualStudioBranchName),
@@ -164,8 +157,7 @@ namespace Roslyn.Insertion
                 logFileLocation: logFileLocation.ValueOrFallback(LogFileLocation),
                 clientId: clientId.ValueOrFallback(ClientId),
                 clientSecret: clientSecret.ValueOrFallback(ClientSecret),
-                titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix),
-                partitionsToBuild: partitionsToBuild.ValueOrFallback(PartitionsToBuild));
+                titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix));
         }
 
         public RoslynInsertionToolOptions WithRunRPSInValidation(bool runRPSInValidation) => Update(runRPSInValidation: runRPSInValidation);
@@ -175,8 +167,6 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions WithValidationBuildQueueName(string validationBuildQueueName) => Update(validationBuildQueueName: validationBuildQueueName);
 
         public RoslynInsertionToolOptions WithQueueValidationBuild(bool queueValidationBuild) => Update(queueValidationBuild: queueValidationBuild);
-
-        public RoslynInsertionToolOptions WithEnlistmentPath(string enlistmentPath) => Update(enlistmentPath: enlistmentPath);
 
         public RoslynInsertionToolOptions WithInsertToolset(bool insertToolset) => Update(insertToolset: insertToolset);
 
@@ -204,8 +194,6 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithSpecificBuild(string specificBuild) => Update(specificBuild: specificBuild);
 
-        public RoslynInsertionToolOptions WithPartitionsToBuild(params string[] partitionsToBuild) => Update(partitionsToBuild: partitionsToBuild);
-
         public RoslynInsertionToolOptions WithInsertCoreXTPackages(bool insertCoreXTPackages) => Update(insertCoreXTPackages: insertCoreXTPackages);
 
         public RoslynInsertionToolOptions WithInsertDevDivSourceFiles(bool insertDevDivSourceFiles) => Update(insertDevDivSourceFiles: insertDevDivSourceFiles);
@@ -232,8 +220,6 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithTitlePrefix(string titlePrefix) => Update(titlePrefix: titlePrefix);
 
-        public string EnlistmentPath { get; }
-
         public string Username { get; }
 
         public string Password { get; }
@@ -255,8 +241,6 @@ namespace Roslyn.Insertion
         public string BuildDropPath { get; }
 
         public string SpecificBuild { get; }
-
-        public string[] PartitionsToBuild { get; }
 
         public bool InsertCoreXTPackages { get; }
 
@@ -323,7 +307,6 @@ namespace Roslyn.Insertion
                 {
                     return
                         !OverwritePr &&
-                        !string.IsNullOrEmpty(EnlistmentPath) &&
                         !string.IsNullOrEmpty(Username) &&
                         !string.IsNullOrEmpty(Password) &&
                         !string.IsNullOrEmpty(VisualStudioBranchName) &&
@@ -395,11 +378,6 @@ namespace Roslyn.Insertion
                     if(OverwritePr)
                     {
                         builder.AppendLine($"{nameof(OverwritePr).ToLowerInvariant()} can only be used with {nameof(UpdateExistingPr).ToLowerInvariant()}.");
-                    }
-
-                    if (string.IsNullOrEmpty(EnlistmentPath))
-                    {
-                        builder.AppendLine($"{nameof(EnlistmentPath).ToLowerInvariant()} is required");
                     }
 
                     if (string.IsNullOrEmpty(Username))

@@ -1,5 +1,4 @@
-param([string] $enlistmentPath,
-      [string] $clientId,
+param([string] $clientId,
       [string] $clientSecret,
       [string] $requiredValueSentinel,
       [string] $defaultValueSentinel,
@@ -19,7 +18,7 @@ param([string] $enlistmentPath,
       [string] $writePullRequest,
       [int] $insertionCount)
 
-. .\HelperFunctions.ps1
+. $PSScriptRoot\HelperFunctions.ps1
 
 EnsureRequiredValue -friendlyName "ComponentName" -value $componentName
 EnsureRequiredValue -friendlyName "ComponentBranchName" -value $componentBranchName
@@ -40,5 +39,5 @@ if ($insertionCount -lt 1) {
 }
 
 for ($i = 0; $i -lt $insertionCount; $i++) {
-    & .\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/ep=$enlistmentPath" "/tp=$titlePrefix" "/wpr=$writePullRequest" $specificBuildFlag $toolsetFlag $dropPathFlag
+    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest" $specificBuildFlag $toolsetFlag $dropPathFlag
 }

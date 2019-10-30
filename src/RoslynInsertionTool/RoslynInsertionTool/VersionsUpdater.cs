@@ -1,5 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using Microsoft.TeamFoundation.Client.CommandLine;
+using Microsoft.TeamFoundation.SourceControl.WebApi;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,36 +12,48 @@ namespace Roslyn.Insertion
 {
     internal sealed class VersionsUpdater
     {
-        public string EnlistmentRoot { get; }
         public List<string> WarningMessages { get; }
 
-        private const string ConfigPath = @"src\VSSDK\VSIntegration\IsoShell\Templates\VSShellTemplate\VSShellIso\VSShellStubExe\Stub.exe.config";
+        private const string ConfigPath = "src/VSSDK/VSIntegration/IsoShell/Templates/VSShellTemplate/VSShellIso/VSShellStubExe/Stub.exe.config";
+
+        private readonly string _configXmlOriginal;
         private readonly XDocument _configXml;
-        private readonly string _configFullPath;
 
-        private const string VersionsPath = @"src\ProductData\versions.xml";
+        private const string VersionsPath = "src/ProductData/versions.xml";
+
+        private readonly string _versionsXmlOriginal;
         private readonly XDocument _versionsXml;
-        private readonly string _versionsXmlFullPath;
 
-        private const string VersionsTemplatePath = @"src\ProductData\AssemblyVersions.tt";
+        private const string VersionsTemplatePath = "src/ProductData/AssemblyVersions.tt";
+        private readonly string _versionsTemplateOriginal;
         private string _versionsTemplateContent;
-        private readonly string _versionsTemplateFullPath;
 
-        public VersionsUpdater(string enlistmentRoot, List<string> warningMessages)
+        public VersionsUpdater(GitHttpClient gitClient, string commitId, List<string> warningMessages)
         {
-            EnlistmentRoot = enlistmentRoot;
             WarningMessages = warningMessages;
 
-            // this is a template which can't currently be templated:
-            _configFullPath = Path.Combine(enlistmentRoot, ConfigPath);
-            _configXml = XDocument.Load(_configFullPath);
+            var vsRepoId = RoslynInsertionTool.VSRepoId;
+            var version = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
 
-            _versionsXmlFullPath = Path.Combine(EnlistmentRoot, VersionsPath);
-            _versionsXml = XDocument.Load(_versionsXmlFullPath);
+            // TODO: change streams to 'using var' once we update the .NET SDK version just for hygiene.
+            // https://github.com/dotnet/roslyn-tools/issues/577
+
+            // TODO: consider refactoring into a CreateAsync or similar method to avoid .Result
+            var configXmlContent = gitClient.GetItemContentAsync(vsRepoId, ConfigPath, download: true, versionDescriptor: version).Result;
+            _configXmlOriginal = new StreamReader(configXmlContent).ReadToEnd();
+            _configXml = XDocument.Parse(_configXmlOriginal, LoadOptions.PreserveWhitespace);
+
+            var versionsXmlContent = gitClient.GetItemContentAsync(vsRepoId, VersionsPath, download: true, versionDescriptor: version).Result;
+            _versionsXmlOriginal = new StreamReader(versionsXmlContent).ReadToEnd();
+            _versionsXml = XDocument.Parse(_versionsXmlOriginal, LoadOptions.PreserveWhitespace);
 
             // template defining version variables that flow to .config.tt files:
-            _versionsTemplateFullPath = Path.Combine(EnlistmentRoot, VersionsTemplatePath);
-            _versionsTemplateContent = File.ReadAllText(_versionsTemplateFullPath);
+            var versionsTemplateContent = gitClient.GetItemContentAsync(vsRepoId, VersionsTemplatePath, download: true, versionDescriptor: version).Result;
+            using (StreamReader reader = new StreamReader(versionsTemplateContent))
+            {
+                _versionsTemplateOriginal = reader.ReadToEnd();
+                _versionsTemplateContent = _versionsTemplateOriginal;
+            }
         }
 
         public static IEnumerable<string> RelativeFilePaths
@@ -52,11 +66,26 @@ namespace Roslyn.Insertion
             }
         }
 
-        public void Save()
+        public List<GitChange> GetChanges()
         {
-            _configXml.Save(_configFullPath);
-            _versionsXml.Save(_versionsXmlFullPath);
-            File.WriteAllText(_versionsTemplateFullPath, _versionsTemplateContent);
+            var changes = new List<GitChange>();
+
+            if (RoslynInsertionTool.GetChangeOpt(ConfigPath, _configXmlOriginal, _configXml.ToFullString()) is GitChange configChange)
+            {
+                changes.Add(configChange);
+            }
+
+            if (RoslynInsertionTool.GetChangeOpt(VersionsPath, _versionsXmlOriginal, _versionsXml.ToFullString()) is GitChange versionsChange)
+            {
+                changes.Add(versionsChange);
+            }
+
+            if (RoslynInsertionTool.GetChangeOpt(VersionsTemplatePath, _versionsTemplateOriginal, _versionsTemplateContent) is GitChange versionsTemplateChange)
+            {
+                changes.Add(versionsTemplateChange);
+            }
+
+            return changes;
         }
 
         public void UpdateComponentVersion(string assemblyName, Version newVersion)
@@ -70,8 +99,6 @@ namespace Roslyn.Insertion
         {
             const string ns = "urn:schemas-microsoft-com:asm.v1";
 
-            var fullPath = _configFullPath;
-
             var dependentAssemblies = _configXml?.Root?.
                 Element("runtime")?.
                 Element(XName.Get("assemblyBinding", ns))?.
@@ -79,7 +106,7 @@ namespace Roslyn.Insertion
 
             if (dependentAssemblies == null)
             {
-                throw new InvalidDataException($"File '{fullPath}' doesn't have expected format.");
+                throw new InvalidDataException($"File '{ConfigPath}' doesn't have expected format.");
             }
 
             var dependentAssembly = dependentAssemblies.FirstOrDefault(n => n.Element(XName.Get("assemblyIdentity", ns)).Attribute("name").Value == assemblyName);
@@ -96,13 +123,13 @@ namespace Roslyn.Insertion
             if (!TryParseVersionRange(oldVersionAttribute?.Value, out var oldVersionInAttributeLow, out var oldVersionInAttributeHigh) ||
                 oldVersionInAttributeLow != new Version(0, 0, 0, 0))
             {
-                throw new InvalidDataException($"The value of attribute oldVersion '{oldVersionAttribute?.Value}' doesn't have the expected format: '0.0.0.0-#.#.#.#' ('{fullPath}', binding redirect for '{assemblyName}')");
+                throw new InvalidDataException($"The value of attribute oldVersion '{oldVersionAttribute?.Value}' doesn't have the expected format: '0.0.0.0-#.#.#.#' ('{ConfigPath}', binding redirect for '{assemblyName}')");
             }
 
-            var newVersionInAttribute = ParseAndValidatePreviousVersion(newVersion, newVersionAttribute?.Value, fullPath, "@newVersion", assemblyName);
+            var newVersionInAttribute = ParseAndValidatePreviousVersion(newVersion, newVersionAttribute?.Value, ConfigPath, "@newVersion", assemblyName);
             if (oldVersionInAttributeHigh != newVersionInAttribute)
             {
-                throw new InvalidDataException($"The value of @newVersion should be equal to the end of the @oldVersion range ('{fullPath}', binding redirect for '{assemblyName}')");
+                throw new InvalidDataException($"The value of @newVersion should be equal to the end of the @oldVersion range ('{ConfigPath}', binding redirect for '{assemblyName}')");
             }
 
             var newVersionStr = newVersion.ToFullVersion().ToString();
@@ -113,7 +140,6 @@ namespace Roslyn.Insertion
 
         private void UpdateVersionsFile(string assemblyName, Version newVersion)
         {
-            var fullPath = _versionsXmlFullPath;
             string variableName;
             string capName;
 
@@ -139,7 +165,7 @@ namespace Roslyn.Insertion
             var sourceElements = versionsElement?.Elements("version");
             if (sourceElements == null)
             {
-                throw new InvalidDataException($"Invalid XML data structure.  Expected: /root/versions/version (file '{fullPath}')");
+                throw new InvalidDataException($"Invalid XML data structure.  Expected: /root/versions/version (file '{VersionsPath}')");
             }
 
             var attributes = (from element in sourceElements
@@ -157,7 +183,7 @@ namespace Roslyn.Insertion
             else if (attributes.Length == 1)
             {
                 var valueAttribute = attributes.Single();
-                var oldVersion = ParseAndValidatePreviousVersion(newVersion, valueAttribute.Value, fullPath, "version.@name", assemblyName);
+                var oldVersion = ParseAndValidatePreviousVersion(newVersion, valueAttribute.Value, VersionsPath, "version.@name", assemblyName);
                 if (newVersion > oldVersion)
                 {
                     valueAttribute.SetValue(newVersion.ToFullVersion());
@@ -165,13 +191,13 @@ namespace Roslyn.Insertion
             }
             else
             {
-                throw new InvalidDataException($"More than one element with @name='{variableName}' (file '{fullPath}')");
+                throw new InvalidDataException($"More than one element with @name='{variableName}' (file '{VersionsPath}')");
             }
         }
 
         private void UpdateAssemblyVersionsFile(string assemblyName, Version newVersion)
         {
-            var fullPath = _versionsTemplateFullPath;
+            var path = VersionsTemplatePath;
             var content = _versionsTemplateContent;
 
             string variableName;
@@ -225,7 +251,7 @@ namespace Roslyn.Insertion
                     var versionStart = IndexOfOrThrow(line, '"') + 1;
                     var versionEnd = IndexOfOrThrow(line, '"', versionStart);
                     var versionStr = line.Substring(versionStart, versionEnd - versionStart);
-                    var oldVersion = ParseAndValidatePreviousVersion(newVersion, versionStr, fullPath, variableName, assemblyName);
+                    var oldVersion = ParseAndValidatePreviousVersion(newVersion, versionStr, path, variableName, assemblyName);
                     if (newVersion > oldVersion)
                     {
                         newLine = line.Substring(0, versionStart) + newVersion.ToFullVersion() + line.Substring(versionEnd);
@@ -272,12 +298,12 @@ namespace Roslyn.Insertion
             return parts.Length == 2 && Version.TryParse(parts[0], out low) && Version.TryParse(parts[1], out high);
         }
 
-        private Version ParseAndValidatePreviousVersion(Version newVersion, string versionStringOpt, string fullPath, string description, string assemblyName)
+        private Version ParseAndValidatePreviousVersion(Version newVersion, string versionStringOpt, string path, string description, string assemblyName)
         {
             // first time we run new insertion tool we need to skip checking previous version since it has a different format
             if (!Version.TryParse(versionStringOpt, out var previousVersion))
             {
-                throw new InvalidDataException($"The value of {description} '{versionStringOpt}' doesn't have the expected format: '#.#.#.#' ('{fullPath}', binding redirect for '{assemblyName}')");
+                throw new InvalidDataException($"The value of {description} '{versionStringOpt}' doesn't have the expected format: '#.#.#.#' ('{path}', binding redirect for '{assemblyName}')");
             }
 
             return previousVersion;

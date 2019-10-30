@@ -1,5 +1,4 @@
-param([string] $enlistmentPath,
-      [string] $clientId,
+param([string] $clientId,
       [string] $clientSecret,
       [string] $requiredValueSentinel,
       [string] $defaultValueSentinel,
@@ -19,7 +18,7 @@ param([string] $enlistmentPath,
       [string] $writePullRequest,
       [switch] $overwritePR)
 
-. .\HelperFunctions.ps1
+. $PSScriptRoot\HelperFunctions.ps1
 
 EnsureRequiredValue -friendlyName "ComponentName" -value $componentName
 EnsureRequiredValue -friendlyName "ComponentBranchName" -value $componentBranchName
@@ -41,4 +40,4 @@ if($overwritePR)
   $overwritePrflag = "/overwritepr"
 }
 
-& .\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/ep=$enlistmentPath" "/wpr=$writePullRequest" $specificBuildFlag $toolsetFlag $dropPathFlag
+& $PSScriptRoot\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/wpr=$writePullRequest" $specificBuildFlag $toolsetFlag $dropPathFlag

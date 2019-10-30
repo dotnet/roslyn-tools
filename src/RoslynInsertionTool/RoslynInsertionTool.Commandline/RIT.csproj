@@ -18,11 +18,12 @@
     <IsPackable>true</IsPackable>
     <NuspecFile>RIT.nuspec</NuspecFile>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
 
     <PackageId>RoslynTools.VisualStudioInsertionTool</PackageId>
     <PackageDescription>Tool for inserting Roslyn binaries into the Visual Studio repo.</PackageDescription>
     <PackageTags>Roslyn Build Tool</PackageTags>
-    <DevelopmentDependency>true</DevelopmentDependency>    
+    <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
