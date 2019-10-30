@@ -361,11 +361,6 @@ namespace Roslyn.Insertion
                 else if (UpdateExistingPr != 0)
                 {
                     // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for overwriting an existing pr
-                    if (CreateDraftPr)
-                    {
-                        builder.AppendLine($"{nameof(CreateDraftPr).ToLowerInvariant()} can only be used when creating a new PR.");
-                    }
-
                     if (string.IsNullOrEmpty(InsertionName))
                     {
                         builder.AppendLine($"{nameof(InsertionName).ToLowerInvariant()} is required");
