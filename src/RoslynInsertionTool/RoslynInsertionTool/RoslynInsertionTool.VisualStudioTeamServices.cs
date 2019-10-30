@@ -45,7 +45,7 @@ namespace Roslyn.Insertion
                 Description = description,
                 SourceRefName = sourceBranch,
                 TargetRefName = targetBranch,
-                IsDraft = true,
+                IsDraft = Options.CreateDraftPr,
             };
         }
 

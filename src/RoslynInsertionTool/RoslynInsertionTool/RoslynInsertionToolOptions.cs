@@ -61,7 +61,8 @@ namespace Roslyn.Insertion
             string logFileLocation,
             string clientId,
             string clientSecret,
-            string titlePrefix)
+            string titlePrefix,
+            bool createDraftPr)
         {
             Username = username;
             Password = password;
@@ -93,6 +94,7 @@ namespace Roslyn.Insertion
             ClientId = clientId;
             ClientSecret = clientSecret;
             TitlePrefix = titlePrefix;
+            CreateDraftPr = createDraftPr;
         }
 
         public RoslynInsertionToolOptions Update(
@@ -125,7 +127,8 @@ namespace Roslyn.Insertion
             Optional<string> logFileLocation = default,
             Optional<string> clientId = default,
             Optional<string> clientSecret = default,
-            Optional<string> titlePrefix = default)
+            Optional<string> titlePrefix = default,
+            Optional<bool> createDraftPr = default)
         {
             return new RoslynInsertionToolOptions(
                 username: username.ValueOrFallback(Username),
@@ -157,7 +160,8 @@ namespace Roslyn.Insertion
                 logFileLocation: logFileLocation.ValueOrFallback(LogFileLocation),
                 clientId: clientId.ValueOrFallback(ClientId),
                 clientSecret: clientSecret.ValueOrFallback(ClientSecret),
-                titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix));
+                titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix),
+                createDraftPr: createDraftPr.ValueOrFallback(CreateDraftPr));
         }
 
         public RoslynInsertionToolOptions WithRunRPSInValidation(bool runRPSInValidation) => Update(runRPSInValidation: runRPSInValidation);
@@ -220,6 +224,8 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithTitlePrefix(string titlePrefix) => Update(titlePrefix: titlePrefix);
 
+        public RoslynInsertionToolOptions WithCreateDraftPr(bool createDraftPr) => Update(createDraftPr: createDraftPr);
+
         public string Username { get; }
 
         public string Password { get; }
@@ -280,6 +286,8 @@ namespace Roslyn.Insertion
 
         public string TitlePrefix { get; }
 
+        public bool CreateDraftPr { get; }
+
         public bool Valid
         {
             get
@@ -298,6 +306,7 @@ namespace Roslyn.Insertion
                     // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for overwriting an existing pr
                     return
                         !CreateDummyPr &&
+                        !CreateDraftPr &&
                         !string.IsNullOrEmpty(InsertionName) &&
                         !string.IsNullOrEmpty(BranchName) &&
                         !string.IsNullOrEmpty(VisualStudioBranchName) &&
@@ -352,6 +361,11 @@ namespace Roslyn.Insertion
                 else if (UpdateExistingPr != 0)
                 {
                     // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for overwriting an existing pr
+                    if (CreateDraftPr)
+                    {
+                        builder.AppendLine($"{nameof(CreateDraftPr).ToLowerInvariant()} can only be used when creating a new PR.");
+                    }
+
                     if (string.IsNullOrEmpty(InsertionName))
                     {
                         builder.AppendLine($"{nameof(InsertionName).ToLowerInvariant()} is required");
@@ -375,7 +389,7 @@ namespace Roslyn.Insertion
                 else
                 {
                     // perform a regular insertion
-                    if(OverwritePr)
+                    if (OverwritePr)
                     {
                         builder.AppendLine($"{nameof(OverwritePr).ToLowerInvariant()} can only be used with {nameof(UpdateExistingPr).ToLowerInvariant()}.");
                     }

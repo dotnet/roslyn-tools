@@ -41,7 +41,8 @@ partial class RoslynInsertionToolCommandline
             .WithValidationBuildQueueName(settings.ValidationBuildQueueName)
             .WithRunDDRITsInValidation(settings.RunDDRITsInValidation)
             .WithRunRPSInValidation(settings.RunRPSInValidation)
-            .WithLogFileLocation(settings.LogFileLocation);
+            .WithLogFileLocation(settings.LogFileLocation)
+            .WithCreateDraftPr(settings.CreateDraftPr);
 
         // ************************ Process Arguments ****************************
         bool showHelp = false;
@@ -206,6 +207,11 @@ partial class RoslynInsertionToolCommandline
                 "tp=|titleprefix=",
                 "Prepend the generated pull request's title with the specified value.",
                 titlePrefix => options = options.WithTitlePrefix(titlePrefix)
+            },
+            {
+                "createdraftpr",
+                "Create an insertion PR that is marked as a draft.",
+                createDraftPr => options = options.WithCreateDraftPr(true)
             },
         };
 
