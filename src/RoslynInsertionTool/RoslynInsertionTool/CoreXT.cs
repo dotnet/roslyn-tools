@@ -26,7 +26,7 @@ namespace Roslyn.Insertion
         public CoreXT(string configOriginalText)
         {
             _defaultConfigOriginal = configOriginalText;
-            ConfigDocument = XDocument.Parse(configOriginalText, LoadOptions.PreserveWhitespace);
+            ConfigDocument = XDocument.Parse(configOriginalText, LoadOptions.None);
         }
 
         public static CoreXT Load(GitHttpClient gitClient, string commitId)

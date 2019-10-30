@@ -41,11 +41,11 @@ namespace Roslyn.Insertion
             // TODO: consider refactoring into a CreateAsync or similar method to avoid .Result
             var configXmlContent = gitClient.GetItemContentAsync(vsRepoId, ConfigPath, download: true, versionDescriptor: version).Result;
             _configXmlOriginal = new StreamReader(configXmlContent).ReadToEnd();
-            _configXml = XDocument.Parse(_configXmlOriginal, LoadOptions.PreserveWhitespace);
+            _configXml = XDocument.Parse(_configXmlOriginal, LoadOptions.None);
 
             var versionsXmlContent = gitClient.GetItemContentAsync(vsRepoId, VersionsPath, download: true, versionDescriptor: version).Result;
             _versionsXmlOriginal = new StreamReader(versionsXmlContent).ReadToEnd();
-            _versionsXml = XDocument.Parse(_versionsXmlOriginal, LoadOptions.PreserveWhitespace);
+            _versionsXml = XDocument.Parse(_versionsXmlOriginal, LoadOptions.None);
 
             // template defining version variables that flow to .config.tt files:
             var versionsTemplateContent = gitClient.GetItemContentAsync(vsRepoId, VersionsTemplatePath, download: true, versionDescriptor: version).Result;
