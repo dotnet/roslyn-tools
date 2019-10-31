@@ -517,27 +517,46 @@ namespace Roslyn.Insertion
             foreach (var commit in changes)
             {
                 // Exclude auto-merges
-                if (commit.Author == "dotnet-automerge-bot")
+                if (commit.Author == "dotnet-automerge-bot" ||
+                    commit.Author == "msftbot[bot]")
                 {
                     continue;
                 }
+
+                string comment;
+                string prNumber;
 
                 var match = IsMergePRCommit.Match(commit.Message);
+                if (match.Success)
+                {
+                    prNumber = match.Groups[1].Value;
 
-                if (!match.Success)
+                    // Merge PR Messages are in the form "Merge pull request #39526 from mavasani/GetValueUsageInfoAssert\n\nFix an assert in IOperationExtension.GetValueUsageInfo"
+                    // Try and extract the 3rd line since it is the useful part of the message, otherwise take the first line.
+                    var lines = commit.Message.Split('\n');
+                    comment = lines.Length > 2
+                        ? $"{lines[2]} ({prNumber})"
+                        : lines[0];
+                }
+                else
                 {
                     match = IsSquashedPRCommit.Match(commit.Message);
+                    if (!match.Success)
+                    {
+                        continue;
+                    }
+
+                    prNumber = match.Groups[1].Value;
+
+                    // Squash PR Messages are in the form "Nullable annotate TypeCompilationState and MessageID (#39449)"
+                    // Take the 1st line since it should be descriptive.
+                    comment = commit.Message.Split('\n')[0];
                 }
 
-                if (!match.Success)
-                {
-                    continue;
-                }
+                // Replace "#{prNumber}" with "{prNumber}" so that AzDO won't linkify it
+                comment = comment.Replace($"#{prNumber}", prNumber);
 
-                var prNumber = match.Groups[1].Value;
-
-                var firstLine = commit.Message.Split('\n')[0];
-                var prLink = $@"- [{firstLine}]({repoURL}/pull/{prNumber})";
+                var prLink = $@"- [{comment}]({repoURL}/pull/{prNumber})";
 
                 description.AppendLine(prLink);
 
