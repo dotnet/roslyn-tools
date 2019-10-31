@@ -240,14 +240,22 @@ namespace Roslyn.Insertion
                     var refs = await gitClient.GetRefsAsync(VSRepoId, filter: $"heads/{insertionBranchName}", cancellationToken: cancellationToken);
                     var insertionBranch = refs.Single(r => r.Name == $"refs/heads/{insertionBranchName}");
 
-                    // update existing PR branch back to base before pushing new commit
-                    var updateToBase = new GitRefUpdate
+                    if (Options.OverwritePr)
                     {
-                        OldObjectId = insertionBranch.ObjectId,
-                        NewObjectId = baseBranch.ObjectId,
-                        Name = $"refs/heads/{insertionBranchName}"
-                    };
-                    await gitClient.UpdateRefsAsync(new[] { updateToBase }, VSRepoId, cancellationToken: cancellationToken);
+                        // overwrite existing PR branch back to base before pushing new commit
+                        var updateToBase = new GitRefUpdate
+                        {
+                            OldObjectId = insertionBranch.ObjectId,
+                            NewObjectId = baseBranch.ObjectId,
+                            Name = $"refs/heads/{insertionBranchName}"
+                        };
+                        await gitClient.UpdateRefsAsync(new[] { updateToBase }, VSRepoId, cancellationToken: cancellationToken);
+                    }
+                    else
+                    {
+                        // not overwriting PR, so the insertion branch is actually the base
+                        baseBranch = insertionBranch;
+                    }
                 }
                 else
                 {
