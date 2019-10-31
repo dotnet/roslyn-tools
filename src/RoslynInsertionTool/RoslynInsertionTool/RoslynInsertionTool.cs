@@ -158,8 +158,10 @@ namespace Roslyn.Insertion
                     // ************** Update assembly versions ************************
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating assembly versions");
-                    var assemblyVersionChanges = UpdateAssemblyVersions(gitClient, baseBranch.ObjectId, insertionArtifacts);
-                    allChanges.AddRange(assemblyVersionChanges);
+                    if (UpdateAssemblyVersionsOpt(gitClient, baseBranch.ObjectId, insertionArtifacts) is GitChange assemblyVersionChange)
+                    {
+                        allChanges.Add(assemblyVersionChange);
+                    }
 
                     // if we got this far then we definitely need to retain this build
                     retainBuild = true;

@@ -12,7 +12,7 @@ namespace Roslyn.Insertion
     {
         private const string VersionEqualsPrefix = "Version=";
 
-        private static List<GitChange> UpdateAssemblyVersions(GitHttpClient gitClient, string commitId, InsertionArtifacts artifacts)
+        private static GitChange UpdateAssemblyVersionsOpt(GitHttpClient gitClient, string commitId, InsertionArtifacts artifacts)
         {
             var versionsUpdater = new VersionsUpdater(gitClient, commitId, WarningMessages);
 
@@ -29,7 +29,7 @@ namespace Roslyn.Insertion
                 Console.WriteLine($"No dependent-assembly-versions file found at path '{pathToDependentAssemblyVersionsFile}'");
             }
 
-            return versionsUpdater.GetChanges();
+            return versionsUpdater.GetChangeOpt();
         }
 
         private static IEnumerable<KeyValuePair<string, Version>> ReadAssemblyVersions(string path)
