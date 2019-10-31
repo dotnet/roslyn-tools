@@ -41,10 +41,7 @@
   <repo owner="dotnet" name="project-system">
     <merge from="dev15.0.x" to="dev15.9.x" />
     <merge from="dev15.9.x" to="dev16.0.x" />
-    <merge from="dev16.0.x" to="dev16.1.x" />
-    <merge from="dev16.1.x" to="dev16.2.x" />
-    <merge from="dev16.2.x" to="dev16.3.x" />
-    <merge from="dev16.3.x" to="dev16.4.x" />
+    <merge from="dev16.0.x" to="dev16.4.x" />
     <merge from="dev16.4.x" to="master" />
   </repo>
   <repo owner="dotnet" name="templates">
