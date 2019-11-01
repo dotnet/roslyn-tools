@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Text;
 
 namespace Roslyn.Insertion
@@ -61,7 +62,13 @@ namespace Roslyn.Insertion
             string logFileLocation,
             string clientId,
             string clientSecret,
-            string titlePrefix)
+            string titlePrefix,
+            string componentName,
+            string componentFileName,
+            string componentUrl,
+            string componentVersion,
+            string githubUserName,
+            string githubPassword)
         {
             Username = username;
             Password = password;
@@ -93,6 +100,12 @@ namespace Roslyn.Insertion
             ClientId = clientId;
             ClientSecret = clientSecret;
             TitlePrefix = titlePrefix;
+            ComponentName=componentName;
+            ComponentFileName=componentFileName;
+            ComponentUrl=componentUrl;
+            ComponentVersion=componentVersion;
+            GithubUserName=githubUserName;
+            GithubPassword=githubPassword;
         }
 
         public RoslynInsertionToolOptions Update(
@@ -125,7 +138,13 @@ namespace Roslyn.Insertion
             Optional<string> logFileLocation = default,
             Optional<string> clientId = default,
             Optional<string> clientSecret = default,
-            Optional<string> titlePrefix = default)
+            Optional<string> titlePrefix = default,
+            Optional<string> componentName = default,
+            Optional<string> componentVersion = default,
+            Optional<string> componentUrl = default,
+            Optional<string> componentFileName = default,
+            Optional<string> githubUserName = default,
+            Optional<string> githubPassword = default)
         {
             return new RoslynInsertionToolOptions(
                 username: username.ValueOrFallback(Username),
@@ -157,7 +176,13 @@ namespace Roslyn.Insertion
                 logFileLocation: logFileLocation.ValueOrFallback(LogFileLocation),
                 clientId: clientId.ValueOrFallback(ClientId),
                 clientSecret: clientSecret.ValueOrFallback(ClientSecret),
-                titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix));
+                titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix),
+                componentName: componentName.ValueOrFallback(ComponentName),
+                componentVersion: componentVersion.ValueOrFallback(ComponentVersion),
+                componentUrl: componentUrl.ValueOrFallback(ComponentUrl),
+                componentFileName: componentFileName.ValueOrFallback(ComponentFileName),
+                githubUserName: githubUserName.ValueOrFallback(GithubUserName),
+                githubPassword: githubPassword.ValueOrFallback(GithubPassword));
         }
 
         public RoslynInsertionToolOptions WithRunRPSInValidation(bool runRPSInValidation) => Update(runRPSInValidation: runRPSInValidation);
@@ -204,6 +229,8 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithUpdateCoreXTLLibraries(bool updateCoreXTLibraries) => Update(updateCoreXTLibraries: updateCoreXTLibraries);
 
+        public RoslynInsertionToolOptions WithCompnentName(string componentName) => Update(componentName: componentName);
+
         public RoslynInsertionToolOptions WithUpdateAssemblyVersions(bool updateAssemblyVersions) => Update(updateAssemblyVersions: updateAssemblyVersions);
 
         public RoslynInsertionToolOptions WithCreateDummyPr(bool createDummyPr) => Update(createDummyPr: createDummyPr);
@@ -214,11 +241,21 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithLogFileLocation(string logFileLocation) => Update(logFileLocation: logFileLocation);
 
+        public RoslynInsertionToolOptions WithCompnentVersion(string componentVersion) => Update(componentVersion: componentVersion);
+
         public RoslynInsertionToolOptions WithClientId(string clientId) => Update(clientId: clientId);
+
+        public RoslynInsertionToolOptions WithComponentUrl(string componentUrl) => Update(componentUrl: componentUrl);
+
+        public RoslynInsertionToolOptions WithComponentFileName(string componentFileName) => Update(componentFileName: componentFileName);
 
         public RoslynInsertionToolOptions WithClientSecret(string clientSecret) => Update(clientSecret: clientSecret);
 
+        public RoslynInsertionToolOptions WithGithubUserName(string githubUserName) => Update(githubUserName: githubUserName);
+
         public RoslynInsertionToolOptions WithTitlePrefix(string titlePrefix) => Update(titlePrefix: titlePrefix);
+
+        public RoslynInsertionToolOptions WithGithubPassword(string githubPassword) => Update(githubPassword: githubPassword);
 
         public string Username { get; }
 
@@ -279,6 +316,18 @@ namespace Roslyn.Insertion
         public string ClientSecret { get; }
 
         public string TitlePrefix { get; }
+
+        public string ComponentName { get; }
+
+        public string ComponentVersion { get; }
+
+        public string ComponentUrl { get; }
+
+        public string ComponentFileName { get; }
+
+        public string GithubUserName { get; }
+
+        public string GithubPassword { get; }
 
         public bool Valid
         {

@@ -207,6 +207,36 @@ partial class RoslynInsertionToolCommandline
                 "Prepend the generated pull request's title with the specified value.",
                 titlePrefix => options = options.WithTitlePrefix(titlePrefix)
             },
+            {
+                "componentName=",
+                "Optional name to use when updating the components.json file",
+                componentName => options = options.WithCompnentName(componentName)
+            },
+            {
+                "componentVersion=",
+                "Optional version string to use when updating the components.json file",
+                componentVersion => options = options.WithCompnentVersion(componentVersion)
+            },
+            {
+                "componentUrl=",
+                "Optional url to use when updating the components.json file",
+                componentUrl => options = options.WithComponentUrl(componentUrl)
+            },
+            {
+                "componentFileName=",
+                "Optional file name to use when updating the components.json file",
+                componentFileName => options = options.WithComponentFileName(componentFileName)
+            },
+            {
+                "githubUserName=",
+                "Optional github user name to use when looking up change info",
+                githubUserName => options = options.WithGithubUserName(githubUserName)
+            },
+            {
+                "githubPassword=",
+                "Optional github password name to use when looking up change info",
+                githubPassword => options = options.WithGithubPassword(githubPassword)
+            },
         };
 
         List<string> extraArguments = null;
