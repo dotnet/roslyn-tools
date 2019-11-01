@@ -241,7 +241,7 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithLogFileLocation(string logFileLocation) => Update(logFileLocation: logFileLocation);
 
-        public RoslynInsertionToolOptions WithCompnentVersion(string componentVersion) => Update(componentVersion: componentVersion);
+        public RoslynInsertionToolOptions WithComponentVersion(string componentVersion) => Update(componentVersion: componentVersion);
 
         public RoslynInsertionToolOptions WithClientId(string clientId) => Update(clientId: clientId);
 

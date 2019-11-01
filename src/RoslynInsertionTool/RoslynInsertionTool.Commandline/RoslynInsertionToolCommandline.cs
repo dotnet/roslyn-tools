@@ -215,7 +215,7 @@ partial class RoslynInsertionToolCommandline
             {
                 "componentVersion=",
                 "Optional version string to use when updating the components.json file",
-                componentVersion => options = options.WithCompnentVersion(componentVersion)
+                componentVersion => options = options.WithComponentVersion(componentVersion)
             },
             {
                 "componentUrl=",
