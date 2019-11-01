@@ -210,7 +210,7 @@ partial class RoslynInsertionToolCommandline
             {
                 "componentName=",
                 "Optional name to use when updating the components.json file",
-                componentName => options = options.WithCompnentName(componentName)
+                componentName => options = options.WithComponentName(componentName)
             },
             {
                 "componentVersion=",

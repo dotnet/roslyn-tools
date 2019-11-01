@@ -229,7 +229,7 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithUpdateCoreXTLLibraries(bool updateCoreXTLibraries) => Update(updateCoreXTLibraries: updateCoreXTLibraries);
 
-        public RoslynInsertionToolOptions WithCompnentName(string componentName) => Update(componentName: componentName);
+        public RoslynInsertionToolOptions WithComponentName(string componentName) => Update(componentName: componentName);
 
         public RoslynInsertionToolOptions WithUpdateAssemblyVersions(bool updateAssemblyVersions) => Update(updateAssemblyVersions: updateAssemblyVersions);
 
