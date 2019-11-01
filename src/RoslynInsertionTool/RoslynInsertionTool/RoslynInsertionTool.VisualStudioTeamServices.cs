@@ -452,6 +452,12 @@ namespace Roslyn.Insertion
                 var request = new HttpRequestMessage(HttpMethod.Get, restEndpoint);
                 request.Headers.Add("User-Agent", "RoslynInsertionTool");
 
+                if (Options.GithubUserName != null && Options.GithubPassword != null)
+                {
+                    string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{Options.GithubUserName}:{Options.GithubPassword}"));
+                    request.Headers.Add("Authorization", "Basic" + credentials);
+                }
+
                 var response = await client.SendAsync(request);
                 var content = await response.Content.ReadAsStringAsync();
 
