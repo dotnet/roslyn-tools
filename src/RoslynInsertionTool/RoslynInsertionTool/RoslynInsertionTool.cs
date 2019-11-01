@@ -188,8 +188,27 @@ namespace Roslyn.Insertion
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating CoreXT components file");
 
-                    var components = await GetLatestComponentsAsync(buildToInsert, cancellationToken);
                     var shouldSave = false;
+                    Component[] components = null;
+
+                    // If the user manually supplied the component to update then do that instead of searhing through
+                    // the build artifacts
+                    if (Options.ComponentName != null &&
+                        Options.ComponentFileName != null &&
+                        Options.ComponentUrl != null)
+                    {
+                        var newComponent = new Component(
+                            Options.ComponentName,
+                            Options.ComponentFileName,
+                            new Uri(options.ComponentUrl),
+                            Options.ComponentVersion);
+                        components = new[] { newComponent };
+                    }
+                    else
+                    {
+                        components = await GetLatestComponentsAsync(buildToInsert, cancellationToken);
+                    }
+
                     foreach (var newComponent in components)
                     {
                         if (coreXT.TryGetComponentByName(newComponent.Name, out var oldComponent))
