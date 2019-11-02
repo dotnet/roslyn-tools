@@ -570,15 +570,6 @@ namespace Roslyn.Insertion
             return description.ToString();
         }
 
-        internal static string AppendDiffToDescription(string prDescription, string diffLink)
-        {
-            var diff = $"[View Complete Diff of Changes]({diffLink})";
-            var description = new StringBuilder(prDescription + Environment.NewLine);
-            description.AppendLine("---");
-            description.AppendLine(diff);
-            return description.Length >= 3500 ? prDescription : description.ToString();
-        }
-
         internal struct GitCommit
         {
             public string Author { get; set; }

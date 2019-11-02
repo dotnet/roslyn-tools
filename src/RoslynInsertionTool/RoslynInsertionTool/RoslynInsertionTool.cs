@@ -291,7 +291,13 @@ namespace Roslyn.Insertion
                     {
                         var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
                         var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild ?? buildToInsert, buildToInsert, cancellationToken);
-                        prDescription = AppendDiffToDescription(prDescription, diffLink);
+
+                        var diffDescription = changes.Any()
+                            ? $"[View Complete Diff of Changes]({diffLink})"
+                            : "No source changes since previous insertion";
+
+                        var nl = Environment.NewLine;
+                        prDescription += nl + "---" + nl + diffDescription + nl;
                         prDescription = AppendChangesToDescription(prDescription, oldBuild ?? buildToInsert, changes);
                     }
                     catch (Exception e)
