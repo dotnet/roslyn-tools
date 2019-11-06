@@ -194,10 +194,16 @@ namespace Roslyn.Insertion
         private static async Task<Build> GetSpecificBuildAsync(BuildVersion version, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Console.WriteLine($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.BuildQueueName}");
+            Console.WriteLine($"Getting build with build number {version}");
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
             var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
-            var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken);
+            var builds = await buildClient.GetBuildsAsync(
+                project: Options.TFSProjectName,
+                definitions: definitions.Select(d => d.Id),
+                buildNumber: version.ToString(),
+                statusFilter: BuildStatus.Completed,
+                cancellationToken: cancellationToken);
+
             return (from build in builds
                     where version == BuildVersion.FromTfsBuildNumber(build.BuildNumber, Options.BuildQueueName)
                     orderby build.FinishTime descending
