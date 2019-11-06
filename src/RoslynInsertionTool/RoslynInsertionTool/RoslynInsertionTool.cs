@@ -112,12 +112,49 @@ namespace Roslyn.Insertion
 
                 cancellationToken.ThrowIfCancellationRequested();
 
+                // *********** Look up existing PR ********************
                 var gitClient = ProjectCollection.GetClient<GitHttpClient>();
                 var branches = await gitClient.GetRefsAsync(
                     VSRepoId,
                     filter: $"heads/{Options.VisualStudioBranchName}",
                     cancellationToken: cancellationToken);
                 var baseBranch = branches.Single(b => b.Name == $"refs/heads/{Options.VisualStudioBranchName}");
+
+                var pullRequestId = Options.UpdateExistingPr;
+                var useExistingPr = pullRequestId != 0;
+
+                GitPullRequest pullRequest;
+                string insertionBranchName;
+                if (useExistingPr)
+                {
+                    pullRequest = await gitClient.GetPullRequestByIdAsync(pullRequestId, cancellationToken: cancellationToken);
+                    insertionBranchName = pullRequest.SourceRefName.Substring("refs/heads/".Length);
+
+                    var refs = await gitClient.GetRefsAsync(VSRepoId, filter: $"heads/{insertionBranchName}", cancellationToken: cancellationToken);
+                    var insertionBranch = refs.Single(r => r.Name == $"refs/heads/{insertionBranchName}");
+
+                    if (Options.OverwritePr)
+                    {
+                        // overwrite existing PR branch back to base before pushing new commit
+                        var updateToBase = new GitRefUpdate
+                        {
+                            OldObjectId = insertionBranch.ObjectId,
+                            NewObjectId = baseBranch.ObjectId,
+                            Name = $"refs/heads/{insertionBranchName}"
+                        };
+                        await gitClient.UpdateRefsAsync(new[] { updateToBase }, VSRepoId, cancellationToken: cancellationToken);
+                    }
+                    else
+                    {
+                        // not overwriting PR, so the insertion branch is actually the base
+                        baseBranch = insertionBranch;
+                    }
+                }
+                else
+                {
+                    pullRequest = null;
+                    insertionBranchName = GetNewBranchName();
+                }
 
                 var allChanges = new List<GitChange>();
 
@@ -227,42 +264,6 @@ namespace Roslyn.Insertion
                 }
 
                 // ********************* Create push *************************************
-                var pullRequestId = Options.UpdateExistingPr;
-                var useExistingPr = pullRequestId != 0;
-
-                GitPullRequest pullRequest;
-                string insertionBranchName;
-                if (useExistingPr)
-                {
-                    pullRequest = await gitClient.GetPullRequestByIdAsync(pullRequestId, cancellationToken: cancellationToken);
-                    insertionBranchName = pullRequest.SourceRefName.Substring("refs/heads/".Length);
-
-                    var refs = await gitClient.GetRefsAsync(VSRepoId, filter: $"heads/{insertionBranchName}", cancellationToken: cancellationToken);
-                    var insertionBranch = refs.Single(r => r.Name == $"refs/heads/{insertionBranchName}");
-
-                    if (Options.OverwritePr)
-                    {
-                        // overwrite existing PR branch back to base before pushing new commit
-                        var updateToBase = new GitRefUpdate
-                        {
-                            OldObjectId = insertionBranch.ObjectId,
-                            NewObjectId = baseBranch.ObjectId,
-                            Name = $"refs/heads/{insertionBranchName}"
-                        };
-                        await gitClient.UpdateRefsAsync(new[] { updateToBase }, VSRepoId, cancellationToken: cancellationToken);
-                    }
-                    else
-                    {
-                        // not overwriting PR, so the insertion branch is actually the base
-                        baseBranch = insertionBranch;
-                    }
-                }
-                else
-                {
-                    pullRequest = null;
-                    insertionBranchName = GetNewBranchName();
-                }
-
                 var insertionBranchUpdate = new GitRefUpdate
                 {
                     Name = $"refs/heads/{insertionBranchName}",
@@ -289,16 +290,23 @@ namespace Roslyn.Insertion
                 {
                     try
                     {
-                        var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
-                        var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild ?? buildToInsert, buildToInsert, cancellationToken);
-
-                        var diffDescription = changes.Any()
-                            ? $"[View Complete Diff of Changes]({diffLink})"
-                            : "No source changes since previous insertion";
-
                         var nl = Environment.NewLine;
-                        prDescription += nl + "---" + nl + diffDescription + nl;
-                        prDescription = AppendChangesToDescription(prDescription, oldBuild ?? buildToInsert, changes);
+                        var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
+                        if (oldBuild is null)
+                        {
+                            prDescription += $"{nl}---{nl}Unable to find details for previous build ({oldComponentVersion}).{nl}";
+                        }
+                        else
+                        {
+                            var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild, buildToInsert, cancellationToken);
+
+                            var diffDescription = changes.Any()
+                                ? $"[View Complete Diff of Changes]({diffLink})"
+                                : "No source changes since previous insertion";
+
+                            prDescription += nl + "---" + nl + diffDescription + nl;
+                            prDescription = AppendChangesToDescription(prDescription, oldBuild ?? buildToInsert, changes);
+                        }
                     }
                     catch (Exception e)
                     {
