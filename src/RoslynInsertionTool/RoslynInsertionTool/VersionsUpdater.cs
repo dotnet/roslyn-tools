@@ -32,11 +32,9 @@ namespace Roslyn.Insertion
 
             // template defining version variables that flow to .config.tt files:
             var versionsTemplateContent = gitClient.GetItemContentAsync(vsRepoId, VersionsTemplatePath, download: true, versionDescriptor: version).Result;
-            using (StreamReader reader = new StreamReader(versionsTemplateContent))
-            {
-                _versionsTemplateOriginal = reader.ReadToEnd();
-                _versionsTemplateContent = _versionsTemplateOriginal;
-            }
+            using var reader = new StreamReader(versionsTemplateContent);
+            _versionsTemplateOriginal = reader.ReadToEnd();
+            _versionsTemplateContent = _versionsTemplateOriginal;
         }
 
         public GitChange GetChangeOpt()
