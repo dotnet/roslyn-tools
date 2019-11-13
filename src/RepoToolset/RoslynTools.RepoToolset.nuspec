@@ -1,23 +1,13 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
-    <id>$PackageId$</id>
-    <description>$PackageDescription$</description>
-    <version>$Version$</version>
-    <authors>$Authors$</authors>
-    <requireLicenseAcceptance>$RequireLicenseAcceptance$</requireLicenseAcceptance>
-    <licenseUrl>$PackageLicenseUrl$</licenseUrl>
-    <projectUrl>$PackageProjectUrl$</projectUrl>
-    <copyright>$Copyright$</copyright>
-    <developmentDependency>$DevelopmentDependency$</developmentDependency>
-    <tags>$PackageTags$</tags>
-    <serviceable>$Serviceable$</serviceable>
-    <repository type="$RepositoryType$" url="$RepositoryUrl$" commit="$RepositoryCommit$" />
+    $CommonMetadataElements$
     <packageTypes>
       <packageType name="MSBuildSdk" />
     </packageTypes>
   </metadata>
   <files>
+    $CommonFileElements$
     <file src="$ProjectDirectory$\sdk\*.*" target="sdk" />
     <file src="$ProjectDirectory$\tools\*.*" target="tools" />
     <file src="netcoreapp2.1\publish\RoslynTools.*" target="tools\tasks\netcoreapp2.1" />
