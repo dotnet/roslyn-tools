@@ -6,37 +6,34 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Roslyn.Insertion
 {
     internal sealed class VersionsUpdater
     {
-        public List<string> WarningMessages { get; }
-
         private const string VersionsTemplatePath = "src/ProductData/AssemblyVersions.tt";
         private readonly string _versionsTemplateOriginal;
         private string _versionsTemplateContent;
 
-        public VersionsUpdater(GitHttpClient gitClient, string commitId, List<string> warningMessages)
-        {
-            WarningMessages = warningMessages;
+        public List<string> WarningMessages { get; }
 
+        private VersionsUpdater(string versionsTemplate, List<string> warningMessages)
+        {
+            _versionsTemplateOriginal = versionsTemplate;
+            _versionsTemplateContent = versionsTemplate;
+            WarningMessages = warningMessages;
+        }
+
+        public static async Task<VersionsUpdater> Create(GitHttpClient gitClient, string commitId, List<string> warningMessages)
+        {
             var vsRepoId = RoslynInsertionTool.VSRepoId;
             var version = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
-
-            // TODO: change streams to 'using var' once we update the .NET SDK version just for hygiene.
-            // https://github.com/dotnet/roslyn-tools/issues/577
-
-            // TODO: consider refactoring into a CreateAsync or similar method to avoid .Result
-
-            // template defining version variables that flow to .config.tt files:
-            var versionsTemplateContent = gitClient.GetItemContentAsync(vsRepoId, VersionsTemplatePath, download: true, versionDescriptor: version).Result;
-            using (StreamReader reader = new StreamReader(versionsTemplateContent))
-            {
-                _versionsTemplateOriginal = reader.ReadToEnd();
-                _versionsTemplateContent = _versionsTemplateOriginal;
-            }
+            var versionsTemplateContent = await gitClient.GetItemContentAsync(vsRepoId, VersionsTemplatePath, download: true, versionDescriptor: version);
+            using var reader = new StreamReader(versionsTemplateContent);
+            string versionsTemplate = reader.ReadToEnd();
+            return new VersionsUpdater(versionsTemplate, warningMessages);
         }
 
         public GitChange GetChangeOpt()

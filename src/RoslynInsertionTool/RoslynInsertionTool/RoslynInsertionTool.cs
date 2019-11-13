@@ -158,7 +158,7 @@ namespace Roslyn.Insertion
 
                 var allChanges = new List<GitChange>();
 
-                var coreXT = CoreXT.Load(gitClient, baseBranch.ObjectId);
+                var coreXT = await CoreXT.Load(gitClient, baseBranch.ObjectId);
                 if (Options.InsertCoreXTPackages)
                 {
                     // ************** Update Nuget Packages For Branch************************
@@ -195,7 +195,7 @@ namespace Roslyn.Insertion
                     // ************** Update assembly versions ************************
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating assembly versions");
-                    if (UpdateAssemblyVersionsOpt(gitClient, baseBranch.ObjectId, insertionArtifacts) is GitChange assemblyVersionChange)
+                    if (await UpdateAssemblyVersionsOpt(gitClient, baseBranch.ObjectId, insertionArtifacts) is GitChange assemblyVersionChange)
                     {
                         allChanges.Add(assemblyVersionChange);
                     }
