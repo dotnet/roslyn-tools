@@ -41,31 +41,13 @@
   <repo owner="dotnet" name="project-system">
     <merge from="dev15.0.x" to="dev15.9.x" />
     <merge from="dev15.9.x" to="dev16.0.x" />
-    <merge from="dev16.0.x" to="dev16.1.x" />
-    <merge from="dev16.1.x" to="dev16.2.x" />
-    <merge from="dev16.2.x" to="dev16.3.x" />
-    <merge from="dev16.3.x" to="dev16.4.x" />
+    <merge from="dev16.0.x" to="dev16.4.x" />
     <merge from="dev16.4.x" to="master" />
-  </repo>
-  <repo owner="dotnet" name="cli">
-    <merge from="release/3.0.1xx" to="release/3.1.1xx" />
-  </repo>
-  <repo owner="dotnet" name="sdk">
-    <merge from="release/3.0.1xx" to="release/3.1.1xx" />
-    <merge from="release/3.1.1xx" to="master" />
   </repo>
   <repo owner="dotnet" name="templates">
     <merge from="dev15.9.x" to="dev16.0.x" />
     <merge from="dev16.0.x" to="dev16.3.x" />
     <merge from="dev16.3.x" to="master" />
-  </repo>
-  <repo owner="dotnet" name="toolset">
-    <merge from="release/3.0.1xx" to="release/3.1.1xx" />
-    <merge from="release/3.1.1xx" to="master" />
-  </repo>
-  <repo owner="dotnet" name="core-sdk">
-    <merge from="release/3.0.1xx" to="release/3.1.1xx" />
-    <merge from="release/3.1.1xx" to="master" />
   </repo>
   <repo owner="dotnet" name="fsharp">
     <!-- releases -->
@@ -95,7 +77,7 @@
 
   <!-- testimpact branches -->
   <repo owner="dotnet" name="testimpact">
-    <merge from="dev16.3.x" to="master" />
+    <merge from="dev16.4.x" to="master" />
   </repo>
 
   <!-- msbuild language service branches -->

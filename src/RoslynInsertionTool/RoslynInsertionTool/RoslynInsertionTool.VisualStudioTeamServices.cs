@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -17,21 +18,13 @@ using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.Policy.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
-using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
-using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Clients;
-using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts;
-using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Change = Microsoft.TeamFoundation.Build.WebApi.Change;
 
 namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
-        // Currently this is the only release we trigger. We can easily move this over to options when we need this configurable.
-        private const string ReleaseDefinitionName = "Roslyn";
-
         private static readonly Lazy<TfsTeamProjectCollection> LazyProjectCollection = new Lazy<TfsTeamProjectCollection>(() =>
         {
             Console.WriteLine($"Creating TfsTeamProjectCollection object from {Options.VSTSUri}");
@@ -68,32 +61,6 @@ namespace Roslyn.Insertion
                     cancellationToken);
         }
 
-        private static async Task<GitPullRequest> GetExistingPullRequestAsync(int pullRequestId, CancellationToken cancellationToken)
-        {
-            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
-            var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
-            return await gitClient.GetPullRequestAsync(
-                repositoryId: repository.Id,
-                pullRequestId: pullRequestId,
-                cancellationToken: cancellationToken);
-        }
-
-        private static async Task<GitPullRequest> UpdatePullRequestDescriptionAsync(int pullRequestId, string newDescription, CancellationToken cancellationToken)
-        {
-            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
-            var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
-            var pullRequest = new GitPullRequest()
-            {
-                Description = newDescription
-            };
-            return await gitClient.UpdatePullRequestAsync(
-                pullRequest,
-                repository.Id,
-                pullRequestId,
-                userState: null,
-                cancellationToken: cancellationToken);
-        }
-
         private static async Task<IEnumerable<Build>> GetBuildsFromTFSAsync(BuildHttpClient buildClient, List<BuildDefinitionReference> definitions, CancellationToken cancellationToken, BuildResult? resultFilter = null)
         {
             IEnumerable<Build> builds = await GetBuildsFromTFSByBranchAsync(buildClient, definitions, Options.BranchName, resultFilter, cancellationToken);
@@ -104,12 +71,12 @@ namespace Roslyn.Insertion
         private static async Task<List<Build>> GetBuildsFromTFSByBranchAsync(BuildHttpClient buildClient, List<BuildDefinitionReference> definitions, string branchName, BuildResult? resultFilter, CancellationToken cancellationToken)
         {
             return await buildClient.GetBuildsAsync(
-                                    project: Options.TFSProjectName,
-                                    definitions: definitions.Select(d => d.Id),
-                                    branchName: branchName,
-                                    statusFilter: BuildStatus.Completed,
-                                    resultFilter: resultFilter,
-                                    cancellationToken: cancellationToken);
+                project: Options.TFSProjectName,
+                definitions: definitions.Select(d => d.Id),
+                branchName: branchName,
+                statusFilter: BuildStatus.Completed,
+                resultFilter: resultFilter,
+                cancellationToken: cancellationToken);
         }
 
         private static async Task<Build> GetLatestBuildAsync(CancellationToken cancellationToken)
@@ -126,8 +93,10 @@ namespace Roslyn.Insertion
         /// <summary>
         /// Insertable builds have valid artifacts and are not marked as 'DoesNotRequireInsertion_[TargetBranchName]'.
         /// </summary>
-        private static async Task<List<Build>> GetInsertableBuildsAsync(BuildHttpClient buildClient, CancellationToken cancellationToken,
-                        IEnumerable<Build> builds)
+        private static async Task<List<Build>> GetInsertableBuildsAsync(
+            BuildHttpClient buildClient,
+            CancellationToken cancellationToken,
+            IEnumerable<Build> builds)
         {
             List<Build> buildsWithValidArtifacts = new List<Build>();
             foreach (var build in builds)
@@ -225,10 +194,16 @@ namespace Roslyn.Insertion
         private static async Task<Build> GetSpecificBuildAsync(BuildVersion version, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Console.WriteLine($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.BuildQueueName}");
+            Console.WriteLine($"Getting build with build number {version}");
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
             var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
-            var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken);
+            var builds = await buildClient.GetBuildsAsync(
+                project: Options.TFSProjectName,
+                definitions: definitions.Select(d => d.Id),
+                buildNumber: version.ToString(),
+                statusFilter: BuildStatus.Completed,
+                cancellationToken: cancellationToken);
+
             return (from build in builds
                     where version == BuildVersion.FromTfsBuildNumber(build.BuildNumber, Options.BuildQueueName)
                     orderby build.FinishTime descending
@@ -311,15 +286,13 @@ namespace Roslyn.Insertion
             Stopwatch watch = Stopwatch.StartNew();
 
             using (Stream s = await buildClient.GetArtifactContentZipAsync(Options.TFSProjectName, build.Id, artifact.Name, cancellationToken))
+            using (MemoryStream ms = new MemoryStream())
             {
-                using (var fs = File.OpenWrite(archiveDownloadPath))
+                await s.CopyToAsync(ms);
+                using (ZipArchive archive = new ZipArchive(ms))
                 {
-                    // Using the default buffer size.
-                    await s.CopyToAsync(fs, 81920, cancellationToken);
+                    archive.ExtractToDirectory(tempDirectory);
                 }
-
-                ZipFile.ExtractToDirectory(archiveDownloadPath, tempDirectory);
-                File.Delete(archiveDownloadPath);
             }
 
             Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds/1000} seconds");
@@ -470,46 +443,71 @@ namespace Roslyn.Insertion
             return logText;
         }
 
-        internal static async Task<(IEnumerable<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
+        internal static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
         {
-            var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
-            var changes = await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
-                                                                 buildId: tobuild.Id,
-                                                                 cancellationToken: cancellationToken);
-            Change firstChange, lastChange;
-            if (fromBuild.Id != tobuild.Id)
-            {
-                firstChange = (await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
-                                                                      buildId: fromBuild.Id,
-                                                                      cancellationToken: cancellationToken)).Last();
 
-                lastChange = (await buildClient.GetBuildChangesAsync(project: Options.TFSProjectName,
-                                                                     buildId: tobuild.Id,
-                                                                     cancellationToken: cancellationToken)).First();
+            if (tobuild.Repository.Type == "GitHub")
+            {
+                var repoId = tobuild.Repository.Id; // e.g. dotnet/roslyn
+
+                var fromSHA = fromBuild.SourceVersion.Substring(0, 7);
+                var toSHA = tobuild.SourceVersion.Substring(0, 7);
+
+                var restEndpoint = $"https://api.github.com/repos/{repoId}/compare/{fromSHA}...{toSHA}";
+                var client = new HttpClient();
+                var request = new HttpRequestMessage(HttpMethod.Get, restEndpoint);
+                request.Headers.Add("User-Agent", "RoslynInsertionTool");
+
+                var response = await client.SendAsync(request);
+                var content = await response.Content.ReadAsStringAsync();
+
+                // https://developer.github.com/v3/repos/commits/
+                var data = JsonConvert.DeserializeAnonymousType(content, new
+                {
+                    commits = new[]
+                    {
+                        new
+                        {
+                            sha = "",
+                            commit = new
+                            {
+                                author = new
+                                {
+                                    name = "",
+                                    email = "",
+                                    date = ""
+                                },
+                                message = ""
+                            },
+                            html_url = ""
+                        }
+                    }
+                });
+
+                var result = data.commits
+                    .Select(d =>
+                        new GitCommit()
+                        {
+                            Author = d.commit.author.name,
+                            CommitDate = DateTime.Parse(d.commit.author.date),
+                            Message = d.commit.message,
+                            CommitId = d.sha,
+                            RemoteUrl = d.html_url
+                        })
+                    // show HEAD first, base last
+                    .Reverse()
+                    .ToList();
+
+                return (result, $"https://github.com/{repoId}/compare/{fromSHA}...{toSHA}?w=1");
             }
-            else
-            {
-                firstChange = changes.First();
-                lastChange = changes.Last();
-            }
 
-            var from = firstChange.Id.Substring(0, 8);
-            var to = lastChange.Id.Substring(0, 8);
-            var organization = firstChange.DisplayUri.AbsoluteUri.Split('/')[3];
-            var repo = firstChange.DisplayUri.AbsoluteUri.Split('/')[4];
-            var diffLink = $@"https://github.com/{organization}/{repo}/compare/{from}...{to}?w=1";
-
-            return (changes.Select(change => new GitCommit
-            {
-                Author = change.Author.DisplayName,
-                CommitDate = change.Timestamp.Value,
-                Message = change.Message,
-                CommitId = change.Id,
-                RemoteUrl = change.DisplayUri.AbsoluteUri,
-            }), diffLink);
+            throw new NotSupportedException("Only builds created from GitHub repos support enumerating commits.");
         }
 
-        internal static string AppendChangesToDescription(string prDescription, IEnumerable<GitCommit> changes)
+        private static readonly Regex IsMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
+        private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)$");
+
+        internal static string AppendChangesToDescription(string prDescription, Build oldBuild, List<GitCommit> changes)
         {
             if (!changes.Any())
             {
@@ -517,25 +515,65 @@ namespace Roslyn.Insertion
             }
 
             var description = new StringBuilder(prDescription + Environment.NewLine);
-            var separator = Environment.NewLine.ToCharArray();
-            description.AppendLine($@"---
-Changes associated with this build (most recent commits):
-| Commit | Message | Author | Date |
-| ------ | ------- | ------ | ---- |
-{string.Join("\n", changes.Select(x => $"| [{x.CommitId.Substring(0, 8)}]({x.RemoteUrl}) | {x.Message.Split(separator).First()} | {x.Author} | {x.CommitDate} |"))}"
-            );
 
-            //max size for description
-            return description.Length >= 3500 ? prDescription : description.ToString();
-        }
+            var firstCommit = changes[0];
+            var repoURL = $"http://github.com/{oldBuild.Repository.Id}";
+            description.AppendLine($@"Changes since [{oldBuild.SourceVersion.Substring(0, 7)}]({firstCommit.RemoteUrl})");
 
-        internal static string AppendDiffToDescription(string prDescription, string diffLink)
-        {
-            var diff = $"[View Complete Diff of Changes]({diffLink})";
-            var description = new StringBuilder(prDescription + Environment.NewLine);
-            description.AppendLine("---");
-            description.AppendLine(diff);
-            return description.Length >= 3500 ? prDescription : description.ToString();
+            foreach (var commit in changes)
+            {
+                // Exclude auto-merges
+                if (commit.Author == "dotnet-automerge-bot" ||
+                    commit.Author == "msftbot[bot]")
+                {
+                    continue;
+                }
+
+                string comment;
+                string prNumber;
+
+                var match = IsMergePRCommit.Match(commit.Message);
+                if (match.Success)
+                {
+                    prNumber = match.Groups[1].Value;
+
+                    // Merge PR Messages are in the form "Merge pull request #39526 from mavasani/GetValueUsageInfoAssert\n\nFix an assert in IOperationExtension.GetValueUsageInfo"
+                    // Try and extract the 3rd line since it is the useful part of the message, otherwise take the first line.
+                    var lines = commit.Message.Split('\n');
+                    comment = lines.Length > 2
+                        ? $"{lines[2]} ({prNumber})"
+                        : lines[0];
+                }
+                else
+                {
+                    match = IsSquashedPRCommit.Match(commit.Message);
+                    if (!match.Success)
+                    {
+                        continue;
+                    }
+
+                    prNumber = match.Groups[1].Value;
+
+                    // Squash PR Messages are in the form "Nullable annotate TypeCompilationState and MessageID (#39449)"
+                    // Take the 1st line since it should be descriptive.
+                    comment = commit.Message.Split('\n')[0];
+                }
+
+                // Replace "#{prNumber}" with "{prNumber}" so that AzDO won't linkify it
+                comment = comment.Replace($"#{prNumber}", prNumber);
+
+                var prLink = $@"- [{comment}]({repoURL}/pull/{prNumber})";
+
+                description.AppendLine(prLink);
+
+                if (description.Length > 3500)
+                {
+                    description.AppendLine("Changelog truncated due to description length limit.");
+                    break;
+                }
+            }
+
+            return description.ToString();
         }
 
         internal struct GitCommit

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using Microsoft.TeamFoundation.SourceControl.WebApi;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,9 +12,9 @@ namespace Roslyn.Insertion
     {
         private const string VersionEqualsPrefix = "Version=";
 
-        private static void UpdateAssemblyVersions(InsertionArtifacts artifacts)
+        private static GitChange UpdateAssemblyVersionsOpt(GitHttpClient gitClient, string commitId, InsertionArtifacts artifacts)
         {
-            var versionsUpdater = new VersionsUpdater(GetAbsolutePathForEnlistment(), WarningMessages);
+            var versionsUpdater = new VersionsUpdater(gitClient, commitId, WarningMessages);
 
             var pathToDependentAssemblyVersionsFile = artifacts.GetDependentAssemblyVersionsFile();
             if (File.Exists(pathToDependentAssemblyVersionsFile))
@@ -28,7 +29,7 @@ namespace Roslyn.Insertion
                 Console.WriteLine($"No dependent-assembly-versions file found at path '{pathToDependentAssemblyVersionsFile}'");
             }
 
-            versionsUpdater.Save();
+            return versionsUpdater.GetChangeOpt();
         }
 
         private static IEnumerable<KeyValuePair<string, Version>> ReadAssemblyVersions(string path)
