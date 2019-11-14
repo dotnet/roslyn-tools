@@ -280,7 +280,7 @@ namespace Roslyn.Insertion
 
             Directory.CreateDirectory(tempDirectory);
 
-            var archiveDownloadPath = Path.Combine(tempDirectory, string.Concat(artifact.Name, ".zip"));
+            var archiveDownloadPath = Path.Combine(tempDirectory, artifact.Name);
             Console.WriteLine($"Downloading artifacts to {archiveDownloadPath}");
 
             Stopwatch watch = Stopwatch.StartNew();
@@ -397,50 +397,19 @@ namespace Roslyn.Insertion
         {
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
 
-            // Allocate temporary files
-            var tempZipFile = Path.GetTempFileName();
-            var tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-            // Get zip file from TFS and write to disk
-            using (var logStream = await buildClient.GetBuildLogsZipAsync(Options.TFSProjectName, newestBuild.Id, cancellationToken: cancellationToken))
-            using (var tempStream = File.OpenWrite(tempZipFile))
+            var allLogs = await buildClient.GetBuildLogsAsync(Options.TFSProjectName, newestBuild.Id, cancellationToken: cancellationToken);
+            foreach (var log in allLogs)
             {
-                await logStream.CopyToAsync(tempStream);
-            }
-
-            // Open zip file and extract log entry on disk
-            using (var zipFile = ZipFile.OpenRead(tempZipFile))
-            {
-                var entry = zipFile.Entries.SingleOrDefault(x => x.FullName.Contains("Upload VSTS Drop"));
-                if(entry == null)
+                var headerLine = await buildClient.GetBuildLogLinesAsync(Options.TFSProjectName, newestBuild.Id, log.Id, startLine: 0, endLine: 1, cancellationToken: cancellationToken);
+                if (headerLine[0].Contains("Upload VSTS Drop"))
                 {
-                    var zipFileEntries = string.Join(Environment.NewLine, zipFile.Entries.Select(x => x.FullName));
-                    Console.WriteLine($"Listing all log file entries:{Environment.NewLine}{zipFileEntries}");
-                    throw new Exception("This build did not upload its contents to VSTS Drop and is invalid.");
+                    using var stream = await buildClient.GetBuildLogAsync(Options.TFSProjectName, newestBuild.Id, log.Id, cancellationToken: cancellationToken);
+                    var logText = await new StreamReader(stream).ReadToEndAsync();
+                    return logText;
                 }
-                entry.ExtractToFile(tempFile);
             }
 
-            // Read in log text
-            string logText;
-            using (var tempFileStream = File.OpenRead(tempFile))
-            using (var streamReader = new StreamReader(tempFileStream))
-            {
-                logText = await streamReader.ReadToEndAsync();
-            }
-
-            // Attempt to delete temporary files
-            try
-            {
-                File.Delete(tempZipFile);
-                File.Delete(tempFile);
-            }
-            catch (Exception)
-            {
-                // swallow exceptions
-            }
-
-            return logText;
+            throw new Exception($"Build {newestBuild.BuildNumber} did not upload its contents to VSTS Drop and is invalid.");
         }
 
         internal static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
@@ -518,7 +487,6 @@ namespace Roslyn.Insertion
 
             var firstCommit = changes[0];
             var repoURL = $"http://github.com/{oldBuild.Repository.Id}";
-            description.AppendLine($@"Changes since [{oldBuild.SourceVersion.Substring(0, 7)}]({firstCommit.RemoteUrl})");
 
             foreach (var commit in changes)
             {
