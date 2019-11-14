@@ -518,7 +518,6 @@ namespace Roslyn.Insertion
 
             var firstCommit = changes[0];
             var repoURL = $"http://github.com/{oldBuild.Repository.Id}";
-            description.AppendLine($@"Changes since [{oldBuild.SourceVersion.Substring(0, 7)}]({firstCommit.RemoteUrl})");
 
             foreach (var commit in changes)
             {

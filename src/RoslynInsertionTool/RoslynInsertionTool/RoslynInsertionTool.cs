@@ -99,15 +99,6 @@ namespace Roslyn.Insertion
                     buildToInsert = await GetSpecificBuildAsync(buildVersion, cancellationToken);
                 }
 
-                string commitSHA = buildToInsert.SourceVersion.Substring(0, 7);
-                string lastCommitUrl = string.Empty;
-                if (buildToInsert.Links.Links.ContainsKey("sourceVersionDisplayUri"))
-                {
-                    // Get a link to the commit the build was built from.
-                    var sourceLink = (ReferenceLink)buildToInsert.Links.Links["sourceVersionDisplayUri"];
-                    lastCommitUrl = sourceLink.Href;
-                }
-
                 var insertionArtifacts = await GetInsertionArtifactsAsync(buildToInsert, cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -286,17 +277,21 @@ namespace Roslyn.Insertion
                 await gitClient.CreatePushAsync(push, VSRepoId, cancellationToken: cancellationToken);
 
                 // ********************* Create pull request *****************************
+                var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
+                var oldBuildDescription = oldBuild is object
+                    ? $"from {oldBuild.GetBuildDescription()} "
+                    : "";
 
-                var prDescription = $"Updating {Options.InsertionName} to {buildVersion} ([{commitSHA}]({lastCommitUrl}))";
+                var newBuildDescription = $"to {buildToInsert.GetBuildDescription()}";
+                var prDescription = $"Updating {Options.InsertionName} {oldBuildDescription}{newBuildDescription}";
                 if (!useExistingPr || Options.OverwritePr)
                 {
                     try
                     {
                         var nl = Environment.NewLine;
-                        var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
                         if (oldBuild is null)
                         {
-                            prDescription += $"{nl}---{nl}Unable to find details for previous build ({oldComponentVersion}).{nl}";
+                            prDescription += $"{nl}---{nl}Unable to find details for previous build ({oldComponentVersion}){nl}";
                         }
                         else
                         {
@@ -450,6 +445,27 @@ namespace Roslyn.Insertion
             else
             {
                 return null;
+            }
+        }
+
+        public static string GetBuildDescription(this Build build)
+        {
+            var number = build.BuildNumber;
+            var shortCommitId = build.SourceVersion.Substring(0, 7);
+
+            var url = getLink(build, "web");
+            var commitUrl = getLink(build, "sourceVersionDisplayUri");
+
+            return $"[{number}]({url}) ([{shortCommitId}]({commitUrl}))";
+
+            static string getLink(Build build, string key)
+            {
+                if (build.Links.Links.TryGetValue(key, out var obj))
+                {
+                    var sourceLink = (ReferenceLink)obj;
+                    return sourceLink.Href;
+                }
+                return string.Empty;
             }
         }
     }
