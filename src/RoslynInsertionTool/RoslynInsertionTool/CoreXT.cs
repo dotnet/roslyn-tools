@@ -35,13 +35,13 @@ namespace Roslyn.Insertion
             var vsRepoId = RoslynInsertionTool.VSRepoId;
             var vsBranch = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
 
-            var defaultConfigStream = await gitClient.GetItemContentAsync(
+            using var defaultConfigStream = await gitClient.GetItemContentAsync(
                 vsRepoId,
                 DefaultConfigPath,
                 download: true,
                 versionDescriptor: vsBranch);
 
-            var defaultConfigOriginal = new StreamReader(defaultConfigStream).ReadToEnd();
+            var defaultConfigOriginal = await new StreamReader(defaultConfigStream).ReadToEndAsync();
 
             ComponentToFileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             ComponentFileToDocumentMap = new Dictionary<string, (string, JObject)>(StringComparer.OrdinalIgnoreCase);
@@ -254,8 +254,7 @@ namespace Roslyn.Insertion
             try
             {
                 using var fileStream = await gitClient.GetItemContentAsync(RoslynInsertionTool.VSRepoId, path: componentsJSONPath, versionDescriptor: versionDescriptor);
-                using var streamReader = new StreamReader(fileStream);
-                var original = streamReader.ReadToEnd();
+                var original = await new StreamReader(fileStream).ReadToEndAsync();
                 var jsonDocument = (JObject)JToken.Parse(original);
                 return (original, jsonDocument);
             }

@@ -280,7 +280,7 @@ namespace Roslyn.Insertion
 
             Directory.CreateDirectory(tempDirectory);
 
-            var archiveDownloadPath = Path.Combine(tempDirectory, string.Concat(artifact.Name, ".zip"));
+            var archiveDownloadPath = Path.Combine(tempDirectory, artifact.Name);
             Console.WriteLine($"Downloading artifacts to {archiveDownloadPath}");
 
             Stopwatch watch = Stopwatch.StartNew();
