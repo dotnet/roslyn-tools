@@ -473,6 +473,7 @@ namespace Roslyn.Insertion
             throw new NotSupportedException("Only builds created from GitHub repos support enumerating commits.");
         }
 
+        private static readonly Regex IsReleaseFlowCommit = new Regex(@"^Merge pull request #\d+ from dotnet/merges/");
         private static readonly Regex IsMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
         private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)$");
 
@@ -485,14 +486,18 @@ namespace Roslyn.Insertion
 
             var description = new StringBuilder(prDescription + Environment.NewLine);
 
-            var firstCommit = changes[0];
             var repoURL = $"http://github.com/{oldBuild.Repository.Id}";
 
             foreach (var commit in changes)
             {
-                // Exclude auto-merges
-                if (commit.Author == "dotnet-automerge-bot" ||
-                    commit.Author == "msftbot[bot]")
+                // Exclude arcade dependency updates
+                if (commit.Author == "dotnet-maestro[bot]")
+                {
+                    continue;
+                }
+
+                // Exclude merge commits from auto code-flow PRs (e.g. merges/master-to-master-vs-deps)
+                if (IsReleaseFlowCommit.Match(commit.Message).Success)
                 {
                     continue;
                 }
