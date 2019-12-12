@@ -19,6 +19,7 @@ namespace Roslyn.Insertion
     public static partial class RoslynInsertionTool
     {
         public static readonly Guid VSRepoId = new Guid("a290117c-5a8a-40f7-bc2c-f14dbe3acf6d");
+        public static readonly Guid MLInfraSwatUserId = new Guid("6c25b447-1d90-4840-8fde-d8b22cb8733e");
 
         private static List<string> WarningMessages { get; } = new List<string>();
 

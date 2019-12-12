@@ -39,12 +39,14 @@ namespace Roslyn.Insertion
             var prefix = string.IsNullOrEmpty(titlePrefix)
                 ? string.Empty
                 : titlePrefix + " ";
+
             return new GitPullRequest
             {
                 Title = $"{prefix}{Options.InsertionName} '{Options.BranchName}/{buildToInsert}' Insertion into {Options.VisualStudioBranchName}",
                 Description = description,
                 SourceRefName = sourceBranch,
-                TargetRefName = targetBranch
+                TargetRefName = targetBranch,
+                Reviewers = new[] { new IdentityRefWithVote { Id = MLInfraSwatUserId.ToString() } }
             };
         }
 
