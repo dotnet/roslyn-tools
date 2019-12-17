@@ -448,6 +448,10 @@ namespace Roslyn.Insertion
                                     email = "",
                                     date = ""
                                 },
+                                committer = new
+                                {
+                                    name = ""
+                                },
                                 message = ""
                             },
                             html_url = ""
@@ -460,6 +464,7 @@ namespace Roslyn.Insertion
                         new GitCommit()
                         {
                             Author = d.commit.author.name,
+                            Committer = d.commit.committer.name,
                             CommitDate = DateTime.Parse(d.commit.author.date),
                             Message = d.commit.message,
                             CommitId = d.sha,
@@ -477,7 +482,7 @@ namespace Roslyn.Insertion
 
         private static readonly Regex IsReleaseFlowCommit = new Regex(@"^Merge pull request #\d+ from dotnet/merges/");
         private static readonly Regex IsMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
-        private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)$");
+        private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)(?:\n|$)");
 
         internal static string AppendChangesToDescription(string prDescription, Build oldBuild, List<GitCommit> changes)
         {
@@ -492,6 +497,12 @@ namespace Roslyn.Insertion
 
             foreach (var commit in changes)
             {
+                // Exclude commits not committed by GitHub since Merge and Squash commits are committed by GitHub
+                if (commit.Committer != "GitHub")
+                {
+                    continue;
+                }
+
                 // Exclude arcade dependency updates
                 if (commit.Author == "dotnet-maestro[bot]")
                 {
@@ -554,6 +565,7 @@ namespace Roslyn.Insertion
         internal struct GitCommit
         {
             public string Author { get; set; }
+            public string Committer { get; set; }
             public DateTime CommitDate { get; set; }
             public string Message { get; set; }
             public string CommitId { get; set; }
