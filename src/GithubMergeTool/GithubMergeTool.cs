@@ -198,7 +198,13 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                     jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
                     mergeable = (bool?)jsonBody["mergeable"];
                 }
+
                 Console.WriteLine();
+
+                if (attempt == maxAttempts)
+                {
+                    Console.WriteLine($"##vso[task.logissue type=warning]Timed out waiting for PR mergeability status to become available.");
+                }
             }
 
 
