@@ -1,11 +1,13 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace GithubMergeTool
@@ -180,9 +182,46 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
 
             var prNumber = (string)jsonBody["number"];
+            var mergeable = (bool?)jsonBody["mergeable"];
+            if (mergeable == null)
+            {
+                const int maxAttempts = 5;
+                var attempt = 0;
+
+                Console.Write("Waiting for mergeable status");
+                while (mergeable == null && attempt < maxAttempts)
+                {
+                    attempt++;
+                    Console.Write(".");
+                    await Task.Delay(1000);
+                    response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/pulls/{prNumber}");
+                    jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
+                    mergeable = (bool?)jsonBody["mergeable"];
+                }
+
+                Console.WriteLine();
+
+                if (attempt == maxAttempts)
+                {
+                    Console.WriteLine($"##vso[task.logissue type=warning]Timed out waiting for PR mergeability status to become available.");
+                }
+            }
+
+
+            var labels = new List<string> { "Area-Infrastructure" };
+            if (addAutoMergeLabel)
+            {
+                labels.Add(AutoMergeLabelText);
+            }
+
+            if (mergeable == false)
+            {
+                Console.WriteLine("PR has merge conflicts. Adding Merge Conflicts label.");
+                labels.Add(MergeConflictsLabelText);
+            }
 
             // Add labels to the issue
-            body = $"[ \"Area-Infrastructure\"{(addAutoMergeLabel ? $", \"{AutoMergeLabelText}\"" : "")} ]";
+            body = JsonConvert.SerializeObject(labels);
             response = await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{prNumber}/labels", body);
 
             if (!response.IsSuccessStatusCode)
@@ -194,6 +233,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
         }
 
         public const string AutoMergeLabelText = "auto-merge";
+        public const string MergeConflictsLabelText = "Merge Conflicts";
 
     }
 }
