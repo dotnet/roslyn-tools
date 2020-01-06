@@ -22,7 +22,6 @@
     <merge from="dev16.0" to="dev16.0-vs-deps" />
     <merge from="release/dev16.3" to="release/dev16.3-vs-deps" />
     <merge from="release/dev16.4" to="release/dev16.4-vs-deps" />
-    <merge from="release/dev16.5-preview1" to="release/dev16.5-preview1-vs-deps" />
     <merge from="release/dev16.5-preview2" to="release/dev16.5-preview2-vs-deps" />
     <merge from="master" to="master-vs-deps" />
 
