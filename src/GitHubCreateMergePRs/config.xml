@@ -50,6 +50,7 @@
     <merge from="release/dev16.5" to="release/dev16.6" />
 
     <!-- regular branch flow -->
+    <merge from="master" to="release/dev16.6" />
     <merge from="master" to="feature/nullness" />
     <merge from="master" to="feature/ext" />
     <merge from="master" to="feature/witness-passing" />
