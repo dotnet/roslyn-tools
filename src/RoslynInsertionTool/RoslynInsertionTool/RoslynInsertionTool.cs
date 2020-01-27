@@ -285,6 +285,11 @@ namespace Roslyn.Insertion
 
                 var newBuildDescription = $"to {buildToInsert.GetBuildDescription()}";
                 var prDescription = $"Updating {Options.InsertionName} {oldBuildDescription}{newBuildDescription}";
+                if (buildToInsert.Result == BuildResult.PartiallySucceeded)
+                {
+                    prDescription += Environment.NewLine + ":warning: The build being inserted has partially succeeded.";
+                }
+
                 if (!useExistingPr || Options.OverwritePr)
                 {
                     try
