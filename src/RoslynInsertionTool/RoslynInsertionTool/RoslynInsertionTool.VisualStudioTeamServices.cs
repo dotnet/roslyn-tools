@@ -132,13 +132,18 @@ namespace Roslyn.Insertion
                 Console.WriteLine($"Getting latest passing build for project {Options.TFSProjectName}, queue {Options.BuildQueueName}, and branch {Options.BranchName}");
                 var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
                 var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
-                var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, BuildResult.Succeeded);
+                var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, BuildResult.Succeeded | BuildResult.PartiallySucceeded);
 
                 // Get the latest build with valid artifacts.
                 newestBuild = (await GetInsertableBuildsAsync(buildClient, cancellationToken,
                                     from build in builds
                                     orderby build.FinishTime descending
                                     select build)).FirstOrDefault();
+
+                if (newestBuild?.Result == BuildResult.PartiallySucceeded)
+                {
+                    LogWarning($"The latest build being used, {newestBuild.BuildNumber} has partially succeeded!");
+                }
             }
             catch (Exception ex)
             {
