@@ -13,6 +13,7 @@ public class Program
         // Default when no args passed in.
         var isDryRun = true;
         var isAutomated = false;
+        var updateExistingPr = true;
         var githubToken = string.Empty;
 
         foreach (var arg in args)
@@ -29,11 +30,15 @@ public class Program
             {
                 githubToken = GetArgumentValue(arg);
             }
+            else if (arg.StartsWith("--updateExistingPr"))
+            {
+                updateExistingPr = bool.Parse(GetArgumentValue(arg));
+            }
         }
 
-        Console.WriteLine($"Executing with {nameof(isDryRun)}={isDryRun}, {nameof(isAutomated)}={isAutomated}, {nameof(githubToken)}={githubToken}");
+        Console.WriteLine($"Executing with {nameof(updateExistingPr)}={updateExistingPr}, {nameof(isDryRun)}={isDryRun}, {nameof(isAutomated)}={isAutomated}, {nameof(githubToken)}={githubToken}");
         var config = GetConfig();
-        await RunAsync(config, isAutomated, isDryRun, githubToken);
+        await RunAsync(config, updateExistingPr, isAutomated, isDryRun, githubToken);
     }
 
     private static string GetArgumentValue(string arg)
@@ -61,6 +66,7 @@ public class Program
         string repoName,
         string srcBranch,
         string destBranch,
+        bool updateExistingPr,
         bool addAutoMergeLabel,
         bool isAutomatedRun,
         bool isDryRun,
@@ -68,7 +74,7 @@ public class Program
     {
         Console.WriteLine($"Merging {repoName} from {srcBranch} to {destBranch}");
 
-        var (prCreated, error) = await gh.CreateMergePr(repoOwner, repoName, srcBranch, destBranch, addAutoMergeLabel, isAutomatedRun);
+        var (prCreated, error) = await gh.CreateMergePr(repoOwner, repoName, srcBranch, destBranch, updateExistingPr, addAutoMergeLabel, isAutomatedRun);
 
         if (prCreated)
         {
@@ -112,7 +118,7 @@ public class Program
         return false;
     }
 
-    private static async Task RunAsync(XDocument config, bool isAutomatedRun, bool isDryRun, string githubToken)
+    private static async Task RunAsync(XDocument config, bool updateExistingPr, bool isAutomatedRun, bool isDryRun, string githubToken)
     {
         var gh = new GithubMergeTool.GithubMergeTool("dotnet-bot@users.noreply.github.com", githubToken, isDryRun);
         foreach (var repo in config.Root.Elements("repo"))
@@ -133,8 +139,8 @@ public class Program
                 var addAutoMergeLabel = bool.Parse(merge.Attribute("addAutoMergeLabel")?.Value ?? "true");
                 try
                 {
-                    bool shouldContinue = await MakeGithubPr(gh, owner, name, fromBranch, toBranch, addAutoMergeLabel,
-                        isAutomatedRun, isDryRun, githubToken);
+                    bool shouldContinue = await MakeGithubPr(gh, owner, name, fromBranch, toBranch,
+                        updateExistingPr, addAutoMergeLabel, isAutomatedRun, isDryRun, githubToken);
                     if (!shouldContinue)
                     {
                         return;

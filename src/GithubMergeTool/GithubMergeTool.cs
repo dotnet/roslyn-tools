@@ -66,24 +66,20 @@ namespace GithubMergeTool
             string repoName,
             string srcBranch,
             string destBranch,
+            bool updateExistingPr,
             bool addAutoMergeLabel,
             bool isAutoTriggered)
         {
             string prTitle = $"Merge {srcBranch} to {destBranch}";
             string prBranchName = $"merges/{srcBranch}-to-{destBranch}";
 
-            // Check to see if there's already a PR
+            // Check to see if there's already a PR from source to destination branch
             HttpResponseMessage prsResponse = await _client.GetAsync(
                 $"repos/{repoOwner}/{repoName}/pulls?state=open&base={destBranch}&head={repoOwner}:{prBranchName}");
+
             if (!prsResponse.IsSuccessStatusCode)
             {
                 return (false, prsResponse);
-            }
-
-            var prsBody = JArray.Parse(await prsResponse.Content.ReadAsStringAsync());
-            if (prsBody.Any(pr => (string)pr["title"] == prTitle))
-            {
-                return (false, null);
             }
 
             // Get the SHA for the source branch
@@ -97,13 +93,43 @@ namespace GithubMergeTool
             var jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
             if (jsonBody.Type == JTokenType.Array)
             {
-                // Branch doesn't exist
+                // Source branch doesn't exist
                 return (false, response);
             }
 
             var srcSha = ((JValue)jsonBody["object"]["sha"]).ToObject<string>();
 
-            // Create a branch on the repo
+            var existingPR = JArray.Parse(await prsResponse.Content.ReadAsStringAsync()).FirstOrDefault(pr => (string)pr["title"] == prTitle);
+            if (existingPR != null)
+            {
+                if (updateExistingPr)
+                {
+                    // Get the SHA of the PR branch HEAD
+                    var prSha = ((JValue)existingPR["head"]["sha"]).ToObject<string>();
+                    var existingPrNumber = ((JValue)existingPR["number"]).ToObject<string>();
+
+                    if (prSha != srcSha)
+                    {
+                        // Reset the HEAD of PR branch to latest source branch
+                        response = await ResetBranch(prBranchName, srcSha);
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            return (false, response);
+                        }
+
+                        // Post a comment to the PR
+                        var commentBody = $@"
+{{
+    ""body"": ""Reset HEAD of {prBranchName} to {srcSha}""
+}}";
+                        await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{existingPrNumber}/comments", commentBody);
+                    }
+                }
+
+                return (false, null);
+            }
+
+            // Create a PR branch on the repo
             var body = $@"
 {{
     ""ref"": ""refs/heads/{prBranchName}"",
@@ -116,17 +142,10 @@ namespace GithubMergeTool
 
             if (response.StatusCode != HttpStatusCode.Created)
             {
-                // Branch already exists. Hard reset to the new SHA
-                if (response.StatusCode == (HttpStatusCode)422)
+                // PR branch already exists. Hard reset to the new SHA
+                if (response.StatusCode == HttpStatusCode.UnprocessableEntity)
                 {
-                    Console.WriteLine($"Resetting branch {prBranchName}");
-                    response = await _client.PostAsyncAsJson(
-                        $"repos/{repoOwner}/{repoName}/git/refs/heads/{prBranchName}",
-                        $@"
-{{
-    ""sha"": ""{srcSha}"",
-    ""force"": true
-}}");
+                    response = await ResetBranch(prBranchName, srcSha);
                     if (!response.IsSuccessStatusCode)
                     {
                         return (false, response);
@@ -172,7 +191,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             response = await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/pulls", body);
 
             // 422 (Unprocessable Entity) indicates there were no commits to merge
-            if (response.StatusCode == (HttpStatusCode)422)
+            if (response.StatusCode == HttpStatusCode.UnprocessableEntity)
             {
                 // Delete the pr branch if the PR was not created.
                 await _client.DeleteAsync($"repos/{repoOwner}/{repoName}/git/refs/heads/{prBranchName}");
@@ -230,10 +249,21 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             }
 
             return (true, null);
+
+            Task<HttpResponseMessage> ResetBranch(string branchName, string sha)
+            {
+                Console.WriteLine($"Resetting branch {branchName}");
+                return _client.PostAsyncAsJson(
+                    $"repos/{repoOwner}/{repoName}/git/refs/heads/{branchName}",
+                    $@"
+{{
+    ""sha"": ""{sha}"",
+    ""force"": true
+}}");
+            }
         }
 
         public const string AutoMergeLabelText = "auto-merge";
         public const string MergeConflictsLabelText = "Merge Conflicts";
-
     }
 }
