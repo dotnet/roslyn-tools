@@ -110,6 +110,20 @@ namespace GithubMergeTool
 
                     if (prSha != srcSha)
                     {
+                        // Check if there's "merge conflicts" tag on PR, it so, we don't update
+                        response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/issues/{existingPrNumber}");
+
+                        if (response.StatusCode != HttpStatusCode.OK)
+                        {
+                            return (false, response);
+                        }
+
+                        jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
+                        if (((JArray)jsonBody["labels"]).Any(label => (string)label["name"] == MergeConflictsLabelText))
+                        {
+                            return (false, null);
+                        }
+
                         // Reset the HEAD of PR branch to latest source branch
                         response = await ResetBranch(prBranchName, srcSha);
                         if (!response.IsSuccessStatusCode)
