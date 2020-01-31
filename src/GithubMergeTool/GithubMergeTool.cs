@@ -108,35 +108,32 @@ namespace GithubMergeTool
                     var prSha = ((JValue)existingPR["head"]["sha"]).ToObject<string>();
                     var existingPrNumber = ((JValue)existingPR["number"]).ToObject<string>();
 
-                    if (prSha != srcSha)
+                    // Check for merge conflicts
+                    var existingPrMergeable = await IsPrMergeable(existingPrNumber);
+
+                    // Only update PR w/o merge conflicts
+                    if (existingPrMergeable == true && prSha != srcSha)
                     {
-                        // Check if there's "merge conflicts" tag on PR, it so, we don't update
-                        response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/issues/{existingPrNumber}");
-
-                        if (response.StatusCode != HttpStatusCode.OK)
-                        {
-                            return (false, response);
-                        }
-
-                        jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
-                        if (((JArray)jsonBody["labels"]).Any(label => (string)label["name"] == MergeConflictsLabelText))
-                        {
-                            return (false, null);
-                        }
-
-                        // Reset the HEAD of PR branch to latest source branch
-                        response = await ResetBranch(prBranchName, srcSha);
+                        // Try to reset the HEAD of PR branch to latest source branch
+                        response = await ResetBranch(prBranchName, srcSha, force: false);
                         if (!response.IsSuccessStatusCode)
                         {
+                            Console.WriteLine($"There's additional change in `{srcBranch}` but an attempt to fast-forward `{prBranchName}` failed.");
                             return (false, response);
                         }
 
-                        // Post a comment to the PR
-                        var commentBody = $@"
-{{
-    ""body"": ""Reset HEAD of {prBranchName} to {srcSha}""
-}}";
-                        await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{existingPrNumber}/comments", commentBody);
+                        await PostComment(existingPrNumber, $"Reset HEAD of `{prBranchName}` to `{srcSha}`");
+
+                        // Check for merge conflicts again after reset.
+                        existingPrMergeable = await IsPrMergeable(existingPrNumber);
+                    }
+
+                    // Add label if there's merge conflicts even if we made no change to merge branch,
+                    // since can also be introduced by change in destination branch. It's no-op if the
+                    // label already exists. 
+                    if (existingPrMergeable == false)
+                    {
+                        await AddLabels(existingPrNumber, new List<string> { MergeConflictsLabelText });
                     }
                 }
 
@@ -159,7 +156,7 @@ namespace GithubMergeTool
                 // PR branch already exists. Hard reset to the new SHA
                 if (response.StatusCode == HttpStatusCode.UnprocessableEntity)
                 {
-                    response = await ResetBranch(prBranchName, srcSha);
+                    response = await ResetBranch(prBranchName, srcSha, force: true);
                     if (!response.IsSuccessStatusCode)
                     {
                         return (false, response);
@@ -218,30 +215,10 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             var mergeable = (bool?)jsonBody["mergeable"];
             if (mergeable == null)
             {
-                const int maxAttempts = 5;
-                var attempt = 0;
-
-                Console.Write("Waiting for mergeable status");
-                while (mergeable == null && attempt < maxAttempts)
-                {
-                    attempt++;
-                    Console.Write(".");
-                    await Task.Delay(1000);
-                    response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/pulls/{prNumber}");
-                    jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
-                    mergeable = (bool?)jsonBody["mergeable"];
-                }
-
-                Console.WriteLine();
-
-                if (attempt == maxAttempts)
-                {
-                    Console.WriteLine($"##vso[task.logissue type=warning]Timed out waiting for PR mergeability status to become available.");
-                }
+                mergeable = await IsPrMergeable(prNumber);
             }
 
-
-            var labels = new List<string> { "Area-Infrastructure" };
+            var labels = new List<string> { AreaInfrastructureLabelText };
             if (addAutoMergeLabel)
             {
                 labels.Add(AutoMergeLabelText);
@@ -254,8 +231,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             }
 
             // Add labels to the issue
-            body = JsonConvert.SerializeObject(labels);
-            response = await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{prNumber}/labels", body);
+            response = await AddLabels(prNumber, labels);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -264,7 +240,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
 
             return (true, null);
 
-            Task<HttpResponseMessage> ResetBranch(string branchName, string sha)
+            Task<HttpResponseMessage> ResetBranch(string branchName, string sha, bool force)
             {
                 Console.WriteLine($"Resetting branch {branchName}");
                 return _client.PostAsyncAsJson(
@@ -272,12 +248,54 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                     $@"
 {{
     ""sha"": ""{sha}"",
-    ""force"": true
+    ""force"": ""{force}""
 }}");
+            }
+
+            Task<HttpResponseMessage> PostComment(string prNumber, string comment)
+            {
+                var commentBody = $@"
+{{
+    ""body"": ""{comment}""
+}}";
+                return _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{prNumber}/comments", commentBody);
+            }
+
+            async Task<bool?> IsPrMergeable(string prNumber, int maxAttempts = 5)
+            {
+                var attempt = 0;
+                bool? mergeable = null;
+
+                Console.Write("Waiting for mergeable status");
+                while (mergeable == null && attempt < maxAttempts)
+                {
+                    attempt++;
+                    Console.Write(".");
+                    await Task.Delay(1000);
+
+                    var response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/pulls/{prNumber}");
+                    var jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
+                    mergeable = (bool?)jsonBody["mergeable"];
+                }
+
+                Console.WriteLine();
+
+                if (mergeable == null)
+                {
+                    Console.WriteLine($"##vso[task.logissue type=warning]Timed out waiting for PR mergeability status to become available.");
+                }
+
+                return mergeable;
+            }
+
+            Task<HttpResponseMessage> AddLabels(string prNumber, List<string> labels)
+            {
+                return _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{prNumber}/labels", JsonConvert.SerializeObject(labels));
             }
         }
 
         public const string AutoMergeLabelText = "auto-merge";
         public const string MergeConflictsLabelText = "Merge Conflicts";
+        public const string AreaInfrastructureLabelText = "Area-Infrastructure";
     }
 }
