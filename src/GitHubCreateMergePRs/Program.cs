@@ -38,7 +38,7 @@ public class Program
 
         Console.WriteLine($"Executing with {nameof(updateExistingPr)}={updateExistingPr}, {nameof(isDryRun)}={isDryRun}, {nameof(isAutomated)}={isAutomated}, {nameof(githubToken)}={githubToken}");
         var config = GetConfig();
-        await RunAsync(config, updateExistingPr, isAutomated, isDryRun, githubToken);
+        await RunAsync(config, isAutomated, isDryRun, githubToken);
     }
 
     private static string GetArgumentValue(string arg)
@@ -118,13 +118,17 @@ public class Program
         return false;
     }
 
-    private static async Task RunAsync(XDocument config, bool updateExistingPr, bool isAutomatedRun, bool isDryRun, string githubToken)
+    private static async Task RunAsync(XDocument config, bool isAutomatedRun, bool isDryRun, string githubToken)
     {
         var gh = new GithubMergeTool.GithubMergeTool("dotnet-bot@users.noreply.github.com", githubToken, isDryRun);
         foreach (var repo in config.Root.Elements("repo"))
         {
             var owner = repo.Attribute("owner").Value;
             var name = repo.Attribute("name").Value;
+
+            // We don't try to update existing PR unless asked.
+            var updateExistingPr = bool.Parse(repo.Attribute("updateExistingPr")?.Value ?? "false");
+
             foreach (var merge in repo.Elements("merge"))
             {
                 var fromBranch = merge.Attribute("from").Value;
