@@ -61,6 +61,7 @@ public class Program
         string repoName,
         string srcBranch,
         string destBranch,
+        bool updateExistingPr,
         bool addAutoMergeLabel,
         bool isAutomatedRun,
         bool isDryRun,
@@ -68,7 +69,7 @@ public class Program
     {
         Console.WriteLine($"Merging {repoName} from {srcBranch} to {destBranch}");
 
-        var (prCreated, error) = await gh.CreateMergePr(repoOwner, repoName, srcBranch, destBranch, addAutoMergeLabel, isAutomatedRun);
+        var (prCreated, error) = await gh.CreateMergePr(repoOwner, repoName, srcBranch, destBranch, updateExistingPr, addAutoMergeLabel, isAutomatedRun);
 
         if (prCreated)
         {
@@ -119,6 +120,10 @@ public class Program
         {
             var owner = repo.Attribute("owner").Value;
             var name = repo.Attribute("name").Value;
+
+            // We don't try to update existing PR unless asked.
+            var updateExistingPr = bool.Parse(repo.Attribute("updateExistingPr")?.Value ?? "false");
+
             foreach (var merge in repo.Elements("merge"))
             {
                 var fromBranch = merge.Attribute("from").Value;
@@ -133,8 +138,8 @@ public class Program
                 var addAutoMergeLabel = bool.Parse(merge.Attribute("addAutoMergeLabel")?.Value ?? "true");
                 try
                 {
-                    bool shouldContinue = await MakeGithubPr(gh, owner, name, fromBranch, toBranch, addAutoMergeLabel,
-                        isAutomatedRun, isDryRun, githubToken);
+                    bool shouldContinue = await MakeGithubPr(gh, owner, name, fromBranch, toBranch,
+                        updateExistingPr, addAutoMergeLabel, isAutomatedRun, isDryRun, githubToken);
                     if (!shouldContinue)
                     {
                         return;
