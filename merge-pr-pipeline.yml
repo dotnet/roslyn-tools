@@ -7,8 +7,6 @@ variables:
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: isAutomated
   value: true
-- name: updateExistingPr
-  value: true
 
 # Make sure the pipeline doesn't build on commits.
 trigger: none
@@ -36,5 +34,5 @@ steps:
     version: 2.1.401
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
-- script: dotnet run -p $(Build.SourcesDirectory)/src/GitHubCreateMergePRs/GitHubCreateMergePRs.csproj --updateExistingPr=$(updateExistingPr) --isDryRun=$(isDryRun) --isAutomated=$(isAutomated) --githubToken=$(dotnet-bot-github-auth-token)
+- script: dotnet run -p $(Build.SourcesDirectory)/src/GitHubCreateMergePRs/GitHubCreateMergePRs.csproj --isDryRun=$(isDryRun) --isAutomated=$(isAutomated) --githubToken=$(dotnet-bot-github-auth-token)
   displayName: 'Run GitHub Create Merge PRs'

@@ -13,7 +13,6 @@ public class Program
         // Default when no args passed in.
         var isDryRun = true;
         var isAutomated = false;
-        var updateExistingPr = true;
         var githubToken = string.Empty;
 
         foreach (var arg in args)
@@ -30,13 +29,9 @@ public class Program
             {
                 githubToken = GetArgumentValue(arg);
             }
-            else if (arg.StartsWith("--updateExistingPr"))
-            {
-                updateExistingPr = bool.Parse(GetArgumentValue(arg));
-            }
         }
 
-        Console.WriteLine($"Executing with {nameof(updateExistingPr)}={updateExistingPr}, {nameof(isDryRun)}={isDryRun}, {nameof(isAutomated)}={isAutomated}, {nameof(githubToken)}={githubToken}");
+        Console.WriteLine($"Executing with {nameof(isDryRun)}={isDryRun}, {nameof(isAutomated)}={isAutomated}, {nameof(githubToken)}={githubToken}");
         var config = GetConfig();
         await RunAsync(config, isAutomated, isDryRun, githubToken);
     }
