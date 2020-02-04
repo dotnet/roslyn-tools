@@ -1,4 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +9,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace GithubMergeTool
 {
@@ -248,7 +248,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                     $@"
 {{
     ""sha"": ""{sha}"",
-    ""force"": ""{(force ? "true" : "false")}""
+    ""force"": {(force ? "true" : "false")}
 }}");
             }
 
