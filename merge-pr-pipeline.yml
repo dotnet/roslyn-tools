@@ -31,7 +31,7 @@ steps:
   displayName: 'Use .NET Core sdk'
   inputs:
     packageType: sdk
-    version: 2.1.401
+    version: 3.0.101
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - script: dotnet run -p $(Build.SourcesDirectory)/src/GitHubCreateMergePRs/GitHubCreateMergePRs.csproj --isDryRun=$(isDryRun) --isAutomated=$(isAutomated) --githubToken=$(dotnet-bot-github-auth-token)
