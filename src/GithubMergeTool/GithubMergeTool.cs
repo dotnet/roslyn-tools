@@ -248,7 +248,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                     $@"
 {{
     ""sha"": ""{sha}"",
-    ""force"": ""{force}""
+    ""force"": ""{(force ? "true" : "false")}""
 }}");
             }
 
