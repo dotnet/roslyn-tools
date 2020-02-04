@@ -500,10 +500,14 @@ namespace Roslyn.Insertion
 
             var repoURL = $"http://github.com/{oldBuild.Repository.Id}";
 
+            var commitHeaderAdded = false;
+            var mergePRHeaderAdded = false;
+            var mergePRFound = false;
+
             foreach (var commit in changes)
             {
-                // Exclude commits not committed by GitHub since Merge and Squash commits are committed by GitHub
-                if (commit.Committer != "GitHub")
+                // Once we've found a Merge PR we can exclude commits not committed by GitHub since Merge and Squash commits are committed by GitHub
+                if (commit.Committer != "GitHub" && mergePRFound)
                 {
                     continue;
                 }
@@ -511,17 +515,19 @@ namespace Roslyn.Insertion
                 // Exclude arcade dependency updates
                 if (commit.Author == "dotnet-maestro[bot]")
                 {
+                    mergePRFound = true;
                     continue;
                 }
 
                 // Exclude merge commits from auto code-flow PRs (e.g. merges/master-to-master-vs-deps)
                 if (IsReleaseFlowCommit.Match(commit.Message).Success)
                 {
+                    mergePRFound = true;
                     continue;
                 }
 
-                string comment;
-                string prNumber;
+                string comment = string.Empty;
+                string prNumber = string.Empty;
 
                 var match = IsMergePRCommit.Match(commit.Message);
                 if (match.Success)
@@ -538,22 +544,54 @@ namespace Roslyn.Insertion
                 else
                 {
                     match = IsSquashedPRCommit.Match(commit.Message);
-                    if (!match.Success)
+                    if (match.Success)
                     {
-                        continue;
+                        prNumber = match.Groups[1].Value;
+
+                        // Squash PR Messages are in the form "Nullable annotate TypeCompilationState and MessageID (#39449)"
+                        // Take the 1st line since it should be descriptive.
+                        comment = commit.Message.Split('\n')[0];
                     }
-
-                    prNumber = match.Groups[1].Value;
-
-                    // Squash PR Messages are in the form "Nullable annotate TypeCompilationState and MessageID (#39449)"
-                    // Take the 1st line since it should be descriptive.
-                    comment = commit.Message.Split('\n')[0];
                 }
 
-                // Replace "#{prNumber}" with "{prNumber}" so that AzDO won't linkify it
-                comment = comment.Replace($"#{prNumber}", prNumber);
+                // We will print commit comments until we find the first merge PR
+                if (!match.Success && mergePRFound)
+                {
+                    continue;
+                }
 
-                var prLink = $@"- [{comment}]({repoURL}/pull/{prNumber})";
+                string prLink;
+
+                if (match.Success)
+                {
+                    if (commitHeaderAdded && !mergePRHeaderAdded)
+                    {
+                        mergePRHeaderAdded = true;
+                        description.AppendLine("### Merged PRs:");
+                    }
+
+                    mergePRFound = true;
+
+                    // Replace "#{prNumber}" with "{prNumber}" so that AzDO won't linkify it
+                    comment = comment.Replace($"#{prNumber}", prNumber);
+
+                    prLink = $@"- [{comment}]({repoURL}/pull/{prNumber})";
+                }
+                else
+                {
+                    if (!commitHeaderAdded)
+                    {
+                        commitHeaderAdded = true;
+                        description.AppendLine("### Commits since last PR:");
+                    }
+
+                    var sha = commit.CommitId.Substring(0, 7);
+
+                    // Take the 1st line since it should be descriptive.
+                    comment = $"{commit.Message.Split('\n')[0]} ({sha})";
+
+                    prLink = $@"- [{comment}]({repoURL}/commit/{sha})";
+                }
 
                 description.AppendLine(prLink);
 
