@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,10 +70,28 @@ namespace GithubMergeTool
             bool addAutoMergeLabel,
             bool isAutoTriggered)
         {
+            // Get the SHA for the source branch
+            // https://developer.github.com/v3/git/refs/#get-a-single-reference
+            var response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/git/refs/heads/{srcBranch}");
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                return (false, response);
+            }
+
+            var sourceBranchData = JsonConvert.DeserializeAnonymousType(await response.Content.ReadAsStringAsync(),
+                new
+                {
+                    @object = new { sha = "" }
+                });
+
+            var srcSha = sourceBranchData.@object.sha;
+
             string prTitle = $"Merge {srcBranch} to {destBranch}";
             string prBranchName = $"merges/{srcBranch}-to-{destBranch}";
 
             // Check to see if there's already a PR from source to destination branch
+            // https://developer.github.com/v3/pulls/#list-pull-requests
             HttpResponseMessage prsResponse = await _client.GetAsync(
                 $"repos/{repoOwner}/{repoName}/pulls?state=open&base={destBranch}&head={repoOwner}:{prBranchName}");
 
@@ -82,31 +100,26 @@ namespace GithubMergeTool
                 return (false, prsResponse);
             }
 
-            // Get the SHA for the source branch
-            var response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/git/refs/heads/{srcBranch}");
+            var existingPrData = JsonConvert.DeserializeAnonymousType(await prsResponse.Content.ReadAsStringAsync(),
+                new[]
+                {
+                    new{
+                        title = "",
+                        number = "",
+                        head = new
+                        {
+                            sha = ""
+                        }
+                    }
+                }).FirstOrDefault(pr => pr.title == prTitle);
 
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                return (false, response);
-            }
-
-            var jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
-            if (jsonBody.Type == JTokenType.Array)
-            {
-                // Source branch doesn't exist
-                return (false, response);
-            }
-
-            var srcSha = ((JValue)jsonBody["object"]["sha"]).ToObject<string>();
-
-            var existingPR = JArray.Parse(await prsResponse.Content.ReadAsStringAsync()).FirstOrDefault(pr => (string)pr["title"] == prTitle);
-            if (existingPR != null)
+            if (existingPrData != null)
             {
                 if (updateExistingPr)
                 {
                     // Get the SHA of the PR branch HEAD
-                    var prSha = ((JValue)existingPR["head"]["sha"]).ToObject<string>();
-                    var existingPrNumber = ((JValue)existingPR["number"]).ToObject<string>();
+                    var prSha = existingPrData.head.sha;
+                    var existingPrNumber = existingPrData.number;
 
                     // Check for merge conflicts
                     var existingPrMergeable = await IsPrMergeable(existingPrNumber);
@@ -140,16 +153,16 @@ namespace GithubMergeTool
                 return (false, null);
             }
 
-            // Create a PR branch on the repo
-            var body = $@"
-{{
-    ""ref"": ""refs/heads/{prBranchName}"",
-    ""sha"": ""{srcSha}""
-}}";
-
             Console.WriteLine("Creating branch");
 
-            response = await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/git/refs", body);
+            // Create a PR branch on the repo
+            // https://developer.github.com/v3/git/refs/#create-a-reference
+            response = await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/git/refs", JsonConvert.SerializeObject(
+                new
+                {
+                    @ref = $"refs/heads/{prBranchName}",
+                    sha = srcSha
+                }));
 
             if (response.StatusCode != HttpStatusCode.Created)
             {
@@ -168,9 +181,6 @@ namespace GithubMergeTool
                 }
             }
 
-            const string newLine = @"
-";
-
             string autoTriggeredMessage = isAutoTriggered ? "" : $@"(created from a manual run of the PR generation tool)\n";
 
             var prMessage = $@"
@@ -187,32 +197,37 @@ git push upstream {prBranchName} --force
 ```
 Once all conflicts are resolved and all the tests pass, you are free to merge the pull request.";
 
-            prMessage = prMessage.Replace(newLine, "\\n");
+            Console.WriteLine("Creating PR");
 
             // Create a PR from the new branch to the dest
-            body = $@"
-{{
-    ""title"": ""{prTitle}"",
-    ""body"": ""{prMessage}"",
-    ""head"": ""{prBranchName}"",
-    ""base"": ""{destBranch}""
-}}";
-
-            Console.WriteLine("Creating PR");
-            response = await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/pulls", body);
+            // https://developer.github.com/v3/pulls/#create-a-pull-request
+            response = await _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/pulls", JsonConvert.SerializeObject(
+                new
+                {
+                    title = prTitle,
+                    body = prMessage,
+                    head = prBranchName,
+                    @base = destBranch
+                }));
 
             // 422 (Unprocessable Entity) indicates there were no commits to merge
             if (response.StatusCode == HttpStatusCode.UnprocessableEntity)
             {
                 // Delete the pr branch if the PR was not created.
+                // https://developer.github.com/v3/git/refs/#delete-a-reference
                 await _client.DeleteAsync($"repos/{repoOwner}/{repoName}/git/refs/heads/{prBranchName}");
                 return (false, null);
             }
 
-            jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
+            var createPrData = JsonConvert.DeserializeAnonymousType(await response.Content.ReadAsStringAsync(), new
+            {
+                number = "",
+                mergeable = (bool?)null
+            });
 
-            var prNumber = (string)jsonBody["number"];
-            var mergeable = (bool?)jsonBody["mergeable"];
+            var prNumber = createPrData.number;
+            var mergeable = createPrData.mergeable;
+
             if (mergeable == null)
             {
                 mergeable = await IsPrMergeable(prNumber);
@@ -243,22 +258,17 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             Task<HttpResponseMessage> ResetBranch(string branchName, string sha, bool force)
             {
                 Console.WriteLine($"Resetting branch {branchName}");
-                return _client.PostAsyncAsJson(
-                    $"repos/{repoOwner}/{repoName}/git/refs/heads/{branchName}",
-                    $@"
-{{
-    ""sha"": ""{sha}"",
-    ""force"": {(force ? "true" : "false")}
-}}");
+
+                // https://developer.github.com/v3/git/refs/#update-a-reference
+                var body = JsonConvert.SerializeObject( new { sha, force });
+                return _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/git/refs/heads/{branchName}", body);
             }
 
             Task<HttpResponseMessage> PostComment(string prNumber, string comment)
             {
-                var commentBody = $@"
-{{
-    ""body"": ""{comment}""
-}}";
-                return _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{prNumber}/comments", commentBody);
+                // https://developer.github.com/v3/pulls/comments/#create-a-comment
+                var body = JsonConvert.SerializeObject(new { body = comment });
+                return _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{prNumber}/comments", body);
             }
 
             async Task<bool?> IsPrMergeable(string prNumber, int maxAttempts = 5)
@@ -273,9 +283,15 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                     Console.Write(".");
                     await Task.Delay(1000);
 
+                    // Get the pull request
+                    // https://developer.github.com/v3/pulls/#get-a-single-pull-request
                     var response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/pulls/{prNumber}");
-                    var jsonBody = JObject.Parse(await response.Content.ReadAsStringAsync());
-                    mergeable = (bool?)jsonBody["mergeable"];
+                    var data = JsonConvert.DeserializeAnonymousType(await response.Content.ReadAsStringAsync(), new
+                    {
+                        mergeable = (bool?)null
+                    });
+
+                    mergeable = data.mergeable;
                 }
 
                 Console.WriteLine();
@@ -290,6 +306,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
 
             Task<HttpResponseMessage> AddLabels(string prNumber, List<string> labels)
             {
+                // https://developer.github.com/v3/issues/labels/#add-labels-to-an-issue
                 return _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{prNumber}/labels", JsonConvert.SerializeObject(labels));
             }
         }
