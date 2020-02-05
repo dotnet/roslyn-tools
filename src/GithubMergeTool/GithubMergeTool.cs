@@ -103,7 +103,8 @@ namespace GithubMergeTool
             var existingPrData = JsonConvert.DeserializeAnonymousType(await prsResponse.Content.ReadAsStringAsync(),
                 new[]
                 {
-                    new{
+                    new
+                    {
                         title = "",
                         number = "",
                         head = new
@@ -260,7 +261,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                 Console.WriteLine($"Resetting branch {branchName}");
 
                 // https://developer.github.com/v3/git/refs/#update-a-reference
-                var body = JsonConvert.SerializeObject( new { sha, force });
+                var body = JsonConvert.SerializeObject(new { sha, force });
                 return _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/git/refs/heads/{branchName}", body);
             }
 
