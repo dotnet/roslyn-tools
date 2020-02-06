@@ -198,6 +198,44 @@ namespace Roslyn.Insertion
             }
         }
 
+        // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
+        private static async Task SetAutoCompleteAsync(GitPullRequest request, GitRepository repo)
+        {
+            if (Options.AutoComplete)
+            {
+                try
+                {
+                    var idRefWithVote = await GitClient.Value.CreatePullRequestReviewerAsync(
+                        new IdentityRefWithVote { Vote = (short)Vote.Approved },
+                        repo.Id,
+                        request.PullRequestId,
+                        TargetConnection.Value.AuthorizedIdentity.Id.ToString()
+                        );
+                    Console.WriteLine($"Updated {GetRequestName(request)} with AutoApprove");
+
+                    request = await GitClient.Value.UpdatePullRequestAsync(
+                        new GitPullRequest
+                        {
+                            AutoCompleteSetBy = idRefWithVote,
+                            CompletionOptions = new GitPullRequestCompletionOptions
+                            {
+                                DeleteSourceBranch = true,
+                                MergeCommitMessage = Options.Title,
+                                MergeStrategy = Options.MergeStrategy,
+                            }
+                        },
+                        repo.Id,
+                        request.PullRequestId
+                        );
+                    Console.WriteLine($"Updated {GetRequestName(request)} with AutoComplete");
+                }
+                catch (Exception e)
+                {
+                    WriteWarning($"Exception updating pull request: {e.GetType().Name} : {e.Message}");
+                }
+            }
+        }
+
         private static async Task<Build> GetSpecificBuildAsync(BuildVersion version, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
