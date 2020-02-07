@@ -199,42 +199,48 @@ namespace Roslyn.Insertion
         }
 
         // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
-        private static async Task SetAutoCompleteAsync(GitPullRequest request, GitRepository repo)
+        private static async Task SetAutoCompleteAsync(GitPullRequest pullRequest)
         {
-            if (Options.AutoComplete)
+            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+            var repository = pullRequest.Repository;
+            try
             {
-                try
-                {
-                    var idRefWithVote = await GitClient.Value.CreatePullRequestReviewerAsync(
-                        new IdentityRefWithVote { Vote = (short)Vote.Approved },
-                        repo.Id,
-                        request.PullRequestId,
-                        TargetConnection.Value.AuthorizedIdentity.Id.ToString()
-                        );
-                    Console.WriteLine($"Updated {GetRequestName(request)} with AutoApprove");
+                var idRefWithVote = await gitClient.CreatePullRequestReviewerAsync(
+                    new IdentityRefWithVote { Vote = (short)Vote.Approved },
+                    repository.Id,
+                    pullRequest.PullRequestId,
+                    MLInfraSwatUserId.ToString()
+                    );
+                Console.WriteLine($"Updated {pullRequest.Description} with AutoApprove");
 
-                    request = await GitClient.Value.UpdatePullRequestAsync(
-                        new GitPullRequest
+                pullRequest = await gitClient.UpdatePullRequestAsync(
+                    new GitPullRequest
+                    {
+                        AutoCompleteSetBy = idRefWithVote,
+                        CompletionOptions = new GitPullRequestCompletionOptions
                         {
-                            AutoCompleteSetBy = idRefWithVote,
-                            CompletionOptions = new GitPullRequestCompletionOptions
-                            {
-                                DeleteSourceBranch = true,
-                                MergeCommitMessage = Options.Title,
-                                MergeStrategy = Options.MergeStrategy,
-                            }
-                        },
-                        repo.Id,
-                        request.PullRequestId
-                        );
-                    Console.WriteLine($"Updated {GetRequestName(request)} with AutoComplete");
-                }
-                catch (Exception e)
-                {
-                    WriteWarning($"Exception updating pull request: {e.GetType().Name} : {e.Message}");
-                }
+                            DeleteSourceBranch = true,
+                            MergeCommitMessage = "RIT Auto-Complete",
+                            SquashMerge = true,
+                        }
+                    },
+                    repository.Id,
+                    pullRequest.PullRequestId
+                    );
+                Console.WriteLine($"Updated {pullRequest.Description} with AutoComplete");
+            }
+            catch (Exception e)
+            {
+                //Should we be throwing here too?
+
+                Console.WriteLine($"Exception updating pull request: {e.GetType().Name} : {e.Message}");
             }
         }
+
+
+        /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        //Add a task to add reviewrs as well
 
         private static async Task<Build> GetSpecificBuildAsync(BuildVersion version, CancellationToken cancellationToken)
         {
