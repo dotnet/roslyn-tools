@@ -52,6 +52,7 @@ namespace Roslyn.Insertion
             bool insertToolset,
             bool retainInsertedBuild,
             bool queueValidationBuild,
+            bool setAutoCompleteAsync,
             string validationBuildQueueName,
             bool runDDRITsInValidation,
             bool runRPSInValidation,
@@ -259,6 +260,8 @@ namespace Roslyn.Insertion
         public bool RetainInsertedBuild { get; }
 
         public bool QueueValidationBuild { get; }
+
+        public bool SetAutoCompleteAsync { get; }
 
         public string ValidationBuildQueueName { get; }
 

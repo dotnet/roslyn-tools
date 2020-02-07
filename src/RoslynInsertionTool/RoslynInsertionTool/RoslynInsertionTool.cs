@@ -378,6 +378,22 @@ namespace Roslyn.Insertion
                     }
                 }
 
+                // ********************* Set PR to Auto-Complete *****************************
+                if (Options.SetAutoCompleteAsync)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    Console.WriteLine($"Set PR to Auto-Complete");
+                    try
+                    {
+                        await SetAutoCompleteAsync(pullRequest);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogWarning($"Unable to Set PR to Auto-Complete for '{insertionBranchName}'");
+                        LogWarning(ex);
+                    }
+                }
+
                 return (true, pullRequestId);
             }
             catch (Exception ex)
