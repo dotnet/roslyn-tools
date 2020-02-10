@@ -4,19 +4,19 @@
 
 Inserting the Roslyn `master` branch into the VS `lab/vsuml` branch:
 
-`rit.exe /in=Roslyn /bn=master /vsbn=lab/vsuml /rbq=Roslyn-Signed /ic=true /id=true /t`
+`rit.exe /in=Roslyn /bn=master /vsbn=lab/vsuml /bq=Roslyn-Signed /ic=true /id=true /t`
 
 Inserting the Roslyn `dev16` branch into the VS `lab/ml` branch:
 
-`rit.exe /in=Roslyn /bn=dev16 /vsbn=lab/ml /rbq=Roslyn-Signed /ic=true /id=true /t`
+`rit.exe /in=Roslyn /bn=dev16 /vsbn=lab/ml /bq=Roslyn-Signed /ic=true /id=true /t`
 
 Inserting the TestImpact `master` branch into the VS `lab/vsuml` branch: 
 
-`rit.exe /in="Live Unit Testing" /bn=master /vsbn=lab/vsuml /rbq=TestImpact-Signed /ic=false /id=false`
+`rit.exe /in="Live Unit Testing" /bn=master /vsbn=lab/vsuml /bq=TestImpact-Signed /ic=false /id=false`
 
 Inserting the Project System `master` branch into the VS `rel/d15rel` branch, including a validation build:
 
-`rit.exe /in="Project System" /bn=master /vsbn=rel/d15rel /rbq=DotNet-Project-System /ic=false /id=false /qv=true`
+`rit.exe /in="Project System" /bn=master /vsbn=rel/d15rel /bq=DotNet-Project-System /ic=false /id=false /qv=true`
 
 ## Arguments
 
@@ -38,7 +38,7 @@ These are not required as they have default values (in app.config), but you will
 | Short Name | Full Name | Description |
 | --- | --- | --- |
 | **/in**="Project System" | **/insertionName**="Project System" | The "friendly" name of the components being inserted, e.g., Roslyn, Live Unit Testing, Project System. |
-| **/rbq**=Roslyn-Signed | **/roslynbuildqueue**=Roslyn-Signed | The name of the build queue producing signed bits you wish to insert. |
+| **/bq**=Roslyn-Signed | **/buildqueue**=Roslyn-Signed | The name of the build queue producing signed bits you wish to insert. |
 | **/ic**=false | **/insertcorextpackages**=false | |
 | **/id**=false | **/insertdevdivsourcefiles**=false | |
 | **/t** | **/toolsetupdate** | Updates the Roslyn toolset used in the VS branch. |
