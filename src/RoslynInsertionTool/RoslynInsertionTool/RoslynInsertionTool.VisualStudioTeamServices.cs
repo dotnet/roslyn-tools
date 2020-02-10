@@ -198,6 +198,19 @@ namespace Roslyn.Insertion
             }
         }
 
+        /// <summary>
+        /// There is no enum or class in Microsoft.TeamFoundation.SourceControl.WebApi defined for vote values so made my own here.
+        /// Values are documented at https://www.visualstudio.com/en-us/docs/integrate/api/git/pull-requests/reviewers#update-a-reviewers-vote.
+        /// </summary>
+        public enum Vote : short
+        {
+            Approved = 10,
+            ApprovedWithComment = 5,
+            NoResponse = 0,
+            NotReady = -5,
+            Rejected = -10
+        }
+
         // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
         private static async Task SetAutoCompleteAsync(GitPullRequest pullRequest)
         {
