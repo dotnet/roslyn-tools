@@ -379,7 +379,7 @@ namespace Roslyn.Insertion
                 }
 
                 // ********************* Set PR to Auto-Complete *****************************
-                if (Options.SetAutoCompleteAsync)
+                if (Options.SetAutoComplete)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Set PR to Auto-Complete");

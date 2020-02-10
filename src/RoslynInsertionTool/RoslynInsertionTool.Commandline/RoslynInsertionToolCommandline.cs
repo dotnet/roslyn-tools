@@ -207,6 +207,11 @@ partial class RoslynInsertionToolCommandline
                 "Prepend the generated pull request's title with the specified value.",
                 titlePrefix => options = options.WithTitlePrefix(titlePrefix)
             },
+            {
+                "ac=|setautocomplete=",
+                $"Sets the PR to Auto-Complete once all requirements are met. Defaults to \"{options.SetAutoComplete}\".",
+                setAutoComplete => options = options.WithSetAutoComplete(bool.Parse(setAutoComplete))
+            },
         };
 
         List<string> extraArguments = null;
