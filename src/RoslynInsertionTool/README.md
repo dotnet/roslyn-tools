@@ -4,19 +4,19 @@
 
 Inserting the Roslyn `master` branch into the VS `lab/vsuml` branch:
 
-`rit.exe /in=Roslyn /rbn=master /vsbn=lab/vsuml /rbq=Roslyn-Signed /ic=true /id=true /t`
+`rit.exe /in=Roslyn /bn=master /vsbn=lab/vsuml /rbq=Roslyn-Signed /ic=true /id=true /t`
 
 Inserting the Roslyn `dev16` branch into the VS `lab/ml` branch:
 
-`rit.exe /in=Roslyn /rbn=dev16 /vsbn=lab/ml /rbq=Roslyn-Signed /ic=true /id=true /t`
+`rit.exe /in=Roslyn /bn=dev16 /vsbn=lab/ml /rbq=Roslyn-Signed /ic=true /id=true /t`
 
 Inserting the TestImpact `master` branch into the VS `lab/vsuml` branch: 
 
-`rit.exe /in="Live Unit Testing" /rbn=master /vsbn=lab/vsuml /rbq=TestImpact-Signed /ic=false /id=false`
+`rit.exe /in="Live Unit Testing" /bn=master /vsbn=lab/vsuml /rbq=TestImpact-Signed /ic=false /id=false`
 
 Inserting the Project System `master` branch into the VS `rel/d15rel` branch, including a validation build:
 
-`rit.exe /in="Project System" /rbn=master /vsbn=rel/d15rel /rbq=DotNet-Project-System /ic=false /id=false /qv=true`
+`rit.exe /in="Project System" /bn=master /vsbn=rel/d15rel /rbq=DotNet-Project-System /ic=false /id=false /qv=true`
 
 ## Arguments
 
@@ -28,7 +28,7 @@ At a bare minimum the following arguments must be provided on the command line.
 
 | Short Name | Full Name | Description |
 | --- | --- | --- |
-| **/rbn**=master | **/roslynbranchname**=master | The Roslyn branch we are inserting *from*. |
+| **/bn**=master | **/branchname**=master | The branch we are inserting *from*. |
 | **/vsbn**=lab/vsuml | **visualstudiobranchname**=lab/vsuml | The Visual Studio branch we are inserting *into*. |
 
 ### Common Arguments
@@ -77,4 +77,4 @@ The default values for these (again, from app.config) are almost always what you
 
 To test locally one can set the /roslyndroppath to a local bin directory and /newbranchname to empty string. The insertion tool then applies necessary changes to the local enlistment without creating a branch and pull request, fetching the source binaries from the specified local bin directory.
 
-```D:\Roslyn\Closed\Tools\Source\RoslynInsertionTool\RoslynInsertionTool.Commandline\bin\Debug\RIT.exe /vsbn=lab/vsuml /rbn=Roslyn-Master-Signed-Release /ep=D:\vsuml /rdp=D:\Roslyn\Open\Binaries\Debug /nbm=""```
+```D:\Roslyn\Closed\Tools\Source\RoslynInsertionTool\RoslynInsertionTool.Commandline\bin\Debug\RIT.exe /vsbn=lab/vsuml /bn=Roslyn-Master-Signed-Release /ep=D:\vsuml /rdp=D:\Roslyn\Open\Binaries\Debug /nbm=""```
