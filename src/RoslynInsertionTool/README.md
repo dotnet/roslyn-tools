@@ -43,6 +43,7 @@ These are not required as they have default values (in app.config), but you will
 | **/id**=false | **/insertdevdivsourcefiles**=false | |
 | **/t** | **/toolsetupdate** | Updates the Roslyn toolset used in the VS branch. |
 | **/qv**=true | **/queuevalidationbuild**=true | Creates a VS validation build of the newly created branch. A comment is added to the PR with a link to the build. RPS and DDRITs are included by default. |
+| **/ac**=true | **/setautocomplete**=true | Sets the PR to Auto-Complete once all requirements are met. |
 
 ### Optional Arguments
 
