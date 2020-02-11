@@ -244,16 +244,9 @@ namespace Roslyn.Insertion
             }
             catch (Exception e)
             {
-                //Should we be throwing here too?
-
-                Console.WriteLine($"Exception updating pull request: {e.GetType().Name} : {e.Message}");
+                Console.WriteLine($"Could not set AutoComplete: {e.GetType().Name} : {e.Message}");
             }
         }
-
-
-        /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        //Add a task to add reviewrs as well
 
         private static async Task<Build> GetSpecificBuildAsync(BuildVersion version, CancellationToken cancellationToken)
         {
