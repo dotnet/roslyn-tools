@@ -20,6 +20,7 @@ namespace Roslyn.Insertion
     {
         public static readonly Guid VSRepoId = new Guid("a290117c-5a8a-40f7-bc2c-f14dbe3acf6d");
         public static readonly Guid MLInfraSwatUserId = new Guid("6c25b447-1d90-4840-8fde-d8b22cb8733e");
+        public static readonly Guid VSLSnapUserId = new Guid("9f64bc2f-479b-429f-a665-fec80e130b1f");
 
         private static List<string> WarningMessages { get; } = new List<string>();
 

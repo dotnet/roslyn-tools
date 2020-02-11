@@ -222,7 +222,7 @@ namespace Roslyn.Insertion
                     new IdentityRefWithVote { Vote = (short)Vote.Approved },
                     repository.Id,
                     pullRequest.PullRequestId,
-                    MLInfraSwatUserId.ToString()
+                    VSLSnapUserId.ToString()
                     );
                 Console.WriteLine($"Updated {pullRequest.Description} with AutoApprove");
 
