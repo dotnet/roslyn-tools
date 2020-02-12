@@ -244,7 +244,8 @@ namespace Roslyn.Insertion
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Could not set AutoComplete: {e.GetType().Name} : {e.Message}");
+                LogWarning($"Could not set AutoComplete: {e.GetType().Name} : {e.Message}");
+                LogWarning(e);
             }
         }
 
