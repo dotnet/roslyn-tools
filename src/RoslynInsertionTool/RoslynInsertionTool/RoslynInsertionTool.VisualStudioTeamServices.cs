@@ -200,7 +200,7 @@ namespace Roslyn.Insertion
 
         /// <summary>
         /// There is no enum or class in Microsoft.TeamFoundation.SourceControl.WebApi defined for vote values so made my own here.
-        /// Values are documented at https://www.visualstudio.com/en-us/docs/integrate/api/git/pull-requests/reviewers#update-a-reviewers-vote.
+        /// Values are documented at https://docs.microsoft.com/en-us/dotnet/api/microsoft.teamfoundation.sourcecontrol.webapi.identityrefwithvote.vote?view=azure-devops-dotnet.
         /// </summary>
         public enum Vote : short
         {
