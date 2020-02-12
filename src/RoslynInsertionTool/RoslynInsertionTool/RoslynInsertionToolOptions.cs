@@ -61,7 +61,8 @@ namespace Roslyn.Insertion
             string logFileLocation,
             string clientId,
             string clientSecret,
-            string titlePrefix)
+            string titlePrefix,
+            bool setAutoComplete)
         {
             Username = username;
             Password = password;
@@ -93,6 +94,7 @@ namespace Roslyn.Insertion
             ClientId = clientId;
             ClientSecret = clientSecret;
             TitlePrefix = titlePrefix;
+            SetAutoComplete = setAutoComplete;
         }
 
         public RoslynInsertionToolOptions Update(
@@ -125,7 +127,8 @@ namespace Roslyn.Insertion
             Optional<string> logFileLocation = default,
             Optional<string> clientId = default,
             Optional<string> clientSecret = default,
-            Optional<string> titlePrefix = default)
+            Optional<string> titlePrefix = default,
+            Optional<bool> setAutoComplete = default)
         {
             return new RoslynInsertionToolOptions(
                 username: username.ValueOrFallback(Username),
@@ -157,7 +160,8 @@ namespace Roslyn.Insertion
                 logFileLocation: logFileLocation.ValueOrFallback(LogFileLocation),
                 clientId: clientId.ValueOrFallback(ClientId),
                 clientSecret: clientSecret.ValueOrFallback(ClientSecret),
-                titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix));
+                titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix),
+                setAutoComplete: setAutoComplete.ValueOrFallback(SetAutoComplete));
         }
 
         public RoslynInsertionToolOptions WithRunRPSInValidation(bool runRPSInValidation) => Update(runRPSInValidation: runRPSInValidation);
@@ -220,6 +224,8 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithTitlePrefix(string titlePrefix) => Update(titlePrefix: titlePrefix);
 
+        public RoslynInsertionToolOptions WithSetAutoComplete(bool setAutoComplete) => Update(setAutoComplete: setAutoComplete);
+
         public string Username { get; }
 
         public string Password { get; }
@@ -279,6 +285,8 @@ namespace Roslyn.Insertion
         public string ClientSecret { get; }
 
         public string TitlePrefix { get; }
+
+        public bool SetAutoComplete { get; }
 
         public bool Valid
         {

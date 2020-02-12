@@ -135,3 +135,12 @@ function GetUpdateCoreXTLibraries([string] $componentName, [string] $updateCoreX
         return $updateCoreXTLibraries
     }
 }
+
+function GetAutoComplete([string] $autoComplete) {
+    if (IsDefaultValue $autoComplete) {
+        return "false"
+    }
+    else {
+        return $autoComplete
+    }
+}

@@ -198,6 +198,59 @@ namespace Roslyn.Insertion
             }
         }
 
+        /// <summary>
+        /// There is no enum or class in Microsoft.TeamFoundation.SourceControl.WebApi defined for vote values so made my own here.
+        /// Values are documented at https://docs.microsoft.com/en-us/dotnet/api/microsoft.teamfoundation.sourcecontrol.webapi.identityrefwithvote.vote?view=azure-devops-dotnet.
+        /// </summary>
+        public enum Vote : short
+        {
+            Approved = 10,
+            ApprovedWithComment = 5,
+            NoResponse = 0,
+            NotReady = -5,
+            Rejected = -10
+        }
+
+        // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
+        private static async Task SetAutoCompleteAsync(GitPullRequest pullRequest, CancellationToken cancellationToken)
+        {
+            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+            var repository = pullRequest.Repository;
+            try
+            {
+                var idRefWithVote = await gitClient.CreatePullRequestReviewerAsync(
+                    new IdentityRefWithVote { Vote = (short)Vote.Approved },
+                    repository.Id,
+                    pullRequest.PullRequestId,
+                    VSLSnapUserId.ToString(),
+                    cancellationToken : cancellationToken
+                    );
+                Console.WriteLine($"Updated {pullRequest.Description} with AutoApprove");
+
+                pullRequest = await gitClient.UpdatePullRequestAsync(
+                    new GitPullRequest
+                    {
+                        AutoCompleteSetBy = idRefWithVote,
+                        CompletionOptions = new GitPullRequestCompletionOptions
+                        {
+                            DeleteSourceBranch = true,
+                            MergeCommitMessage = "RIT Auto-Complete",
+                            SquashMerge = true,
+                        }
+                    },
+                    repository.Id,
+                    pullRequest.PullRequestId,
+                    cancellationToken: cancellationToken
+                    );
+                Console.WriteLine($"Updated {pullRequest.Description} with AutoComplete");
+            }
+            catch (Exception e)
+            {
+                LogWarning($"Could not set AutoComplete: {e.GetType().Name} : {e.Message}");
+                LogWarning(e);
+            }
+        }
+
         private static async Task<Build> GetSpecificBuildAsync(BuildVersion version, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
