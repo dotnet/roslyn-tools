@@ -212,7 +212,7 @@ namespace Roslyn.Insertion
         }
 
         // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
-        private static async Task SetAutoCompleteAsync(GitPullRequest pullRequest)
+        private static async Task SetAutoCompleteAsync(GitPullRequest pullRequest, CancellationToken cancellationToken)
         {
             var gitClient = ProjectCollection.GetClient<GitHttpClient>();
             var repository = pullRequest.Repository;
@@ -222,7 +222,8 @@ namespace Roslyn.Insertion
                     new IdentityRefWithVote { Vote = (short)Vote.Approved },
                     repository.Id,
                     pullRequest.PullRequestId,
-                    VSLSnapUserId.ToString()
+                    VSLSnapUserId.ToString(),
+                    cancellationToken : cancellationToken
                     );
                 Console.WriteLine($"Updated {pullRequest.Description} with AutoApprove");
 
@@ -238,7 +239,8 @@ namespace Roslyn.Insertion
                         }
                     },
                     repository.Id,
-                    pullRequest.PullRequestId
+                    pullRequest.PullRequestId,
+                    cancellationToken: cancellationToken
                     );
                 Console.WriteLine($"Updated {pullRequest.Description} with AutoComplete");
             }

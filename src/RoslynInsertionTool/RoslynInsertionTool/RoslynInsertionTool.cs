@@ -388,7 +388,7 @@ namespace Roslyn.Insertion
                     Console.WriteLine($"Set PR to Auto-Complete");
                     try
                     {
-                        await SetAutoCompleteAsync(pullRequest);
+                        await SetAutoCompleteAsync(pullRequest, cancellationToken);
                     }
                     catch (Exception ex)
                     {
