@@ -4,8 +4,8 @@ using System;
 
 namespace Roslyn.Tools
 {
-	internal static class NuGetUtils
-	{
+    internal static class NuGetUtils
+    {
         public const string DefaultNuspecXmlns = "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd";
         public const string SignaturePartUri = ".signature.p7s";
 

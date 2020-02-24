@@ -81,15 +81,16 @@ namespace Roslyn.Insertion
                 cancellationToken: cancellationToken);
         }
 
-        private static async Task<Build> GetLatestBuildAsync(CancellationToken cancellationToken)
+        private static async Task<Build> GetLatestBuildAsync(CancellationToken cancellationToken, BuildResult? resultFilter = null)
         {
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
             var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
-            var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, resultFilter: null);
+            var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, resultFilter);
 
-            return (await GetInsertableBuildsAsync(buildClient, cancellationToken, from build in builds
-                    orderby build.FinishTime descending
-                    select build)).FirstOrDefault();
+            return (await GetInsertableBuildsAsync(buildClient, cancellationToken,
+                        from build in builds
+                        orderby build.FinishTime descending
+                        select build)).FirstOrDefault();
         }
 
         /// <summary>
@@ -130,15 +131,8 @@ namespace Roslyn.Insertion
             try
             {
                 Console.WriteLine($"Getting latest passing build for project {Options.TFSProjectName}, queue {Options.BuildQueueName}, and branch {Options.BranchName}");
-                var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
-                var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
-                var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, BuildResult.Succeeded | BuildResult.PartiallySucceeded);
-
                 // Get the latest build with valid artifacts.
-                newestBuild = (await GetInsertableBuildsAsync(buildClient, cancellationToken,
-                                    from build in builds
-                                    orderby build.FinishTime descending
-                                    select build)).FirstOrDefault();
+                newestBuild = await GetLatestBuildAsync(cancellationToken, BuildResult.Succeeded | BuildResult.PartiallySucceeded);
 
                 if (newestBuild?.Result == BuildResult.PartiallySucceeded)
                 {
@@ -223,7 +217,7 @@ namespace Roslyn.Insertion
                     repository.Id,
                     pullRequest.PullRequestId,
                     VSLSnapUserId.ToString(),
-                    cancellationToken : cancellationToken
+                    cancellationToken: cancellationToken
                     );
                 Console.WriteLine($"Updated {pullRequest.Description} with AutoApprove");
 
@@ -325,7 +319,7 @@ namespace Roslyn.Insertion
 
         private static async Task<string> DownloadArtifactsAsync(BuildHttpClient buildClient, Build build, BuildArtifact artifact, CancellationToken cancellationToken)
         {
-            var tempDirectory = Path.Combine(Path.GetTempPath(), string.Concat(Options.InsertionName, Options.BranchName).Replace(" ", "_").Replace("/","_"));
+            var tempDirectory = Path.Combine(Path.GetTempPath(), string.Concat(Options.InsertionName, Options.BranchName).Replace(" ", "_").Replace("/", "_"));
             if (Directory.Exists(tempDirectory))
             {
                 // Be judicious and clean up old artifacts so we do not eat up memory on the scheduler machine.
@@ -355,7 +349,7 @@ namespace Roslyn.Insertion
                 }
             }
 
-            Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds/1000} seconds");
+            Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds / 1000} seconds");
 
             return Path.Combine(tempDirectory, artifact.Name);
         }
