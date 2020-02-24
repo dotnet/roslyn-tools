@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using NuGet.Versioning;
 
 namespace Roslyn.Insertion
 {
