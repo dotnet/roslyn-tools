@@ -282,9 +282,7 @@ namespace Roslyn.Insertion
 
                 // ********************* Create pull request *****************************
                 var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
-
                 var prDescriptionMarkdown = CreatePullRequestDescription(oldBuild, buildToInsert, useMarkdown: true);
-                var prDescriptionText = CreatePullRequestDescription(oldBuild, buildToInsert, useMarkdown: false);
 
                 if (buildToInsert.Result == BuildResult.PartiallySucceeded)
                 {
@@ -386,6 +384,7 @@ namespace Roslyn.Insertion
                     Console.WriteLine($"Set PR to Auto-Complete");
                     try
                     {
+                        var prDescriptionText = CreatePullRequestDescription(oldBuild, buildToInsert, useMarkdown: false);
                         await SetAutoCompleteAsync(pullRequest, prDescriptionText, cancellationToken);
                     }
                     catch (Exception ex)
@@ -471,7 +470,7 @@ namespace Roslyn.Insertion
             }
         }
 
-        private static string CreatePullRequestDescription(Build oldBuild, Build newBuild, bool useMarkdown)
+        private static string CreatePullRequestDescription(Build oldBuild, Build buildToinsert, bool useMarkdown)
         {
             var oldBuildDescription = "";
             if (oldBuild is object)
@@ -482,8 +481,8 @@ namespace Roslyn.Insertion
             }
 
             var newBuildDescription = useMarkdown
-                    ? $"from {newBuild.GetBuildDescriptionMarkdown()}"
-                    : $"from {newBuild.GetBuildDescriptionText()}";
+                    ? $"from {buildToinsert.GetBuildDescriptionMarkdown()}"
+                    : $"from {buildToinsert.GetBuildDescriptionText()}";
 
             return $"Updating {Options.InsertionName} {oldBuildDescription} to {newBuildDescription}";
         }
