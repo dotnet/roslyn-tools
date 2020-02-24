@@ -282,15 +282,13 @@ namespace Roslyn.Insertion
 
                 // ********************* Create pull request *****************************
                 var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
-                var oldBuildDescription = oldBuild is object
-                    ? $"from {oldBuild.GetBuildDescription()} "
-                    : "";
 
-                var newBuildDescription = $"to {buildToInsert.GetBuildDescription()}";
-                var prDescription = $"Updating {Options.InsertionName} {oldBuildDescription}{newBuildDescription}";
+                var prDescriptionMarkdown = CreatePullRequestDescription(oldBuild, buildToInsert, useMarkdown: true);
+                var prDescriptionText = CreatePullRequestDescription(oldBuild, buildToInsert, useMarkdown: false);
+
                 if (buildToInsert.Result == BuildResult.PartiallySucceeded)
                 {
-                    prDescription += Environment.NewLine + ":warning: The build being inserted has partially succeeded.";
+                    prDescriptionMarkdown += Environment.NewLine + ":warning: The build being inserted has partially succeeded.";
                 }
 
                 if (!useExistingPr || Options.OverwritePr)
@@ -300,7 +298,7 @@ namespace Roslyn.Insertion
                         var nl = Environment.NewLine;
                         if (oldBuild is null)
                         {
-                            prDescription += $"{nl}---{nl}Unable to find details for previous build ({oldComponentVersion}){nl}";
+                            prDescriptionMarkdown += $"{nl}---{nl}Unable to find details for previous build ({oldComponentVersion}){nl}";
                         }
                         else
                         {
@@ -310,8 +308,8 @@ namespace Roslyn.Insertion
                                 ? $"[View Complete Diff of Changes]({diffLink})"
                                 : "No source changes since previous insertion";
 
-                            prDescription += nl + "---" + nl + diffDescription + nl;
-                            prDescription = AppendChangesToDescription(prDescription, oldBuild ?? buildToInsert, changes);
+                            prDescriptionMarkdown += nl + "---" + nl + diffDescription + nl;
+                            prDescriptionMarkdown = AppendChangesToDescription(prDescriptionMarkdown, oldBuild ?? buildToInsert, changes);
                         }
                     }
                     catch (Exception e)
@@ -328,7 +326,7 @@ namespace Roslyn.Insertion
                         if (Options.OverwritePr)
                         {
                             pullRequest = await gitClient.UpdatePullRequestAsync(
-                                new GitPullRequest { Description = prDescription },
+                                new GitPullRequest { Description = prDescriptionMarkdown },
                                 VSRepoId,
                                 pullRequestId,
                                 cancellationToken: cancellationToken);
@@ -348,7 +346,7 @@ namespace Roslyn.Insertion
                     Console.WriteLine($"Create Pull Request");
                     try
                     {
-                        pullRequest = await CreatePullRequestAsync(insertionBranchName, prDescription, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
+                        pullRequest = await CreatePullRequestAsync(insertionBranchName, prDescriptionMarkdown, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
                         if (pullRequest == null)
                         {
                             LogError($"Unable to create pull request for '{insertionBranchName}'");
@@ -388,7 +386,7 @@ namespace Roslyn.Insertion
                     Console.WriteLine($"Set PR to Auto-Complete");
                     try
                     {
-                        await SetAutoCompleteAsync(pullRequest, cancellationToken);
+                        await SetAutoCompleteAsync(pullRequest, prDescriptionText, cancellationToken);
                     }
                     catch (Exception ex)
                     {
@@ -473,7 +471,24 @@ namespace Roslyn.Insertion
             }
         }
 
-        public static string GetBuildDescription(this Build build)
+        private static string CreatePullRequestDescription(Build oldBuild, Build newBuild, bool useMarkdown)
+        {
+            var oldBuildDescription = "";
+            if (oldBuild is object)
+            {
+                oldBuildDescription = useMarkdown
+                    ? $"from {oldBuild.GetBuildDescriptionMarkdown()}"
+                    : $"from {oldBuild.GetBuildDescriptionText()}";
+            }
+
+            var newBuildDescription = useMarkdown
+                    ? $"from {newBuild.GetBuildDescriptionMarkdown()}"
+                    : $"from {newBuild.GetBuildDescriptionText()}";
+
+            return $"Updating {Options.InsertionName} {oldBuildDescription} to {newBuildDescription}";
+        }
+
+        public static string GetBuildDescriptionMarkdown(this Build build)
         {
             var number = build.BuildNumber;
             var shortCommitId = build.SourceVersion.Substring(0, 7);
@@ -492,6 +507,14 @@ namespace Roslyn.Insertion
                 }
                 return string.Empty;
             }
+        }
+
+        public static string GetBuildDescriptionText(this Build build)
+        {
+            var number = build.BuildNumber;
+            var shortCommitId = build.SourceVersion.Substring(0, 7);
+
+            return $"{number} ({shortCommitId})";
         }
     }
 }

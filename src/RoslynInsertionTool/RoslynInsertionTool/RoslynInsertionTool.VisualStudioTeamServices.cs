@@ -206,7 +206,7 @@ namespace Roslyn.Insertion
         }
 
         // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
-        private static async Task SetAutoCompleteAsync(GitPullRequest pullRequest, CancellationToken cancellationToken)
+        private static async Task SetAutoCompleteAsync(GitPullRequest pullRequest, string commitMessage, CancellationToken cancellationToken)
         {
             var gitClient = ProjectCollection.GetClient<GitHttpClient>();
             var repository = pullRequest.Repository;
@@ -228,7 +228,7 @@ namespace Roslyn.Insertion
                         CompletionOptions = new GitPullRequestCompletionOptions
                         {
                             DeleteSourceBranch = true,
-                            MergeCommitMessage = "RIT Auto-Complete",
+                            MergeCommitMessage = commitMessage,
                             SquashMerge = true,
                         }
                     },
