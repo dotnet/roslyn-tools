@@ -383,7 +383,7 @@ namespace Roslyn.Insertion
                 else
                 {
                     // perform a regular insertion
-                    if(OverwritePr)
+                    if (OverwritePr)
                     {
                         builder.AppendLine($"{nameof(OverwritePr).ToLowerInvariant()} can only be used with {nameof(UpdateExistingPr).ToLowerInvariant()}.");
                     }

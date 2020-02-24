@@ -159,7 +159,8 @@ namespace VsixExpInstaller
                     Path.Combine(vsInstallDir, @"Common7\IDE\PublicAssemblies")
                 };
 
-                AppDomain.CurrentDomain.AssemblyResolve += (object sender, ResolveEventArgs eventArgs) => {
+                AppDomain.CurrentDomain.AssemblyResolve += (object sender, ResolveEventArgs eventArgs) =>
+                {
                     var assemblyFileName = $"{eventArgs.Name.Split(',')[0]}.dll";
 
                     foreach (var assemblyResolutionPath in assemblyResolutionPaths)
@@ -295,7 +296,7 @@ namespace VsixExpInstaller
                                             Console.WriteLine($"  Updating local extension ({status.installedExtension.InstallPath}) to '{extensionPath}'");
                                             Uninstall(status.installedExtension);
                                         }
-                                        
+
                                     }
                                     else
                                     {

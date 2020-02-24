@@ -32,7 +32,7 @@ namespace SignTool
         /// These are binaries which are included in our zip containers but are already signed. This list is used for 
         /// validation purposes. These are all flat names and cannot be relative paths.
         /// </summary>
-        internal ImmutableArray<string> ExternalFileNames { get;}
+        internal ImmutableArray<string> ExternalFileNames { get; }
 
         /// <summary>
         /// Names of assemblies that need to be signed. This is a subset of <see cref="FileNames"/>

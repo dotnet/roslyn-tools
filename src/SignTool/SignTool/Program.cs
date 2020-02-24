@@ -152,7 +152,7 @@ namespace SignTool
                 return false;
             }
 
-            batchData = new BatchSignInput(outputPath, map, fileJson.ExcludeList ?? Array.Empty<string>(), publishUrl );
+            batchData = new BatchSignInput(outputPath, map, fileJson.ExcludeList ?? Array.Empty<string>(), publishUrl);
             return true;
         }
 

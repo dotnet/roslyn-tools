@@ -85,7 +85,7 @@ namespace RoslynTools
         }
 
         private async Tasks.Task<bool> DownloadAsync(HttpClient client)
-        {            
+        {
             int attempt = 0;
 
             while (true)
