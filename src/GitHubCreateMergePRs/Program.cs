@@ -186,12 +186,20 @@ public class Program
         // Since this is run on AzDO as an automated cron pipeline, times are in UTC.
         // See https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops&tabs=yaml#scheduled-triggers
         var runDateTime = DateTime.UtcNow;
-        var currentDate = runDateTime.Date;
 
         // Since cron should schedule this to run every 3 hours starting at 12am,
-        // we can check if we are running within the first 15 minutes of the day.
-        var fifteenMinutes = new TimeSpan(hours: 0, minutes: 15, seconds: 0);
-        var isStartOfDay = runDateTime - currentDate < fifteenMinutes;
+        // we expect to be run within a 10 minute window of this time.
+
+        // Adjust the time 5 minutes into the future in case the pipeline machine
+        // and scheduler machine have mismatched clocks.
+        var adjustedRunDateTime = runDateTime.AddMinutes(5);
+        var adjustedRunDate = adjustedRunDateTime.Date;
+
+        // Because of the adjusted run time is being used we treat a run as valid
+        // if it begins in the last 5 minutes of the previous day through the first
+        // 5 minutes of the current day.
+        var tenMinutes = new TimeSpan(hours: 0, minutes: 10, seconds: 0);
+        var isStartOfDay = adjustedRunDateTime - adjustedRunDate < tenMinutes;
 
         // Daily and Weekly runs only happen at the start of the day
         if (!isStartOfDay)
@@ -199,7 +207,7 @@ public class Program
             return false;
         }
 
-        var isSunday = currentDate.DayOfWeek != DayOfWeek.Sunday;
+        var isSunday = adjustedRunDate.DayOfWeek != DayOfWeek.Sunday;
 
         // Weekly runs only happen on Sunday
         if (frequency == "weekly")
