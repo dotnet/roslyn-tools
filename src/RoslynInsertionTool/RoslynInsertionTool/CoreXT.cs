@@ -9,7 +9,6 @@ using System.Xml.Linq;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.Versioning;
 
 namespace Roslyn.Insertion
 {
