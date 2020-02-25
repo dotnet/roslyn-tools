@@ -120,12 +120,12 @@ namespace Roslyn.Insertion
             versionAttribute.SetValue(packageInfo.Version.ToString());
         }
 
-        public static SemanticVersion GetPackageVersion(XAttribute versionAttribute)
+        public static NuGetVersion GetPackageVersion(XAttribute versionAttribute)
         {
-            return SemanticVersion.Parse(versionAttribute.Value);
+            return NuGetVersion.Parse(versionAttribute.Value);
         }
 
-        public bool TryGetPackageVersion(PackageInfo packageInfo, out SemanticVersion version)
+        public bool TryGetPackageVersion(PackageInfo packageInfo, out NuGetVersion version)
         {
             var attribute = GetVersionAttribute(packageInfo);
             if (attribute == null)

@@ -13,9 +13,9 @@ namespace Roslyn.Insertion
         private class OutdatedPackageException : Exception
         {
             public PackageInfo Package { get; private set; }
-            public SemanticVersion PreviousPackage { get; private set; }
+            public NuGetVersion PreviousPackage { get; private set; }
 
-            public OutdatedPackageException(string message, PackageInfo package, SemanticVersion previousPackage)
+            public OutdatedPackageException(string message, PackageInfo package, NuGetVersion previousPackage)
                 : base(message)
             {
                 Package = package;
@@ -71,7 +71,7 @@ namespace Roslyn.Insertion
         }
 
         private static void UpdatePackage(
-            SemanticVersion previousPackageVersion,
+            NuGetVersion previousPackageVersion,
             BuildVersion buildVersion,
             CoreXT coreXT,
             PackageInfo package)
