@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using NuGet.Versioning;
 
 namespace Roslyn.Insertion
 {
@@ -26,13 +27,13 @@ namespace Roslyn.Insertion
         /// <summary>
         /// Version, e.g. 1.3.0-beta1-20160315-05
         /// </summary>
-        public readonly SemanticVersion Version;
+        public readonly NuGetVersion Version;
 
         public bool IsRoslyn => LibraryName == "Roslyn";
 
         public bool IsRoslynToolsetCompiler => PackageName == RoslynToolsetPackageName;
 
-        public PackageInfo(string packageName, string libraryName, SemanticVersion version)
+        public PackageInfo(string packageName, string libraryName, NuGetVersion version)
         {
             PackageName = packageName;
             LibraryName = libraryName;
@@ -60,15 +61,10 @@ namespace Roslyn.Insertion
             var libraryName = string.Join(".", parts.Take(firstNumber));
             var packageName = fileName.Substring(0, libraryNameStartIndex) + libraryName;
             var versionStr = string.Join(".", parts.Skip(firstNumber));
-            SemanticVersion version;
 
-            try
+            if (!NuGetVersion.TryParse(versionStr, out var version))
             {
-                version = SemanticVersion.Parse(versionStr);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidDataException($"Invalid version number: '{fileName}'", e);
+                throw new InvalidDataException($"Invalid version number: '{fileName}'");
             }
 
             return new PackageInfo(packageName, libraryName, version);
