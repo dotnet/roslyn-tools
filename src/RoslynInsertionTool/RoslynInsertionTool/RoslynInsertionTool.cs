@@ -476,15 +476,15 @@ namespace Roslyn.Insertion
             if (oldBuild is object)
             {
                 oldBuildDescription = useMarkdown
-                    ? $"from {oldBuild.GetBuildDescriptionMarkdown()}"
-                    : $"from {oldBuild.GetBuildDescriptionText()}";
+                    ? $"from {oldBuild.GetBuildDescriptionMarkdown()} "
+                    : $"from {oldBuild.GetBuildDescriptionText()} ";
             }
 
             var newBuildDescription = useMarkdown
-                    ? $"from {buildToinsert.GetBuildDescriptionMarkdown()}"
-                    : $"from {buildToinsert.GetBuildDescriptionText()}";
+                    ? $"to {buildToinsert.GetBuildDescriptionMarkdown()}"
+                    : $"to {buildToinsert.GetBuildDescriptionText()}";
 
-            return $"Updating {Options.InsertionName} {oldBuildDescription} to {newBuildDescription}";
+            return $"Updating {Options.InsertionName} {oldBuildDescription}{newBuildDescription}";
         }
 
         public static string GetBuildDescriptionMarkdown(this Build build)
