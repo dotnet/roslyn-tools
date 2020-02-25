@@ -207,12 +207,10 @@ public class Program
             return false;
         }
 
-        var isSunday = adjustedRunDate.DayOfWeek != DayOfWeek.Sunday;
-
         // Weekly runs only happen on Sunday
         if (frequency == "weekly")
         {
-            return isSunday;
+            return adjustedRunDate.DayOfWeek == DayOfWeek.Sunday;
         }
 
         // Daily runs happen every day
