@@ -129,8 +129,7 @@ public class Program
                 var fromBranch = merge.Attribute("from").Value;
                 var toBranch = merge.Attribute("to").Value;
 
-                var frequency = merge.Attribute("frequency")?.Value;
-                if (isAutomatedRun && frequency == "weekly" && DateTime.Now.DayOfWeek != DayOfWeek.Sunday)
+                if (!ShouldRunMerge(merge, isAutomatedRun))
                 {
                     continue;
                 }
@@ -156,5 +155,54 @@ public class Program
                 }
             }
         }
+    }
+
+    private static bool ShouldRunMerge(XElement merge, bool isAutomatedRun)
+    {
+        // We always run when merges are started manually
+        if (!isAutomatedRun)
+        {
+            return true;
+        }
+
+        var frequency = merge.Attribute("frequency")?.Value.ToLower();
+
+        // We always run when a frequency isn't specified
+        if (string.IsNullOrEmpty(frequency))
+        {
+            return true;
+        }
+
+        // We always run when an unexpected frequency value is specified
+        if (frequency != "daily" && frequency != "weekly")
+        {
+            Console.WriteLine($"##vso[task.logissue type=error]Unexpected merge frequency specified ({frequency}).");
+
+            return true;
+        }
+
+        var runDateTime = DateTime.Now;
+        var currentDate = runDateTime.Date;
+
+        // Are we within the first 15 minutes of the day?
+        var fifteenMinutes = new TimeSpan(hours: 0, minutes: 15, seconds: 0);
+        var isStartOfDay = runDateTime - currentDate < fifteenMinutes;
+
+        // Daily and Weekly runs only happen at the start of the day
+        if (!isStartOfDay)
+        {
+            return false;
+        }
+
+        var isSunday = currentDate.DayOfWeek != DayOfWeek.Sunday;
+
+        // Weekly runs only happen on Sunday
+        if (frequency == "weekly")
+        {
+            return isSunday;
+        }
+
+        // Daily runs happen every day
+        return true;
     }
 }
