@@ -195,8 +195,8 @@ public class Program
         var adjustedRunDateTime = runDateTime.AddMinutes(5);
         var adjustedRunDate = adjustedRunDateTime.Date;
 
-        // Because of the adjusted run time is being used we treat a run as valid
-        // if it begins in the last 5 minutes of the previous day through the first
+        // Because the adjusted run time is being used, we treat a run as valid if
+        // it begins within the last 5 minutes of the previous day through the first
         // 5 minutes of the current day.
         var tenMinutes = new TimeSpan(hours: 0, minutes: 10, seconds: 0);
         var isStartOfDay = adjustedRunDateTime - adjustedRunDate < tenMinutes;
