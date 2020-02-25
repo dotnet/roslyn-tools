@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using NuGet.Versioning;
 
 namespace Roslyn.Insertion
 {
@@ -78,7 +77,7 @@ namespace Roslyn.Insertion
         {
             if (package.IsRoslyn)
             {
-                if (package.Version < previousPackageVersion)
+                if (package.Version.Version < previousPackageVersion.Version)
                 {
                     throw new OutdatedPackageException(
                         $"The version of package '{package}' is older than previously inserted '{previousPackageVersion}'.",
