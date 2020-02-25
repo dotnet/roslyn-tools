@@ -157,6 +157,10 @@ public class Program
         }
     }
 
+    /// <summary>
+    /// Checks the merge element for a frequency attribute. Then determines whether the current run
+    /// matches the frequency criteria. Valid frequency values are 'daily' and 'weekly'.
+    /// </summary>
     private static bool ShouldRunMerge(XElement merge, bool isAutomatedRun)
     {
         // We always run when merges are started manually
@@ -173,18 +177,19 @@ public class Program
             return true;
         }
 
-        // We always run when an unexpected frequency value is specified
+        // Throw when an unexpected frequency value is specified
         if (frequency != "daily" && frequency != "weekly")
         {
-            Console.WriteLine($"##vso[task.logissue type=error]Unexpected merge frequency specified ({frequency}).");
-
-            return true;
+            throw new Exception($"Unexpected merge frequency specified: '{frequency}'. Valid values are 'daily' and 'weekly'.");
         }
 
-        var runDateTime = DateTime.Now;
+        // Since this is run on AzDO as an automated cron pipeline, times are in UTC.
+        // See https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops&tabs=yaml#scheduled-triggers
+        var runDateTime = DateTime.UtcNow;
         var currentDate = runDateTime.Date;
 
-        // Are we within the first 15 minutes of the day?
+        // Since cron should schedule this to run every 3 hours starting at 12am,
+        // we can check if we are running within the first 15 minutes of the day.
         var fifteenMinutes = new TimeSpan(hours: 0, minutes: 15, seconds: 0);
         var isStartOfDay = runDateTime - currentDate < fifteenMinutes;
 
