@@ -115,6 +115,10 @@ public class Program
 
     private static async Task RunAsync(XDocument config, bool isAutomatedRun, bool isDryRun, string githubToken)
     {
+        // Since this is run on AzDO as an automated cron pipeline, times are in UTC.
+        // See https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops&tabs=yaml#scheduled-triggers
+        var runDateTime = DateTime.UtcNow;
+
         var gh = new GithubMergeTool.GithubMergeTool("dotnet-bot@users.noreply.github.com", githubToken, isDryRun);
         foreach (var repo in config.Root.Elements("repo"))
         {
@@ -129,7 +133,7 @@ public class Program
                 var fromBranch = merge.Attribute("from").Value;
                 var toBranch = merge.Attribute("to").Value;
 
-                if (!ShouldRunMerge(merge, isAutomatedRun))
+                if (!ShouldRunMerge(merge, isAutomatedRun, runDateTime))
                 {
                     continue;
                 }
@@ -161,7 +165,7 @@ public class Program
     /// Checks the merge element for a frequency attribute. Then determines whether the current run
     /// matches the frequency criteria. Valid frequency values are 'daily' and 'weekly'.
     /// </summary>
-    private static bool ShouldRunMerge(XElement merge, bool isAutomatedRun)
+    private static bool ShouldRunMerge(XElement merge, bool isAutomatedRun, DateTime runDateTime)
     {
         // We always run when merges are started manually
         if (!isAutomatedRun)
@@ -182,10 +186,6 @@ public class Program
         {
             throw new Exception($"Unexpected merge frequency specified: '{frequency}'. Valid values are 'daily' and 'weekly'.");
         }
-
-        // Since this is run on AzDO as an automated cron pipeline, times are in UTC.
-        // See https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops&tabs=yaml#scheduled-triggers
-        var runDateTime = DateTime.UtcNow;
 
         // Since cron should schedule this to run every 3 hours starting at 12am,
         // we expect to be run within a 10 minute window of this time.
