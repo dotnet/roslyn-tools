@@ -115,6 +115,10 @@ public class Program
 
     private static async Task RunAsync(XDocument config, bool isAutomatedRun, bool isDryRun, string githubToken)
     {
+        // Since this is run on AzDO as an automated cron pipeline, times are in UTC.
+        // See https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops&tabs=yaml#scheduled-triggers
+        var runDateTime = DateTime.UtcNow;
+
         var gh = new GithubMergeTool.GithubMergeTool("dotnet-bot@users.noreply.github.com", githubToken, isDryRun);
         foreach (var repo in config.Root.Elements("repo"))
         {
@@ -129,8 +133,7 @@ public class Program
                 var fromBranch = merge.Attribute("from").Value;
                 var toBranch = merge.Attribute("to").Value;
 
-                var frequency = merge.Attribute("frequency")?.Value;
-                if (isAutomatedRun && frequency == "weekly" && DateTime.Now.DayOfWeek != DayOfWeek.Sunday)
+                if (!ShouldRunMerge(merge, isAutomatedRun, runDateTime))
                 {
                     continue;
                 }
@@ -156,5 +159,61 @@ public class Program
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Checks the merge element for a frequency attribute. Then determines whether the current run
+    /// matches the frequency criteria. Valid frequency values are 'daily' and 'weekly'.
+    /// </summary>
+    private static bool ShouldRunMerge(XElement merge, bool isAutomatedRun, DateTime runDateTime)
+    {
+        // We always run when merges are started manually
+        if (!isAutomatedRun)
+        {
+            return true;
+        }
+
+        var frequency = merge.Attribute("frequency")?.Value.ToLower();
+
+        // We always run when a frequency isn't specified
+        if (string.IsNullOrEmpty(frequency))
+        {
+            return true;
+        }
+
+        // Throw when an unexpected frequency value is specified
+        if (frequency != "daily" && frequency != "weekly")
+        {
+            throw new Exception($"Unexpected merge frequency specified: '{frequency}'. Valid values are 'daily' and 'weekly'.");
+        }
+
+        // Since cron should schedule this to run every 3 hours starting at 12am,
+        // we expect to be run within a 10 minute window of this time.
+
+        // Adjust the time 5 minutes into the future in case the pipeline machine
+        // and scheduler machine have mismatched clocks.
+        var adjustedRunDateTime = runDateTime.AddMinutes(5);
+        var adjustedRunDate = adjustedRunDateTime.Date;
+
+        // Because the adjusted run time is being used, we treat a run as valid if
+        // it begins within the last 5 minutes of the previous day through the first
+        // 5 minutes of the current day.
+        var tenMinutes = new TimeSpan(hours: 0, minutes: 10, seconds: 0);
+        var isStartOfDay = adjustedRunDateTime - adjustedRunDate < tenMinutes;
+
+        // Daily and Weekly runs only happen at the start of the day
+        if (!isStartOfDay)
+        {
+            return false;
+        }
+
+        // Weekly runs only happen on Sunday
+        if (frequency == "weekly")
+        {
+            return adjustedRunDate.DayOfWeek == DayOfWeek.Sunday;
+        }
+
+        // Daily runs happen every day
+        return true;
     }
 }
