@@ -209,7 +209,7 @@ partial class RoslynInsertionToolCommandline
                 titlePrefix => options = options.WithTitlePrefix(titlePrefix)
             },
             {
-                "createdraftpr",
+                "dpr=|createdraftpr=",
                 "Create an insertion PR that is marked as a draft.",
                 createDraftPr => options = options.WithCreateDraftPr(true)
             },
