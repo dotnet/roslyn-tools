@@ -193,6 +193,19 @@ namespace Roslyn.Insertion
             }
         }
 
+        private static async Task TryQueueBuildPolicy(GitPullRequest pullRequest, string buildPolicy, string insertionBranchName)
+        {
+            try
+            {
+                await QueueBuildPolicy(pullRequest, buildPolicy);
+            }
+            catch (Exception ex)
+            {
+                LogWarning($"Unable to start {buildPolicy} for '{insertionBranchName}'");
+                LogWarning(ex);
+            }
+        }
+
         /// <summary>
         /// There is no enum or class in Microsoft.TeamFoundation.SourceControl.WebApi defined for vote values so made my own here.
         /// Values are documented at https://docs.microsoft.com/en-us/dotnet/api/microsoft.teamfoundation.sourcecontrol.webapi.identityrefwithvote.vote?view=azure-devops-dotnet.

@@ -387,6 +387,14 @@ namespace Roslyn.Insertion
                         LogWarning($"Unable to create a CloudBuild validation build for '{insertionBranchName}'");
                         LogWarning(ex);
                     }
+
+                    if (Options.CreateDraftPr)
+                    {
+                        // When creating Draft PRs no policies are automatically started.
+                        await TryQueueBuildPolicy(pullRequest, "Insertion Hash Check", insertionBranchName);
+                        await TryQueueBuildPolicy(pullRequest, "Insertion Sign Check", insertionBranchName);
+                        await TryQueueBuildPolicy(pullRequest, "Insertion Symbol Check", insertionBranchName);
+                    }
                 }
 
                 // ********************* Set PR to Auto-Complete *****************************
