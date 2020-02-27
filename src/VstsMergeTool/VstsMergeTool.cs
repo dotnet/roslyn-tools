@@ -42,7 +42,7 @@ namespace VstsMergeTool
             var dest = destBranch.Split('/');
             DestName = dest[dest.Length - 1];
 
-            this.SourceBranch = sourceBranch.StartsWith("refs/heads/")? sourceBranch : $"refs/heads/{sourceBranch}";
+            this.SourceBranch = sourceBranch.StartsWith("refs/heads/") ? sourceBranch : $"refs/heads/{sourceBranch}";
             this.DestBranch = destBranch.StartsWith("refs/heads/") ? destBranch : $"refs/heads/{destBranch}";
 
             this.DummyBranchName = $"refs/heads/merge/{SourceName}-to-{DestName}";
@@ -70,7 +70,7 @@ namespace VstsMergeTool
                     return (false, "Previous auto merge is still in progress.");
                 }
 
-                if(!IsMergeRequired(branchInfo))
+                if (!IsMergeRequired(branchInfo))
                 {
                     return (false, null);
                 }
@@ -92,11 +92,11 @@ namespace VstsMergeTool
                 //       2. If conflict existing, stop. When conflict is resolve, then merge.
                 return (true, null);
             }
-            catch(OperationCanceledException ex)
+            catch (OperationCanceledException ex)
             {
                 return (false, $"Timed out waiting for an operation: {ex.ToString()}");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 // Gracefully exit.
                 return (false, ex.ToString());
@@ -105,7 +105,7 @@ namespace VstsMergeTool
 
         private void CheckBranchExists(IEnumerable<string> branchName)
         {
-            if(!branchName.Contains(SourceBranch))
+            if (!branchName.Contains(SourceBranch))
             {
                 throw new ArgumentException($"{SourceBranch} does not exist.");
             }
@@ -171,7 +171,7 @@ namespace VstsMergeTool
         private async Task<bool> CreateNewPullRequest(string dummyBranchName, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            
+
             var pullRequest = new GitPullRequest()
             {
                 Title = $"AutoMerge PR from {SourceName} to {DestName}",
@@ -220,7 +220,7 @@ namespace VstsMergeTool
 
             var response = await gitHttpClient.GetRepositoriesAsync(Settings.TFSProjectName);
             this.RepositoryId = response.Where(repo => repo.Name == Settings.RepositoryName).First().Id;
-        } 
+        }
 
         private async Task<bool> TryRemoveBranch(string branchName, CancellationToken token)
         {

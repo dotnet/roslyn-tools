@@ -239,7 +239,7 @@ namespace Roslyn.Tools
                     {
                         package.PackageProperties.Version = newPackageVersion.ToFullString();
                     }
-                    
+
                     packageInfo = new PackageInfo(package, packageId, packageVersion, newPackageVersion, tempPathOpt, nuspecStream, nuspecXml, nuspecXmlns);
                 }
                 finally
@@ -355,7 +355,7 @@ namespace Roslyn.Tools
                 package.SpecificationXml.Save(package.SpecificationStream);
 
                 package.Package.Close();
-                
+
                 string finalPath = Path.Combine(outDirectory, package.Id + "." + package.NewVersion + ".nupkg");
 
                 try

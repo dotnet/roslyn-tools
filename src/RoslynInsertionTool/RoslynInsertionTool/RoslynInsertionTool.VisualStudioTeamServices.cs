@@ -39,6 +39,7 @@ namespace Roslyn.Insertion
             var prefix = string.IsNullOrEmpty(titlePrefix)
                 ? string.Empty
                 : titlePrefix + " ";
+
             return new GitPullRequest
             {
                 Title = $"{prefix}{Options.InsertionName} '{Options.BranchName}/{buildToInsert}' Insertion into {Options.VisualStudioBranchName}",
@@ -46,6 +47,7 @@ namespace Roslyn.Insertion
                 SourceRefName = sourceBranch,
                 TargetRefName = targetBranch,
                 IsDraft = Options.CreateDraftPr,
+                Reviewers = new[] { new IdentityRefWithVote { Id = MLInfraSwatUserId.ToString() } }
             };
         }
 
@@ -80,15 +82,16 @@ namespace Roslyn.Insertion
                 cancellationToken: cancellationToken);
         }
 
-        private static async Task<Build> GetLatestBuildAsync(CancellationToken cancellationToken)
+        private static async Task<Build> GetLatestBuildAsync(CancellationToken cancellationToken, BuildResult? resultFilter = null)
         {
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
             var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
-            var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, resultFilter: null);
+            var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, resultFilter);
 
-            return (await GetInsertableBuildsAsync(buildClient, cancellationToken, from build in builds
-                    orderby build.FinishTime descending
-                    select build)).FirstOrDefault();
+            return (await GetInsertableBuildsAsync(buildClient, cancellationToken,
+                        from build in builds
+                        orderby build.FinishTime descending
+                        select build)).FirstOrDefault();
         }
 
         /// <summary>
@@ -129,15 +132,13 @@ namespace Roslyn.Insertion
             try
             {
                 Console.WriteLine($"Getting latest passing build for project {Options.TFSProjectName}, queue {Options.BuildQueueName}, and branch {Options.BranchName}");
-                var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
-                var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
-                var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, BuildResult.Succeeded);
-
                 // Get the latest build with valid artifacts.
-                newestBuild = (await GetInsertableBuildsAsync(buildClient, cancellationToken,
-                                    from build in builds
-                                    orderby build.FinishTime descending
-                                    select build)).FirstOrDefault();
+                newestBuild = await GetLatestBuildAsync(cancellationToken, BuildResult.Succeeded | BuildResult.PartiallySucceeded);
+
+                if (newestBuild?.Result == BuildResult.PartiallySucceeded)
+                {
+                    LogWarning($"The latest build being used, {newestBuild.BuildNumber} has partially succeeded!");
+                }
             }
             catch (Exception ex)
             {
@@ -192,13 +193,72 @@ namespace Roslyn.Insertion
             }
         }
 
+        /// <summary>
+        /// There is no enum or class in Microsoft.TeamFoundation.SourceControl.WebApi defined for vote values so made my own here.
+        /// Values are documented at https://docs.microsoft.com/en-us/dotnet/api/microsoft.teamfoundation.sourcecontrol.webapi.identityrefwithvote.vote?view=azure-devops-dotnet.
+        /// </summary>
+        public enum Vote : short
+        {
+            Approved = 10,
+            ApprovedWithComment = 5,
+            NoResponse = 0,
+            NotReady = -5,
+            Rejected = -10
+        }
+
+        // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
+        private static async Task SetAutoCompleteAsync(GitPullRequest pullRequest, string commitMessage, CancellationToken cancellationToken)
+        {
+            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+            var repository = pullRequest.Repository;
+            try
+            {
+                var idRefWithVote = await gitClient.CreatePullRequestReviewerAsync(
+                    new IdentityRefWithVote { Vote = (short)Vote.Approved },
+                    repository.Id,
+                    pullRequest.PullRequestId,
+                    VSLSnapUserId.ToString(),
+                    cancellationToken: cancellationToken
+                    );
+                Console.WriteLine($"Updated {pullRequest.Description} with AutoApprove");
+
+                pullRequest = await gitClient.UpdatePullRequestAsync(
+                    new GitPullRequest
+                    {
+                        AutoCompleteSetBy = idRefWithVote,
+                        CompletionOptions = new GitPullRequestCompletionOptions
+                        {
+                            DeleteSourceBranch = true,
+                            MergeCommitMessage = commitMessage,
+                            SquashMerge = true,
+                        }
+                    },
+                    repository.Id,
+                    pullRequest.PullRequestId,
+                    cancellationToken: cancellationToken
+                    );
+                Console.WriteLine($"Updated {pullRequest.Description} with AutoComplete");
+            }
+            catch (Exception e)
+            {
+                LogWarning($"Could not set AutoComplete: {e.GetType().Name} : {e.Message}");
+                LogWarning(e);
+            }
+        }
+
         private static async Task<Build> GetSpecificBuildAsync(BuildVersion version, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Console.WriteLine($"Getting latest passing build from {Options.TFSProjectName} where name is {Options.BuildQueueName}");
+            Console.WriteLine($"Getting build with build number {version}");
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
             var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
-            var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken);
+            var builds = await buildClient.GetBuildsAsync(
+                project: Options.TFSProjectName,
+                definitions: definitions.Select(d => d.Id),
+                buildNumber: version.ToString(),
+                statusFilter: BuildStatus.Completed,
+                cancellationToken: cancellationToken);
+
             return (from build in builds
                     where version == BuildVersion.FromTfsBuildNumber(build.BuildNumber, Options.BuildQueueName)
                     orderby build.FinishTime descending
@@ -260,7 +320,7 @@ namespace Roslyn.Insertion
 
         private static async Task<string> DownloadArtifactsAsync(BuildHttpClient buildClient, Build build, BuildArtifact artifact, CancellationToken cancellationToken)
         {
-            var tempDirectory = Path.Combine(Path.GetTempPath(), string.Concat(Options.InsertionName, Options.BranchName).Replace(" ", "_").Replace("/","_"));
+            var tempDirectory = Path.Combine(Path.GetTempPath(), string.Concat(Options.InsertionName, Options.BranchName).Replace(" ", "_").Replace("/", "_"));
             if (Directory.Exists(tempDirectory))
             {
                 // Be judicious and clean up old artifacts so we do not eat up memory on the scheduler machine.
@@ -275,7 +335,7 @@ namespace Roslyn.Insertion
 
             Directory.CreateDirectory(tempDirectory);
 
-            var archiveDownloadPath = Path.Combine(tempDirectory, string.Concat(artifact.Name, ".zip"));
+            var archiveDownloadPath = Path.Combine(tempDirectory, artifact.Name);
             Console.WriteLine($"Downloading artifacts to {archiveDownloadPath}");
 
             Stopwatch watch = Stopwatch.StartNew();
@@ -290,7 +350,7 @@ namespace Roslyn.Insertion
                 }
             }
 
-            Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds/1000} seconds");
+            Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds / 1000} seconds");
 
             return Path.Combine(tempDirectory, artifact.Name);
         }
@@ -392,50 +452,19 @@ namespace Roslyn.Insertion
         {
             var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
 
-            // Allocate temporary files
-            var tempZipFile = Path.GetTempFileName();
-            var tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-            // Get zip file from TFS and write to disk
-            using (var logStream = await buildClient.GetBuildLogsZipAsync(Options.TFSProjectName, newestBuild.Id, cancellationToken: cancellationToken))
-            using (var tempStream = File.OpenWrite(tempZipFile))
+            var allLogs = await buildClient.GetBuildLogsAsync(Options.TFSProjectName, newestBuild.Id, cancellationToken: cancellationToken);
+            foreach (var log in allLogs)
             {
-                await logStream.CopyToAsync(tempStream);
-            }
-
-            // Open zip file and extract log entry on disk
-            using (var zipFile = ZipFile.OpenRead(tempZipFile))
-            {
-                var entry = zipFile.Entries.SingleOrDefault(x => x.FullName.Contains("Upload VSTS Drop"));
-                if(entry == null)
+                var headerLine = await buildClient.GetBuildLogLinesAsync(Options.TFSProjectName, newestBuild.Id, log.Id, startLine: 0, endLine: 1, cancellationToken: cancellationToken);
+                if (headerLine[0].Contains("Upload VSTS Drop"))
                 {
-                    var zipFileEntries = string.Join(Environment.NewLine, zipFile.Entries.Select(x => x.FullName));
-                    Console.WriteLine($"Listing all log file entries:{Environment.NewLine}{zipFileEntries}");
-                    throw new Exception("This build did not upload its contents to VSTS Drop and is invalid.");
+                    using var stream = await buildClient.GetBuildLogAsync(Options.TFSProjectName, newestBuild.Id, log.Id, cancellationToken: cancellationToken);
+                    var logText = await new StreamReader(stream).ReadToEndAsync();
+                    return logText;
                 }
-                entry.ExtractToFile(tempFile);
             }
 
-            // Read in log text
-            string logText;
-            using (var tempFileStream = File.OpenRead(tempFile))
-            using (var streamReader = new StreamReader(tempFileStream))
-            {
-                logText = await streamReader.ReadToEndAsync();
-            }
-
-            // Attempt to delete temporary files
-            try
-            {
-                File.Delete(tempZipFile);
-                File.Delete(tempFile);
-            }
-            catch (Exception)
-            {
-                // swallow exceptions
-            }
-
-            return logText;
+            throw new Exception($"Build {newestBuild.BuildNumber} did not upload its contents to VSTS Drop and is invalid.");
         }
 
         internal static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
@@ -472,6 +501,10 @@ namespace Roslyn.Insertion
                                     email = "",
                                     date = ""
                                 },
+                                committer = new
+                                {
+                                    name = ""
+                                },
                                 message = ""
                             },
                             html_url = ""
@@ -484,6 +517,7 @@ namespace Roslyn.Insertion
                         new GitCommit()
                         {
                             Author = d.commit.author.name,
+                            Committer = d.commit.committer.name,
                             CommitDate = DateTime.Parse(d.commit.author.date),
                             Message = d.commit.message,
                             CommitId = d.sha,
@@ -499,8 +533,9 @@ namespace Roslyn.Insertion
             throw new NotSupportedException("Only builds created from GitHub repos support enumerating commits.");
         }
 
+        private static readonly Regex IsReleaseFlowCommit = new Regex(@"^Merge pull request #\d+ from dotnet/merges/");
         private static readonly Regex IsMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
-        private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)$");
+        private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)(?:\n|$)");
 
         internal static string AppendChangesToDescription(string prDescription, Build oldBuild, List<GitCommit> changes)
         {
@@ -511,34 +546,100 @@ namespace Roslyn.Insertion
 
             var description = new StringBuilder(prDescription + Environment.NewLine);
 
-            var firstCommit = changes[0];
             var repoURL = $"http://github.com/{oldBuild.Repository.Id}";
-            description.AppendLine($@"Changes since [{oldBuild.SourceVersion.Substring(0, 7)}]({firstCommit.RemoteUrl})");
+
+            var commitHeaderAdded = false;
+            var mergePRHeaderAdded = false;
+            var mergePRFound = false;
 
             foreach (var commit in changes)
             {
-                // Exclude auto-merges
-                if (commit.Author == "dotnet-automerge-bot")
+                // Once we've found a Merge PR we can exclude commits not committed by GitHub since Merge and Squash commits are committed by GitHub
+                if (commit.Committer != "GitHub" && mergePRFound)
                 {
                     continue;
                 }
+
+                // Exclude arcade dependency updates
+                if (commit.Author == "dotnet-maestro[bot]")
+                {
+                    mergePRFound = true;
+                    continue;
+                }
+
+                // Exclude merge commits from auto code-flow PRs (e.g. merges/master-to-master-vs-deps)
+                if (IsReleaseFlowCommit.Match(commit.Message).Success)
+                {
+                    mergePRFound = true;
+                    continue;
+                }
+
+                string comment = string.Empty;
+                string prNumber = string.Empty;
 
                 var match = IsMergePRCommit.Match(commit.Message);
+                if (match.Success)
+                {
+                    prNumber = match.Groups[1].Value;
 
-                if (!match.Success)
+                    // Merge PR Messages are in the form "Merge pull request #39526 from mavasani/GetValueUsageInfoAssert\n\nFix an assert in IOperationExtension.GetValueUsageInfo"
+                    // Try and extract the 3rd line since it is the useful part of the message, otherwise take the first line.
+                    var lines = commit.Message.Split('\n');
+                    comment = lines.Length > 2
+                        ? $"{lines[2]} ({prNumber})"
+                        : lines[0];
+                }
+                else
                 {
                     match = IsSquashedPRCommit.Match(commit.Message);
+                    if (match.Success)
+                    {
+                        prNumber = match.Groups[1].Value;
+
+                        // Squash PR Messages are in the form "Nullable annotate TypeCompilationState and MessageID (#39449)"
+                        // Take the 1st line since it should be descriptive.
+                        comment = commit.Message.Split('\n')[0];
+                    }
                 }
 
-                if (!match.Success)
+                // We will print commit comments until we find the first merge PR
+                if (!match.Success && mergePRFound)
                 {
                     continue;
                 }
 
-                var prNumber = match.Groups[1].Value;
+                string prLink;
 
-                var firstLine = commit.Message.Split('\n')[0];
-                var prLink = $@"- [{firstLine}]({repoURL}/pull/{prNumber})";
+                if (match.Success)
+                {
+                    if (commitHeaderAdded && !mergePRHeaderAdded)
+                    {
+                        mergePRHeaderAdded = true;
+                        description.AppendLine("### Merged PRs:");
+                    }
+
+                    mergePRFound = true;
+
+                    // Replace "#{prNumber}" with "{prNumber}" so that AzDO won't linkify it
+                    comment = comment.Replace($"#{prNumber}", prNumber);
+
+                    prLink = $@"- [{comment}]({repoURL}/pull/{prNumber})";
+                }
+                else
+                {
+                    if (!commitHeaderAdded)
+                    {
+                        commitHeaderAdded = true;
+                        description.AppendLine("### Commits since last PR:");
+                    }
+
+                    var sha = commit.CommitId.Substring(0, 7);
+
+                    // Take the 1st line since it should be descriptive.
+                    comment = $"{commit.Message.Split('\n')[0]} ({sha})";
+
+                    prLink = $@"- [{comment}]({repoURL}/commit/{sha})";
+                }
 
                 description.AppendLine(prLink);
 
@@ -552,18 +653,10 @@ namespace Roslyn.Insertion
             return description.ToString();
         }
 
-        internal static string AppendDiffToDescription(string prDescription, string diffLink)
-        {
-            var diff = $"[View Complete Diff of Changes]({diffLink})";
-            var description = new StringBuilder(prDescription + Environment.NewLine);
-            description.AppendLine("---");
-            description.AppendLine(diff);
-            return description.Length >= 3500 ? prDescription : description.ToString();
-        }
-
         internal struct GitCommit
         {
             public string Author { get; set; }
+            public string Committer { get; set; }
             public DateTime CommitDate { get; set; }
             public string Message { get; set; }
             public string CommitId { get; set; }

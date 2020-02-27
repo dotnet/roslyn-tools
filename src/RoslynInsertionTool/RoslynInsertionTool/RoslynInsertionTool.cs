@@ -19,6 +19,10 @@ namespace Roslyn.Insertion
     public static partial class RoslynInsertionTool
     {
         public static readonly Guid VSRepoId = new Guid("a290117c-5a8a-40f7-bc2c-f14dbe3acf6d");
+        //Easiest way to get these GUIDs is to create a PR search in AzDo
+        //You'll get something like https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequests?_a=active&createdBy=GUID-here
+        public static readonly Guid MLInfraSwatUserId = new Guid("6c25b447-1d90-4840-8fde-d8b22cb8733e");
+        public static readonly Guid VSLSnapUserId = new Guid("9f64bc2f-479b-429f-a665-fec80e130b1f");
 
         private static List<string> WarningMessages { get; } = new List<string>();
 
@@ -99,19 +103,11 @@ namespace Roslyn.Insertion
                     buildToInsert = await GetSpecificBuildAsync(buildVersion, cancellationToken);
                 }
 
-                string commitSHA = buildToInsert.SourceVersion.Substring(0, 7);
-                string lastCommitUrl = string.Empty;
-                if (buildToInsert.Links.Links.ContainsKey("sourceVersionDisplayUri"))
-                {
-                    // Get a link to the commit the build was built from.
-                    var sourceLink = (ReferenceLink)buildToInsert.Links.Links["sourceVersionDisplayUri"];
-                    lastCommitUrl = sourceLink.Href;
-                }
-
                 var insertionArtifacts = await GetInsertionArtifactsAsync(buildToInsert, cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
+                // *********** Look up existing PR ********************
                 var gitClient = ProjectCollection.GetClient<GitHttpClient>();
                 var branches = await gitClient.GetRefsAsync(
                     VSRepoId,
@@ -119,9 +115,45 @@ namespace Roslyn.Insertion
                     cancellationToken: cancellationToken);
                 var baseBranch = branches.Single(b => b.Name == $"refs/heads/{Options.VisualStudioBranchName}");
 
+                var pullRequestId = Options.UpdateExistingPr;
+                var useExistingPr = pullRequestId != 0;
+
+                GitPullRequest pullRequest;
+                string insertionBranchName;
+                if (useExistingPr)
+                {
+                    pullRequest = await gitClient.GetPullRequestByIdAsync(pullRequestId, cancellationToken: cancellationToken);
+                    insertionBranchName = pullRequest.SourceRefName.Substring("refs/heads/".Length);
+
+                    var refs = await gitClient.GetRefsAsync(VSRepoId, filter: $"heads/{insertionBranchName}", cancellationToken: cancellationToken);
+                    var insertionBranch = refs.Single(r => r.Name == $"refs/heads/{insertionBranchName}");
+
+                    if (Options.OverwritePr)
+                    {
+                        // overwrite existing PR branch back to base before pushing new commit
+                        var updateToBase = new GitRefUpdate
+                        {
+                            OldObjectId = insertionBranch.ObjectId,
+                            NewObjectId = baseBranch.ObjectId,
+                            Name = $"refs/heads/{insertionBranchName}"
+                        };
+                        await gitClient.UpdateRefsAsync(new[] { updateToBase }, VSRepoId, cancellationToken: cancellationToken);
+                    }
+                    else
+                    {
+                        // not overwriting PR, so the insertion branch is actually the base
+                        baseBranch = insertionBranch;
+                    }
+                }
+                else
+                {
+                    pullRequest = null;
+                    insertionBranchName = GetNewBranchName();
+                }
+
                 var allChanges = new List<GitChange>();
 
-                var coreXT = CoreXT.Load(gitClient, baseBranch.ObjectId);
+                var coreXT = await CoreXT.Load(gitClient, baseBranch.ObjectId);
                 if (Options.InsertCoreXTPackages)
                 {
                     // ************** Update Nuget Packages For Branch************************
@@ -158,8 +190,10 @@ namespace Roslyn.Insertion
                     // ************** Update assembly versions ************************
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating assembly versions");
-                    var assemblyVersionChanges = UpdateAssemblyVersions(gitClient, baseBranch.ObjectId, insertionArtifacts);
-                    allChanges.AddRange(assemblyVersionChanges);
+                    if (await UpdateAssemblyVersionsOpt(gitClient, baseBranch.ObjectId, insertionArtifacts) is GitChange assemblyVersionChange)
+                    {
+                        allChanges.Add(assemblyVersionChange);
+                    }
 
                     // if we got this far then we definitely need to retain this build
                     retainBuild = true;
@@ -227,34 +261,6 @@ namespace Roslyn.Insertion
                 }
 
                 // ********************* Create push *************************************
-                var pullRequestId = Options.UpdateExistingPr;
-                var useExistingPr = pullRequestId != 0;
-
-                GitPullRequest pullRequest;
-                string insertionBranchName;
-                if (useExistingPr)
-                {
-                    pullRequest = await gitClient.GetPullRequestByIdAsync(pullRequestId, cancellationToken: cancellationToken);
-                    insertionBranchName = pullRequest.SourceRefName.Substring("refs/heads/".Length);
-
-                    var refs = await gitClient.GetRefsAsync(VSRepoId, filter: $"heads/{insertionBranchName}", cancellationToken: cancellationToken);
-                    var insertionBranch = refs.Single(r => r.Name == $"refs/heads/{insertionBranchName}");
-
-                    // update existing PR branch back to base before pushing new commit
-                    var updateToBase = new GitRefUpdate
-                    {
-                        OldObjectId = insertionBranch.ObjectId,
-                        NewObjectId = baseBranch.ObjectId,
-                        Name = $"refs/heads/{insertionBranchName}"
-                    };
-                    await gitClient.UpdateRefsAsync(new[] { updateToBase }, VSRepoId, cancellationToken: cancellationToken);
-                }
-                else
-                {
-                    pullRequest = null;
-                    insertionBranchName = GetNewBranchName();
-                }
-
                 var insertionBranchUpdate = new GitRefUpdate
                 {
                     Name = $"refs/heads/{insertionBranchName}",
@@ -275,16 +281,34 @@ namespace Roslyn.Insertion
                 await gitClient.CreatePushAsync(push, VSRepoId, cancellationToken: cancellationToken);
 
                 // ********************* Create pull request *****************************
+                var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
+                var prDescriptionMarkdown = CreatePullRequestDescription(oldBuild, buildToInsert, useMarkdown: true);
 
-                var prDescription = $"Updating {Options.InsertionName} to {buildVersion} ([{commitSHA}]({lastCommitUrl}))";
+                if (buildToInsert.Result == BuildResult.PartiallySucceeded)
+                {
+                    prDescriptionMarkdown += Environment.NewLine + ":warning: The build being inserted has partially succeeded.";
+                }
+
                 if (!useExistingPr || Options.OverwritePr)
                 {
                     try
                     {
-                        var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
-                        var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild ?? buildToInsert, buildToInsert, cancellationToken);
-                        prDescription = AppendDiffToDescription(prDescription, diffLink);
-                        prDescription = AppendChangesToDescription(prDescription, oldBuild ?? buildToInsert, changes);
+                        var nl = Environment.NewLine;
+                        if (oldBuild is null)
+                        {
+                            prDescriptionMarkdown += $"{nl}---{nl}Unable to find details for previous build ({oldComponentVersion}){nl}";
+                        }
+                        else
+                        {
+                            var (changes, diffLink) = await GetChangesBetweenBuildsAsync(oldBuild, buildToInsert, cancellationToken);
+
+                            var diffDescription = changes.Any()
+                                ? $"[View Complete Diff of Changes]({diffLink})"
+                                : "No source changes since previous insertion";
+
+                            prDescriptionMarkdown += nl + "---" + nl + diffDescription + nl;
+                            prDescriptionMarkdown = AppendChangesToDescription(prDescriptionMarkdown, oldBuild ?? buildToInsert, changes);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -302,7 +326,7 @@ namespace Roslyn.Insertion
                             pullRequest = await gitClient.UpdatePullRequestAsync(
                                 new GitPullRequest
                                 {
-                                    Description = prDescription,
+                                    Description = prDescriptionMarkdown,
                                     IsDraft = Options.CreateDraftPr
                                 },
                                 VSRepoId,
@@ -324,7 +348,7 @@ namespace Roslyn.Insertion
                     Console.WriteLine($"Create Pull Request");
                     try
                     {
-                        pullRequest = await CreatePullRequestAsync(insertionBranchName, prDescription, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
+                        pullRequest = await CreatePullRequestAsync(insertionBranchName, prDescriptionMarkdown, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
                         if (pullRequest == null)
                         {
                             LogError($"Unable to create pull request for '{insertionBranchName}'");
@@ -353,6 +377,23 @@ namespace Roslyn.Insertion
                     catch (Exception ex)
                     {
                         LogWarning($"Unable to create a CloudBuild validation build for '{insertionBranchName}'");
+                        LogWarning(ex);
+                    }
+                }
+
+                // ********************* Set PR to Auto-Complete *****************************
+                if (Options.SetAutoComplete)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    Console.WriteLine($"Set PR to Auto-Complete");
+                    try
+                    {
+                        var prDescriptionText = CreatePullRequestDescription(oldBuild, buildToInsert, useMarkdown: false);
+                        await SetAutoCompleteAsync(pullRequest, prDescriptionText, cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogWarning($"Unable to Set PR to Auto-Complete for '{insertionBranchName}'");
                         LogWarning(ex);
                     }
                 }
@@ -405,7 +446,7 @@ namespace Roslyn.Insertion
 
         public static string ToFullString(this XDocument document)
         {
-            return document.Declaration.ToString() + document.ToString();
+            return document.Declaration.ToString() + "\n" + document.ToString();
         }
 
         public static bool IsWhiteSpaceOnlyChange(string s1, string s2)
@@ -431,6 +472,52 @@ namespace Roslyn.Insertion
             {
                 return null;
             }
+        }
+
+        private static string CreatePullRequestDescription(Build oldBuild, Build buildToinsert, bool useMarkdown)
+        {
+            var oldBuildDescription = "";
+            if (oldBuild is object)
+            {
+                oldBuildDescription = useMarkdown
+                    ? $"from {oldBuild.GetBuildDescriptionMarkdown()} "
+                    : $"from {oldBuild.GetBuildDescriptionText()} ";
+            }
+
+            var newBuildDescription = useMarkdown
+                    ? $"to {buildToinsert.GetBuildDescriptionMarkdown()}"
+                    : $"to {buildToinsert.GetBuildDescriptionText()}";
+
+            return $"Updating {Options.InsertionName} {oldBuildDescription}{newBuildDescription}";
+        }
+
+        public static string GetBuildDescriptionMarkdown(this Build build)
+        {
+            var number = build.BuildNumber;
+            var shortCommitId = build.SourceVersion.Substring(0, 7);
+
+            var url = getLink(build, "web");
+            var commitUrl = getLink(build, "sourceVersionDisplayUri");
+
+            return $"[{number}]({url}) ([{shortCommitId}]({commitUrl}))";
+
+            static string getLink(Build build, string key)
+            {
+                if (build.Links.Links.TryGetValue(key, out var obj))
+                {
+                    var sourceLink = (ReferenceLink)obj;
+                    return sourceLink.Href;
+                }
+                return string.Empty;
+            }
+        }
+
+        public static string GetBuildDescriptionText(this Build build)
+        {
+            var number = build.BuildNumber;
+            var shortCommitId = build.SourceVersion.Substring(0, 7);
+
+            return $"{number} ({shortCommitId})";
         }
     }
 }

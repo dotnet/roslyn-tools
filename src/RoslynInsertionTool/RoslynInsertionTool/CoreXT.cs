@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Versioning;
 
 namespace Roslyn.Insertion
 {
@@ -26,27 +28,27 @@ namespace Roslyn.Insertion
         public CoreXT(string configOriginalText)
         {
             _defaultConfigOriginal = configOriginalText;
-            ConfigDocument = XDocument.Parse(configOriginalText, LoadOptions.PreserveWhitespace);
+            ConfigDocument = XDocument.Parse(configOriginalText, LoadOptions.None);
         }
 
-        public static CoreXT Load(GitHttpClient gitClient, string commitId)
+        public static async Task<CoreXT> Load(GitHttpClient gitClient, string commitId)
         {
             var vsRepoId = RoslynInsertionTool.VSRepoId;
             var vsBranch = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
 
-            var defaultConfigStream = gitClient.GetItemContentAsync(
+            using var defaultConfigStream = await gitClient.GetItemContentAsync(
                 vsRepoId,
                 DefaultConfigPath,
                 download: true,
-                versionDescriptor: vsBranch).Result;
+                versionDescriptor: vsBranch);
 
-            var defaultConfigOriginal = new StreamReader(defaultConfigStream).ReadToEnd();
+            var defaultConfigOriginal = await new StreamReader(defaultConfigStream).ReadToEndAsync();
 
             ComponentToFileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             ComponentFileToDocumentMap = new Dictionary<string, (string, JObject)>(StringComparer.OrdinalIgnoreCase);
             dirtyFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            PopulateComponentJsonMaps(gitClient, commitId);
+            await PopulateComponentJsonMaps(gitClient, commitId);
 
             return new CoreXT(defaultConfigOriginal);
         }
@@ -118,12 +120,12 @@ namespace Roslyn.Insertion
             versionAttribute.SetValue(packageInfo.Version.ToString());
         }
 
-        public static SemanticVersion GetPackageVersion(XAttribute versionAttribute)
+        public static NuGetVersion GetPackageVersion(XAttribute versionAttribute)
         {
-            return SemanticVersion.Parse(versionAttribute.Value);
+            return NuGetVersion.Parse(versionAttribute.Value);
         }
 
-        public bool TryGetPackageVersion(PackageInfo packageInfo, out SemanticVersion version)
+        public bool TryGetPackageVersion(PackageInfo packageInfo, out NuGetVersion version)
         {
             var attribute = GetVersionAttribute(packageInfo);
             if (attribute == null)
@@ -186,11 +188,11 @@ namespace Roslyn.Insertion
             }
         }
 
-        private static void PopulateComponentJsonMaps(
+        private static async Task PopulateComponentJsonMaps(
             GitHttpClient gitClient,
             string commitId)
         {
-            var (mainOriginal, mainComponentsJsonDocument) = GetJsonDocumentForComponentsFile(gitClient, commitId, ComponentsJsonPath);
+            var (mainOriginal, mainComponentsJsonDocument) = await GetJsonDocumentForComponentsFile(gitClient, commitId, ComponentsJsonPath);
             if (mainComponentsJsonDocument != null)
             {
                 ComponentFileToDocumentMap[ComponentsJsonPath] = (mainOriginal, mainComponentsJsonDocument);
@@ -207,7 +209,7 @@ namespace Roslyn.Insertion
                         if (!string.IsNullOrEmpty(subComponentFileName))
                         {
                             var componentsJSONPath = ".corext/Configs/" + subComponentFileName;
-                            var (original, jDoc) = GetJsonDocumentForComponentsFile(gitClient, commitId, componentsJSONPath);
+                            var (original, jDoc) = await GetJsonDocumentForComponentsFile(gitClient, commitId, componentsJSONPath);
 
                             if (jDoc != null && !ComponentFileToDocumentMap.ContainsKey(componentsJSONPath))
                             {
@@ -244,30 +246,23 @@ namespace Roslyn.Insertion
             }
         }
 
-        private static (string original, JObject document) GetJsonDocumentForComponentsFile(
+        private static async Task<(string original, JObject document)> GetJsonDocumentForComponentsFile(
             GitHttpClient gitClient,
             string commitId,
             string componentsJSONPath)
         {
-            JObject jsonDocument = null;
-            string original = null;
-
             var versionDescriptor = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
             try
             {
-                using (var filestream = gitClient.GetItemContentAsync(RoslynInsertionTool.VSRepoId, path: componentsJSONPath, versionDescriptor: versionDescriptor).Result)
-                using (var streamReader = new StreamReader(filestream))
-                {
-                    original = streamReader.ReadToEnd();
-                    jsonDocument = (JObject)JToken.Parse(original);
-                }
+                using var fileStream = await gitClient.GetItemContentAsync(RoslynInsertionTool.VSRepoId, path: componentsJSONPath, versionDescriptor: versionDescriptor);
+                var original = await new StreamReader(fileStream).ReadToEndAsync();
+                var jsonDocument = (JObject)JToken.Parse(original);
+                return (original, jsonDocument);
             }
             catch (Exception e)
             {
                 throw new IOException($"Unable to load file from '{componentsJSONPath}'", e);
             }
-
-            return (original, jsonDocument);
         }
 
         private (string original, JObject document) GetJsonDocumentForComponent(string componentName)

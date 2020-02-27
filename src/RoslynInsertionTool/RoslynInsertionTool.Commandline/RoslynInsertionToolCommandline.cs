@@ -213,6 +213,11 @@ partial class RoslynInsertionToolCommandline
                 "Create an insertion PR that is marked as a draft.",
                 createDraftPr => options = options.WithCreateDraftPr(true)
             },
+            {
+                "ac=|setautocomplete=",
+                $"Sets the PR to Auto-Complete once all requirements are met. Defaults to \"{options.SetAutoComplete}\".",
+                setAutoComplete => options = options.WithSetAutoComplete(bool.Parse(setAutoComplete))
+            },
         };
 
         List<string> extraArguments = null;

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Roslyn.Insertion
 {
@@ -12,9 +13,9 @@ namespace Roslyn.Insertion
     {
         private const string VersionEqualsPrefix = "Version=";
 
-        private static List<GitChange> UpdateAssemblyVersions(GitHttpClient gitClient, string commitId, InsertionArtifacts artifacts)
+        private static async Task<GitChange> UpdateAssemblyVersionsOpt(GitHttpClient gitClient, string commitId, InsertionArtifacts artifacts)
         {
-            var versionsUpdater = new VersionsUpdater(gitClient, commitId, WarningMessages);
+            var versionsUpdater = await VersionsUpdater.Create(gitClient, commitId, WarningMessages);
 
             var pathToDependentAssemblyVersionsFile = artifacts.GetDependentAssemblyVersionsFile();
             if (File.Exists(pathToDependentAssemblyVersionsFile))
@@ -29,7 +30,7 @@ namespace Roslyn.Insertion
                 Console.WriteLine($"No dependent-assembly-versions file found at path '{pathToDependentAssemblyVersionsFile}'");
             }
 
-            return versionsUpdater.GetChanges();
+            return versionsUpdater.GetChangeOpt();
         }
 
         private static IEnumerable<KeyValuePair<string, Version>> ReadAssemblyVersions(string path)

@@ -16,7 +16,7 @@ pr:
 - master
 
 schedules:
-- cron: "0 */12 * * *"
+- cron: "0 */3 * * *"
   displayName: Roslyn Merge Tool
   branches:
     include:
@@ -28,10 +28,9 @@ pool:
 
 steps:
 - task: UseDotNet@2
-  displayName: 'Use .NET Core sdk'
+  displayName: 'Install .NET Core SDKs'
   inputs:
-    packageType: sdk
-    version: 2.1.401
+    useGlobalJson: true
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - script: dotnet run -p $(Build.SourcesDirectory)/src/GitHubCreateMergePRs/GitHubCreateMergePRs.csproj --isDryRun=$(isDryRun) --isAutomated=$(isAutomated) --githubToken=$(dotnet-bot-github-auth-token)

@@ -90,7 +90,7 @@ namespace roslyn.optprof.runsettings.generator
 
         public static string GenerateRunSettings(
             string configPath,
-            string vsDropName, 
+            string vsDropName,
             string bootstrapperInfoPath)
         {
             var profilingInputsDropName = GetProfilingInputsDropName(vsDropName);
@@ -121,7 +121,7 @@ namespace roslyn.optprof.runsettings.generator
                 return $"Tests/{dropUrl.Substring(prefix.Length)}";
             }
             catch (Exception e)
-            {                
+            {
                 throw new InvalidDataException(
                     $"Unable to read boostrapper info: {e.Message}{Environment.NewLine}" +
                     $"Content of BootstrapperInfo.json:{Environment.NewLine}" +

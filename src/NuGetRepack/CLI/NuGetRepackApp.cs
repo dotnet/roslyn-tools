@@ -93,7 +93,7 @@ namespace Roslyn.Tools
                 Console.Error.WriteLine("                       Use when packages tightly depend on each other (e.g. the binaries have InternalsVisibleTo).");
                 Console.Error.WriteLine();
                 Console.Error.WriteLine("<packages>             Paths to .nupkg files.");
-                Console.Error.WriteLine(e.Message); 
+                Console.Error.WriteLine(e.Message);
                 return ExitCodeInvalidArgument;
             }
 

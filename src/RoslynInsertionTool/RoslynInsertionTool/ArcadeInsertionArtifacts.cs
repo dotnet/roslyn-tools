@@ -19,9 +19,9 @@ namespace Roslyn.Insertion
 
         public static bool TryCreateFromLocalBuild(string buildDirectory, out InsertionArtifacts artifacts)
         {
-            if (buildDirectory.EndsWith(@"artifacts\VSSetup\Debug", StringComparison.OrdinalIgnoreCase) ||
-                buildDirectory.EndsWith(@"artifacts\VSSetup\Release", StringComparison.OrdinalIgnoreCase))
+            if (buildDirectory.EndsWith(ArtifactName, StringComparison.OrdinalIgnoreCase))
             {
+                Console.WriteLine($"Using artifacts provided in BuildDropPath: {buildDirectory}");
                 artifacts = new ArcadeInsertionArtifacts(buildDirectory);
                 return true;
             }
