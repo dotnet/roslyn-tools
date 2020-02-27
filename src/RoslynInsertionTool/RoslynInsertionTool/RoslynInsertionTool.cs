@@ -372,6 +372,14 @@ namespace Roslyn.Insertion
                     Console.WriteLine($"Create Validation Build");
                     try
                     {
+                        if (Options.CreateDraftPr)
+                        {
+                            // When creating Draft PRs no policies are automatically started.
+                            // If we do not queue a CloudBuild the Perf DDRITs request will
+                            // spin waiting for a build to test against until it timesout.
+                            await QueueBuildPolicy(pullRequest, "CloudBuild - PR");
+                        }
+
                         await QueueBuildPolicy(pullRequest, "Request Perf DDRITs");
                     }
                     catch (Exception ex)
