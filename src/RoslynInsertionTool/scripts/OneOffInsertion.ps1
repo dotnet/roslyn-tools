@@ -17,7 +17,8 @@ param([string] $clientId,
       [string] $titlePrefix,
       [string] $writePullRequest,
       [int] $insertionCount,
-      [string] $autoComplete)
+      [string] $autoComplete,
+      [string] $createDraftPR)
 
 . $PSScriptRoot\HelperFunctions.ps1
 
@@ -35,11 +36,12 @@ $specificBuildFlag = GetSpecificBuildFlag -specificBuild $specificBuild
 $updateAssemblyVersions = GetUpdateAssemblyVersions -componentName $componentName -visualStudioBranchName $visualStudioBranchName -updateAssemblyVersions $updateAssemblyVersions
 $updateCoreXTLibraries = GetUpdateCoreXTLibraries -componentName $componentName -updateCoreXTLibraries $updateCoreXTLibraries
 $autoComplete = GetAutoComplete -autoComplete $autoComplete
+$createDraftPR = GetCreateDraftPR -createDraftPR $createDraftPR
 
 if ($insertionCount -lt 1) {
     $insertionCount = 1
 }
 
 for ($i = 0; $i -lt $insertionCount; $i++) {
-    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest" "/ac=$autoComplete" $specificBuildFlag $toolsetFlag $dropPathFlag
+    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag
 }
