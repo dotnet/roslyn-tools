@@ -17,7 +17,8 @@ param([string] $clientId,
       [string] $visualStudioBranchName,
       [string] $writePullRequest,
       [switch] $overwritePR,
-      [string] $autoComplete)
+      [string] $autoComplete,
+      [string] $createDraftPR)
 
 . $PSScriptRoot\HelperFunctions.ps1
 
@@ -36,10 +37,11 @@ $specificBuildFlag = GetSpecificBuildFlag -specificBuild $specificBuild
 $updateAssemblyVersions = GetUpdateAssemblyVersions -componentName $componentName -visualStudioBranchName $visualStudioBranchName -updateAssemblyVersions $updateAssemblyVersions
 $updateCoreXTLibraries = GetUpdateCoreXTLibraries -componentName $componentName -updateCoreXTLibraries $updateCoreXTLibraries
 $autoComplete = GetAutoComplete -autoComplete $autoComplete
+$createDraftPR = GetCreateDraftPR -createDraftPR $createDraftPR
 
 if($overwritePR)
 {
   $overwritePrflag = "/overwritepr"
 }
 
-& $PSScriptRoot\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/wpr=$writePullRequest" "/ac=$autoComplete" $specificBuildFlag $toolsetFlag $dropPathFlag
+& $PSScriptRoot\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag

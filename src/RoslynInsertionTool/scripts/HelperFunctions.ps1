@@ -144,3 +144,12 @@ function GetAutoComplete([string] $autoComplete) {
         return $autoComplete
     }
 }
+
+function GetCreateDraftPR([string] $createDraftPR) {
+    if (IsDefaultValue $createDraftPR) {
+        return "false"
+    }
+    else {
+        return $createDraftPR
+    }
+}
