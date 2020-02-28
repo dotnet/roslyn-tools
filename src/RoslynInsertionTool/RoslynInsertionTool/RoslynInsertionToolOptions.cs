@@ -314,7 +314,7 @@ namespace Roslyn.Insertion
                     // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for overwriting an existing pr
                     return
                         !CreateDummyPr &&
-                        !CreateDraftPr &&
+                        (!CreateDraftPr || OverwritePr) && // Create draft PR can only be specified when overwriting an existing pr
                         !string.IsNullOrEmpty(InsertionName) &&
                         !string.IsNullOrEmpty(BranchName) &&
                         !string.IsNullOrEmpty(VisualStudioBranchName) &&
@@ -368,6 +368,12 @@ namespace Roslyn.Insertion
                 }
                 else if (UpdateExistingPr != 0)
                 {
+                    // perform a regular insertion
+                    if (CreateDraftPr && !OverwritePr)
+                    {
+                        builder.AppendLine($"{nameof(CreateDraftPr).ToLowerInvariant()} can only be used with {nameof(UpdateExistingPr).ToLowerInvariant()} when {nameof(OverwritePr).ToLowerInvariant()} is true.");
+                    }
+
                     // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for overwriting an existing pr
                     if (string.IsNullOrEmpty(InsertionName))
                     {
