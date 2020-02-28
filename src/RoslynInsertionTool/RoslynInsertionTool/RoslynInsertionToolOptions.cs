@@ -62,6 +62,7 @@ namespace Roslyn.Insertion
             string clientId,
             string clientSecret,
             string titlePrefix,
+            bool createDraftPr,
             bool setAutoComplete)
         {
             Username = username;
@@ -94,6 +95,7 @@ namespace Roslyn.Insertion
             ClientId = clientId;
             ClientSecret = clientSecret;
             TitlePrefix = titlePrefix;
+            CreateDraftPr = createDraftPr;
             SetAutoComplete = setAutoComplete;
         }
 
@@ -128,6 +130,7 @@ namespace Roslyn.Insertion
             Optional<string> clientId = default,
             Optional<string> clientSecret = default,
             Optional<string> titlePrefix = default,
+            Optional<bool> createDraftPr = default,
             Optional<bool> setAutoComplete = default)
         {
             return new RoslynInsertionToolOptions(
@@ -161,6 +164,7 @@ namespace Roslyn.Insertion
                 clientId: clientId.ValueOrFallback(ClientId),
                 clientSecret: clientSecret.ValueOrFallback(ClientSecret),
                 titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix),
+                createDraftPr: createDraftPr.ValueOrFallback(CreateDraftPr),
                 setAutoComplete: setAutoComplete.ValueOrFallback(SetAutoComplete));
         }
 
@@ -224,6 +228,8 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithTitlePrefix(string titlePrefix) => Update(titlePrefix: titlePrefix);
 
+        public RoslynInsertionToolOptions WithCreateDraftPr(bool createDraftPr) => Update(createDraftPr: createDraftPr);
+
         public RoslynInsertionToolOptions WithSetAutoComplete(bool setAutoComplete) => Update(setAutoComplete: setAutoComplete);
 
         public string Username { get; }
@@ -286,6 +292,8 @@ namespace Roslyn.Insertion
 
         public string TitlePrefix { get; }
 
+        public bool CreateDraftPr { get; }
+
         public bool SetAutoComplete { get; }
 
         public bool Valid
@@ -306,6 +314,7 @@ namespace Roslyn.Insertion
                     // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for overwriting an existing pr
                     return
                         !CreateDummyPr &&
+                        (!CreateDraftPr || OverwritePr) && // Create draft PR can only be specified when overwriting an existing pr
                         !string.IsNullOrEmpty(InsertionName) &&
                         !string.IsNullOrEmpty(BranchName) &&
                         !string.IsNullOrEmpty(VisualStudioBranchName) &&
@@ -359,6 +368,12 @@ namespace Roslyn.Insertion
                 }
                 else if (UpdateExistingPr != 0)
                 {
+                    // perform a regular insertion
+                    if (CreateDraftPr && !OverwritePr)
+                    {
+                        builder.AppendLine($"{nameof(CreateDraftPr).ToLowerInvariant()} can only be used with {nameof(UpdateExistingPr).ToLowerInvariant()} when {nameof(OverwritePr).ToLowerInvariant()} is true.");
+                    }
+
                     // only the existing pr ID, InsertionName, BranchName, and BuildQueueName are required for overwriting an existing pr
                     if (string.IsNullOrEmpty(InsertionName))
                     {

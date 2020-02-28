@@ -46,6 +46,7 @@ namespace Roslyn.Insertion
                 Description = description,
                 SourceRefName = sourceBranch,
                 TargetRefName = targetBranch,
+                IsDraft = Options.CreateDraftPr,
                 Reviewers = new[] { new IdentityRefWithVote { Id = MLInfraSwatUserId.ToString() } }
             };
         }
@@ -189,6 +190,19 @@ namespace Roslyn.Insertion
                 {
                     throw new ArgumentException($"Cannot find a '{buildPolicy}' build policy in {pullRequest.Description}.");
                 }
+            }
+        }
+
+        private static async Task TryQueueBuildPolicy(GitPullRequest pullRequest, string buildPolicy, string insertionBranchName)
+        {
+            try
+            {
+                await QueueBuildPolicy(pullRequest, buildPolicy);
+            }
+            catch (Exception ex)
+            {
+                LogWarning($"Unable to start {buildPolicy} for '{insertionBranchName}'");
+                LogWarning(ex);
             }
         }
 

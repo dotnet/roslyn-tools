@@ -250,7 +250,7 @@ namespace Roslyn.Insertion
                     Console.WriteLine("Marking inserted build for retention.");
                     buildToInsert.KeepForever = true;
                     var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
-                    await buildClient.UpdateBuildAsync(buildToInsert, buildToInsert.Id);
+                    await buildClient.UpdateBuildAsync(buildToInsert);
                 }
 
                 // ************* Bail out if there are no changes ************************
@@ -324,7 +324,11 @@ namespace Roslyn.Insertion
                         if (Options.OverwritePr)
                         {
                             pullRequest = await gitClient.UpdatePullRequestAsync(
-                                new GitPullRequest { Description = prDescriptionMarkdown },
+                                new GitPullRequest
+                                {
+                                    Description = prDescriptionMarkdown,
+                                    IsDraft = Options.CreateDraftPr
+                                },
                                 VSRepoId,
                                 pullRequestId,
                                 cancellationToken: cancellationToken);
@@ -368,12 +372,28 @@ namespace Roslyn.Insertion
                     Console.WriteLine($"Create Validation Build");
                     try
                     {
+                        if (Options.CreateDraftPr)
+                        {
+                            // When creating Draft PRs no policies are automatically started.
+                            // If we do not queue a CloudBuild the Perf DDRITs request will
+                            // spin waiting for a build to test against until it timesout.
+                            await QueueBuildPolicy(pullRequest, "CloudBuild - PR");
+                        }
+
                         await QueueBuildPolicy(pullRequest, "Request Perf DDRITs");
                     }
                     catch (Exception ex)
                     {
                         LogWarning($"Unable to create a CloudBuild validation build for '{insertionBranchName}'");
                         LogWarning(ex);
+                    }
+
+                    if (Options.CreateDraftPr)
+                    {
+                        // When creating Draft PRs no policies are automatically started.
+                        await TryQueueBuildPolicy(pullRequest, "Insertion Hash Check", insertionBranchName);
+                        await TryQueueBuildPolicy(pullRequest, "Insertion Sign Check", insertionBranchName);
+                        await TryQueueBuildPolicy(pullRequest, "Insertion Symbol Check", insertionBranchName);
                     }
                 }
 
