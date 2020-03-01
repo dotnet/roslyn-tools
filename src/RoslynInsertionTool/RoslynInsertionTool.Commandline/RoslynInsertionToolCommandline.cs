@@ -211,7 +211,7 @@ partial class RoslynInsertionToolCommandline
             {
                 "dpr=|createdraftpr=",
                 "Create an insertion PR that is marked as a draft.",
-                createDraftPr => options = options.WithCreateDraftPr(true)
+                createDraftPr => options = options.WithCreateDraftPr(createDraftPr)
             },
             {
                 "ac=|setautocomplete=",
