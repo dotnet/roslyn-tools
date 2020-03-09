@@ -482,7 +482,6 @@ namespace Roslyn.Insertion
 
         internal static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
         {
-
             if (tobuild.Repository.Type == "GitHub")
             {
                 var repoId = tobuild.Repository.Id; // e.g. dotnet/roslyn
@@ -636,7 +635,7 @@ namespace Roslyn.Insertion
                     // Replace "#{prNumber}" with "{prNumber}" so that AzDO won't linkify it
                     comment = comment.Replace($"#{prNumber}", prNumber);
 
-                    prLink = $@"- [{comment}]({repoURL}/pull/{prNumber})";
+                    prLink = $@"- [{comment}]({GetGitHubPullRequestUrl(repoURL, prNumber)})";
                 }
                 else
                 {
@@ -665,6 +664,9 @@ namespace Roslyn.Insertion
 
             return description.ToString();
         }
+
+        public static string GetGitHubPullRequestUrl(string repoURL, string prNumber)
+            => $"{repoURL}/pull/{prNumber}";
 
         internal struct GitCommit
         {

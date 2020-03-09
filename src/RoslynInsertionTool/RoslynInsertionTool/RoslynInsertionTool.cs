@@ -11,6 +11,7 @@ using System.Xml.Linq;
 
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.Client.CommandLine;
+using Microsoft.TeamFoundation.Common;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 
@@ -504,7 +505,31 @@ namespace Roslyn.Insertion
                     ? $"to {buildToinsert.GetBuildDescriptionMarkdown()}"
                     : $"to {buildToinsert.GetBuildDescriptionText()}";
 
-            return $"Updating {Options.InsertionName} {oldBuildDescription}{newBuildDescription}";
+            var prValidationMessage = GetGitHubPullRequestUrlMessage(buildToinsert, useMarkdown);
+
+            return $"Updating {Options.InsertionName} {oldBuildDescription}{newBuildDescription}{Environment.NewLine}{prValidationMessage}";
+        }
+
+        private static string GetGitHubPullRequestUrlMessage(Build build, bool useMarkdown)
+        {
+            var prValidationMessage = string.Empty;
+
+            if (build.Repository.Type == "GitHub")
+            {
+                var repoURL = $"http://github.com/{build.Repository.Id}";
+
+                var tagPrefix = "PRNumber:";
+                var prNumber = build.Tags.FirstOrDefault(t => t.StartsWith(tagPrefix))?.Substring(tagPrefix.Length);
+                if (!string.IsNullOrEmpty(prNumber))
+                {
+                    var prUrl = GetGitHubPullRequestUrl(repoURL, prNumber);
+                    prValidationMessage = useMarkdown
+                        ? $"This is a PR validation build for [{prNumber}]({prUrl})"
+                        : $"This is a PR validation build for {prUrl}";
+                }
+            }
+
+            return prValidationMessage;
         }
 
         public static string GetBuildDescriptionMarkdown(this Build build)
