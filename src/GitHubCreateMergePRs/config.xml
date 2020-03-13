@@ -27,6 +27,7 @@
     <merge from="master" to="features/static-lambdas" owners="jcouv" />
     <merge from="master" to="features/patterns3" owners="gafter" frequency="weekly" />
     <merge from="master" to="features/source-generators" owners="chsienki" frequency="weekly" />
+    <merge from="master" to="features/UsedAssemblyReferences" owners="jorobich" frequency="weekly" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
     <merge from="dev16.0.x" to="master" />
