@@ -46,8 +46,7 @@
   <repo owner="dotnet" name="fsharp">
     <!-- releases -->
     <merge from="dev16.0" to="master" /><!-- latest LTS -->
-    <merge from="release/dev16.4" to="master" /><!-- latest RTM -->
-    <merge from="release/dev16.5" to="release/dev16.6" />
+    <merge from="release/dev16.5" to="master" /><!-- latest RTM -->
 
     <!-- regular branch flow -->
     <merge from="master" to="release/dev16.6" />
@@ -59,7 +58,6 @@
     <merge from="master" to="feature/fsi-packagemanagement" />
 
     <!-- language versions -->
-    <merge from="release/dev16.5" to="release/fsharp5" />
     <merge from="master" to="release/fsharp5" />
   </repo>
 
