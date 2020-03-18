@@ -47,6 +47,7 @@
     <!-- releases -->
     <merge from="dev16.0" to="master" /><!-- latest LTS -->
     <merge from="release/dev16.5" to="master" /><!-- latest RTM -->
+    <merge from="release/dev16.5" to="release/dev16.6" /><!-- next release -->
 
     <!-- regular branch flow -->
     <merge from="master" to="feature/nullness" />
