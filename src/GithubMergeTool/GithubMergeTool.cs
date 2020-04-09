@@ -144,7 +144,7 @@ namespace GithubMergeTool
 
                     // Add label if there's merge conflicts even if we made no change to merge branch,
                     // since can also be introduced by change in destination branch. It's no-op if the
-                    // label already exists. 
+                    // label already exists.
                     if (existingPrMergeable == false)
                     {
                         await AddLabels(existingPrNumber, new List<string> { MergeConflictsLabelText });
@@ -289,10 +289,15 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                     var response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/pulls/{prNumber}");
                     var data = JsonConvert.DeserializeAnonymousType(await response.Content.ReadAsStringAsync(), new
                     {
-                        mergeable = (bool?)null
+                        mergeable = (bool?)null,
+                        labels = new[]
+                        {
+                            new { name = "" }
+                        }
                     });
 
-                    mergeable = data.mergeable;
+                    var hasMergeConflictLabel = data.labels.Any(label => label.name?.ToLower() == "merge conflicts");
+                    mergeable = data.mergeable == true && !hasMergeConflictLabel;
                 }
 
                 Console.WriteLine();
