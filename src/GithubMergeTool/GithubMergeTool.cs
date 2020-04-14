@@ -296,7 +296,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                         }
                     });
 
-                    var hasMergeConflictLabel = data.labels.Any(label => label.name?.ToLower() == "merge conflicts");
+                    var hasMergeConflictLabel = data.labels.Length > 0 && data.labels.Any(label => label.name?.ToLower() == "merge conflicts");
                     mergeable = data.mergeable == true && !hasMergeConflictLabel;
                 }
 
