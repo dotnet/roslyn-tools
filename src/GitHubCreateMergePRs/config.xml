@@ -56,7 +56,7 @@
     <merge from="master" to="feature/ext" />
     <merge from="master" to="feature/witness-passing" />
     <merge from="master" to="feature/tasks" />
-    <merge from="master" to="feature/nullable-interop" />
+    <merge from="master" to="feature/string-interp" />
     <merge from="master" to="feature/fsi-packagemanagement" />
 
     <!-- language versions -->
