@@ -123,7 +123,7 @@ namespace GithubMergeTool
                     var existingPrNumber = existingPrData.number;
 
                     // Check for merge conflicts
-                    var existingPrMergeable = await IsPrMergeable(existingPrNumber);
+                    var existingPrMergeable = await IsPrConflicted(existingPrNumber);
 
                     // Only update PR w/o merge conflicts
                     if (existingPrMergeable == true && prSha != srcSha)
@@ -139,7 +139,7 @@ namespace GithubMergeTool
                         await PostComment(existingPrNumber, $"Reset HEAD of `{prBranchName}` to `{srcSha}`");
 
                         // Check for merge conflicts again after reset.
-                        existingPrMergeable = await IsPrMergeable(existingPrNumber);
+                        existingPrMergeable = await IsPrConflicted(existingPrNumber);
                     }
 
                     // Add label if there's merge conflicts even if we made no change to merge branch,
@@ -231,7 +231,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
 
             if (mergeable == null)
             {
-                mergeable = await IsPrMergeable(prNumber);
+                mergeable = await IsPrConflicted(prNumber);
             }
 
             var labels = new List<string> { AreaInfrastructureLabelText };
@@ -272,13 +272,13 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                 return _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{prNumber}/comments", body);
             }
 
-            async Task<bool?> IsPrMergeable(string prNumber, int maxAttempts = 5)
+            async Task<bool?> IsPrConflicted(string prNumber, int maxAttempts = 5)
             {
                 var attempt = 0;
-                bool? mergeable = null;
+                bool? prHasConflicts = null;
 
                 Console.Write("Waiting for mergeable status");
-                while (mergeable == null && attempt < maxAttempts)
+                while (prHasConflicts == null && attempt < maxAttempts)
                 {
                     attempt++;
                     Console.Write(".");
@@ -290,24 +290,38 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                     var data = JsonConvert.DeserializeAnonymousType(await response.Content.ReadAsStringAsync(), new
                     {
                         mergeable = (bool?)null,
+                        mergeable_state = "",
                         labels = new[]
                         {
                             new { name = "" }
                         }
                     });
 
-                    var hasMergeConflictLabel = data.labels.Length > 0 && data.labels.Any(label => label.name?.ToLower() == "merge conflicts");
-                    mergeable = data.mergeable == true && !hasMergeConflictLabel;
+                    if (data.mergeable is null)
+                    {
+                        // GitHub is still computing the mergeability of this PR
+                        continue;
+                    }
+
+                    // "dirty" indicated merge conflicts causing the mergeability to be false
+                    // see https://github.community/t5/How-to-use-Git-and-GitHub/API-Getting-the-reason-that-a-pull-request-isn-t-mergeable/td-p/5796
+                    var hasMergeConflicts = data.mergeable == false && data.mergeable_state == "dirty";
+
+                    // treat the presense of a merge conflict label as unmergeable so that we do not
+                    // update a corrected PR with new merge conflicts
+                    var hasMergeConflictsLabel = data.labels.Contains(MergeConflictsLabelText);
+
+                    prHasConflicts = !hasMergeConflicts && !hasMergeConflictsLabel;
                 }
 
                 Console.WriteLine();
 
-                if (mergeable == null)
+                if (prHasConflicts == null)
                 {
                     Console.WriteLine($"##vso[task.logissue type=warning]Timed out waiting for PR mergeability status to become available.");
                 }
 
-                return mergeable;
+                return prHasConflicts;
             }
 
             Task<HttpResponseMessage> AddLabels(string prNumber, List<string> labels)
