@@ -309,7 +309,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
 
                     // treat the presense of a merge conflict label as unmergeable so that we do not
                     // update a corrected PR with new merge conflicts
-                    var hasMergeConflictsLabel = data.labels.Contains(MergeConflictsLabelText);
+                    var hasMergeConflictsLabel = Array.IndexOf(data.labels, MergeConflictsLabelText) > -1;
 
                     prHasConflicts = !hasMergeConflicts && !hasMergeConflictsLabel;
                 }
