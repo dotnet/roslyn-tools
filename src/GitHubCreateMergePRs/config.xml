@@ -71,7 +71,7 @@
 
   <!-- testimpact branches -->
   <repo owner="dotnet" name="testimpact">
-    <merge from="dev16.5.x" to="master" />
+    <merge from="dev16.6.x" to="master" />
     <merge from="master" to="feature/vnext" />
   </repo>
 
