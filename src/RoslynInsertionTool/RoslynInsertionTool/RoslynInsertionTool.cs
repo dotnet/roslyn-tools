@@ -19,6 +19,8 @@ namespace Roslyn.Insertion
 {
     public static partial class RoslynInsertionTool
     {
+        private const string PRBuildTagPrefix = "PRNumber:";
+
         public static readonly Guid VSRepoId = new Guid("a290117c-5a8a-40f7-bc2c-f14dbe3acf6d");
         //Easiest way to get these GUIDs is to create a PR search in AzDo
         //You'll get something like https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequests?_a=active&createdBy=GUID-here
@@ -341,7 +343,12 @@ namespace Roslyn.Insertion
                     Console.WriteLine($"Create Pull Request");
                     try
                     {
-                        pullRequest = await CreatePullRequestAsync(insertionBranchName, prDescriptionMarkdown, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
+                        // If this insertion was queued for PR validation, then add queuer as a reviewer instead of mlinfraswat.
+                        var reviewerId = !string.IsNullOrEmpty(GetBuildPRNumber(buildToInsert))
+                            ? buildToInsert.RequestedBy.Id
+                            : MLInfraSwatUserId.ToString();
+
+                        pullRequest = await CreatePullRequestAsync(insertionBranchName, prDescriptionMarkdown, buildVersion.ToString(), options.TitlePrefix, reviewerId, cancellationToken);
                         if (pullRequest == null)
                         {
                             LogError($"Unable to create pull request for '{insertionBranchName}'");
@@ -510,8 +517,7 @@ namespace Roslyn.Insertion
             {
                 var repoURL = $"http://github.com/{build.Repository.Id}";
 
-                var tagPrefix = "PRNumber:";
-                var prNumber = build.Tags.FirstOrDefault(t => t.StartsWith(tagPrefix))?.Substring(tagPrefix.Length);
+                string prNumber = GetBuildPRNumber(build);
                 if (!string.IsNullOrEmpty(prNumber))
                 {
                     var prUrl = GetGitHubPullRequestUrl(repoURL, prNumber);
@@ -522,6 +528,11 @@ namespace Roslyn.Insertion
             }
 
             return prValidationMessage;
+        }
+
+        private static string GetBuildPRNumber(Build build)
+        {
+            return build.Tags.FirstOrDefault(t => t.StartsWith(PRBuildTagPrefix))?.Substring(PRBuildTagPrefix.Length);
         }
 
         public static string GetBuildDescriptionMarkdown(this Build build)
