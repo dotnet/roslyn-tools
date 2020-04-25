@@ -33,7 +33,7 @@ namespace Roslyn.Insertion
 
         private static TfsTeamProjectCollection ProjectCollection => LazyProjectCollection.Value;
 
-        private static GitPullRequest CreatePullRequest(string sourceBranch, string targetBranch, string description, string buildToInsert, string titlePrefix)
+        private static GitPullRequest CreatePullRequest(string sourceBranch, string targetBranch, string description, string buildToInsert, string titlePrefix, string reviewerId)
         {
             Console.WriteLine($"Creating pull request sourceBranch:{sourceBranch} targetBranch:{targetBranch} description:{description}");
             var prefix = string.IsNullOrEmpty(titlePrefix)
@@ -47,17 +47,17 @@ namespace Roslyn.Insertion
                 SourceRefName = sourceBranch,
                 TargetRefName = targetBranch,
                 IsDraft = Options.CreateDraftPr,
-                Reviewers = new[] { new IdentityRefWithVote { Id = MLInfraSwatUserId.ToString() } }
+                Reviewers = new[] { new IdentityRefWithVote { Id = reviewerId } }
             };
         }
 
-        private static async Task<GitPullRequest> CreatePullRequestAsync(string branchName, string message, string buildToInsert, string titlePrefix, CancellationToken cancellationToken)
+        private static async Task<GitPullRequest> CreatePullRequestAsync(string branchName, string message, string buildToInsert, string titlePrefix, string reviewerId, CancellationToken cancellationToken)
         {
             var gitClient = ProjectCollection.GetClient<GitHttpClient>();
             Console.WriteLine($"Getting remote repository from {Options.VisualStudioBranchName} in {Options.TFSProjectName}");
             var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
             return await gitClient.CreatePullRequestAsync(
-                    CreatePullRequest("refs/heads/" + branchName, "refs/heads/" + Options.VisualStudioBranchName, message, buildToInsert, titlePrefix),
+                    CreatePullRequest("refs/heads/" + branchName, "refs/heads/" + Options.VisualStudioBranchName, message, buildToInsert, titlePrefix, reviewerId),
                     repository.Id,
                     supportsIterations: null,
                     userState: null,
