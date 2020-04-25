@@ -42,13 +42,18 @@ namespace Roslyn.Insertion
 
             return new GitPullRequest
             {
-                Title = $"{prefix}{Options.InsertionName} '{Options.BranchName}/{buildToInsert}' Insertion into {Options.VisualStudioBranchName}",
+                Title = GetPullRequestTitle(buildToInsert, prefix),
                 Description = description,
                 SourceRefName = sourceBranch,
                 TargetRefName = targetBranch,
                 IsDraft = Options.CreateDraftPr,
                 Reviewers = new[] { new IdentityRefWithVote { Id = reviewerId } }
             };
+        }
+
+        private static string GetPullRequestTitle(string buildToInsert, string prefix)
+        {
+            return $"{prefix}{Options.InsertionName} '{Options.BranchName}/{buildToInsert}' Insertion into {Options.VisualStudioBranchName}";
         }
 
         private static async Task<GitPullRequest> CreatePullRequestAsync(string branchName, string message, string buildToInsert, string titlePrefix, string reviewerId, CancellationToken cancellationToken)
@@ -62,6 +67,22 @@ namespace Roslyn.Insertion
                     supportsIterations: null,
                     userState: null,
                     cancellationToken);
+        }
+
+        public static async Task<GitPullRequest> OverwritePullRequestAsync(int pullRequestId, string message, string buildToInsert, string titlePrefix, CancellationToken cancellationToken)
+        {
+            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+
+            return await gitClient.UpdatePullRequestAsync(
+                new GitPullRequest
+                {
+                    Title = GetPullRequestTitle(buildToInsert, titlePrefix),
+                    Description = message,
+                    IsDraft = Options.CreateDraftPr
+                },
+                VSRepoId,
+                pullRequestId,
+                cancellationToken: cancellationToken);
         }
 
         private static async Task<IEnumerable<Build>> GetBuildsFromTFSAsync(BuildHttpClient buildClient, List<BuildDefinitionReference> definitions, CancellationToken cancellationToken, BuildResult? resultFilter = null)

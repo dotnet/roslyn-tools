@@ -326,15 +326,7 @@ namespace Roslyn.Insertion
                     {
                         if (Options.OverwritePr)
                         {
-                            pullRequest = await gitClient.UpdatePullRequestAsync(
-                                new GitPullRequest
-                                {
-                                    Description = prDescriptionMarkdown,
-                                    IsDraft = Options.CreateDraftPr
-                                },
-                                VSRepoId,
-                                pullRequestId,
-                                cancellationToken: cancellationToken);
+                            pullRequest = await OverwritePullRequestAsync(pullRequestId, prDescriptionMarkdown, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
                         }
                         pullRequestId = pullRequest.PullRequestId;
                     }
