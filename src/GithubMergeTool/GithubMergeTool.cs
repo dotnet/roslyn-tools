@@ -64,6 +64,7 @@ namespace GithubMergeTool
         public async Task<(bool prCreated, HttpResponseMessage error)> CreateMergePr(
             string repoOwner,
             string repoName,
+            List<string> prOwners,
             string srcBranch,
             string destBranch,
             bool updateExistingPr,
@@ -249,6 +250,12 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             // Add labels to the issue
             response = await AddLabels(prNumber, labels);
 
+            // Add assignees to the issue
+            if (prOwners.Any())
+            {
+                response = await AddAssignees(prNumber, prOwners);
+            }
+
             if (!response.IsSuccessStatusCode)
             {
                 return (true, response);
@@ -328,6 +335,12 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             {
                 // https://developer.github.com/v3/issues/labels/#add-labels-to-an-issue
                 return _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{prNumber}/labels", JsonConvert.SerializeObject(labels));
+            }
+
+            Task<HttpResponseMessage> AddAssignees(string prNumber, List<string> assignees)
+            {
+                // https://developer.github.com/v3/issues/assignees/#add-assignees-to-an-issue
+                return _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{prNumber}/assignees", JsonConvert.SerializeObject(new { assignees }));
             }
         }
 

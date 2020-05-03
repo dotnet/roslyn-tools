@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -59,6 +60,7 @@ public class Program
         GithubMergeTool.GithubMergeTool gh,
         string repoOwner,
         string repoName,
+        List<string> prOwners,
         string srcBranch,
         string destBranch,
         bool updateExistingPr,
@@ -69,7 +71,7 @@ public class Program
     {
         Console.WriteLine($"Merging {repoName} from {srcBranch} to {destBranch}");
 
-        var (prCreated, error) = await gh.CreateMergePr(repoOwner, repoName, srcBranch, destBranch, updateExistingPr, addAutoMergeLabel, isAutomatedRun);
+        var (prCreated, error) = await gh.CreateMergePr(repoOwner, repoName, prOwners, srcBranch, destBranch, updateExistingPr, addAutoMergeLabel, isAutomatedRun);
 
         if (prCreated)
         {
@@ -138,10 +140,11 @@ public class Program
                     continue;
                 }
 
+                var prOwners = merge.Attribute("owners")?.Value.Split(',').ToList() ?? new List<string>();
                 var addAutoMergeLabel = bool.Parse(merge.Attribute("addAutoMergeLabel")?.Value ?? "true");
                 try
                 {
-                    bool shouldContinue = await MakeGithubPr(gh, owner, name, fromBranch, toBranch,
+                    bool shouldContinue = await MakeGithubPr(gh, owner, name, prOwners, fromBranch, toBranch,
                         updateExistingPr, addAutoMergeLabel, isAutomatedRun, isDryRun, githubToken);
                     if (!shouldContinue)
                     {
