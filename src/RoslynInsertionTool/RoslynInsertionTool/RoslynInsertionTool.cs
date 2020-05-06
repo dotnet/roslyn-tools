@@ -343,8 +343,12 @@ namespace Roslyn.Insertion
                     Console.WriteLine($"Create Pull Request");
                     try
                     {
-                        // If this insertion was queued for PR validation, then add queuer as a reviewer instead of mlinfraswat.
-                        var reviewerId = !string.IsNullOrEmpty(GetBuildPRNumber(buildToInsert))
+                        // If this insertion was queued for PR validation, for a dev branch, or for a feature branch,
+                        // then add the build queuer as a reviewer instead of mlinfraswat.
+                        var isPrValidation = !string.IsNullOrEmpty(GetBuildPRNumber(buildToInsert));
+                        var isDevOrFeatureBranch = Options.BranchName.StartsWith("dev/") || Options.BranchName.StartsWith("features/");
+
+                        var reviewerId = isPrValidation || isDevOrFeatureBranch
                             ? buildToInsert.RequestedBy.Id
                             : MLInfraSwatUserId.ToString();
 
