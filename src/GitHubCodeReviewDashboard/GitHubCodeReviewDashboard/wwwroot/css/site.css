@@ -1,0 +1,11 @@
+﻿a {
+    text-decoration: none;
+}
+
+body {
+    font-family: sans-serif;
+}
+
+.category a {
+    font-size: small;
+}
