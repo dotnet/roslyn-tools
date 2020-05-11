@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30108.6
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubCodeReviewDashboard", "GitHubCodeReviewDashboard\GitHubCodeReviewDashboard.csproj", "{DA2E9AE8-2365-49FA-BD0B-DE7669A33C73}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DA2E9AE8-2365-49FA-BD0B-DE7669A33C73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA2E9AE8-2365-49FA-BD0B-DE7669A33C73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA2E9AE8-2365-49FA-BD0B-DE7669A33C73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA2E9AE8-2365-49FA-BD0B-DE7669A33C73}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6C4F1BFE-10E1-4F9A-A5B9-54A0E74C5756}
+	EndGlobalSection
+EndGlobal
