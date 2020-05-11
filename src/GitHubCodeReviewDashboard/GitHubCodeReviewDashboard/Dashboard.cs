@@ -71,8 +71,9 @@ namespace GitHubCodeReviewDashboard
             var roslyn = github.PullRequest.GetAllForRepository("dotnet", "roslyn", new ApiOptions { PageSize = 100 });
             var roslynAnalyzers = github.PullRequest.GetAllForRepository("dotnet", "roslyn-analyzers", new ApiOptions { PageSize = 100 });
             var roslynSdk = github.PullRequest.GetAllForRepository("dotnet", "roslyn-sdk", new ApiOptions { PageSize = 100 });
+            var roslynTools = github.PullRequest.GetAllForRepository("dotnet", "roslyn-tools", new ApiOptions { PageSize = 100 });
 
-            var allPullRequests = await Task.WhenAll(roslyn, roslynAnalyzers, roslynSdk);
+            var allPullRequests = await Task.WhenAll(roslyn, roslynAnalyzers, roslynSdk, roslynTools);
 
             return allPullRequests.SelectMany(prs => prs).OrderByDescending(pr => pr.CreatedAt).ToImmutableArray();
         }
