@@ -13,7 +13,14 @@
 
             @foreach (var pullRequest in pullRequests)
             {
-                <li><a href="@pullRequest.HtmlUrl">@pullRequest.Title</a> by @pullRequest.User.Login @pullRequest.CreatedAt.Humanize() in @pullRequest.Base.Repository.FullName.</li>
+                <li>
+                    @if (pullRequest.Draft)
+                    {
+                        <span class="draft-label">Draft</span>
+                    }
+
+                    <a href="@pullRequest.HtmlUrl">@pullRequest.Title</a> by @pullRequest.User.Login @pullRequest.CreatedAt.Humanize() in @pullRequest.Base.Repository.FullName.
+                </li>
             }
 
         </ul>
