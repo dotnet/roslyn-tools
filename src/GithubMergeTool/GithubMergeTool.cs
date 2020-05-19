@@ -318,7 +318,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                     // update a corrected PR with new merge conflicts
                     var hasMergeConflictsLabel = Array.IndexOf(data.labels, MergeConflictsLabelText) > -1;
 
-                    prHasConflicts = !hasMergeConflicts && !hasMergeConflictsLabel;
+                    prHasConflicts = hasMergeConflicts || hasMergeConflictsLabel;
                 }
 
                 Console.WriteLine();
