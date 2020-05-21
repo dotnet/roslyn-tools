@@ -8,8 +8,7 @@
     <merge from="release/dev16.3" to="release/dev16.4" />
     <merge from="release/dev16.4" to="release/dev16.5" />
     <merge from="release/dev16.5" to="release/dev16.6" />
-    <merge from="release/dev16.6" to="release/dev16.7-preview2" />
-    <merge from="release/dev16.7-preview2" to="master" />
+    <merge from="release/dev16.6" to="master" />
 
     <!-- Roslyn branches (between vs-deps branches) -->
     <merge from="release/dev16.3-vs-deps" to="release/dev16.4-vs-deps" />
