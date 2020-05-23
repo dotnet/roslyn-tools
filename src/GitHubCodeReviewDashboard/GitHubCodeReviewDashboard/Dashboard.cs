@@ -68,12 +68,13 @@ namespace GitHubCodeReviewDashboard
 
         private static async Task<ImmutableArray<PullRequest>> GetAllPullRequests(GitHubClient github)
         {
+            var format = github.PullRequest.GetAllForRepository("dotnet", "format", new ApiOptions { PageSize = 100 });
             var roslyn = github.PullRequest.GetAllForRepository("dotnet", "roslyn", new ApiOptions { PageSize = 100 });
             var roslynAnalyzers = github.PullRequest.GetAllForRepository("dotnet", "roslyn-analyzers", new ApiOptions { PageSize = 100 });
             var roslynSdk = github.PullRequest.GetAllForRepository("dotnet", "roslyn-sdk", new ApiOptions { PageSize = 100 });
             var roslynTools = github.PullRequest.GetAllForRepository("dotnet", "roslyn-tools", new ApiOptions { PageSize = 100 });
 
-            var allPullRequests = await Task.WhenAll(roslyn, roslynAnalyzers, roslynSdk, roslynTools);
+            var allPullRequests = await Task.WhenAll(format, roslyn, roslynAnalyzers, roslynSdk, roslynTools);
 
             return allPullRequests.SelectMany(prs => prs).OrderByDescending(pr => pr.CreatedAt).ToImmutableArray();
         }
