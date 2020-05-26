@@ -253,7 +253,21 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             // Add assignees to the issue
             if (prOwners.Any())
             {
+                Console.WriteLine("Adding assignees: " + string.Join(", ", prOwners));
+                foreach (var owner in prOwners)
+                {
+                    if (await IsInvalidAssignee(owner))
+                    {
+                        Console.WriteLine($"##vso[task.logissue type=warning]{repoOwner}/{repoName}:{prBranchName} has invalid owner \"{owner}\".");
+                    }
+                }
+
                 response = await AddAssignees(prNumber, prOwners);
+                var assigneeData = JsonConvert.DeserializeAnonymousType(await response.Content.ReadAsStringAsync(), new
+                {
+                    assignees = new[] { new { login = "" } }
+                });
+                Console.WriteLine("Actual assignees: " + (assigneeData.assignees.Any() ? string.Join(", ", assigneeData.assignees.Select(a => a.login)) : "(none)"));
             }
 
             if (!response.IsSuccessStatusCode)
@@ -341,6 +355,13 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             {
                 // https://developer.github.com/v3/issues/assignees/#add-assignees-to-an-issue
                 return _client.PostAsyncAsJson($"repos/{repoOwner}/{repoName}/issues/{prNumber}/assignees", JsonConvert.SerializeObject(new { assignees }));
+            }
+
+            async Task<bool> IsInvalidAssignee(string assignee)
+            {
+                // https://developer.github.com/v3/issues/assignees/#check-assignee
+                var response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/assignees/{assignee}");
+                return response.StatusCode == HttpStatusCode.NotFound;
             }
         }
 
