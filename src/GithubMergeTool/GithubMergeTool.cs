@@ -228,11 +228,11 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
             });
 
             var prNumber = createPrData.number;
-            var mergeable = createPrData.mergeable;
+            var hasConflicts = !createPrData.mergeable;
 
-            if (mergeable == null)
+            if (hasConflicts == null)
             {
-                mergeable = await IsPrConflicted(prNumber);
+                hasConflicts = await IsPrConflicted(prNumber);
             }
 
             var labels = new List<string> { AreaInfrastructureLabelText };
@@ -241,7 +241,7 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                 labels.Add(AutoMergeLabelText);
             }
 
-            if (mergeable == false)
+            if (hasConflicts == true)
             {
                 Console.WriteLine("PR has merge conflicts. Adding Merge Conflicts label.");
                 labels.Add(MergeConflictsLabelText);
