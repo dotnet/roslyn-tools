@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace GithubMergeTool
@@ -129,6 +130,8 @@ namespace GithubMergeTool
                     // Only update PR w/o merge conflicts
                     if (existingPrConflicted == false && prSha != srcSha)
                     {
+                        Console.WriteLine("Updating existing PR.");
+
                         // Try to reset the HEAD of PR branch to latest source branch
                         response = await ResetBranch(prBranchName, srcSha, force: false);
                         if (!response.IsSuccessStatusCode)
@@ -148,6 +151,7 @@ namespace GithubMergeTool
                     // label already exists.
                     if (existingPrConflicted == true)
                     {
+                        Console.WriteLine("PR has merge conflicts. Adding Merge Conflicts label.");
                         await AddLabels(existingPrNumber, new List<string> { MergeConflictsLabelText });
                     }
                 }
@@ -364,6 +368,61 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
                 return response.StatusCode == HttpStatusCode.NotFound;
             }
         }
+
+        public async Task<(IReadOnlyList<MergePr> MergePrs, HttpResponseMessage Response)> FetchOpenMergePRsAsync(string repoOwner, string repoName)
+        {
+            List<MergePr> mergePRs = new List<MergePr>();
+
+            // Check to see if there's open merge prs
+            // https://developer.github.com/v3/search/#search-issues-and-pull-requests
+            HttpResponseMessage prsResponse = await _client.GetAsync(
+                $"/search/issues?q=repo:{repoOwner}/{repoName}+is:open+is:pr+label:{AutoMergeLabelText}");
+
+            if (!prsResponse.IsSuccessStatusCode)
+            {
+                return (mergePRs, prsResponse);
+            }
+
+            var possibleMergePrs = JsonConvert.DeserializeAnonymousType(await prsResponse.Content.ReadAsStringAsync(),
+                new
+                {
+                    items = new[]
+                    {
+                        new
+                        {
+                            title = "",
+                            number = 0
+                        }
+                    }
+                });
+
+            foreach (var possibleMergePr in possibleMergePrs.items)
+            {
+                var match = MergePrTitlePattern.Match(possibleMergePr.title);
+                if (!match.Success)
+                {
+                    continue;
+                }
+
+                mergePRs.Add(new MergePr()
+                {
+                    Number = possibleMergePr.number,
+                    SrcBranch = match.Groups[1].Value,
+                    DestBranch = match.Groups[2].Value
+                });
+            }
+
+            return (mergePRs, prsResponse);
+        }
+
+        public class MergePr
+        {
+            public int Number { get; set; }
+            public string SrcBranch { get; set; }
+            public string DestBranch { get; set; }
+        }
+
+        private static Regex MergePrTitlePattern => new Regex(@"^Merge (.*) to (.*)", RegexOptions.Compiled);
 
         public const string AutoMergeLabelText = "auto-merge";
         public const string MergeConflictsLabelText = "Merge Conflicts";

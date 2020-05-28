@@ -3,7 +3,7 @@
 // README: This is a simple test script for trying out local changes.
 // Nothing in this file runs in production.
 
-#r "../../artifacts/bin/GithubMergeTool/Debug/net46/GithubMergeTool.dll"
+#r "../../artifacts/bin/GithubMergeTool/Debug/netcoreapp2.1/GithubMergeTool.dll"
 
 using System;
 using System.Net;
@@ -21,7 +21,7 @@ private static async Task MakeGithubPr(
 {
     Console.WriteLine($"Merging from {srcBranch} to {destBranch}");
 
-    var (prCreated, error) = await gh.CreateMergePr(repoOwner, repoName, srcBranch, destBranch, addAutoMergeLabel: false, isAutoTriggered: false);
+    var (prCreated, error) = await gh.CreateMergePr(repoOwner, repoName, new List<string>(), srcBranch, destBranch, updateExistingPr: true, addAutoMergeLabel: false, isAutoTriggered: false);
 
     if (prCreated)
     {
@@ -37,16 +37,54 @@ private static async Task MakeGithubPr(
     }
 }
 
+private static async Task UpdateExistingPr(
+    GithubMergeTool.GithubMergeTool gh,
+    string repoOwner,
+    string repoName,
+    int? prNumber
+)
+{
+    var (prs, error) = await gh.FetchOpenMergePRsAsync(repoOwner, repoName);
+
+    if (!error.IsSuccessStatusCode)
+    {
+        Console.WriteLine($"Error finding open merge PRs. GH response code: {error.StatusCode}");
+        return;
+    }
+    else if (prs.Count == 0)
+    {
+        Console.WriteLine($"Did not find any open merge PRs.");
+        return;
+    }
+
+    var mergePr = prNumber.HasValue
+        ? prs.FirstOrDefault(pr => pr.Number == prNumber)
+        : prs.First();
+
+    if (mergePr is null)
+    {
+        Console.WriteLine($"Did not find an open merge PR with the number {prNumber}.");
+        return;
+    }
+
+    Console.WriteLine($"Updating merge PR {prNumber}.");
+
+    await MakeGithubPr(gh, repoOwner, repoName, mergePr.SrcBranch, mergePr.DestBranch);
+}
+
 private static async Task RunAsync()
 {
-    // Write your test code here to test changes to the merge tool DLL
-    var gh = new GithubMergeTool.GithubMergeTool(GithubUsername, GithubAuthToken);
+    const string repoOwner = "dotnet";
+    const string repoName = "roslyn";
+    const bool isDryRun = true;
+    int? prNumber = 44532;
 
-    var (prs, error) = await gh.FetchAutoMergeablePrs("dotnet", "roslyn");
-    foreach (var pr in prs)
-    {
-        Console.WriteLine(pr);
-    }
+    Console.WriteLine($"Looking up open merge PRs...");
+
+    // Write your test code here to test changes to the merge tool DLL
+    var gh = new GithubMergeTool.GithubMergeTool(GithubUsername, GithubAuthToken, isDryRun);
+
+    await UpdateExistingPr(gh, repoOwner, repoName, prNumber);
 }
 
 RunAsync().GetAwaiter().GetResult();
