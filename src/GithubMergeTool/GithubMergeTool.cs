@@ -124,10 +124,10 @@ namespace GithubMergeTool
                     var existingPrNumber = existingPrData.number;
 
                     // Check for merge conflicts
-                    var existingPrMergeable = await IsPrConflicted(existingPrNumber);
+                    var existingPrConflicted = await IsPrConflicted(existingPrNumber);
 
                     // Only update PR w/o merge conflicts
-                    if (existingPrMergeable == true && prSha != srcSha)
+                    if (existingPrConflicted == false && prSha != srcSha)
                     {
                         // Try to reset the HEAD of PR branch to latest source branch
                         response = await ResetBranch(prBranchName, srcSha, force: false);
@@ -140,13 +140,13 @@ namespace GithubMergeTool
                         await PostComment(existingPrNumber, $"Reset HEAD of `{prBranchName}` to `{srcSha}`");
 
                         // Check for merge conflicts again after reset.
-                        existingPrMergeable = await IsPrConflicted(existingPrNumber);
+                        existingPrConflicted = await IsPrConflicted(existingPrNumber);
                     }
 
                     // Add label if there's merge conflicts even if we made no change to merge branch,
                     // since can also be introduced by change in destination branch. It's no-op if the
                     // label already exists.
-                    if (existingPrMergeable == false)
+                    if (existingPrConflicted == true)
                     {
                         await AddLabels(existingPrNumber, new List<string> { MergeConflictsLabelText });
                     }
