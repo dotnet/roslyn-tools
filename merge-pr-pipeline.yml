@@ -16,7 +16,7 @@ pr:
 - master
 
 schedules:
-- cron: "0 */3 * * *"
+- cron: "0 */5 * * *"
   displayName: Roslyn Merge Tool
   branches:
     include:
