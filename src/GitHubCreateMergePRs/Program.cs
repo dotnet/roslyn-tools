@@ -3,13 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
 public class Program
 {
-    public static async Task Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         // Default when no args passed in.
         var isDryRun = true;
@@ -34,7 +35,8 @@ public class Program
 
         Console.WriteLine($"Executing with {nameof(isDryRun)}={isDryRun}, {nameof(isAutomated)}={isAutomated}, {nameof(githubToken)}={githubToken}");
         var config = GetConfig();
-        await RunAsync(config, isAutomated, isDryRun, githubToken);
+        var success = await RunAsync(config, isAutomated, isDryRun, githubToken);
+        return success ? 0 : 1;
     }
 
     private static string GetArgumentValue(string arg)
@@ -55,8 +57,7 @@ public class Program
     /// <summary>
     /// Make requests to github to merge a source branch into a destination branch.
     /// </summary>
-    /// <returns>true if we encounter a recoverable error, false if unrecoverable.</returns>
-    private static async Task<bool> MakeGithubPr(
+    private static async Task<(bool success, bool shouldContinue)> MakeGithubPr(
         GithubMergeTool.GithubMergeTool gh,
         string repoOwner,
         string repoName,
@@ -83,8 +84,11 @@ public class Program
         }
         else
         {
-            Console.WriteLine($"##vso[task.logissue type=error]Error creating PR. GH response code: {error.StatusCode}");
-            Console.WriteLine($"##vso[task.logissue type=error]{await error.Content.ReadAsStringAsync()}");
+            var errorStatus = error.StatusCode;
+            var isWarning = errorStatus == HttpStatusCode.UnprocessableEntity || errorStatus == HttpStatusCode.NotFound;
+            var issueType = isWarning ? "warning" : "error";
+            Console.WriteLine($"##vso[task.logissue type={issueType}]Error creating PR. GH response code: {error.StatusCode}");
+            Console.WriteLine($"##vso[task.logissue type={issueType}]{await error.Content.ReadAsStringAsync()}");
 
             // Github rate limits are much lower for unauthenticated users.  We will definitely hit a rate limit
             // If we hit it during a dryrun, just bail out.
@@ -93,12 +97,15 @@ public class Program
                 if (TryGetRemainingRateLimit(error.Headers, out var remainingRateLimit) && remainingRateLimit == 0)
                 {
                     Console.WriteLine($"##vso[task.logissue type=error]Hit GitHub rate limit in dryrun with no auth token.  Bailing out.");
-                    return false;
+                    return (success: false, shouldContinue: false);
                 }
             }
+
+
+            return (success: isWarning, shouldContinue: true);
         }
 
-        return true;
+        return (success: true, shouldContinue: true);
     }
 
     private static bool TryGetRemainingRateLimit(HttpResponseHeaders headers, out int remainingRateLimit)
@@ -115,12 +122,14 @@ public class Program
         return false;
     }
 
-    private static async Task RunAsync(XDocument config, bool isAutomatedRun, bool isDryRun, string githubToken)
+    // Returns 'true' if all PRs were created/updated successfully.
+    private static async Task<bool> RunAsync(XDocument config, bool isAutomatedRun, bool isDryRun, string githubToken)
     {
         // Since this is run on AzDO as an automated cron pipeline, times are in UTC.
         // See https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops&tabs=yaml#scheduled-triggers
         var runDateTime = DateTime.UtcNow;
 
+        var allSuccess = true;
         var gh = new GithubMergeTool.GithubMergeTool("dotnet-bot@users.noreply.github.com", githubToken, isDryRun);
         foreach (var repo in config.Root.Elements("repo"))
         {
@@ -144,11 +153,12 @@ public class Program
                 var addAutoMergeLabel = bool.Parse(merge.Attribute("addAutoMergeLabel")?.Value ?? "true");
                 try
                 {
-                    bool shouldContinue = await MakeGithubPr(gh, owner, name, prOwners, fromBranch, toBranch,
+                    var (success, shouldContinue) = await MakeGithubPr(gh, owner, name, prOwners, fromBranch, toBranch,
                         updateExistingPr, addAutoMergeLabel, isAutomatedRun, isDryRun, githubToken);
+                    allSuccess = allSuccess && success;
                     if (!shouldContinue)
                     {
-                        return;
+                        return false;
                     }
                 }
                 catch (Exception ex)
@@ -162,6 +172,8 @@ public class Program
                 }
             }
         }
+
+        return allSuccess;
     }
 
     /// <summary>
