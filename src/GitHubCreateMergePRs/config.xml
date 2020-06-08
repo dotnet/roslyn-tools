@@ -9,24 +9,27 @@
     <merge from="release/dev16.4" to="release/dev16.5" />
     <merge from="release/dev16.5" to="release/dev16.6" />
     <merge from="release/dev16.6" to="master" />
-    <!-- Note that due to certain conflicts we are not merging from 16.6->16.7-p2->master.
-         Instead we are merging 16.6->master and 16.7-p2->master separately. -->
-    <merge from="release/dev16.7-preview2" to="master" />
+    <!-- Note that due to certain conflicts we are not merging from 16.6->16.7->master.
+         Instead we are merging 16.6->master and 16.7->master separately. -->
+    <merge from="release/dev16.7-preview3" to="master" />
+    <merge from="master" to="release/dev16.8-preview1" />
 
     <!-- Roslyn branches (between vs-deps branches) -->
     <merge from="release/dev16.3-vs-deps" to="release/dev16.4-vs-deps" />
     <merge from="release/dev16.4-vs-deps" to="release/dev16.5-vs-deps" />
     <merge from="release/dev16.5-vs-deps" to="release/dev16.6-vs-deps" />
-    <merge from="release/dev16.6-vs-deps" to="release/dev16.7-preview2-vs-deps" />
-    <merge from="release/dev16.7-preview2-vs-deps" to="master-vs-deps" />
+    <merge from="release/dev16.6-vs-deps" to="release/dev16.7-preview3-vs-deps" />
+    <merge from="release/dev16.7-preview3-vs-deps" to="master-vs-deps" />
+    <merge from="master-vs-deps" to="release/dev16.8-preview1-vs-deps" />
 
     <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
     <merge from="release/dev16.3" to="release/dev16.3-vs-deps" />
     <merge from="release/dev16.4" to="release/dev16.4-vs-deps" />
     <merge from="release/dev16.5" to="release/dev16.5-vs-deps" />
     <merge from="release/dev16.6" to="release/dev16.6-vs-deps" />
-    <merge from="release/dev16.7-preview2" to="release/dev16.7-preview2-vs-deps" />
+    <merge from="release/dev16.7-preview3" to="release/dev16.7-preview3-vs-deps" />
     <merge from="master" to="master-vs-deps" />
+    <merge from="release/dev16.8-preview1" to="release/dev16.8-preview1-vs-deps" />
 
     <!-- Roslyn feature branches -->
     <merge from="master" to="features/static-lambdas" owners="jcouv" />
