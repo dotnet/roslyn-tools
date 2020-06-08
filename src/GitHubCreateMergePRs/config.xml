@@ -62,7 +62,6 @@
     <merge from="master" to="release/dev16.7" /><!-- next release -->
     <merge from="master" to="feature/nullness" />
     <merge from="master" to="feature/ext" />
-    <merge from="master" to="feature/witness-passing" />
     <merge from="master" to="feature/tasks" />
     <merge from="master" to="feature/string-interp" />
     <merge from="master" to="feature/fsi-packagemanagement" />
