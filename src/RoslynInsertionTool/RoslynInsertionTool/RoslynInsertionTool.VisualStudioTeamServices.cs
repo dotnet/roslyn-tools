@@ -507,8 +507,8 @@ namespace Roslyn.Insertion
             {
                 var repoId = tobuild.Repository.Id; // e.g. dotnet/roslyn
 
-                var fromSHA = fromBuild.SourceVersion.Substring(0, 7);
-                var toSHA = tobuild.SourceVersion.Substring(0, 7);
+                var fromSHA = fromBuild.SourceVersion;
+                var toSHA = tobuild.SourceVersion;
 
                 var restEndpoint = $"https://api.github.com/repos/{repoId}/compare/{fromSHA}...{toSHA}";
                 var client = new HttpClient();
@@ -666,12 +666,13 @@ namespace Roslyn.Insertion
                         description.AppendLine("### Commits since last PR:");
                     }
 
-                    var sha = commit.CommitId.Substring(0, 7);
+                    var fullSHA = commit.CommitId;
+                    var shortSHA = fullSHA.Substring(0, 7);
 
                     // Take the 1st line since it should be descriptive.
-                    comment = $"{commit.Message.Split('\n')[0]} ({sha})";
+                    comment = $"{commit.Message.Split('\n')[0]} ({shortSHA})";
 
-                    prLink = $@"- [{comment}]({repoURL}/commit/{sha})";
+                    prLink = $@"- [{comment}]({repoURL}/commit/{fullSHA})";
                 }
 
                 description.AppendLine(prLink);
