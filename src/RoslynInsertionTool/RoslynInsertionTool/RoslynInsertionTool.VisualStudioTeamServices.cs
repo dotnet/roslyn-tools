@@ -572,6 +572,8 @@ namespace Roslyn.Insertion
 
         internal static string AppendChangesToDescription(string prDescription, Build oldBuild, List<GitCommit> changes)
         {
+            const int hardLimit = 4000; // Azure DevOps limitation
+
             if (!changes.Any())
             {
                 return prDescription;
@@ -676,7 +678,6 @@ namespace Roslyn.Insertion
                 }
 
                 const string limitMessage = "Changelog truncated due to description length limit.";
-                const int hardLimit = 4000; // Azure DevOps limitation
 
                 // we want to be able to fit this PR link, as well as the limit message (plus line breaks) in case the next PR link doesn't fit
                 int limit = hardLimit - (prLink.Length + 1) - (limitMessage.Length + 1);
@@ -691,7 +692,14 @@ namespace Roslyn.Insertion
                 }
             }
 
-            return description.ToString();
+            var result = description.ToString();
+            if (result.Length > hardLimit)
+            {
+                LogWarning($"PR description is {description.Length} characters long, but the limit is {hardLimit}.");
+                LogWarning(result);
+            }
+
+            return result;
         }
 
         public static string GetGitHubPullRequestUrl(string repoURL, string prNumber)
