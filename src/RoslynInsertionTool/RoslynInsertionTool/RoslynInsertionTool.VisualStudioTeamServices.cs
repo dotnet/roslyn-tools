@@ -675,12 +675,19 @@ namespace Roslyn.Insertion
                     prLink = $@"- [{comment}]({repoURL}/commit/{fullSHA})";
                 }
 
-                description.AppendLine(prLink);
+                const string limitMessage = "Changelog truncated due to description length limit.";
+                const int hardLimit = 4000; // Azure DevOps limitation
 
-                if (description.Length > 3500)
+                // we want to be able to fit this PR link, as well as the limit message (plus line breaks) in case the next PR link doesn't fit
+                int limit = hardLimit - (prLink.Length + 1) - (limitMessage.Length + 1);
+                if (description.Length > limit)
                 {
-                    description.AppendLine("Changelog truncated due to description length limit.");
+                    description.AppendLine(limitMessage);
                     break;
+                }
+                else
+                {
+                    description.AppendLine(prLink);
                 }
             }
 
