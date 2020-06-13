@@ -579,7 +579,7 @@ namespace Roslyn.Insertion
 
             var description = new StringBuilder(prDescription + Environment.NewLine);
 
-            var repoURL = $"http://github.com/{oldBuild.Repository.Id}";
+            var repoURL = $"//github.com/{oldBuild.Repository.Id}";
 
             var commitHeaderAdded = false;
             var mergePRHeaderAdded = false;
