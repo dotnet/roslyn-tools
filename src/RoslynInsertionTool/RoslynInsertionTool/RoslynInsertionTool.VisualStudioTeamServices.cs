@@ -560,7 +560,7 @@ namespace Roslyn.Insertion
                     .Reverse()
                     .ToList();
 
-                return (result, $"https://github.com/{repoId}/compare/{fromSHA}...{toSHA}?w=1");
+                return (result, $"//github.com/{repoId}/compare/{fromSHA}...{toSHA}?w=1");
             }
 
             throw new NotSupportedException("Only builds created from GitHub repos support enumerating commits.");
