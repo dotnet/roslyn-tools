@@ -695,7 +695,7 @@ namespace Roslyn.Insertion
             var result = description.ToString();
             if (result.Length > hardLimit)
             {
-                LogWarning($"PR description is {description.Length} characters long, but the limit is {hardLimit}.");
+                LogWarning($"PR description is {result.Length} characters long, but the limit is {hardLimit}.");
                 LogWarning(result);
             }
 
