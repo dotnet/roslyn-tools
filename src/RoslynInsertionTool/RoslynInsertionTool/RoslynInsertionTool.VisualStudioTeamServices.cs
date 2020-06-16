@@ -560,7 +560,7 @@ namespace Roslyn.Insertion
                     .Reverse()
                     .ToList();
 
-                return (result, $"https://github.com/{repoId}/compare/{fromSHA}...{toSHA}?w=1");
+                return (result, $"//github.com/{repoId}/compare/{fromSHA}...{toSHA}?w=1");
             }
 
             throw new NotSupportedException("Only builds created from GitHub repos support enumerating commits.");
@@ -572,6 +572,8 @@ namespace Roslyn.Insertion
 
         internal static string AppendChangesToDescription(string prDescription, Build oldBuild, List<GitCommit> changes)
         {
+            const int hardLimit = 4000; // Azure DevOps limitation
+
             if (!changes.Any())
             {
                 return prDescription;
@@ -579,7 +581,7 @@ namespace Roslyn.Insertion
 
             var description = new StringBuilder(prDescription + Environment.NewLine);
 
-            var repoURL = $"http://github.com/{oldBuild.Repository.Id}";
+            var repoURL = $"//github.com/{oldBuild.Repository.Id}";
 
             var commitHeaderAdded = false;
             var mergePRHeaderAdded = false;
@@ -675,16 +677,29 @@ namespace Roslyn.Insertion
                     prLink = $@"- [{comment}]({repoURL}/commit/{fullSHA})";
                 }
 
-                description.AppendLine(prLink);
+                const string limitMessage = "Changelog truncated due to description length limit.";
 
-                if (description.Length > 3500)
+                // we want to be able to fit this PR link, as well as the limit message (plus line breaks) in case the next PR link doesn't fit
+                int limit = hardLimit - (prLink.Length + 1) - (limitMessage.Length + 1);
+                if (description.Length > limit)
                 {
-                    description.AppendLine("Changelog truncated due to description length limit.");
+                    description.AppendLine(limitMessage);
                     break;
+                }
+                else
+                {
+                    description.AppendLine(prLink);
                 }
             }
 
-            return description.ToString();
+            var result = description.ToString();
+            if (result.Length > hardLimit)
+            {
+                LogWarning($"PR description is {result.Length} characters long, but the limit is {hardLimit}.");
+                LogWarning(result);
+            }
+
+            return result;
         }
 
         public static string GetGitHubPullRequestUrl(string repoURL, string prNumber)
