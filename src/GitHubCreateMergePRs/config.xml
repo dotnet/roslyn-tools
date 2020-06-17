@@ -32,7 +32,8 @@
     <merge from="release/dev16.8-preview1" to="release/dev16.8-preview1-vs-deps" />
 
     <!-- Roslyn feature branches -->
-    <merge from="master" to="features/static-lambdas" owners="jcouv" />
+    <merge from="master" to="features/static-lambdas" frequency="daily" owners="RikkiGibson" />
+    <merge from="master" to="features/module-initializers" frequency="daily" owners="RikkiGibson" />
     <merge from="master" to="features/covariant-returns" owners="gafter" />
     <merge from="master" to="features/target-typing" owners="gafter" />
     <merge from="master" to="features/source-generators" owners="chsienki" frequency="weekly" />
