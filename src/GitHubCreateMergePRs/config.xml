@@ -38,7 +38,7 @@
     <merge from="master" to="features/target-typing" owners="gafter" />
     <merge from="master" to="features/source-generators" owners="chsienki" frequency="weekly" />
     <merge from="master" to="features/UsedAssemblyReferences" owners="joerobich" frequency="weekly" />
-    <merge from="master" to="features/function-pointers" owners="333fred" frequency="weekly" />
+    <merge from="master" to="features/interpolated-string-constants" owners="333fred,kevinsun-dev" frequency="weekly" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
     <merge from="dev16.0.x" to="master" />
