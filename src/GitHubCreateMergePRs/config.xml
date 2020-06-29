@@ -64,7 +64,7 @@
     <merge from="release/dev16.7" to="release/dev16.8" /><!-- future release -->
 
     <!-- regular branch flow -->
-    <merge from="master" to="release/dev16.7" /><!-- next release -->
+    <merge from="master" to="release/dev16.8" /><!-- next release -->
     <merge from="master" to="feature/nullness" />
     <merge from="master" to="feature/ext" />
     <merge from="master" to="feature/tasks" />
