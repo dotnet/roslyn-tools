@@ -680,7 +680,7 @@ namespace Roslyn.Insertion
                 const string limitMessage = "Changelog truncated due to description length limit.";
 
                 // we want to be able to fit this PR link, as well as the limit message (plus line breaks) in case the next PR link doesn't fit
-                int limit = hardLimit - (prLink.Length + 1) - (limitMessage.Length + 1);
+                int limit = hardLimit - (prLink.Length + Environment.NewLine.Length) - (limitMessage.Length + Environment.NewLine.Length);
                 if (description.Length > limit)
                 {
                     description.AppendLine(limitMessage);
