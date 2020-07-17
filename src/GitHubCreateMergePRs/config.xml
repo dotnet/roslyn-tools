@@ -27,7 +27,6 @@
     <merge from="master" to="master-vs-deps" />
 
     <!-- Roslyn feature branches -->
-    <merge from="master" to="features/module-initializers" frequency="daily" owners="RikkiGibson" />
     <merge from="master" to="features/covariant-returns" owners="gafter" />
     <merge from="master" to="features/target-typing" owners="gafter" />
     <merge from="master" to="features/source-generators" owners="chsienki" frequency="weekly" />
