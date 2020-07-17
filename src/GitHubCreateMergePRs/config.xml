@@ -42,7 +42,6 @@
     <merge from="dev15.9.x" to="dev16.0.x" />
     <merge from="dev16.0.x" to="dev16.6.x" />
     <merge from="dev16.6.x" to="dev16.7.x" />
-    <merge from="dev16.7.x" to="master" />
   </repo>
   <repo owner="dotnet" name="templates">
     <merge from="dev15.9.x" to="dev16.0.x" />
