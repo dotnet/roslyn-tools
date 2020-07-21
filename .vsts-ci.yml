@@ -9,6 +9,10 @@ variables:
   - name: _DotNetValidationArtifactsCategory
     value: .NETCoreValidation
 
+# Branches that trigger a build on commit
+trigger:	trigger:
+- master	- master
+
 stages:
 - stage: build
   displayName: Build and Test
@@ -87,12 +91,14 @@ stages:
         Parallel: true
         ParallelCount: 64
       condition: succeededOrFailed()
-    
+
+    # Publish our NuPkgs as an artifact. The name of this artifact must be PackageArtifacts as the 
+    # arcade templates depend on the name.
     - task: PublishBuildArtifacts@1
       displayName: Publish packages
       inputs:
         PathtoPublish: 'artifacts\packages\$(BuildConfiguration)'
-        ArtifactName: 'packages'
+        ArtifactName: 'PackageArtifacts'
         publishLocation: FilePath
         TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)\$(Build.BuildNumber)'
         Parallel: true
