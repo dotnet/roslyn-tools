@@ -10,8 +10,8 @@ variables:
     value: .NETCoreValidation
 
 # Branches that trigger a build on commit
-trigger:	trigger:
-- master	- master
+trigger:
+- master
 
 stages:
 - stage: build
