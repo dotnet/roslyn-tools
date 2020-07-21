@@ -35,6 +35,7 @@
     <merge from="master" to="features/UsedAssemblyReferences" owners="joerobich" frequency="weekly" />
     <merge from="master" to="features/function-pointers" owners="333fred" frequency="weekly" />
     <merge from="master" to="features/interpolated-string-constants" owners="333fred,kevinsun-dev" frequency="weekly" />
+    <merge from="master" to="features/lspClassifications" owners="dabarbet,allisonchou,davidwengier" frequency="weekly" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
     <merge from="dev16.0.x" to="master" />
