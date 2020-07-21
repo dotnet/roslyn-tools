@@ -1,12 +1,19 @@
 resources:
 - repo: self
-  clean: true
+  clean: true 
 queue:
   name: VSEng-MicroBuildVS2017
   demands: Cmd
 variables:
-  BuildConfiguration: Release
-  TeamName: Roslyn
+  - name: BuildConfiguration
+  - value: Release
+  - name: TeamName
+  - value: Roslyn
+  # The variables `_DotNetArtifactsCategory` and `_DotNetValidationArtifactsCategory` are required for proper publishing of build artifacts. See https://github.com/dotnet/roslyn/pull/38259
+  - name: _DotNetArtifactsCategory
+    value: .NETCore
+  - name: _DotNetValidationArtifactsCategory
+    value: .NETCoreValidation
 
 steps:
 - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
@@ -99,3 +106,16 @@ steps:
     publishLocation: FilePath
     TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)'
   condition: succeededOrFailed()
+  
+- template: eng\common\templates\post-build\post-build.yml
+  parameters:
+    # Symbol validation is not entirely reliable as of yet, so should be turned off until
+    # https://github.com/dotnet/arcade/issues/2871 is resolved.
+    enableSymbolValidation: false
+    enableSourceLinkValidation: false
+    # It's important that post-build stages are depends on 'SetValidateDependency' stage instead of 'build', 
+    # since we don't want to publish validation build. 
+    validateDependsOn:
+      - SetValidateDependency
+    dependsOn:
+      - SetValidateDependency
