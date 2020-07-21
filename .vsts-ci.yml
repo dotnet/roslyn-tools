@@ -39,6 +39,8 @@ stages:
                 /p:DotNetSignType=$(SignType)
                 /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
                 /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+                /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
+                /p:DotnetPublishUsingPipelines=true
       displayName: Build
 
     - task: PublishTestResults@1
