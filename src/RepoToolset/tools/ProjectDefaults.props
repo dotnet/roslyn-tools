@@ -28,17 +28,17 @@
     <!-- By default do not build nuget package for a project. Project may override. -->
     <IsPackable>false</IsPackable>
 
-    <!-- 
+    <!--
       Official build:
        - Build standalone Portable PDBs to reduce the size of the binaries.
-       - Convert Portable PDBs to Windows PDBs and publish the converted PDBs to Symbol Store to allow WinDBG, 
+       - Convert Portable PDBs to Windows PDBs and publish the converted PDBs to Symbol Store to allow WinDBG,
          Watson and other tools to find symbol format they understand.
-        
+
       Jenkins build:
        - Embed PDBs to make it easier to debug Jenkins crash dumps.
-       
+
       Developer build:
-       - Embed PDBs to be consistent with Jenkins builds.    
+       - Embed PDBs to be consistent with Jenkins builds.
     -->
     <DebugType>portable</DebugType>
     <DebugType Condition="'$(OfficialBuild)' != 'true'">embedded</DebugType>
@@ -132,7 +132,7 @@
     </When>
   </Choose>
 
-  <!-- 
+  <!--
     Implements proposal https://github.com/dotnet/designs/pull/33.
   -->
   <ItemGroup Condition="'$(UsingToolNetFrameworkReferenceAssemblies)' == 'true'">

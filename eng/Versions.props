@@ -39,7 +39,6 @@
     <MicrosoftTeamFoundationServerClientVersion>15.112.1</MicrosoftTeamFoundationServerClientVersion>
     <MicrosoftVisualStudioServicesClientVersion>15.112.1</MicrosoftVisualStudioServicesClientVersion>
     <MicrosoftVisualStudioServicesDistributedTaskClientVersion>15.112.1-preview</MicrosoftVisualStudioServicesDistributedTaskClientVersion>
-    <MonoOptionsVersion>5.3.0.1</MonoOptionsVersion>
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>

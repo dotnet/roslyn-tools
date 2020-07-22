@@ -5,9 +5,8 @@
 
   <ItemGroup>
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**/RoslynTools.VisualStudioInsertionTool.*.nupkg" />
-    <ItemsToSign Remove="$(ArtifactsPackagesDir)**/*.ps1" />
 
-    <!-- 
+    <!--
       Workaround to make content of AzureFunctions.zip signed.
       TODO: Build AzureFunctions.zip during solution build and drop it to $(ArtifactsNonShippingPackagesDir) and add:
 
@@ -20,9 +19,5 @@
 
     <!-- Sign 3rd party dlls with 3rd party cert -->
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="AsyncProcess.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="Colorful.Console.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="Mono.Options.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="SingleThreadSynchronizationContext.dll"  CertificateName="3PartySHA2" />
   </ItemGroup>
 </Project>
