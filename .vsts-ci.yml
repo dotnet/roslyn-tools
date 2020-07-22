@@ -101,10 +101,6 @@ stages:
       inputs:
         PathtoPublish: 'artifacts\packages\$(BuildConfiguration)'
         ArtifactName: 'PackageArtifacts'
-        publishLocation: FilePath
-        TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)\$(Build.BuildNumber)'
-        Parallel: true
-        ParallelCount: 64
       condition: succeededOrFailed()
       
     # Publish Asset Manifests for Build Asset Registry job
