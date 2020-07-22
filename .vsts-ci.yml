@@ -37,6 +37,10 @@ stages:
                 /p:PB_PublishBlobFeedKey=$(PB_PublishBlobFeedKey)
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
                 /p:DotNetSignType=$(SignType)
+                /p:DotNetPublishToBlobFeed=true
+                /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+                /p:DotNetPublishBlobFeedUrl=https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
+                /p:PublishToSymbolServer=true
                 /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
                 /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
                 /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
