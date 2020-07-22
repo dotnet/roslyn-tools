@@ -16,14 +16,15 @@ trigger:
 stages:
 - stage: build
   displayName: Build and Test
-  pool:
-    name: VSEng-MicroBuildVS2017
-    demands: 
-    - cmd
 
   jobs:
-  - job:
-  
+  - job: OfficialBuild
+    displayName: Official Build
+    pool:
+      name: VSEng-MicroBuildVS2017
+      demands: 
+      - cmd    
+
     steps:
     - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
       displayName: Install Signing Plugin
@@ -128,6 +129,8 @@ stages:
   - template: /eng/common/templates/job/publish-build-assets.yml
     parameters:
       publishUsingPipelines: true
+      dependsOn:	
+        - OfficialBuild
       queue:
         name: Hosted VS2017
 
