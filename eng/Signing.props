@@ -4,8 +4,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ItemsToSign Remove="$(ArtifactsPackagesDir)**/RoslynTools.VisualStudioInsertionTool.*.nupkg" />
-
     <!--
       Workaround to make content of AzureFunctions.zip signed.
       TODO: Build AzureFunctions.zip during solution build and drop it to $(ArtifactsNonShippingPackagesDir) and add:
