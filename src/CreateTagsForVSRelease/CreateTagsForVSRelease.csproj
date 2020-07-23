@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.1.1" />
+    <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.0.3" />
+    <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
+    <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="16.153.0" />
+  </ItemGroup>
+
+</Project>
