@@ -7,13 +7,6 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Prefer32Bit>false</Prefer32Bit>
 
-     <!--
-      TODO:
-      Disable signing. This is necessary since Mono.Options isn't signed.
-      Remove dependency on Mono.Options.
-    -->
-    <SignAssembly>false</SignAssembly>
-
     <!-- Using an explicit nuspec file since NuGet Pack target currently doesn't support including dependencies in tools packages -->
     <IsPackable>true</IsPackable>
     <NuspecFile>RIT.nuspec</NuspecFile>
@@ -34,7 +27,6 @@
   <ItemGroup>
     <PackageReference Include="Colorful.Console" Version="1.0.5" />
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="2.0.6" />
-    <PackageReference Include="Mono.Options" Version="$(MonoOptionsVersion)" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Settings.Designer.cs">
