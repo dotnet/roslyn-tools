@@ -257,7 +257,7 @@ namespace Roslyn.Insertion
                 }
 
                 // ************* Bail out if there are no changes ************************
-                if (!allChanges.Any())
+                if (!allChanges.Any() && options.CherryPick.IsDefaultOrEmpty)
                 {
                     LogWarning("No meaningful changes since the last insertion was merged. PR will not be created or updated.");
                     return (true, 0);
@@ -281,7 +281,58 @@ namespace Roslyn.Insertion
                     Commits = new[] { commit }
                 };
 
-                await gitClient.CreatePushAsync(push, VSRepoId, cancellationToken: cancellationToken);
+                if (allChanges.Any())
+                {
+                    push = await gitClient.CreatePushAsync(push, VSRepoId, cancellationToken: cancellationToken);
+                }
+
+                // ********************* Cherry-pick VS commits *****************************
+                var cherryPickCommits = Options.CherryPick;
+                if (!cherryPickCommits.IsDefaultOrEmpty)
+                {
+                    Console.WriteLine("Cherry-picking the following VS commits:");
+                    foreach (var cherryPickCommit in cherryPickCommits)
+                    {
+                        var gc = await gitClient.GetCommitAsync(cherryPickCommit, VSRepoId, cancellationToken: cancellationToken);
+                        Console.WriteLine("- " + gc.RemoteUrl);
+                    }
+                    var commitRefs = cherryPickCommits.Select(id => new GitCommitRef() { CommitId = id }).ToArray();
+
+                    var cherryPickBranchName = $"{insertionBranchName}-cherry-pick";
+                    var cherryPickArgs = new GitAsyncRefOperationParameters()
+                    {
+                        Source = new GitAsyncRefOperationSource()
+                        {
+                            CommitList = commitRefs
+                        },
+                        OntoRefName = $"refs/heads/{insertionBranchName}",
+                        GeneratedRefName = $"refs/heads/{cherryPickBranchName}"
+                    };
+                    var cherryPick = await gitClient.CreateCherryPickAsync(cherryPickArgs, Options.TFSProjectName, VSRepoId, cancellationToken: cancellationToken);
+                    while (cherryPick.Status < GitAsyncOperationStatus.Completed)
+                    {
+                        Console.WriteLine($"Cherry-pick progress: {cherryPick.DetailedStatus?.Progress ?? 0:P}");
+                        await Task.Delay(5000);
+                        cherryPick = await gitClient.GetCherryPickAsync(options.TFSProjectName, cherryPick.CherryPickId, VSRepoId, cancellationToken: cancellationToken);
+                    }
+                    Console.WriteLine($"Cherry-pick status: {cherryPick.Status}");
+
+                    if (cherryPick.Status == GitAsyncOperationStatus.Completed)
+                    {
+                        var cherryPickBranch = await gitClient.GetBranchAsync(VSRepoId, cherryPickBranchName, cancellationToken: cancellationToken);
+                        var addCherryPickedCommits = new GitRefUpdate
+                        {
+                            OldObjectId = push.Commits.Single().CommitId,
+                            NewObjectId = cherryPickBranch.Commit.CommitId,
+                            Name = $"refs/heads/{insertionBranchName}"
+                        };
+                        await gitClient.UpdateRefsAsync(new[] { addCherryPickedCommits }, VSRepoId, cancellationToken: cancellationToken);
+                    }
+                    else
+                    {
+                        LogError("Cherry-picking failed: " + cherryPick.DetailedStatus.FailureMessage);
+                    }
+                }
 
                 // ********************* Create pull request *****************************
                 var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -217,6 +218,11 @@ partial class RoslynInsertionToolCommandline
                 "ac=|setautocomplete=",
                 $"Sets the PR to Auto-Complete once all requirements are met. Defaults to \"{options.SetAutoComplete}\".",
                 setAutoComplete => options = options.WithSetAutoComplete(bool.Parse(setAutoComplete))
+            },
+            {
+                "cherrypick=",
+                $"A comma-separated list of commits to cherry-pick into the insertion. Defaults to \"{options.CherryPick}\".",
+                cherryPick => options = options.WithCherryPick(cherryPick.Split(',').ToImmutableArray())
             },
         };
 
