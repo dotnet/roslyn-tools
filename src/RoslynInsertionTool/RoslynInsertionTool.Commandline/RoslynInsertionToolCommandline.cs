@@ -221,7 +221,7 @@ partial class RoslynInsertionToolCommandline
             },
             {
                 "cherrypick=",
-                $"A comma-separated list of commits to cherry-pick into the insertion. Defaults to \"{options.CherryPick}\".",
+                $"An optional comma-separated list of commits to cherry-pick into the insertion.",
                 cherryPick => options = options.WithCherryPick(cherryPick.Split(',').ToImmutableArray())
             },
         };
