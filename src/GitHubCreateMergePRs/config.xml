@@ -63,6 +63,7 @@
     <merge from="master" to="release/dev16.8" /><!-- next release -->
     <merge from="master" to="feature/nullness" />
     <merge from="master" to="feature/ext" />
+    <merge from="master" to="feature/docs" />
     <merge from="master" to="feature/tasks" />
     <merge from="master" to="feature/string-interp" />
     <merge from="master" to="feature/fsi-packagemanagement" />
