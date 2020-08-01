@@ -140,7 +140,14 @@ namespace Roslyn.Insertion
                             NewObjectId = baseBranch.ObjectId,
                             Name = $"refs/heads/{insertionBranchName}"
                         };
-                        await gitClient.UpdateRefsAsync(new[] { updateToBase }, VSRepoId, cancellationToken: cancellationToken);
+                        var results = await gitClient.UpdateRefsAsync(new[] { updateToBase }, VSRepoId, cancellationToken: cancellationToken);
+                        foreach (var result in results)
+                        {
+                            if (!result.Success)
+                            {
+                                LogError("Failed to overwrite PR: " + result.CustomMessage);
+                            }
+                        }
                     }
                     else
                     {
@@ -264,26 +271,27 @@ namespace Roslyn.Insertion
                 }
 
                 // ********************* Create push *************************************
-                var insertionBranchUpdate = new GitRefUpdate
-                {
-                    Name = $"refs/heads/{insertionBranchName}",
-                    OldObjectId = baseBranch.ObjectId
-                };
-
-                var commit = new GitCommitRef
-                {
-                    Comment = $"Updating {Options.InsertionName} to {buildVersion}",
-                    Changes = allChanges
-                };
-                var push = new GitPush
-                {
-                    RefUpdates = new[] { insertionBranchUpdate },
-                    Commits = new[] { commit }
-                };
-
+                var currentCommit = baseBranch.ObjectId;
                 if (allChanges.Any())
                 {
+                    var insertionBranchUpdate = new GitRefUpdate
+                    {
+                        Name = $"refs/heads/{insertionBranchName}",
+                        OldObjectId = baseBranch.ObjectId
+                    };
+
+                    var commit = new GitCommitRef
+                    {
+                        Comment = $"Updating {Options.InsertionName} to {buildVersion}",
+                        Changes = allChanges
+                    };
+                    var push = new GitPush
+                    {
+                        RefUpdates = new[] { insertionBranchUpdate },
+                        Commits = new[] { commit }
+                    };
                     push = await gitClient.CreatePushAsync(push, VSRepoId, cancellationToken: cancellationToken);
+                    currentCommit = push.Commits.Single().CommitId;
                 }
 
                 // ********************* Cherry-pick VS commits *****************************
@@ -298,7 +306,7 @@ namespace Roslyn.Insertion
                     }
                     var commitRefs = cherryPickCommits.Select(id => new GitCommitRef() { CommitId = id }).ToArray();
 
-                    var cherryPickBranchName = $"{insertionBranchName}-cherry-pick";
+                    var cherryPickBranchName = $"{insertionBranchName}-cherry-pick-{DateTime.Now:yyyyMMddHHmmss}";
                     var cherryPickArgs = new GitAsyncRefOperationParameters()
                     {
                         Source = new GitAsyncRefOperationSource()
@@ -322,11 +330,18 @@ namespace Roslyn.Insertion
                         var cherryPickBranch = await gitClient.GetBranchAsync(VSRepoId, cherryPickBranchName, cancellationToken: cancellationToken);
                         var addCherryPickedCommits = new GitRefUpdate
                         {
-                            OldObjectId = push.Commits.Single().CommitId,
+                            OldObjectId = currentCommit,
                             NewObjectId = cherryPickBranch.Commit.CommitId,
                             Name = $"refs/heads/{insertionBranchName}"
                         };
-                        await gitClient.UpdateRefsAsync(new[] { addCherryPickedCommits }, VSRepoId, cancellationToken: cancellationToken);
+                        var results = await gitClient.UpdateRefsAsync(new[] { addCherryPickedCommits }, VSRepoId, cancellationToken: cancellationToken);
+                        foreach (var result in results)
+                        {
+                            if (!result.Success)
+                            {
+                                LogError("Failed to reset ref to cherry-pick branch: " + result.CustomMessage);
+                            }
+                        }
                     }
                     else
                     {
