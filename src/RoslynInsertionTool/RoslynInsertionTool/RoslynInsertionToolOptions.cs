@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Collections.Immutable;
 using System.Text;
 
 namespace Roslyn.Insertion
@@ -63,7 +64,8 @@ namespace Roslyn.Insertion
             string clientSecret,
             string titlePrefix,
             bool createDraftPr,
-            bool setAutoComplete)
+            bool setAutoComplete,
+            ImmutableArray<string> cherryPick)
         {
             Username = username;
             Password = password;
@@ -97,6 +99,7 @@ namespace Roslyn.Insertion
             TitlePrefix = titlePrefix;
             CreateDraftPr = createDraftPr;
             SetAutoComplete = setAutoComplete;
+            CherryPick = cherryPick;
         }
 
         public RoslynInsertionToolOptions Update(
@@ -131,7 +134,8 @@ namespace Roslyn.Insertion
             Optional<string> clientSecret = default,
             Optional<string> titlePrefix = default,
             Optional<bool> createDraftPr = default,
-            Optional<bool> setAutoComplete = default)
+            Optional<bool> setAutoComplete = default,
+            Optional<ImmutableArray<string>> cherryPick = default)
         {
             return new RoslynInsertionToolOptions(
                 username: username.ValueOrFallback(Username),
@@ -165,7 +169,8 @@ namespace Roslyn.Insertion
                 clientSecret: clientSecret.ValueOrFallback(ClientSecret),
                 titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix),
                 createDraftPr: createDraftPr.ValueOrFallback(CreateDraftPr),
-                setAutoComplete: setAutoComplete.ValueOrFallback(SetAutoComplete));
+                setAutoComplete: setAutoComplete.ValueOrFallback(SetAutoComplete),
+                cherryPick: cherryPick.ValueOrFallback(CherryPick));
         }
 
         public RoslynInsertionToolOptions WithRunRPSInValidation(bool runRPSInValidation) => Update(runRPSInValidation: runRPSInValidation);
@@ -232,6 +237,8 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithSetAutoComplete(bool setAutoComplete) => Update(setAutoComplete: setAutoComplete);
 
+        public RoslynInsertionToolOptions WithCherryPick(ImmutableArray<string> cherryPick) => Update(cherryPick: cherryPick);
+
         public string Username { get; }
 
         public string Password { get; }
@@ -295,6 +302,8 @@ namespace Roslyn.Insertion
         public bool CreateDraftPr { get; }
 
         public bool SetAutoComplete { get; }
+
+        public ImmutableArray<string> CherryPick { get; }
 
         public bool Valid
         {
