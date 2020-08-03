@@ -85,6 +85,14 @@ function GetInsertToolsetFlag([string] $componentName, [string] $insertToolset) 
     }
 }
 
+function GetCherryPick([string] $cherryPick) {
+    if (IsDefaultValue $cherryPick) {
+        return ""
+    } else {
+        return "/cherrypick=$cherryPick"
+    }
+}
+
 function GetQueueValidation([string] $visualStudioBranchName, [string] $queueValidation) {
     if (IsDefaultValue $queueValidation) {
         if ($visualStudioBranchName -eq "lab/ml") {
