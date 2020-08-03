@@ -18,7 +18,8 @@ param([string] $clientId,
       [string] $writePullRequest,
       [int] $insertionCount,
       [string] $autoComplete,
-      [string] $createDraftPR)
+      [string] $createDraftPR,
+      [string] $cherryPick)
 
 . $PSScriptRoot\HelperFunctions.ps1
 
@@ -37,11 +38,12 @@ $updateAssemblyVersions = GetUpdateAssemblyVersions -componentName $componentNam
 $updateCoreXTLibraries = GetUpdateCoreXTLibraries -componentName $componentName -updateCoreXTLibraries $updateCoreXTLibraries
 $autoComplete = GetAutoComplete -autoComplete $autoComplete
 $createDraftPR = GetCreateDraftPR -createDraftPR $createDraftPR
+$cherryPick = GetCherryPick -cherryPick $cherryPick
 
 if ($insertionCount -lt 1) {
     $insertionCount = 1
 }
 
 for ($i = 0; $i -lt $insertionCount; $i++) {
-    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag
+    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick
 }
