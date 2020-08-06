@@ -46,7 +46,6 @@
     <merge from="dev16.6.x" to="dev16.7.x" />
     <merge from="dev16.7.x" to="dev16.8.x" />
     <merge from="dev16.8.x" to="master" />
-    <merge from="master" to="feature/new-properties-pages" />
   </repo>
   <repo owner="dotnet" name="templates">
     <merge from="dev15.9.x" to="dev16.0.x" />
