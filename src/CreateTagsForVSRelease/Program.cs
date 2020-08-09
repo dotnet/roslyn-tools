@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace CreateTagsForVSRelease
 {
@@ -53,7 +54,7 @@ namespace CreateTagsForVSRelease
                         {
                             Console.WriteLine($"Tagging {roslynBuild.CommitSha} as {roslynTagName}.");
 
-                            string message = $"Build Branch: {roslynBuild.SourceBranch}\r\nInternal ID: {roslynBuild.BuildId}\r\nInternal VS ID: {visualStudioRelease.BuildId}";
+                            string message = $"Build Branch: {roslynBuild.SourceBranch}\r\nInternal ID: {roslynBuild.BuildId}\r\nInternal VS ID: {visualStudioRelease.BuildId}\r\nPackage ID: {roslynBuild.NugetPackageVersion}";
 
                             roslynRepository.ApplyTag(roslynTagName, roslynBuild.CommitSha, new Signature("dotnet bot", "dotnet-bot@microsoft.com", when: visualStudioRelease.CreationTime), message);
                         }
@@ -97,6 +98,17 @@ namespace CreateTagsForVSRelease
                 return null;
             }
 
+            using var defaultConfigStream = await gitClient.GetItemContentAsync(
+                vsRepository.Id,
+                @".corext\Configs\default.config",
+                download: true,
+                versionDescriptor: commit);
+
+            fileContents = await new StreamReader(defaultConfigStream).ReadToEndAsync();
+            var defaultConfig = XDocument.Parse(fileContents);
+
+            var packageVersion = defaultConfig.Root.Descendants("package").Where(p => p.Attribute("id")?.Value == "VS.Tools.Roslyn").Select(p => p.Attribute("version")?.Value).FirstOrDefault();
+
             var buildNumber = new Uri(parts[0]).Segments.Last();
 
             var buildDefinition = (await buildClient.GetDefinitionsAsync(vsRepository.ProjectReference.Id, name: "Roslyn-Signed")).Single();
@@ -109,7 +121,7 @@ namespace CreateTagsForVSRelease
 
             var buildId = buildDefinition.Name + "_" + build.BuildNumber;
 
-            return new RoslynBuildInformation(commitSha: build.SourceVersion, build.SourceBranch.Replace("refs/heads/", ""), buildId);
+            return new RoslynBuildInformation(commitSha: build.SourceVersion, build.SourceBranch.Replace("refs/heads/", ""), buildId, packageVersion);
         }
 
         private static async Task<ImmutableArray<VisualStudioVersion>> GetVisualStudioReleasesAsync(GitHttpClient gitClient)

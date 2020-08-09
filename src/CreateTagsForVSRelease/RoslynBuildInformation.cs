@@ -5,12 +5,14 @@ namespace CreateTagsForVSRelease
         public readonly string CommitSha;
         public readonly string SourceBranch;
         public readonly string BuildId;
+        public readonly string? NugetPackageVersion;
 
-        public RoslynBuildInformation(string commitSha, string sourceBranch, string buildId)
+        public RoslynBuildInformation(string commitSha, string sourceBranch, string buildId, string? nugetPackageVersion)
         {
             CommitSha = commitSha;
             SourceBranch = sourceBranch;
             BuildId = buildId;
+            NugetPackageVersion = nugetPackageVersion;
         }
     }
 }
