@@ -107,7 +107,7 @@ namespace CreateTagsForVSRelease
             fileContents = await new StreamReader(defaultConfigStream).ReadToEndAsync();
             var defaultConfig = XDocument.Parse(fileContents);
 
-            var packageVersion = defaultConfig.Root.Descendants("package").Where(p => p.Attribute("id")?.Value == "VS.Tools.Roslyn").Select(p => p.Attribute("version")?.Value).FirstOrDefault();
+            var packageVersion = defaultConfig.Root.Descendants("package").Where(p => p.Attribute("id")?.Value == "VS.ExternalAPIs.Roslyn").Select(p => p.Attribute("version")?.Value).FirstOrDefault();
 
             var buildNumber = new Uri(parts[0]).Segments.Last();
 
