@@ -54,9 +54,8 @@
   <repo owner="dotnet" name="fsharp">
     <!-- releases -->
     <merge from="dev16.0" to="master" /><!-- latest LTS -->
-    <merge from="release/dev16.6" to="master" /><!-- latest RTM -->
-    <merge from="release/dev16.6" to="release/dev16.7" /><!-- next release -->
-    <merge from="release/dev16.7" to="release/dev16.8" /><!-- future release -->
+    <merge from="release/dev16.7" to="master" /><!-- latest RTM -->
+    <merge from="release/dev16.7" to="release/dev16.8" /><!-- next release -->
 
     <!-- regular branch flow -->
     <merge from="master" to="release/dev16.8" /><!-- next release -->
