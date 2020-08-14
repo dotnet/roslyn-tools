@@ -2,8 +2,8 @@
   <repo owner="dotnet" name="roslyn">
     <!-- Roslyn servicing branches -->
     <merge from="dev15.9.x" to="dev16.0-vs-deps" />
-    <merge from="dev16.0-vs-deps" to="release/dev16.3" />  
-      
+    <merge from="dev16.0-vs-deps" to="release/dev16.3" />
+
     <!-- Roslyn branches (non-vs-deps) (flowing between releases) -->
     <merge from="release/dev16.3" to="release/dev16.4" />
     <merge from="release/dev16.4" to="release/dev16.5" />
@@ -32,7 +32,6 @@
     <!-- Roslyn feature branches -->
     <merge from="master" to="features/source-generators" owners="chsienki" frequency="weekly" />
     <merge from="master" to="features/UsedAssemblyReferences" owners="joerobich" frequency="weekly" />
-    <merge from="master" to="features/function-pointers" owners="333fred" frequency="weekly" />
     <merge from="master" to="features/interpolated-string-constants" owners="333fred,kevinsun-dev" frequency="weekly" />
     <merge from="master" to="features/lspClassifications" owners="dabarbet,allisonchou,davidwengier" frequency="weekly" />
   </repo>
