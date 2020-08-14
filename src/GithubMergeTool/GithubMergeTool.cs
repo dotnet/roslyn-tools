@@ -192,6 +192,20 @@ namespace GithubMergeTool
             var prMessage = $@"
 This is an automatically generated pull request from {srcBranch} into {destBranch}.
 {autoTriggeredMessage}
+
+Once all conflicts are resolved and all the tests pass, you are free to merge the pull request. 🐯
+
+## Troubleshooting conflicts
+
+### Identify authors of changes which introduced merge conflicts
+Scroll to the bottom, then for each file containing conflicts copy its path into the following searches:
+- https://github.com/dotnet/roslyn/find/{srcBranch}
+- https://github.com/dotnet/roslyn/find/{destBranch}
+
+Usually the most recent change to a file between the two branches is considered to have introduced the conflicts, but sometimes it will be necessary to look for the conflicting lines and check the blame in each branch. Generally the author whose change introduced the conflicts should pull down this PR, fix the conflicts locally, then push up a commit resolving the conflicts.
+
+### Resolve merge conflicts using your local repo
+Sometimes merge conflicts may be present on GitHub but merging locally will work without conflicts. This is due to differences between the merge algorithm used in local git versus the one used by GitHub.
 ``` bash
 git fetch --all
 git checkout {prBranchName}
@@ -201,7 +215,7 @@ git merge upstream/{srcBranch}
 git commit
 git push upstream {prBranchName} --force
 ```
-Once all conflicts are resolved and all the tests pass, you are free to merge the pull request. 🐯";
+";
 
             Console.WriteLine("Creating PR");
 
