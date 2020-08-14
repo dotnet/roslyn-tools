@@ -576,7 +576,11 @@ namespace Roslyn.Insertion
 
             var prValidationMessage = GetGitHubPullRequestUrlMessage(buildToinsert, useMarkdown);
 
-            return $"Updating {Options.InsertionName} {oldBuildDescription}{newBuildDescription}{Environment.NewLine}{prValidationMessage}";
+            var documentationMessage = @"[Troubleshooting](onenote:https://microsoft.sharepoint.com/teams/managedlanguages/files/Team%20Notebook/Roslyn%20Team%20Notebook%20-%20New/Infrastructure.one#Life%20of%20a%20Tiger&section-id=%7B0E3C75FE-0827-41BF-9696-F5CD7105BC9A%7D&page-id=%7B96423CC8-6A3A-4ABF-B1BD-E4488D1EF099%7D&object-id=%7B7EBA739D-44DB-0180-278C-94C87152BFA5%7D&70)"
+                + " [(don't use the web view)](https://microsoft.sharepoint.com/teams/managedlanguages/_layouts/OneNote.aspx?id=%2Fteams%2Fmanagedlanguages%2Ffiles%2FTeam%20Notebook%2FRoslyn%20Team%20Notebook%20-%20New&wd=target%28Infrastructure.one%7C0E3C75FE-0827-41BF-9696-F5CD7105BC9A%2FLife%20of%20a%20Tiger%7C96423CC8-6A3A-4ABF-B1BD-E4488D1EF099%2F%29)"
+                + Environment.NewLine;
+
+            return $"Updating {Options.InsertionName} {oldBuildDescription}{newBuildDescription}{Environment.NewLine}{prValidationMessage}{documentationMessage}";
         }
 
         private static string GetGitHubPullRequestUrlMessage(Build build, bool useMarkdown)
