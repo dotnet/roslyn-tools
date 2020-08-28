@@ -576,7 +576,18 @@ namespace Roslyn.Insertion
 
             var prValidationMessage = GetGitHubPullRequestUrlMessage(buildToinsert, useMarkdown);
 
-            return $"Updating {Options.InsertionName} {oldBuildDescription}{newBuildDescription}{Environment.NewLine}{prValidationMessage}";
+            var nl = Environment.NewLine;
+
+            var oneNoteLink = "https://aka.ms/roslyn-insertion-troubleshooting";
+            var oneNoteWebLink = "https://aka.ms/roslyn-insertion-troubleshooting-web";
+            var troubleshootingMessage = (Options.InsertionName, useMarkdown) switch
+            {
+                ("Roslyn", useMarkdown: true) => $"[Troubleshooting OneNote]({oneNoteLink}) (don't use the [web view]({oneNoteWebLink})){nl}",
+                ("Roslyn", useMarkdown: false) => $"Troubleshooting OneNote: {oneNoteLink}{nl}Web view: {oneNoteWebLink}{nl}",
+                _ => ""
+            };
+
+            return $"Updating {Options.InsertionName} {oldBuildDescription}{newBuildDescription}{nl}{prValidationMessage}{nl}{troubleshootingMessage}";
         }
 
         private static string GetGitHubPullRequestUrlMessage(Build build, bool useMarkdown)
