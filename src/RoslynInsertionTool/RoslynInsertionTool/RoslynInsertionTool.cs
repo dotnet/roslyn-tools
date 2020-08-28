@@ -578,12 +578,14 @@ namespace Roslyn.Insertion
 
             var nl = Environment.NewLine;
 
-            var oneNoteLink = "onenote:https://microsoft.sharepoint.com/teams/managedlanguages/files/Team%20Notebook/Roslyn%20Team%20Notebook%20-%20New/Infrastructure.one#Life%20of%20a%20Tiger&section-id=%7B0E3C75FE-0827-41BF-9696-F5CD7105BC9A%7D&page-id=%7B96423CC8-6A3A-4ABF-B1BD-E4488D1EF099%7D&object-id=%7B7EBA739D-44DB-0180-278C-94C87152BFA5%7D&70";
-            var oneNoteWebLink = "https://microsoft.sharepoint.com/teams/managedlanguages/_layouts/OneNote.aspx?id=%2Fteams%2Fmanagedlanguages%2Ffiles%2FTeam%20Notebook%2FRoslyn%20Team%20Notebook%20-%20New&wd=target%28Infrastructure.one%7C0E3C75FE-0827-41BF-9696-F5CD7105BC9A%2FLife%20of%20a%20Tiger%7C96423CC8-6A3A-4ABF-B1BD-E4488D1EF099%2F%29";
-            var troubleshootingMessage = (useMarkdown
-                    ? $"[Troubleshooting OneNote]({oneNoteLink}) (don't use the [web view]({oneNoteWebLink}))"
-                    : $"Troubleshooting OneNote: {oneNoteLink}{nl}Web view: {oneNoteWebLink}")
-                + Environment.NewLine;
+            var oneNoteLink = "https://aka.ms/roslyn-insertion-troubleshooting";
+            var oneNoteWebLink = "https://aka.ms/roslyn-insertion-troubleshooting-web";
+            var troubleshootingMessage = (Options.InsertionName, useMarkdown) switch
+            {
+                ("Roslyn", useMarkdown: true) => $"[Troubleshooting OneNote]({oneNoteLink}) (don't use the [web view]({oneNoteWebLink})){nl}",
+                ("Roslyn", useMarkdown: false) => $"Troubleshooting OneNote: {oneNoteLink}{nl}Web view: {oneNoteWebLink}{nl}",
+                _ => ""
+            };
 
             return $"Updating {Options.InsertionName} {oldBuildDescription}{newBuildDescription}{nl}{prValidationMessage}{nl}{troubleshootingMessage}";
         }
