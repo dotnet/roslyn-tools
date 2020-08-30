@@ -134,6 +134,7 @@ public class Program
         foreach (var repo in config.Root.Elements("repo"))
         {
             var owner = repo.Attribute("owner").Value;
+            var mergeOwners = repo.Attribute("mergeOwners")?.Value.Split(',').ToList() ?? new List<string>();
             var name = repo.Attribute("name").Value;
 
             // We don't try to update existing PR unless asked.
@@ -149,7 +150,7 @@ public class Program
                     continue;
                 }
 
-                var prOwners = merge.Attribute("owners")?.Value.Split(',').ToList() ?? new List<string>();
+                var prOwners = merge.Attribute("owners")?.Value.Split(',').ToList() ?? mergeOwners;
                 var addAutoMergeLabel = bool.Parse(merge.Attribute("addAutoMergeLabel")?.Value ?? "true");
                 try
                 {
