@@ -27,6 +27,7 @@
     <merge from="release/dev16.6" to="release/dev16.6-vs-deps" />
     <merge from="release/dev16.7" to="release/dev16.7-vs-deps" />
     <merge from="release/dev16.8" to="release/dev16.8-vs-deps" />
+    <merge from="release/dev16.9-preview1" to="release/dev16.9-preview1-vs-deps" />
     <merge from="master" to="master-vs-deps" />
 
     <!-- Roslyn feature branches -->
