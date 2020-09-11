@@ -70,7 +70,8 @@
   <repo owner="dotnet" name="roslyn-analyzers">
     <merge from="2.9.x" to="master" />
     <merge from="release/dotnet5-preview8" to="release/dotnet5-rc1" />
-    <merge from="release/dotnet5-rc1" to="master" />
+    <merge from="release/dotnet5-rc1" to="release/dotnet5-rc2" />
+    <merge from="release/dotnet5-rc2" to="master" />
   </repo>
 
   <!-- testimpact branches -->
