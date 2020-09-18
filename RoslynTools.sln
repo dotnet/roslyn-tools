@@ -72,7 +72,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubCreateMergePRs", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PRFinder", "src\RoslynInsertionTool\PRFinder\PRFinder.csproj", "{15BE78E3-355F-4B15-ABB4-FA750B2D846B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateTagsForVSRelease", "src\CreateTagsForVSRelease\CreateTagsForVSRelease.csproj", "{08AAEF36-C81B-4BAE-8172-EA0D3139B0BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreateTagsForVSRelease", "src\CreateTagsForVSRelease\CreateTagsForVSRelease.csproj", "{08AAEF36-C81B-4BAE-8172-EA0D3139B0BE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildActionTelemetryTable", "src\BuildActionTelemetryTable\BuildActionTelemetryTable.csproj", "{535A8F91-7AB8-45F3-B6E1-E953AAE6A42A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -396,6 +398,14 @@ Global
 		{08AAEF36-C81B-4BAE-8172-EA0D3139B0BE}.Release|x64.Build.0 = Release|Any CPU
 		{08AAEF36-C81B-4BAE-8172-EA0D3139B0BE}.Release|x86.ActiveCfg = Release|Any CPU
 		{08AAEF36-C81B-4BAE-8172-EA0D3139B0BE}.Release|x86.Build.0 = Release|Any CPU
+		{535A8F91-7AB8-45F3-B6E1-E953AAE6A42A}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{535A8F91-7AB8-45F3-B6E1-E953AAE6A42A}.Debug|x64.ActiveCfg = Debug|x86
+		{535A8F91-7AB8-45F3-B6E1-E953AAE6A42A}.Debug|x86.ActiveCfg = Debug|x86
+		{535A8F91-7AB8-45F3-B6E1-E953AAE6A42A}.Debug|x86.Build.0 = Debug|x86
+		{535A8F91-7AB8-45F3-B6E1-E953AAE6A42A}.Release|Any CPU.ActiveCfg = Release|x86
+		{535A8F91-7AB8-45F3-B6E1-E953AAE6A42A}.Release|x64.ActiveCfg = Release|x86
+		{535A8F91-7AB8-45F3-B6E1-E953AAE6A42A}.Release|x86.ActiveCfg = Release|x86
+		{535A8F91-7AB8-45F3-B6E1-E953AAE6A42A}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
