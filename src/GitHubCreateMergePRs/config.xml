@@ -60,7 +60,6 @@
     <merge from="release/dev16.7" to="release/dev16.8" /><!-- next release -->
 
     <!-- regular branch flow -->
-    <merge from="main" to="release/dev16.8" /><!-- next release -->
     <merge from="main" to="feature/nullness" />
     <merge from="main" to="feature/ext" />
     <merge from="main" to="feature/tasks" />
