@@ -42,11 +42,4 @@
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>
-  <PropertyGroup>
-    <RestoreSources>
-      $(RestoreSources);
-      https://www.myget.org/F/vs-devcore/api/v3/index.json;
-      https://dotnet.myget.org/F/system-commandline/api/v3/index.json
-    </RestoreSources>
-  </PropertyGroup>
 </Project>
