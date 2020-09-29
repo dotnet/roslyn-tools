@@ -1,7 +1,7 @@
 ## Roslyn Tools
 A set of tools used by Roslyn.
 
-Builds are available on MyGet gallery: https://dotnet.myget.org/Gallery/roslyn-tools.
+Builds are available in the dotnet-tools Azure Package feed: https://dev.azure.com/dnceng/public/_packaging?_a=feed&feed=dotnet-tools
 
 [//]: # (Begin current test results)
 

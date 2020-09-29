@@ -53,14 +53,6 @@ stages:
         testRunTitle: 'Unit Tests'
       condition: succeededOrFailed()
 
-    - task: NuGetPublisher@0
-      displayName: Publish NuGet Packages to MyGet
-      inputs:
-        searchPattern: '$(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)\NonShipping\*.nupkg'
-        connectedServiceName: 'RoslynTools NuGet feed'
-        nuGetVersion: 4.0.0.2283
-      condition: succeeded()
-
     # Note that insertion scripts currently depend on bin directory being uploaded to drops.
     - task: PublishBuildArtifacts@1
       displayName: Publish binaries
