@@ -52,6 +52,9 @@
     <merge from="dev16.7.x" to="dev16.8.x" />
     <merge from="dev16.8.x" to="dev16.9.x" />
     <merge from="dev16.9.x" to="master" />
+      
+    <!-- Project System feature branches -->
+    <merge from="master" to="features/Rearchitecture" owners="dmonroym" frequency="weekly" />
   </repo>
     
   <repo owner="dotnet" name="templates">
