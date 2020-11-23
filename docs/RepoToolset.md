@@ -155,7 +155,7 @@ The file is present in the repo and defines versions of all dependencies used in
     <!-- Feeds to use to restore dependent packages from. -->  
     <RestoreSources>
       $(RestoreSources);
-      https://dotnet.myget.org/F/myfeed/api/v3/index.json
+      https://pkgs.dev.azure.com/dnceng/public/_packaging/myfeed/nuget/v3/index.json
     </RestoreSources>
   </PropertyGroup>
 </Project>
@@ -210,7 +210,7 @@ Include `vswhere` version if the repository should be built via desktop `msbuild
   }
 ```
 
-`/nuget.config` file is present and specifies the MyGet feed to retrieve `RoslynTools.RepoToolset` SDK from like so:
+`/nuget.config` file is present and specifies the Azure Artifacts feed to retrieve `RoslynTools.RepoToolset` SDK from like so:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -218,7 +218,7 @@ Include `vswhere` version if the repository should be built via desktop `msbuild
   <!-- Only specify feed for RepoToolset SDK (see https://github.com/Microsoft/msbuild/issues/2982) -->
   <packageSources>
     <clear />
-    <add key="roslyn-tools" value="https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json" />
+    <add key="roslyn-tools" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json" />
   </packageSources>
 </configuration>
 ```
@@ -398,4 +398,4 @@ RepoToolset expects MicroBuild to set the following environment variables:
 
 Shipping packages and their content must be signed. 
 Windows PDBs are produced and published to symbol servers for binaries in shipping packages. 
-Shipping packages can be published to NuGet, non-shipping packages can only be published to MyGet or Azure tool feeds.
+Shipping packages can be published to NuGet, non-shipping packages can only be published Azure tool feeds.
