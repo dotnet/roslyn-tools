@@ -66,6 +66,10 @@
     <merge from="dev16.0" to="main" /><!-- latest LTS -->
     <merge from="release/dev16.8" to="main" /><!-- latest RTM -->
 
+    <!-- FCS -->
+    <merge from="release/dev16.8" to="release/fcs" />
+    <merge from="release/fcs" to="main" />
+
     <!-- regular branch flow -->
     <merge from="main" to="release/dev16.9" /><!-- next release -->
     <merge from="main" to="feature/nullness" />
