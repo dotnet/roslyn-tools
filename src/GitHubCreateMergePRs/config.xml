@@ -71,7 +71,6 @@
     <merge from="release/fcs" to="main" />
 
     <!-- regular branch flow -->
-    <merge from="main" to="release/dev16.9" /><!-- next release -->
     <merge from="main" to="feature/nullness" />
     <merge from="main" to="feature/ext" />
     <merge from="main" to="feature/tasks" />
