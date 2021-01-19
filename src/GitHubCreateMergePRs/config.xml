@@ -74,9 +74,11 @@
     <merge from="release/fcs" to="main" />
 
     <!-- regular branch flow -->
+    <merge from="main" to="feature/auto-widen" />
     <merge from="main" to="feature/nullness" />
     <merge from="main" to="feature/ext" />
     <merge from="main" to="feature/tasks" />
+    <merge from="feature/auto-widen" to="feature/erased-unions" />
   </repo>
 
   <!-- roslyn-analyzer branches -->
