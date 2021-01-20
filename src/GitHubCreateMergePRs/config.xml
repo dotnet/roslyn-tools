@@ -68,12 +68,14 @@
     <!-- releases -->
     <merge from="dev16.0" to="main" /><!-- latest LTS -->
     <merge from="release/dev16.8" to="main" /><!-- latest RTM -->
+    <merge from="release/dev16.9" to="release/dev16.10" />
 
     <!-- FCS -->
     <merge from="release/dev16.8" to="release/fcs" />
     <merge from="release/fcs" to="main" />
 
     <!-- regular branch flow -->
+    <merge from="main" to="release/dev16.10" />
     <merge from="main" to="feature/auto-widen" />
     <merge from="main" to="feature/nullness" />
     <merge from="main" to="feature/ext" />
