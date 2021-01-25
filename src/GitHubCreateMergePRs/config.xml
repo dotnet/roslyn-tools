@@ -54,7 +54,7 @@
     <merge from="dev16.6.x" to="dev16.7.x" />
     <merge from="dev16.7.x" to="dev16.8.x" />
     <merge from="dev16.8.x" to="dev16.9.x" />
-    <merge from="dev16.9.x" to="master" />
+    <merge from="dev16.9.x" to="main" />
       
     <!-- Project System feature branches -->
     <merge from="master" to="features/Rearchitecture" owners="dmonroym" frequency="weekly" />
