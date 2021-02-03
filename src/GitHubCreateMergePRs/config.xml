@@ -64,7 +64,7 @@
     <merge from="release/dev16.9" to="release/dev16.10" />
 
     <!-- FCS -->
-    <merge from="release/dev16.8" to="release/fcs" />
+    <merge from="release/dev16.9" to="release/fcs" />
     <merge from="release/fcs" to="main" />
 
     <!-- regular branch flow -->
