@@ -69,6 +69,7 @@
 
     <!-- regular branch flow -->
     <merge from="main" to="release/dev16.10" />
+    <merge from="main" to="release/dev17.0" />
     <merge from="main" to="feature/auto-widen" />
     <merge from="main" to="feature/nullness" />
     <merge from="main" to="feature/ext" />
