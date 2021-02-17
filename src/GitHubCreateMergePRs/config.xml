@@ -98,4 +98,10 @@
   <repo owner="dotnet" name="msbuild-language-service">
     <merge from="master" to="dev/prototype" />
   </repo>
+    
+  <!-- dotnet-format service branches -->
+  <repo owner="dotnet" name="format">
+    <merge from="release/5.0" to="master" />
+    <merge from="master" to="release/6.0" />
+  </repo>
 </config>
