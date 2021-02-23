@@ -102,8 +102,6 @@
     
   <!-- dotnet-format service branches -->
   <repo owner="dotnet" name="format">
-    <merge from="release/5.0" to="release/5.1" />
-    <merge from="release/5.1" to="master" />
     <merge from="master" to="release/6.0" />
   </repo>
 </config>
