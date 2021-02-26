@@ -37,6 +37,7 @@
 
     <!-- Roslyn feature branches -->
     <merge from="master" to="features/source-generators" owners="chsienki" frequency="weekly" />
+    <merge from="master" to="features/FileScopedNamespaces" owners="chsienki" frequency="weekly" />
     <merge from="master" to="features/interpolated-string-constants" owners="333fred,kevinsun-dev" frequency="weekly" />
     <merge from="master" to="features/lspClassifications" owners="dabarbet,allisonchou,davidwengier" frequency="weekly" />
     <merge from="master" to="features/list-patterns" owners="333fred" frequency="weekly" />
