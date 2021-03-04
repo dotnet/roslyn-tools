@@ -14,6 +14,7 @@ trigger: none
 # Trigger dryrun on PRs to master.
 pr:
 - master
+- main
 
 schedules:
 - cron: "0 */3 * * *"
@@ -21,6 +22,7 @@ schedules:
   branches:
     include:
     - master
+    - main
   always: true
 
 pool:
