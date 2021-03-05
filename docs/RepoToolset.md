@@ -165,7 +165,7 @@ The toolset defines a set of tools (or features) that each repo can opt into or 
 
 The toolset also defines default versions for various tools and dependencies, such as MicroBuild, XUnit, VSSDK, etc. These defaults can be overridden in the Versions.props file.
 
-See [DefaultVersions](https://github.com/dotnet/roslyn-tools/blob/master/src/RepoToolset/DefaultVersions.props]) for a list of *UsingTool* properties and default versions.
+See [DefaultVersions](https://github.com/dotnet/roslyn-tools/blob/main/src/RepoToolset/DefaultVersions.props]) for a list of *UsingTool* properties and default versions.
 
 #### /eng/FixedVersions.props (Orchestrated Build)
 

@@ -89,7 +89,7 @@ namespace Roslyn.Insertion
                 Build latestBuild = null;
                 bool retainBuild = false;
 
-                // Get the version from DevOps Pipelines queue, e.g. Roslyn-Master-Signed-Release.
+                // Get the version from DevOps Pipelines queue, e.g. Roslyn-Main-Signed-Release.
                 if (string.IsNullOrEmpty(Options.SpecificBuild))
                 {
                     buildToInsert = await GetLatestPassedBuildAsync(cancellationToken);

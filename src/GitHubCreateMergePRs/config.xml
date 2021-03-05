@@ -43,7 +43,7 @@
     <merge from="main" to="features/interpolated-string" owners="333fred" frequency="weekly" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
-    <merge from="dev16.0.x" to="master" />
+    <merge from="dev16.0.x" to="main" />
   </repo>
     
   <!-- Project System repo -->
@@ -82,12 +82,12 @@
 
   <!-- roslyn-analyzer branches -->
   <repo owner="dotnet" name="roslyn-analyzers">
-    <merge from="2.9.x" to="master" />
+    <merge from="2.9.x" to="main" />
     <merge from="release/5.0.1xx" to="release/5.0.2xx" />
     <merge from="release/5.0.2xx" to="release/6.0.1xx-preview1" />
     <merge from="release/6.0.1xx-preview1" to="release/6.0.1xx-preview2" />
     <merge from="release/6.0.1xx-preview2" to="release/6.0.1xx-preview3" />
-    <merge from="master" to="release/6.0.1xx-preview3" />
+    <merge from="main" to="release/6.0.1xx-preview3" />
   </repo>
 
   <!-- testimpact branches -->

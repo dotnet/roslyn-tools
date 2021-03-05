@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Roslyn.Insertion
 {
-    // borrowed from https://github.com/dotnet/roslyn/blob/master/src/Compilers/Core/Portable/Optional.cs
+    // borrowed from https://github.com/dotnet/roslyn/blob/main/src/Compilers/Core/Portable/Optional.cs
     public readonly struct Optional<T>
     {
         public bool HasValue { get; }
