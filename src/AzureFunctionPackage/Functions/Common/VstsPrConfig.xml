@@ -1,5 +1,5 @@
 <config>
   <repo name="VSUnitTesting">
-    <merge from="dev16.2.x" to="master" />
+    <merge from="dev16.2.x" to="main" />
   </repo>
 </config>

@@ -31,7 +31,7 @@ namespace Roslyn.Insertion
 
         public override string GetPackagesDirectory()
         {
-            // For example: "\\cpvsbuild\drops\Roslyn\Roslyn-Master-Signed-Release\20160315.3\DevDivPackages"
+            // For example: "\\cpvsbuild\drops\Roslyn\Roslyn-Main-Signed-Release\20160315.3\DevDivPackages"
             var devDivPackagesPath = Path.Combine(_binariesDirectory, "DevDivPackages");
             if (Directory.Exists(devDivPackagesPath))
             {

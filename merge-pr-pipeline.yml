@@ -11,9 +11,8 @@ variables:
 # Make sure the pipeline doesn't build on commits.
 trigger: none
 
-# Trigger dryrun on PRs to master.
+# Trigger dryrun on PRs to main.
 pr:
-- master
 - main
 
 schedules:
@@ -21,7 +20,6 @@ schedules:
   displayName: Roslyn Merge Tool
   branches:
     include:
-    - master
     - main
   always: true
 

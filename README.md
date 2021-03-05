@@ -5,6 +5,6 @@ Builds are available in the dotnet-tools Azure Package feed: https://dev.azure.c
 
 [//]: # (Begin current test results)
 
-[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/roslyn-tools-CI?branchName=master)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=216)
+[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/roslyn-tools-CI?branchName=main)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=216)
 
 [//]: # (End current test results)

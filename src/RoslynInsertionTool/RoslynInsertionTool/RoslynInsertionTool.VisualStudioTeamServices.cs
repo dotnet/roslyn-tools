@@ -602,7 +602,7 @@ namespace Roslyn.Insertion
                     continue;
                 }
 
-                // Exclude merge commits from auto code-flow PRs (e.g. merges/master-to-master-vs-deps)
+                // Exclude merge commits from auto code-flow PRs (e.g. merges/main-to-main-vs-deps)
                 if (IsReleaseFlowCommit.Match(commit.Message).Success)
                 {
                     mergePRFound = true;

@@ -44,9 +44,9 @@ Part of the sign tool verification process is to ensure every file is properly a
 
 Example configuration files:
 
-- [Roslyn](https://github.com/dotnet/roslyn/blob/master/build/config/SignToolData.json)
-- [DiaSym Reader](https://github.com/dotnet/symreader/blob/master/build/Signing/SignToolData.json)
-- [SDK](https://github.com/dotnet/sdk/blob/master/build/Signing/SignToolConfig.json)
+- [Roslyn](https://github.com/dotnet/roslyn/blob/main/build/config/SignToolData.json)
+- [DiaSym Reader](https://github.com/dotnet/symreader/blob/main/build/Signing/SignToolData.json)
+- [SDK](https://github.com/dotnet/sdk/blob/main/build/Signing/SignToolConfig.json)
 
 ## Arguments
 
