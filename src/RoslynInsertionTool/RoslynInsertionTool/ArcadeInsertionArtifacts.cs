@@ -10,7 +10,7 @@ namespace Roslyn.Insertion
     {
         public const string ArtifactName = "VSSetup";
 
-        internal override string RootDirectory { get; }
+        public override string RootDirectory { get; }
 
         public ArcadeInsertionArtifacts(string vsSetupDirectory)
         {

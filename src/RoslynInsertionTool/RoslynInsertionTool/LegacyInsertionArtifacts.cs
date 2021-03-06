@@ -7,7 +7,7 @@ namespace Roslyn.Insertion
 {
     internal sealed class LegacyInsertionArtifacts : InsertionArtifacts
     {
-        internal override string RootDirectory { get; }
+        public override string RootDirectory { get; }
 
         public LegacyInsertionArtifacts(string binariesDirectory)
         {
