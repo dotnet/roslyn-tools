@@ -389,19 +389,19 @@ namespace Roslyn.Insertion
             return Path.Combine(tempDirectory, artifact.Name);
         }
 
-        private static async Task<Component[]> GetLatestComponentsAsync(Build newestBuild, CancellationToken cancellationToken)
+        private static async Task<Component[]> GetLatestComponentsAsync(Build newestBuild, InsertionArtifacts buildArtifacts, CancellationToken cancellationToken)
         {
             var logText = await GetLogTextAsync(newestBuild, cancellationToken);
-            var urls = GetUrls(logText);
-            var components = await GetComponents(urls);
+            var urls = GetComponentManifestUrls(logText);
+            var components = await GetComponentsFromManifests(urls, buildArtifacts);
             return components;
         }
 
-        private static async Task<Component[]> GetComponents(string[] urls)
+        private static async Task<Component[]> GetComponentsFromManifests(string[] urls, InsertionArtifacts buildArtifacts)
         {
             if (urls == null || urls.Length == 0)
             {
-                Console.WriteLine("GetComponents: No URLs specified.");
+                Console.WriteLine("GetComponentsFromManifests: No URLs specified.");
                 return Array.Empty<Component>();
             }
 
@@ -423,31 +423,48 @@ namespace Roslyn.Insertion
 
                 var fileName = urlString.Split(';').Last();
                 var name = fileName.Remove(fileName.Length - 6, 6);
-                var version = await GetVersionFromComponentUrl(uri);
+                // Search the build artifacts for a copy of the manifest file.
+                var localFilePath = Directory.EnumerateFiles(buildArtifacts.RootDirectory, fileName, SearchOption.AllDirectories).SingleOrDefault();
+                var version = localFilePath != null
+                    ? GetComponentVersionFromFile(localFilePath)
+                    : await GetComponentVersionFromUri(uri);
                 result[i] = new Component(name, fileName, uri, version);
             }
 
             return result;
         }
 
-        private static async Task<string> GetVersionFromComponentUrl(Uri uri)
+        private static string GetComponentVersionFromFile(string filePath)
+        {
+            Console.WriteLine($"GetComponentVersionFromFile: Opening manifest from {filePath}.");
+            var manifestText = File.ReadAllText(filePath);
+            return GetComponentVersionFromJson(manifestText);
+        }
+
+        private static async Task<string> GetComponentVersionFromUri(Uri uri)
         {
             using (var client = new System.Net.WebClient())
             {
+                Console.WriteLine($"GetComponentVersionFromUri: Downloading manifest from {uri}.");
                 var manifestText = await client.DownloadStringTaskAsync(uri);
-                using (var stringStream = new MemoryStream(Encoding.UTF8.GetBytes(manifestText)))
-                using (var streamReader = new StreamReader(stringStream))
-                using (var reader = new JsonTextReader(streamReader))
-                {
-                    var jsonDocument = (JObject)JToken.ReadFrom(reader);
-                    var infoObject = (JObject)jsonDocument["info"];
-                    var version = infoObject.Value<string>("buildVersion"); // might not be present
-                    return version;
-                }
+                return GetComponentVersionFromJson(manifestText);
             }
         }
 
-        private static string[] GetUrls(string logText)
+        private static string GetComponentVersionFromJson(string json)
+        {
+            using (var stringStream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            using (var streamReader = new StreamReader(stringStream))
+            using (var reader = new JsonTextReader(streamReader))
+            {
+                var jsonDocument = (JObject)JToken.ReadFrom(reader);
+                var infoObject = (JObject)jsonDocument["info"];
+                var version = infoObject.Value<string>("buildVersion"); // might not be present
+                return version;
+            }
+        }
+
+        private static string[] GetComponentManifestUrls(string logText)
         {
             const string startingString = "Manifest Url(s):";
             var manifestStart = logText.IndexOf(startingString);
