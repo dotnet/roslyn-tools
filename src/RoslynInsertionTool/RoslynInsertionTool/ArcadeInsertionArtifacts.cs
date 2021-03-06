@@ -10,11 +10,11 @@ namespace Roslyn.Insertion
     {
         public const string ArtifactName = "VSSetup";
 
-        private readonly string _vsSetupDirectory;
+        internal override string RootDirectory { get; }
 
         public ArcadeInsertionArtifacts(string vsSetupDirectory)
         {
-            _vsSetupDirectory = vsSetupDirectory;
+            RootDirectory = vsSetupDirectory;
         }
 
         public static bool TryCreateFromLocalBuild(string buildDirectory, out InsertionArtifacts artifacts)
@@ -32,7 +32,7 @@ namespace Roslyn.Insertion
 
         public override string GetPackagesDirectory()
         {
-            var devDivPackagesPath = Path.Combine(_vsSetupDirectory, "DevDivPackages");
+            var devDivPackagesPath = Path.Combine(RootDirectory, "DevDivPackages");
             if (Directory.Exists(devDivPackagesPath))
             {
                 return devDivPackagesPath;
@@ -42,9 +42,9 @@ namespace Roslyn.Insertion
         }
 
         public override string GetDependentAssemblyVersionsFile()
-            => Path.Combine(_vsSetupDirectory, "DevDivPackages", "DependentAssemblyVersions.csv");
+            => Path.Combine(RootDirectory, "DevDivPackages", "DependentAssemblyVersions.csv");
 
         public override string[] GetOptProfPropertyFiles()
-            => Directory.EnumerateFiles(Path.Combine(_vsSetupDirectory, "Insertion", "OptProf"), "*.props", SearchOption.TopDirectoryOnly).ToArray();
+            => Directory.EnumerateFiles(Path.Combine(RootDirectory, "Insertion", "OptProf"), "*.props", SearchOption.TopDirectoryOnly).ToArray();
     }
 }
