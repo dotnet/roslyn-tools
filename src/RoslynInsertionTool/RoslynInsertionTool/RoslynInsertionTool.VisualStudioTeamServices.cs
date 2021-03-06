@@ -401,7 +401,7 @@ namespace Roslyn.Insertion
         {
             if (urls == null || urls.Length == 0)
             {
-                Console.WriteLine("GetComponentsFromUrl: No URLs specified.");
+                Console.WriteLine("GetComponentsFromManifests: No URLs specified.");
                 return Array.Empty<Component>();
             }
 
@@ -438,7 +438,6 @@ namespace Roslyn.Insertion
             Console.WriteLine($"GetComponentVersionFromFile: Opening manifest from {filePath}.");
             var manifestText = File.ReadAllText(filePath);
             return GetComponentVersionFromJson(manifestText);
-
         }
 
         private static async Task<string> GetComponentVersionFromUri(Uri uri)
