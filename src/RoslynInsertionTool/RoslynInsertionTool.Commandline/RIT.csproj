@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>RoslynInsertionTool</RootNamespace>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFrameworks>net472;net5</TargetFrameworks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Prefer32Bit>false</Prefer32Bit>
 
@@ -19,14 +19,8 @@
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Threading" />
-    <Reference Include="System.Web" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Colorful.Console" Version="1.0.5" />
-    <PackageReference Include="Microsoft.Azure.KeyVault" Version="2.0.6" />
+    <PackageReference Include="Colorful.Console" Version="1.2.10" />
+    <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.5" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Settings.Designer.cs">

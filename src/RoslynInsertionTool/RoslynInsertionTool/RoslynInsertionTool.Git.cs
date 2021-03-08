@@ -1,10 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
@@ -18,7 +15,7 @@ namespace Roslyn.Insertion
         private static async Task<GitPullRequest> CreatePlaceholderBranchAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+            var gitClient = Connection.GetClient<GitHttpClient>();
             var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
 
             var refs = await gitClient.GetRefsAsync(

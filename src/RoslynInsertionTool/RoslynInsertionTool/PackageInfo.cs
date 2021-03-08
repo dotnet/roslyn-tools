@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Linq;
 using NuGet.Versioning;
@@ -74,7 +73,7 @@ namespace Roslyn.Insertion
         {
             for (var i = 0; i < parts.Length; i++)
             {
-                if (int.TryParse(parts[i], out int number))
+                if (int.TryParse(parts[i], out _))
                 {
                     return i;
                 }

@@ -20,7 +20,7 @@ namespace Roslyn.Insertion
 
         public override string ToString() => Build + "." + Revision;
         public bool Equals(BuildVersion other) => Build == other.Build && Revision == other.Revision;
-        public override bool Equals(object obj) => obj is BuildVersion && Equals((BuildVersion)obj);
+        public override bool Equals(object obj) => obj is BuildVersion version && Equals(version);
         public override int GetHashCode() => Build;
 
         public int CompareTo(BuildVersion other)
@@ -60,6 +60,6 @@ namespace Roslyn.Insertion
             return new BuildVersion(int.Parse(parts[0]), int.Parse(parts[1]));
         }
 
-        public static explicit operator BuildVersion(Version version) => new BuildVersion(version.Build, version.Revision);
+        public static explicit operator BuildVersion(Version version) => new(version.Build, version.Revision);
     }
 }

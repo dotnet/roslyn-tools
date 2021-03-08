@@ -22,7 +22,7 @@ namespace Roslyn.Insertion
             BuildVersion = ParseBuildVersion(Uri.ToString());
         }
 
-        public Component WithUri(Uri newUri) => new Component(Name, Filename, newUri, Version);
+        public Component WithUri(Uri newUri) => new(Name, Filename, newUri, Version);
 
         private static BuildVersion ParseBuildVersion(string uri)
         {
@@ -31,11 +31,10 @@ namespace Roslyn.Insertion
                 var version = uri.Split('/').Last().Split(';').First();
                 return BuildVersion.FromString(version);
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 return default;
             }
-
         }
     }
 }

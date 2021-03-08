@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.TeamFoundation.Client.CommandLine;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Roslyn.Insertion
 {
@@ -45,19 +43,11 @@ namespace Roslyn.Insertion
         {
             var path = VersionsTemplatePath;
             var content = _versionsTemplateContent;
-
-            string variableName;
-
-            switch (assemblyName)
+            string variableName = assemblyName switch
             {
-                case "Roslyn":
-                    variableName = "MicrosoftCodeAnalysisVersion";
-                    break;
-
-                default:
-                    variableName = assemblyName.Replace(".", string.Empty) + "Version";
-                    break;
-            }
+                "Roslyn" => "MicrosoftCodeAnalysisVersion",
+                _ => assemblyName.Replace(".", string.Empty) + "Version",
+            };
 
             // the structure of the file is:
             //   header: opening tag:    <#+
@@ -90,14 +80,14 @@ namespace Roslyn.Insertion
             {
                 var line = sortedValueLines[lineIndex];
                 var currentVariableName = GetLineVariableName(line);
-                var comparison = String.Compare(currentVariableName, variableName, StringComparison.OrdinalIgnoreCase);
+                var comparison = string.Compare(currentVariableName, variableName, StringComparison.OrdinalIgnoreCase);
                 if (comparison == 0)
                 {
                     // found exact match, replace this line
                     var versionStart = IndexOfOrThrow(line, '"') + 1;
                     var versionEnd = IndexOfOrThrow(line, '"', versionStart);
                     var versionStr = line.Substring(versionStart, versionEnd - versionStart);
-                    var oldVersion = ParseAndValidatePreviousVersion(newVersion, versionStr, path, variableName, assemblyName);
+                    var oldVersion = ParseAndValidatePreviousVersion(versionStr, path, variableName, assemblyName);
                     if (newVersion > oldVersion)
                     {
                         newLine = line.Substring(0, versionStart) + newVersion.ToFullVersion() + line.Substring(versionEnd);
@@ -136,7 +126,7 @@ namespace Roslyn.Insertion
             return result;
         }
 
-        private Version ParseAndValidatePreviousVersion(Version newVersion, string versionStringOpt, string path, string description, string assemblyName)
+        private Version ParseAndValidatePreviousVersion(string versionStringOpt, string path, string description, string assemblyName)
         {
             // first time we run new insertion tool we need to skip checking previous version since it has a different format
             if (!Version.TryParse(versionStringOpt, out var previousVersion))

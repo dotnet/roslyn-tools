@@ -271,8 +271,7 @@ namespace Roslyn.Insertion
 
             if (!string.IsNullOrEmpty(componentName))
             {
-                string componentFileName;
-                if (ComponentToFileMap.TryGetValue(componentName, out componentFileName))
+                if (ComponentToFileMap.TryGetValue(componentName, out string componentFileName))
                 {
                     ComponentFileToDocumentMap.TryGetValue(componentFileName, out pair);
                 }

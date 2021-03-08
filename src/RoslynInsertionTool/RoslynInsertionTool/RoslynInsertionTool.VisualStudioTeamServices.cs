@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -14,10 +13,10 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.TeamFoundation.Build.WebApi;
-using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.Policy.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -25,13 +24,13 @@ namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
-        private static readonly Lazy<TfsTeamProjectCollection> LazyProjectCollection = new Lazy<TfsTeamProjectCollection>(() =>
+        private static readonly Lazy<VssConnection> LazyProjectCollection = new(() =>
         {
-            Console.WriteLine($"Creating TfsTeamProjectCollection object from {Options.VSTSUri}");
-            return new TfsTeamProjectCollection(new Uri(Options.VSTSUri), new VssBasicCredential(Options.Username, Options.Password));
+            Console.WriteLine($"Creating VssConnection object from {Options.VSTSUri}");
+            return new VssConnection(new Uri(Options.VSTSUri), new VssBasicCredential(Options.Username, Options.Password));
         });
 
-        private static TfsTeamProjectCollection ProjectCollection => LazyProjectCollection.Value;
+        private static VssConnection Connection => LazyProjectCollection.Value;
 
         private static GitPullRequest CreatePullRequest(string sourceBranch, string targetBranch, string description, string buildToInsert, string titlePrefix, string reviewerId)
         {
@@ -58,7 +57,7 @@ namespace Roslyn.Insertion
 
         private static async Task<GitPullRequest> CreatePullRequestAsync(string branchName, string message, string buildToInsert, string titlePrefix, string reviewerId, CancellationToken cancellationToken)
         {
-            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+            var gitClient = Connection.GetClient<GitHttpClient>();
             Console.WriteLine($"Getting remote repository from {Options.VisualStudioBranchName} in {Options.TFSProjectName}");
             var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
             return await gitClient.CreatePullRequestAsync(
@@ -71,7 +70,7 @@ namespace Roslyn.Insertion
 
         public static async Task<GitPullRequest> OverwritePullRequestAsync(int pullRequestId, string message, string buildToInsert, string titlePrefix, CancellationToken cancellationToken)
         {
-            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+            var gitClient = Connection.GetClient<GitHttpClient>();
 
             return await gitClient.UpdatePullRequestAsync(
                 new GitPullRequest
@@ -105,7 +104,7 @@ namespace Roslyn.Insertion
 
         private static async Task<Build> GetLatestBuildAsync(CancellationToken cancellationToken, BuildResult? resultFilter = null)
         {
-            var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
+            var buildClient = Connection.GetClient<BuildHttpClient>();
             var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
             var builds = await GetBuildsFromTFSAsync(buildClient, definitions, cancellationToken, resultFilter);
 
@@ -123,7 +122,7 @@ namespace Roslyn.Insertion
             CancellationToken cancellationToken,
             IEnumerable<Build> builds)
         {
-            List<Build> buildsWithValidArtifacts = new List<Build>();
+            var buildsWithValidArtifacts = new List<Build>();
             foreach (var build in builds)
             {
                 if (build.Tags?.Contains($"DoesNotRequireInsertion_{Options.VisualStudioBranchName}") == true)
@@ -148,7 +147,7 @@ namespace Roslyn.Insertion
         {
             // ********************* Verify Build Passed *****************************
             cancellationToken.ThrowIfCancellationRequested();
-            Build newestBuild = null;
+            Build newestBuild;
             Console.WriteLine($"Get Latest Passed Build");
             try
             {
@@ -179,7 +178,7 @@ namespace Roslyn.Insertion
         // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
         private static async Task QueueBuildPolicy(GitPullRequest pullRequest, string buildPolicy)
         {
-            var policyClient = ProjectCollection.GetClient<PolicyHttpClient>();
+            var policyClient = Connection.GetClient<PolicyHttpClient>();
             var repository = pullRequest.Repository;
             var timeout = TimeSpan.FromSeconds(30);
             var stopwatch = Stopwatch.StartNew();
@@ -243,7 +242,7 @@ namespace Roslyn.Insertion
         // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
         private static async Task SetAutoCompleteAsync(GitPullRequest pullRequest, string commitMessage, CancellationToken cancellationToken)
         {
-            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+            var gitClient = Connection.GetClient<GitHttpClient>();
             var repository = pullRequest.Repository;
             try
             {
@@ -284,7 +283,7 @@ namespace Roslyn.Insertion
         {
             cancellationToken.ThrowIfCancellationRequested();
             Console.WriteLine($"Getting build with build number {version}");
-            var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
+            var buildClient = Connection.GetClient<BuildHttpClient>();
             var definitions = await buildClient.GetDefinitionsAsync(project: Options.TFSProjectName, name: Options.BuildQueueName);
             var builds = await buildClient.GetBuildsAsync(
                 project: Options.TFSProjectName,
@@ -308,7 +307,7 @@ namespace Roslyn.Insertion
                 return artifacts;
             }
 
-            var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
+            var buildClient = Connection.GetClient<BuildHttpClient>();
 
             Debug.Assert(ReferenceEquals(build,
                 (await GetInsertableBuildsAsync(buildClient, cancellationToken, new[] { build })).Single()));
@@ -375,13 +374,11 @@ namespace Roslyn.Insertion
             Stopwatch watch = Stopwatch.StartNew();
 
             using (Stream s = await buildClient.GetArtifactContentZipAsync(Options.TFSProjectName, build.Id, artifact.Name, cancellationToken))
-            using (MemoryStream ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
                 await s.CopyToAsync(ms);
-                using (ZipArchive archive = new ZipArchive(ms))
-                {
-                    archive.ExtractToDirectory(tempDirectory);
-                }
+                using var archive = new ZipArchive(ms);
+                archive.ExtractToDirectory(tempDirectory);
             }
 
             Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds / 1000} seconds");
@@ -443,25 +440,21 @@ namespace Roslyn.Insertion
 
         private static async Task<string> GetComponentVersionFromUri(Uri uri)
         {
-            using (var client = new System.Net.WebClient())
-            {
-                Console.WriteLine($"GetComponentVersionFromUri: Downloading manifest from {uri}.");
-                var manifestText = await client.DownloadStringTaskAsync(uri);
-                return GetComponentVersionFromJson(manifestText);
-            }
+            using var client = new System.Net.WebClient();
+            Console.WriteLine($"GetComponentVersionFromUri: Downloading manifest from {uri}.");
+            var manifestText = await client.DownloadStringTaskAsync(uri);
+            return GetComponentVersionFromJson(manifestText);
         }
 
         private static string GetComponentVersionFromJson(string json)
         {
-            using (var stringStream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
-            using (var streamReader = new StreamReader(stringStream))
-            using (var reader = new JsonTextReader(streamReader))
-            {
-                var jsonDocument = (JObject)JToken.ReadFrom(reader);
-                var infoObject = (JObject)jsonDocument["info"];
-                var version = infoObject.Value<string>("buildVersion"); // might not be present
-                return version;
-            }
+            using var stringStream = new MemoryStream(Encoding.UTF8.GetBytes(json));
+            using var streamReader = new StreamReader(stringStream);
+            using var reader = new JsonTextReader(streamReader);
+            var jsonDocument = (JObject)JToken.ReadFrom(reader);
+            var infoObject = (JObject)jsonDocument["info"];
+            var version = infoObject.Value<string>("buildVersion"); // might not be present
+            return version;
         }
 
         private static string[] GetComponentManifestUrls(string logText)
@@ -501,7 +494,7 @@ namespace Roslyn.Insertion
 
         private static async Task<string> GetLogTextAsync(Build newestBuild, CancellationToken cancellationToken)
         {
-            var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
+            var buildClient = Connection.GetClient<BuildHttpClient>();
 
             var allLogs = await buildClient.GetBuildLogsAsync(Options.TFSProjectName, newestBuild.Id, cancellationToken: cancellationToken);
             foreach (var log in allLogs)
@@ -532,7 +525,7 @@ namespace Roslyn.Insertion
                 var request = new HttpRequestMessage(HttpMethod.Get, restEndpoint);
                 request.Headers.Add("User-Agent", "RoslynInsertionTool");
 
-                var response = await client.SendAsync(request);
+                var response = await client.SendAsync(request, cancellationToken);
                 var content = await response.Content.ReadAsStringAsync();
 
                 // https://developer.github.com/v3/repos/commits/
@@ -583,9 +576,9 @@ namespace Roslyn.Insertion
             throw new NotSupportedException("Only builds created from GitHub repos support enumerating commits.");
         }
 
-        private static readonly Regex IsReleaseFlowCommit = new Regex(@"^Merge pull request #\d+ from dotnet/merges/");
-        private static readonly Regex IsMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
-        private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)(?:\n|$)");
+        private static readonly Regex IsReleaseFlowCommit = new(@"^Merge pull request #\d+ from dotnet/merges/");
+        private static readonly Regex IsMergePRCommit = new(@"^Merge pull request #(\d+) from");
+        private static readonly Regex IsSquashedPRCommit = new(@"\(#(\d+)\)(?:\n|$)");
 
         internal static string AppendChangesToDescription(string prDescription, Build oldBuild, List<GitCommit> changes)
         {
