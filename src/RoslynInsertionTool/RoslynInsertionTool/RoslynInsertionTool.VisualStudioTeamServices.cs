@@ -425,7 +425,7 @@ namespace Roslyn.Insertion
                 var name = fileName.Remove(fileName.Length - 6, 6);
                 // Search the build artifacts for a copy of the manifest file.
                 var localFilePath = Directory.Exists(buildArtifacts.RootDirectory)
-                    ? Directory.EnumerateFiles(buildArtifacts.RootDirectory, fileName, SearchOption.AllDirectories).SingleOrDefault()
+                    ? Directory.EnumerateFiles(buildArtifacts.RootDirectory, Path.GetFileName(fileName), SearchOption.AllDirectories).SingleOrDefault() // Some component filename entries are more complex, ex. "bootstrapper/4536430/f2dfd6c8-c4fe-4a6e-bb40-3130b7002264/OverlaidInstallerManifest.vsman" 
                     : null;
                 var version = localFilePath != null
                     ? GetComponentVersionFromFile(localFilePath)
