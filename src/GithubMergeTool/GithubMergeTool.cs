@@ -187,7 +187,7 @@ namespace GithubMergeTool
                 }
             }
 
-            string autoTriggeredMessage = isAutoTriggered ? "" : $@"(created from a manual run of the PR generation tool)\n";
+            string autoTriggeredMessage = isAutoTriggered ? "" : "(created from a manual run of the PR generation tool)";
 
             var prMessage = $@"
 This is an automatically generated pull request from {srcBranch} into {destBranch}.
@@ -286,6 +286,11 @@ git push upstream {prBranchName} --force
                     assignees = new[] { new { login = "" } }
                 });
                 Console.WriteLine("Actual assignees: " + (assigneeData.assignees.Any() ? string.Join(", ", assigneeData.assignees.Select(a => a.login)) : "(none)"));
+
+                if (hasConflicts == true)
+                {
+                    response = await PostComment(prNumber, "⚠ This PR has merge conflicts. " + string.Join(" ", prOwners.Select(owner => "@" + owner)));
+                }
             }
 
             if (!response.IsSuccessStatusCode)
