@@ -424,7 +424,9 @@ namespace Roslyn.Insertion
                 var fileName = urlString.Split(';').Last();
                 var name = fileName.Remove(fileName.Length - 6, 6);
                 // Search the build artifacts for a copy of the manifest file.
-                var localFilePath = Directory.EnumerateFiles(buildArtifacts.RootDirectory, fileName, SearchOption.AllDirectories).SingleOrDefault();
+                var localFilePath = Directory.Exists(buildArtifacts.RootDirectory)
+                    ? Directory.EnumerateFiles(buildArtifacts.RootDirectory, fileName, SearchOption.AllDirectories).SingleOrDefault()
+                    : null;
                 var version = localFilePath != null
                     ? GetComponentVersionFromFile(localFilePath)
                     : await GetComponentVersionFromUri(uri);
