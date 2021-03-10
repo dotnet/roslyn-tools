@@ -1,5 +1,5 @@
 <config>
-  <repo owner="dotnet" name="roslyn" mergeOwners="RikkiGibson">
+  <repo owner="dotnet" name="roslyn" mergeOwners="allisonchou">
     <!-- Roslyn servicing branches -->
     <merge from="dev15.9.x" to="dev16.0-vs-deps" />
     <merge from="dev16.0-vs-deps" to="release/dev16.3" />
