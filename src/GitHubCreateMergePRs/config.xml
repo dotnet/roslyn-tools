@@ -25,6 +25,7 @@
     <merge from="main" to="features/interpolated-string-constants" owners="333fred,kevinsun-dev" frequency="weekly" />
     <merge from="main" to="features/list-patterns" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/interpolated-string" owners="333fred" frequency="weekly" />
+    <merge from="main" to="features/improved-definite-assignment" owners="RikkiGibson" frequency="weekly" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
     <merge from="dev16.0.x" to="main" />
