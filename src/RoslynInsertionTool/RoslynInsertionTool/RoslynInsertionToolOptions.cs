@@ -35,13 +35,17 @@ namespace Roslyn.Insertion
         private RoslynInsertionToolOptions(
             string username,
             string password,
+            string buildUsername,
+            string buildPassword,
+            string visualStudioAzdoUri,
+            string visualStudioProjectName,
             string visualStudioBranchName,
+            string buildAzdoUri,
+            string buildProjectName,
             string buildQueueName,
             string branchName,
             string buildConfig,
-            string vstsUri,
-            string tfsProjectName,
-            string newBranchName,
+            string insertionBranchName,
             string buildDropPath,
             string specificBuild,
             bool insertCoreXTPackages,
@@ -69,13 +73,17 @@ namespace Roslyn.Insertion
         {
             Username = username;
             Password = password;
+            BuildUsername = buildUsername;
+            BuildPassword = buildPassword;
             VisualStudioBranchName = visualStudioBranchName;
             BuildQueueName = buildQueueName;
             BranchName = branchName;
             BuildConfig = buildConfig;
-            VSTSUri = vstsUri;
-            TFSProjectName = tfsProjectName;
-            NewBranchName = newBranchName;
+            VisualStudioAzdoUri = visualStudioAzdoUri;
+            VisualStudioProjectName = visualStudioProjectName;
+            BuildAzdoUri = buildAzdoUri;
+            BuildProjectName = buildProjectName;
+            InsertionBranchName = insertionBranchName;
             BuildDropPath = buildDropPath;
             SpecificBuild = specificBuild;
             InsertCoreXTPackages = insertCoreXTPackages;
@@ -105,13 +113,17 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions Update(
             Optional<string> username = default,
             Optional<string> password = default,
+            Optional<string> buildUsername = default,
+            Optional<string> buildPassword = default,
             Optional<string> visualStudioBranchName = default,
             Optional<string> buildQueueName = default,
             Optional<string> branchName = default,
             Optional<string> buildConfig = default,
             Optional<string> vstsUri = default,
-            Optional<string> tfsProjectName = default,
-            Optional<string> newBranchName = default,
+            Optional<string> visualStudioProjectName = default,
+            Optional<string> buildAzdoUri = default,
+            Optional<string> buildProjectName = default,
+            Optional<string> insertionBranchName = default,
             Optional<string> buildDropPath = default,
             Optional<string> specificBuild = default,
             Optional<bool> insertCoreXTPackages = default,
@@ -140,13 +152,17 @@ namespace Roslyn.Insertion
             return new RoslynInsertionToolOptions(
                 username: username.ValueOrFallback(Username),
                 password: password.ValueOrFallback(Password),
+                buildUsername: buildUsername.ValueOrFallback(BuildUsername),
+                buildPassword: buildPassword.ValueOrFallback(BuildPassword),
                 visualStudioBranchName: visualStudioBranchName.ValueOrFallback(VisualStudioBranchName),
                 buildQueueName: buildQueueName.ValueOrFallback(BuildQueueName),
                 branchName: branchName.ValueOrFallback(BranchName),
                 buildConfig: buildConfig.ValueOrFallback(BuildConfig),
-                vstsUri: vstsUri.ValueOrFallback(VSTSUri),
-                tfsProjectName: tfsProjectName.ValueOrFallback(TFSProjectName),
-                newBranchName: newBranchName.ValueOrFallback(NewBranchName),
+                visualStudioAzdoUri: vstsUri.ValueOrFallback(VisualStudioAzdoUri),
+                visualStudioProjectName: visualStudioProjectName.ValueOrFallback(VisualStudioProjectName),
+                buildAzdoUri: buildAzdoUri.ValueOrFallback(BuildAzdoUri),
+                buildProjectName: buildProjectName.ValueOrFallback(BuildProjectName),
+                insertionBranchName: insertionBranchName.ValueOrFallback(InsertionBranchName),
                 buildDropPath: buildDropPath.ValueOrFallback(BuildDropPath),
                 specificBuild: specificBuild.ValueOrFallback(SpecificBuild),
                 insertCoreXTPackages: insertCoreXTPackages.ValueOrFallback(InsertCoreXTPackages),
@@ -187,21 +203,29 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithUsername(string username) => Update(username: username);
 
+        public RoslynInsertionToolOptions WithBuildUsername(string buildUsername) => Update(buildUsername: buildUsername);
+
         public RoslynInsertionToolOptions WithPassword(string password) => Update(password: password);
+
+        public RoslynInsertionToolOptions WithBuildPassword(string buildPassword) => Update(buildPassword: buildPassword);
+
+        public RoslynInsertionToolOptions WithVisualStudioAzdoUri(string visualStudioAzdoUri) => Update(vstsUri: visualStudioAzdoUri);
+
+        public RoslynInsertionToolOptions WithVisualStudioProjectName(string visualStudioProjectName) => Update(visualStudioProjectName: visualStudioProjectName);
 
         public RoslynInsertionToolOptions WithVisualStudioBranchName(string visualStudioBranchName) => Update(visualStudioBranchName: visualStudioBranchName);
 
+        public RoslynInsertionToolOptions WithBuildAzdoUri(string buildAzdoUri) => Update(buildAzdoUri: buildAzdoUri);
+
+        public RoslynInsertionToolOptions WithBuildProjectName(string buildProjectName) => Update(buildProjectName: buildProjectName);
+
         public RoslynInsertionToolOptions WithBuildQueueName(string buildQueueName) => Update(buildQueueName: buildQueueName);
 
-        public RoslynInsertionToolOptions WithbranchName(string branchName) => Update(branchName: branchName);
+        public RoslynInsertionToolOptions WithBranchName(string branchName) => Update(branchName: branchName);
 
         public RoslynInsertionToolOptions WithBuildConfig(string buildConfig) => Update(buildConfig: buildConfig);
 
-        public RoslynInsertionToolOptions WithVSTSUrl(string vstsUri) => Update(vstsUri: vstsUri);
-
-        public RoslynInsertionToolOptions WithTFSProjectName(string tfsProjectName) => Update(tfsProjectName: tfsProjectName);
-
-        public RoslynInsertionToolOptions WithNewBranchName(string newBranchName) => Update(newBranchName: newBranchName);
+        public RoslynInsertionToolOptions WithInsertionBranchName(string insertionBranchName) => Update(insertionBranchName: insertionBranchName);
 
         public RoslynInsertionToolOptions WithBuildDropPath(string buildDropPath) => Update(buildDropPath: buildDropPath);
 
@@ -243,7 +267,19 @@ namespace Roslyn.Insertion
 
         public string Password { get; }
 
+        public string BuildUsername { get; }
+
+        public string BuildPassword { get; }
+
+        public string VisualStudioAzdoUri { get; }
+
+        public string VisualStudioProjectName { get; }
+
         public string VisualStudioBranchName { get; }
+
+        public string BuildAzdoUri { get; }
+
+        public string BuildProjectName { get; }
 
         public string BuildQueueName { get; }
 
@@ -251,11 +287,7 @@ namespace Roslyn.Insertion
 
         public string BuildConfig { get; }
 
-        public string VSTSUri { get; }
-
-        public string TFSProjectName { get; }
-
-        public string NewBranchName { get; }
+        public string InsertionBranchName { get; }
 
         public string BuildDropPath { get; }
 
@@ -309,6 +341,12 @@ namespace Roslyn.Insertion
         {
             get
             {
+                if (BuildAzdoUri != null && (BuildUsername is null || BuildPassword is null))
+                {
+                    // When the Build AzDO instance is separate from the VS AzDO instance, separate credentials must be specified.
+                    return false;
+                }
+
                 if (CreateDummyPr)
                 {
                     // only InsertionName and VisualStudioBranchName are required for creating a dummy pr
@@ -339,8 +377,8 @@ namespace Roslyn.Insertion
                         !string.IsNullOrEmpty(BuildQueueName) &&
                         !string.IsNullOrEmpty(BranchName) &&
                         !string.IsNullOrEmpty(BuildConfig) &&
-                        !string.IsNullOrEmpty(VSTSUri) &&
-                        !string.IsNullOrEmpty(TFSProjectName) &&
+                        !string.IsNullOrEmpty(VisualStudioAzdoUri) &&
+                        !string.IsNullOrEmpty(VisualStudioProjectName) &&
                         !string.IsNullOrEmpty(BuildDropPath);
                 }
             }
@@ -351,6 +389,19 @@ namespace Roslyn.Insertion
             get
             {
                 var builder = new StringBuilder();
+
+                if (BuildAzdoUri != VisualStudioAzdoUri)
+                {
+                    if (BuildUsername is null)
+                    {
+                        builder.AppendLine($"When {nameof(BuildAzdoUri)} is specified you must also specify the {nameof(BuildUsername)}.");
+                    }
+
+                    if (BuildPassword is null)
+                    {
+                        builder.AppendLine($"When {nameof(BuildAzdoUri)} is specified you must also specify the {nameof(BuildPassword)}.");
+                    }
+                }
 
                 if (CreateDummyPr)
                 {
@@ -442,14 +493,14 @@ namespace Roslyn.Insertion
                         builder.AppendLine($"{nameof(BuildConfig).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(VSTSUri))
+                    if (string.IsNullOrEmpty(VisualStudioAzdoUri))
                     {
-                        builder.AppendLine($"{nameof(VSTSUri).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(VisualStudioAzdoUri).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(TFSProjectName))
+                    if (string.IsNullOrEmpty(VisualStudioProjectName))
                     {
-                        builder.AppendLine($"{nameof(TFSProjectName).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(VisualStudioProjectName).ToLowerInvariant()} is required");
                     }
 
                     if (string.IsNullOrEmpty(BuildDropPath))

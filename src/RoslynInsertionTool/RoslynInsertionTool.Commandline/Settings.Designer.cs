@@ -35,18 +35,18 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("https://devdiv.visualstudio.com/DefaultCollection")]
-        public string VSTSUrl {
+        public string VisualStudioAzdoUri {
             get {
-                return ((string)(this["VSTSUrl"]));
+                return ((string)(this["VisualStudioAzdoUri"]));
             }
         }
 
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("DevDiv")]
-        public string TFSProjectName {
+        public string VisualStudioProjectName {
             get {
-                return ((string)(this["TFSProjectName"]));
+                return ((string)(this["VisualStudioProjectName"]));
             }
         }
 
@@ -62,9 +62,9 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("dev/vslsnap/insertions/")]
-        public string NewBranchName {
+        public string InsertionBranchName {
             get {
-                return ((string)(this["NewBranchName"]));
+                return ((string)(this["InsertionBranchName"]));
             }
         }
 
@@ -173,6 +173,17 @@ namespace Roslyn.Insertion {
         public string VsoSecretName {
             get {
                 return ((string)(this["VsoSecretName"]));
+            }
+        }
+
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("vslsnap-build-auth-token")]
+        public string BuildSecretName
+        {
+            get
+            {
+                return ((string)(this["BuildSecretName"]));
             }
         }
 

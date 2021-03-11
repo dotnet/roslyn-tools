@@ -5,16 +5,16 @@
     <Setting Name="UserName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">vslsnap@microsoft.com</Value>
     </Setting>
-    <Setting Name="VSTSUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://devdiv.visualstudio.com/DefaultCollection</Value>
+    <Setting Name="VisualStudioAzdoUri" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://dev.azure.com/devdiv</Value>
     </Setting>
-    <Setting Name="TFSProjectName" Type="System.String" Scope="Application">
+    <Setting Name="VisualStudioProjectName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">DevDiv</Value>
     </Setting>
     <Setting Name="BuildDropPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">\\cpvsbuild\drops\Roslyn</Value>
     </Setting>
-    <Setting Name="NewBranchName" Type="System.String" Scope="Application">
+    <Setting Name="InsertionBranchName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">dev/vslsnap/insertions/</Value>
     </Setting>
     <Setting Name="BuildQueueName" Type="System.String" Scope="Application">
@@ -66,7 +66,10 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="CreateDraftPr" Type="System.Boolean" Scope="Application">
-        <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="BuildSecretName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">vslsnap-build-auth-token</Value>
     </Setting>
   </Settings>
 </SettingsFile>

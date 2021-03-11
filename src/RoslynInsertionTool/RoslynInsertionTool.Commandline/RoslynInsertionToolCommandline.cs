@@ -26,12 +26,12 @@ partial class RoslynInsertionToolCommandline
         var settings = Settings.Default;
         var options = new RoslynInsertionToolOptions()
             .WithUsername(settings.UserName)
-            .WithVSTSUrl(settings.VSTSUrl)
+            .WithVisualStudioAzdoUri(settings.VisualStudioAzdoUri)
             .WithBuildQueueName(settings.BuildQueueName)
             .WithBuildConfig(settings.BuildConfig)
-            .WithTFSProjectName(settings.TFSProjectName)
+            .WithVisualStudioProjectName(settings.VisualStudioProjectName)
             .WithBuildDropPath(settings.BuildDropPath)
-            .WithNewBranchName(settings.NewBranchName)
+            .WithInsertionBranchName(settings.InsertionBranchName)
             .WithInsertCoreXTPackages(settings.InsertCoreXTPackages)
             .WithUpdateCoreXTLLibraries(settings.UpdateCoreXTLibraries)
             .WithInsertDevDivSourceFiles(settings.InsertDevDivSourceFiles)
@@ -64,13 +64,33 @@ partial class RoslynInsertionToolCommandline
             },
             {
                 "u=|username=",
-                $"Username to authenticate with VSTS *and* git. Defaults to \"{options.Username}\".",
+                $"Username to authenticate with AzDO *and* git. Defaults to \"{options.Username}\".",
                 username => options = options.WithUsername(username)
             },
             {
                 "p=|password=",
-                "The password used to authenticate both VSTS *and* git. If not specified will attempt to load from Azure KeyVault.",
+                "The password used to authenticate both AzDO *and* git. If not specified will attempt to load from Azure KeyVault.",
                 password => options = options.WithPassword(password)
+            },
+            {
+                "bu=|buildusername=",
+                $"Username to authenticate with the Build AzDO. Required if **buildazdouri** is specified.",
+                buildUsername => options = options.WithBuildUsername(buildUsername)
+            },
+            {
+                "bp=|buildpassword=",
+                "The password used to authenticate with the Build AzDO. Required if **buildazdouri** is specified.",
+                buildPassword => options = options.WithBuildPassword(buildPassword)
+            },
+            {
+                "vstsurl=|visualstudioazdouri=",
+                $"The url to the default collection of the VSTS server. Defaults to \"{options.VisualStudioAzdoUri}\".",
+                visualStudioAzdoUri => options = options.WithVisualStudioAzdoUri(visualStudioAzdoUri)
+            },
+            {
+                "tfspn=|tfsprojectname=|vspn=|visualstudioprojectname=",
+                $"The project that contains the branch specified in **visualstudiobranchname**. Defaults to \"{options.VisualStudioProjectName}\".",
+                visualStudioProjectName => options = options.WithVisualStudioProjectName(visualStudioProjectName)
             },
             {
                 "vsbn=|visualstudiobranchname=",
@@ -78,9 +98,14 @@ partial class RoslynInsertionToolCommandline
                 visualStudioBranchName => options = options.WithVisualStudioBranchName(visualStudioBranchName)
             },
             {
-                "bn=|branchname=",
-                "The branch we are inserting *from*.",
-                branchName => options = options.WithbranchName(branchName)
+                "buildazdouri=",
+                $"The url to the default collection of the AzDO server containing the build you wish to insert. Defaults to the **visualstudioazdouri** if unspecified.",
+                buildAzdoUri => options = options.WithBuildAzdoUri(buildAzdoUri)
+            },
+            {
+                "bpn=|buildprojectname=",
+                $"The name of the build queue producing signed bits you wish to insert. Defaults to match the **visualstudioprojectname** option.",
+                buildProjetName => options = options.WithBuildProjectName(buildProjetName)
             },
             {
                 "bq=|buildqueue=",
@@ -88,19 +113,14 @@ partial class RoslynInsertionToolCommandline
                 buildQueueName => options = options.WithBuildQueueName(buildQueueName)
             },
             {
-                "vstsurl=",
-                $"The url to the default collection of the VSTS server. Defaults to \"{options.VSTSUri}\".",
-                vstsUrl => options = options.WithVSTSUrl(vstsUrl)
+                "bn=|branchname=",
+                "The branch we are inserting *from*.",
+                branchName => options = options.WithBranchName(branchName)
             },
             {
-                "tfspn=|tfsprojectname=",
-                $"The project that contains the branch specified in **visualstudiobranchname**. Defaults to \"{options.TFSProjectName}\".",
-                tfsProjectName => options = options.WithTFSProjectName(tfsProjectName)
-            },
-            {
-                "nbn=|newbranchname=",
-                $"The name of the branch we create when staging our insertion. Will have the current date and insertion branch appended to it. If empty a new branch and pull request are not created (for local testing purposes only). Defaults to \"{options.NewBranchName}\".",
-                newBranchName => options = options.WithNewBranchName(newBranchName)
+                "nbn=|newbranchname=|insertionbranchname=",
+                $"The name of the branch we create when staging our insertion. Will have the current date and insertion branch appended to it. If empty a new branch and pull request are not created (for local testing purposes only). Defaults to \"{options.InsertionBranchName}\".",
+                insertionBranchName => options = options.WithInsertionBranchName(insertionBranchName)
             },
             {
                 "dp=|droppath=",
@@ -262,9 +282,21 @@ partial class RoslynInsertionToolCommandline
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Failed to get credential");
+                    Console.WriteLine($"Failed to get VS credential");
                     Console.WriteLine(e.Message);
                     return false;
+                }
+
+                try
+                {
+                    var buildPassword = await GetSecret(settings.BuildSecretName, options);
+                    options = options.WithBuildPassword(buildPassword);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Failed to get Build credential. Using VS credential instead.");
+                    Console.WriteLine(e.Message);
+                    options = options.WithBuildPassword(options.Password);
                 }
             }
             else

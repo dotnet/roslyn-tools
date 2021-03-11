@@ -13,13 +13,13 @@ namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
-        private static string GetNewBranchName() => $"{Options.NewBranchName}{Options.VisualStudioBranchName.Split('/').Last()}.{DateTime.Now:yyyyMMddHHmmss}";
+        private static string GetNewBranchName() => $"{Options.InsertionBranchName}{Options.VisualStudioBranchName.Split('/').Last()}.{DateTime.Now:yyyyMMddHHmmss}";
 
-        private static async Task<GitPullRequest> CreatePlaceholderBranchAsync(CancellationToken cancellationToken)
+        private static async Task<GitPullRequest> CreatePlaceholderVSBranchAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var gitClient = ProjectCollection.GetClient<GitHttpClient>();
-            var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
+            var gitClient = VsConnection.GetClient<GitHttpClient>();
+            var repository = await gitClient.GetRepositoryAsync(project: Options.VisualStudioProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
 
             var refs = await gitClient.GetRefsAsync(
                 repository.Id,
@@ -54,7 +54,7 @@ namespace Roslyn.Insertion
                 },
             }, repository.Id, cancellationToken: cancellationToken);
 
-            return await CreatePullRequestAsync(
+            return await CreateVSPullRequestAsync(
                 branchName,
                 $"PLACEHOLDER INSERTION FOR {Options.InsertionName}",
                 "Not Specified",
