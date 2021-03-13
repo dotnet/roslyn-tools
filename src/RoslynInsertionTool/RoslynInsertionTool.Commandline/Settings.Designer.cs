@@ -26,27 +26,27 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("vslsnap@microsoft.com")]
-        public string UserName {
+        public string VisualStudioRepoAzdoUserName {
             get {
-                return ((string)(this["UserName"]));
+                return ((string)(this["VisualStudioRepoAzdoUserName"]));
             }
         }
 
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("https://devdiv.visualstudio.com/DefaultCollection")]
-        public string VisualStudioAzdoUri {
+        public string VisualStudioRepoAzdoUri {
             get {
-                return ((string)(this["VisualStudioAzdoUri"]));
+                return ((string)(this["VisualStudioRepoAzdoUri"]));
             }
         }
 
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("DevDiv")]
-        public string VisualStudioProjectName {
+        public string VisualStudioRepoProjectName {
             get {
-                return ((string)(this["VisualStudioProjectName"]));
+                return ((string)(this["VisualStudioRepoProjectName"]));
             }
         }
 
@@ -170,20 +170,20 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("vslsnap-vso-auth-token")]
-        public string VsoSecretName {
+        public string VisualStudioRepoSecretName {
             get {
-                return ((string)(this["VsoSecretName"]));
+                return ((string)(this["VisualStudioRepoSecretName"]));
             }
         }
 
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("vslsnap-build-auth-token")]
-        public string BuildSecretName
+        public string ComponentBuildSecretName
         {
             get
             {
-                return ((string)(this["BuildSecretName"]));
+                return ((string)(this["ComponentBuildSecretName"]));
             }
         }
 

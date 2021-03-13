@@ -33,17 +33,17 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions() { }
 
         private RoslynInsertionToolOptions(
-            string username,
-            string password,
-            string buildUsername,
-            string buildPassword,
-            string visualStudioAzdoUri,
-            string visualStudioProjectName,
+            string visualStudioRepoAzdoUsername,
+            string visualStudioRepoAzdoPassword,
+            string visualStudioRepoAzdoUri,
+            string visualStudioRepoProjectName,
             string visualStudioBranchName,
-            string buildAzdoUri,
-            string buildProjectName,
-            string buildQueueName,
-            string branchName,
+            string componentBuildAzdoUsername,
+            string componentBuildAzdoPassword,
+            string componentBuildAzdoUri,
+            string componentBuildProjectName,
+            string componentBuildQueueName,
+            string componentBranchName,
             string buildConfig,
             string insertionBranchName,
             string buildDropPath,
@@ -71,18 +71,18 @@ namespace Roslyn.Insertion
             bool setAutoComplete,
             ImmutableArray<string> cherryPick)
         {
-            Username = username;
-            Password = password;
-            BuildUsername = buildUsername;
-            BuildPassword = buildPassword;
+            VisualStudioRepoAzdoUsername = visualStudioRepoAzdoUsername;
+            VisualStudioRepoAzdoPassword = visualStudioRepoAzdoPassword;
+            VisualStudioRepoAzdoUri = visualStudioRepoAzdoUri;
+            VisualStudioRepoProjectName = visualStudioRepoProjectName;
             VisualStudioBranchName = visualStudioBranchName;
-            BuildQueueName = buildQueueName;
-            BranchName = branchName;
+            ComponentBuildAzdoUsername = componentBuildAzdoUsername;
+            ComponentBuildAzdoPassword = componentBuildAzdoPassword;
+            ComponentBuildAzdoUri = componentBuildAzdoUri;
+            ComponentBuildProjectName = componentBuildProjectName;
+            ComponentBuildQueueName = componentBuildQueueName;
+            ComponentBranchName = componentBranchName;
             BuildConfig = buildConfig;
-            VisualStudioAzdoUri = visualStudioAzdoUri;
-            VisualStudioProjectName = visualStudioProjectName;
-            BuildAzdoUri = buildAzdoUri;
-            BuildProjectName = buildProjectName;
             InsertionBranchName = insertionBranchName;
             BuildDropPath = buildDropPath;
             SpecificBuild = specificBuild;
@@ -111,18 +111,18 @@ namespace Roslyn.Insertion
         }
 
         public RoslynInsertionToolOptions Update(
-            Optional<string> username = default,
-            Optional<string> password = default,
-            Optional<string> buildUsername = default,
-            Optional<string> buildPassword = default,
-            Optional<string> visualStudioBranchName = default,
-            Optional<string> buildQueueName = default,
-            Optional<string> branchName = default,
-            Optional<string> buildConfig = default,
-            Optional<string> vstsUri = default,
+            Optional<string> visualStudioRepoAzdoUsername = default,
+            Optional<string> visualStudioRepoAzdoPassword = default,
+            Optional<string> visualStudioRepoAzdoUri = default,
             Optional<string> visualStudioProjectName = default,
-            Optional<string> buildAzdoUri = default,
-            Optional<string> buildProjectName = default,
+            Optional<string> visualStudioBranchName = default,
+            Optional<string> componentBuildAzdoUsername = default,
+            Optional<string> componentBuildAzdoPassword = default,
+            Optional<string> componentBuildAzdoUri = default,
+            Optional<string> componentBuildProjectName = default,
+            Optional<string> componentBuildQueueName = default,
+            Optional<string> componentBranchName = default,
+            Optional<string> buildConfig = default,
             Optional<string> insertionBranchName = default,
             Optional<string> buildDropPath = default,
             Optional<string> specificBuild = default,
@@ -150,18 +150,18 @@ namespace Roslyn.Insertion
             Optional<ImmutableArray<string>> cherryPick = default)
         {
             return new RoslynInsertionToolOptions(
-                username: username.ValueOrFallback(Username),
-                password: password.ValueOrFallback(Password),
-                buildUsername: buildUsername.ValueOrFallback(BuildUsername),
-                buildPassword: buildPassword.ValueOrFallback(BuildPassword),
+                visualStudioRepoAzdoUsername: visualStudioRepoAzdoUsername.ValueOrFallback(VisualStudioRepoAzdoUsername),
+                visualStudioRepoAzdoPassword: visualStudioRepoAzdoPassword.ValueOrFallback(VisualStudioRepoAzdoPassword),
+                visualStudioRepoAzdoUri: visualStudioRepoAzdoUri.ValueOrFallback(VisualStudioRepoAzdoUri),
+                visualStudioRepoProjectName: visualStudioProjectName.ValueOrFallback(VisualStudioRepoProjectName),
                 visualStudioBranchName: visualStudioBranchName.ValueOrFallback(VisualStudioBranchName),
-                buildQueueName: buildQueueName.ValueOrFallback(BuildQueueName),
-                branchName: branchName.ValueOrFallback(BranchName),
+                componentBuildAzdoUsername: componentBuildAzdoUsername.ValueOrFallback(ComponentBuildAzdoUsername),
+                componentBuildAzdoPassword: componentBuildAzdoPassword.ValueOrFallback(ComponentBuildAzdoPassword),
+                componentBuildAzdoUri: componentBuildAzdoUri.ValueOrFallback(ComponentBuildAzdoUri),
+                componentBuildProjectName: componentBuildProjectName.ValueOrFallback(ComponentBuildProjectName),
+                componentBuildQueueName: componentBuildQueueName.ValueOrFallback(ComponentBuildQueueName),
+                componentBranchName: componentBranchName.ValueOrFallback(ComponentBranchName),
                 buildConfig: buildConfig.ValueOrFallback(BuildConfig),
-                visualStudioAzdoUri: vstsUri.ValueOrFallback(VisualStudioAzdoUri),
-                visualStudioProjectName: visualStudioProjectName.ValueOrFallback(VisualStudioProjectName),
-                buildAzdoUri: buildAzdoUri.ValueOrFallback(BuildAzdoUri),
-                buildProjectName: buildProjectName.ValueOrFallback(BuildProjectName),
                 insertionBranchName: insertionBranchName.ValueOrFallback(InsertionBranchName),
                 buildDropPath: buildDropPath.ValueOrFallback(BuildDropPath),
                 specificBuild: specificBuild.ValueOrFallback(SpecificBuild),
@@ -201,27 +201,27 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithInsertedBuildRetained(bool retainInsertedBuild) => Update(retainInsertedBuild: retainInsertedBuild);
 
-        public RoslynInsertionToolOptions WithUsername(string username) => Update(username: username);
+        public RoslynInsertionToolOptions WithVisualStudioRepoAzdoUsername(string visualStudioRepoAzdoUsername) => Update(visualStudioRepoAzdoUsername: visualStudioRepoAzdoUsername);
 
-        public RoslynInsertionToolOptions WithBuildUsername(string buildUsername) => Update(buildUsername: buildUsername);
+        public RoslynInsertionToolOptions WithVisualStudioRepoAzdoPassword(string visualStudioRepoAzdoPassword) => Update(visualStudioRepoAzdoPassword: visualStudioRepoAzdoPassword);
 
-        public RoslynInsertionToolOptions WithPassword(string password) => Update(password: password);
+        public RoslynInsertionToolOptions WithVisualStudioRepoAzdoUri(string visualStudioRepoAzdoUri) => Update(visualStudioRepoAzdoUri: visualStudioRepoAzdoUri);
 
-        public RoslynInsertionToolOptions WithBuildPassword(string buildPassword) => Update(buildPassword: buildPassword);
-
-        public RoslynInsertionToolOptions WithVisualStudioAzdoUri(string visualStudioAzdoUri) => Update(vstsUri: visualStudioAzdoUri);
-
-        public RoslynInsertionToolOptions WithVisualStudioProjectName(string visualStudioProjectName) => Update(visualStudioProjectName: visualStudioProjectName);
+        public RoslynInsertionToolOptions WithVisualStudioRepoProjectName(string visualStudioProjectName) => Update(visualStudioProjectName: visualStudioProjectName);
 
         public RoslynInsertionToolOptions WithVisualStudioBranchName(string visualStudioBranchName) => Update(visualStudioBranchName: visualStudioBranchName);
 
-        public RoslynInsertionToolOptions WithBuildAzdoUri(string buildAzdoUri) => Update(buildAzdoUri: buildAzdoUri);
+        public RoslynInsertionToolOptions WithComponentBuildAzdoUsername(string componentBuildAzdoUsername) => Update(componentBuildAzdoUsername: componentBuildAzdoUsername);
 
-        public RoslynInsertionToolOptions WithBuildProjectName(string buildProjectName) => Update(buildProjectName: buildProjectName);
+        public RoslynInsertionToolOptions WithComponentBuildAzdoPassword(string componentBuildAzdoPassword) => Update(componentBuildAzdoPassword: componentBuildAzdoPassword);
 
-        public RoslynInsertionToolOptions WithBuildQueueName(string buildQueueName) => Update(buildQueueName: buildQueueName);
+        public RoslynInsertionToolOptions WithComponentBuildAzdoUri(string componentBuildAzdoUri) => Update(componentBuildAzdoUri: componentBuildAzdoUri);
 
-        public RoslynInsertionToolOptions WithBranchName(string branchName) => Update(branchName: branchName);
+        public RoslynInsertionToolOptions WithComponentBuildProjectName(string componentBuildProjectName) => Update(componentBuildProjectName: componentBuildProjectName);
+
+        public RoslynInsertionToolOptions WithComponentBuildQueueName(string componentBuildQueueName) => Update(componentBuildQueueName: componentBuildQueueName);
+
+        public RoslynInsertionToolOptions WithComponentBranchName(string componentBranchName) => Update(componentBranchName: componentBranchName);
 
         public RoslynInsertionToolOptions WithBuildConfig(string buildConfig) => Update(buildConfig: buildConfig);
 
@@ -263,27 +263,30 @@ namespace Roslyn.Insertion
 
         public RoslynInsertionToolOptions WithCherryPick(ImmutableArray<string> cherryPick) => Update(cherryPick: cherryPick);
 
-        public string Username { get; }
+        public string VisualStudioRepoAzdoUsername { get; }
 
-        public string Password { get; }
+        public string VisualStudioRepoAzdoPassword { get; }
 
-        public string BuildUsername { get; }
+        public string VisualStudioRepoAzdoUri { get; }
 
-        public string BuildPassword { get; }
-
-        public string VisualStudioAzdoUri { get; }
-
-        public string VisualStudioProjectName { get; }
+        public string VisualStudioRepoProjectName { get; }
 
         public string VisualStudioBranchName { get; }
 
-        public string BuildAzdoUri { get; }
+        public string ComponentBuildAzdoUsername { get; }
 
-        public string BuildProjectName { get; }
+        public string ComponentBuildAzdoPassword { get; }
 
-        public string BuildQueueName { get; }
+        public string ComponentBuildAzdoUri { get; }
 
-        public string BranchName { get; }
+        public string ComponentBuildProjectName { get; }
+
+        public string ComponentBuildProjectNameOrFallback
+            => ComponentBuildProjectName ?? VisualStudioRepoProjectName;
+
+        public string ComponentBuildQueueName { get; }
+
+        public string ComponentBranchName { get; }
 
         public string BuildConfig { get; }
 
@@ -341,7 +344,7 @@ namespace Roslyn.Insertion
         {
             get
             {
-                if (BuildAzdoUri != null && (BuildUsername is null || BuildPassword is null))
+                if (ComponentBuildAzdoUri != null && (ComponentBuildAzdoUsername is null || ComponentBuildAzdoPassword is null))
                 {
                     // When the Build AzDO instance is separate from the VS AzDO instance, separate credentials must be specified.
                     return false;
@@ -363,22 +366,22 @@ namespace Roslyn.Insertion
                         !CreateDummyPr &&
                         (!CreateDraftPr || OverwritePr) && // Create draft PR can only be specified when overwriting an existing pr
                         !string.IsNullOrEmpty(InsertionName) &&
-                        !string.IsNullOrEmpty(BranchName) &&
+                        !string.IsNullOrEmpty(ComponentBranchName) &&
                         !string.IsNullOrEmpty(VisualStudioBranchName) &&
-                        !string.IsNullOrEmpty(BuildQueueName);
+                        !string.IsNullOrEmpty(ComponentBuildQueueName);
                 }
                 else
                 {
                     return
                         !OverwritePr &&
-                        !string.IsNullOrEmpty(Username) &&
-                        !string.IsNullOrEmpty(Password) &&
+                        !string.IsNullOrEmpty(VisualStudioRepoAzdoUsername) &&
+                        !string.IsNullOrEmpty(VisualStudioRepoAzdoPassword) &&
                         !string.IsNullOrEmpty(VisualStudioBranchName) &&
-                        !string.IsNullOrEmpty(BuildQueueName) &&
-                        !string.IsNullOrEmpty(BranchName) &&
+                        !string.IsNullOrEmpty(ComponentBuildQueueName) &&
+                        !string.IsNullOrEmpty(ComponentBranchName) &&
                         !string.IsNullOrEmpty(BuildConfig) &&
-                        !string.IsNullOrEmpty(VisualStudioAzdoUri) &&
-                        !string.IsNullOrEmpty(VisualStudioProjectName) &&
+                        !string.IsNullOrEmpty(VisualStudioRepoAzdoUri) &&
+                        !string.IsNullOrEmpty(VisualStudioRepoProjectName) &&
                         !string.IsNullOrEmpty(BuildDropPath);
                 }
             }
@@ -390,16 +393,16 @@ namespace Roslyn.Insertion
             {
                 var builder = new StringBuilder();
 
-                if (BuildAzdoUri != VisualStudioAzdoUri)
+                if (ComponentBuildAzdoUri != VisualStudioRepoAzdoUri)
                 {
-                    if (BuildUsername is null)
+                    if (ComponentBuildAzdoUsername is null)
                     {
-                        builder.AppendLine($"When {nameof(BuildAzdoUri)} is specified you must also specify the {nameof(BuildUsername)}.");
+                        builder.AppendLine($"When {nameof(ComponentBuildAzdoUri)} is specified you must also specify the {nameof(ComponentBuildAzdoUsername)}.");
                     }
 
-                    if (BuildPassword is null)
+                    if (ComponentBuildAzdoPassword is null)
                     {
-                        builder.AppendLine($"When {nameof(BuildAzdoUri)} is specified you must also specify the {nameof(BuildPassword)}.");
+                        builder.AppendLine($"When {nameof(ComponentBuildAzdoUri)} is specified you must also specify the {nameof(ComponentBuildAzdoPassword)}.");
                     }
                 }
 
@@ -440,9 +443,9 @@ namespace Roslyn.Insertion
                         builder.AppendLine($"{nameof(InsertionName).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(BranchName))
+                    if (string.IsNullOrEmpty(ComponentBranchName))
                     {
-                        builder.AppendLine($"{nameof(BranchName).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(ComponentBranchName).ToLowerInvariant()} is required");
                     }
 
                     if (string.IsNullOrEmpty(VisualStudioBranchName))
@@ -450,9 +453,9 @@ namespace Roslyn.Insertion
                         builder.AppendLine($"{nameof(VisualStudioBranchName).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(BuildQueueName))
+                    if (string.IsNullOrEmpty(ComponentBuildQueueName))
                     {
-                        builder.AppendLine($"{nameof(BuildQueueName).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(ComponentBuildQueueName).ToLowerInvariant()} is required");
                     }
                 }
                 else
@@ -463,14 +466,14 @@ namespace Roslyn.Insertion
                         builder.AppendLine($"{nameof(OverwritePr).ToLowerInvariant()} can only be used with {nameof(UpdateExistingPr).ToLowerInvariant()}.");
                     }
 
-                    if (string.IsNullOrEmpty(Username))
+                    if (string.IsNullOrEmpty(VisualStudioRepoAzdoUsername))
                     {
-                        builder.AppendLine($"{nameof(Username).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(VisualStudioRepoAzdoUsername).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(Password))
+                    if (string.IsNullOrEmpty(VisualStudioRepoAzdoPassword))
                     {
-                        builder.AppendLine($"{nameof(Password).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(VisualStudioRepoAzdoPassword).ToLowerInvariant()} is required");
                     }
 
                     if (string.IsNullOrEmpty(VisualStudioBranchName))
@@ -478,14 +481,14 @@ namespace Roslyn.Insertion
                         builder.AppendLine($"{nameof(VisualStudioBranchName).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(BuildQueueName))
+                    if (string.IsNullOrEmpty(ComponentBuildQueueName))
                     {
-                        builder.AppendLine($"{nameof(BuildQueueName).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(ComponentBuildQueueName).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(BranchName))
+                    if (string.IsNullOrEmpty(ComponentBranchName))
                     {
-                        builder.AppendLine($"{nameof(BranchName).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(ComponentBranchName).ToLowerInvariant()} is required");
                     }
 
                     if (string.IsNullOrEmpty(BuildConfig))
@@ -493,14 +496,14 @@ namespace Roslyn.Insertion
                         builder.AppendLine($"{nameof(BuildConfig).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(VisualStudioAzdoUri))
+                    if (string.IsNullOrEmpty(VisualStudioRepoAzdoUri))
                     {
-                        builder.AppendLine($"{nameof(VisualStudioAzdoUri).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(VisualStudioRepoAzdoUri).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(VisualStudioProjectName))
+                    if (string.IsNullOrEmpty(VisualStudioRepoProjectName))
                     {
-                        builder.AppendLine($"{nameof(VisualStudioProjectName).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(VisualStudioRepoProjectName).ToLowerInvariant()} is required");
                     }
 
                     if (string.IsNullOrEmpty(BuildDropPath))

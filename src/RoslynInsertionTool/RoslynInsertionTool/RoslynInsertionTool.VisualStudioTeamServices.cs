@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -25,33 +24,33 @@ namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
-        private static readonly Lazy<TfsTeamProjectCollection> LazyVsConnection = new(() =>
+        private static readonly Lazy<TfsTeamProjectCollection> LazyVisualStudioRepoConnection = new(() =>
         {
-            Console.WriteLine($"Creating VsConnection object from {Options.VisualStudioAzdoUri}");
-            return new TfsTeamProjectCollection(new Uri(Options.VisualStudioAzdoUri), new VssBasicCredential(Options.Username, Options.Password));
+            Console.WriteLine($"Creating VisualStudioRepoConnection object from {Options.VisualStudioRepoAzdoUri}");
+            return new TfsTeamProjectCollection(new Uri(Options.VisualStudioRepoAzdoUri), new VssBasicCredential(Options.VisualStudioRepoAzdoUsername, Options.VisualStudioRepoAzdoPassword));
         });
 
-        private static readonly Lazy<TfsTeamProjectCollection> LazyBuildConnection = new(() =>
+        private static readonly Lazy<TfsTeamProjectCollection> LazyComponentBuildConnection = new(() =>
         {
-            if (string.IsNullOrEmpty(Options.BuildAzdoUri))
+            if (string.IsNullOrEmpty(Options.ComponentBuildAzdoUri))
             {
-                Console.WriteLine($"Using the VsConnection object as our BuildConnection");
-                return LazyVsConnection.Value;
+                Console.WriteLine($"Using the VisualStudioRepoConnection object as our ComponentBuildConnection");
+                return LazyVisualStudioRepoConnection.Value;
             }
 
-            Console.WriteLine($"Creating BuildConnection object from {Options.BuildAzdoUri}");
-            return new TfsTeamProjectCollection(new Uri(Options.BuildAzdoUri), new VssBasicCredential(Options.BuildUsername, Options.BuildPassword));
+            Console.WriteLine($"Creating ComponentBuildConnection object from {Options.ComponentBuildAzdoUri}");
+            return new TfsTeamProjectCollection(new Uri(Options.ComponentBuildAzdoUri), new VssBasicCredential(Options.ComponentBuildAzdoUsername, Options.ComponentBuildAzdoPassword));
         });
 
         /// <summary>
         /// Used to connect to the AzDO instance which contains the VS repo.
         /// </summary>
-        private static TfsTeamProjectCollection VsConnection => LazyVsConnection.Value;
+        private static TfsTeamProjectCollection VisualStudioRepoConnection => LazyVisualStudioRepoConnection.Value;
 
         /// <summary>
         /// Used to connect to the AzDO instance which contains the repo of the Component being inserted.
         /// </summary>
-        private static TfsTeamProjectCollection BuildConnection => LazyBuildConnection.Value;
+        private static TfsTeamProjectCollection ComponentBuildConnection => LazyComponentBuildConnection.Value;
 
         private static GitPullRequest CreatePullRequest(string sourceBranch, string targetBranch, string description, string buildToInsert, string titlePrefix, string reviewerId)
         {
@@ -73,14 +72,14 @@ namespace Roslyn.Insertion
 
         private static string GetPullRequestTitle(string buildToInsert, string prefix)
         {
-            return $"{prefix}{Options.InsertionName} '{Options.BranchName}/{buildToInsert}' Insertion into {Options.VisualStudioBranchName}";
+            return $"{prefix}{Options.InsertionName} '{Options.ComponentBranchName}/{buildToInsert}' Insertion into {Options.VisualStudioBranchName}";
         }
 
         private static async Task<GitPullRequest> CreateVSPullRequestAsync(string branchName, string message, string buildToInsert, string titlePrefix, string reviewerId, CancellationToken cancellationToken)
         {
-            var gitClient = VsConnection.GetClient<GitHttpClient>();
-            Console.WriteLine($"Getting remote repository from {Options.VisualStudioBranchName} in {Options.VisualStudioProjectName}");
-            var repository = await gitClient.GetRepositoryAsync(project: Options.VisualStudioProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
+            var gitClient = VisualStudioRepoConnection.GetClient<GitHttpClient>();
+            Console.WriteLine($"Getting remote repository from {Options.VisualStudioBranchName} in {Options.VisualStudioRepoProjectName}");
+            var repository = await gitClient.GetRepositoryAsync(project: Options.VisualStudioRepoProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
             return await gitClient.CreatePullRequestAsync(
                     CreatePullRequest("refs/heads/" + branchName, "refs/heads/" + Options.VisualStudioBranchName, message, buildToInsert, titlePrefix, reviewerId),
                     repository.Id,
@@ -91,7 +90,7 @@ namespace Roslyn.Insertion
 
         public static async Task<GitPullRequest> OverwritePullRequestAsync(int pullRequestId, string message, string buildToInsert, string titlePrefix, CancellationToken cancellationToken)
         {
-            var gitClient = VsConnection.GetClient<GitHttpClient>();
+            var gitClient = VisualStudioRepoConnection.GetClient<GitHttpClient>();
 
             return await gitClient.UpdatePullRequestAsync(
                 new GitPullRequest
@@ -107,7 +106,7 @@ namespace Roslyn.Insertion
 
         public static async Task RetainComponentBuild(Build buildToInsert)
         {
-            var buildClient = BuildConnection.GetClient<BuildHttpClient>();
+            var buildClient = ComponentBuildConnection.GetClient<BuildHttpClient>();
 
             Console.WriteLine("Marking inserted build for retention.");
             buildToInsert.KeepForever = true;
@@ -116,15 +115,15 @@ namespace Roslyn.Insertion
 
         private static async Task<IEnumerable<Build>> GetComponentBuildsAsync(BuildHttpClient buildClient, List<BuildDefinitionReference> definitions, CancellationToken cancellationToken, BuildResult? resultFilter = null)
         {
-            IEnumerable<Build> builds = await GetComponentBuildsByBranchAsync(buildClient, definitions, Options.BranchName, resultFilter, cancellationToken);
-            builds = builds.Concat(await GetComponentBuildsByBranchAsync(buildClient, definitions, "refs/heads/" + Options.BranchName, resultFilter, cancellationToken));
+            IEnumerable<Build> builds = await GetComponentBuildsByBranchAsync(buildClient, definitions, Options.ComponentBranchName, resultFilter, cancellationToken);
+            builds = builds.Concat(await GetComponentBuildsByBranchAsync(buildClient, definitions, "refs/heads/" + Options.ComponentBranchName, resultFilter, cancellationToken));
             return builds;
         }
 
         private static async Task<List<Build>> GetComponentBuildsByBranchAsync(BuildHttpClient buildClient, List<BuildDefinitionReference> definitions, string branchName, BuildResult? resultFilter, CancellationToken cancellationToken)
         {
             return await buildClient.GetBuildsAsync(
-                project: Options.BuildProjectName,
+                project: Options.ComponentBuildProjectNameOrFallback,
                 definitions: definitions.Select(d => d.Id),
                 branchName: branchName,
                 statusFilter: BuildStatus.Completed,
@@ -134,8 +133,8 @@ namespace Roslyn.Insertion
 
         private static async Task<Build> GetLatestComponentBuildAsync(CancellationToken cancellationToken, BuildResult? resultFilter = null)
         {
-            var buildClient = BuildConnection.GetClient<BuildHttpClient>();
-            var definitions = await buildClient.GetDefinitionsAsync(project: Options.BuildProjectName, name: Options.BuildQueueName);
+            var buildClient = ComponentBuildConnection.GetClient<BuildHttpClient>();
+            var definitions = await buildClient.GetDefinitionsAsync(project: Options.ComponentBuildProjectNameOrFallback, name: Options.ComponentBuildQueueName);
             var builds = await GetComponentBuildsAsync(buildClient, definitions, cancellationToken, resultFilter);
 
             return (await GetInsertableComponentBuildsAsync(buildClient, cancellationToken,
@@ -173,15 +172,15 @@ namespace Roslyn.Insertion
             return buildsWithValidArtifacts;
         }
 
-        private static async Task<Build> GetLatestPassedBuildAsync(CancellationToken cancellationToken)
+        private static async Task<Build> GetLatestPassedComponentBuildAsync(CancellationToken cancellationToken)
         {
             // ********************* Verify Build Passed *****************************
             cancellationToken.ThrowIfCancellationRequested();
             Build newestBuild = null;
-            Console.WriteLine($"Get Latest Passed Build");
+            Console.WriteLine($"Get Latest Passed Component Build");
             try
             {
-                Console.WriteLine($"Getting latest passing build for project {Options.BuildProjectName}, queue {Options.BuildQueueName}, and branch {Options.BranchName}");
+                Console.WriteLine($"Getting latest passing build for project {Options.ComponentBuildProjectNameOrFallback}, queue {Options.ComponentBuildQueueName}, and branch {Options.ComponentBranchName}");
                 // Get the latest build with valid artifacts.
                 newestBuild = await GetLatestComponentBuildAsync(cancellationToken, BuildResult.Succeeded | BuildResult.PartiallySucceeded);
 
@@ -192,12 +191,12 @@ namespace Roslyn.Insertion
             }
             catch (Exception ex)
             {
-                throw new IOException($"Unable to get latest build for '{Options.BuildQueueName}' from project '{Options.BuildProjectName}' in '{Options.BuildAzdoUri}': {ex.Message}");
+                throw new IOException($"Unable to get latest build for '{Options.ComponentBuildQueueName}' from project '{Options.ComponentBuildProjectNameOrFallback}' in '{Options.ComponentBuildAzdoUri}': {ex.Message}");
             }
 
             if (newestBuild == null)
             {
-                throw new IOException($"Unable to get latest build for '{Options.BuildQueueName}' from project '{Options.BuildProjectName}' in '{Options.BuildAzdoUri}'");
+                throw new IOException($"Unable to get latest build for '{Options.ComponentBuildQueueName}' from project '{Options.ComponentBuildProjectNameOrFallback}' in '{Options.ComponentBuildAzdoUri}'");
             }
 
             // ********************* Get New Build Version****************************
@@ -208,7 +207,7 @@ namespace Roslyn.Insertion
         // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
         private static async Task QueueVSBuildPolicy(GitPullRequest pullRequest, string buildPolicy)
         {
-            var policyClient = VsConnection.GetClient<PolicyHttpClient>();
+            var policyClient = VisualStudioRepoConnection.GetClient<PolicyHttpClient>();
             var repository = pullRequest.Repository;
             var timeout = TimeSpan.FromSeconds(30);
             var stopwatch = Stopwatch.StartNew();
@@ -272,7 +271,7 @@ namespace Roslyn.Insertion
         // Similar to: https://devdiv.visualstudio.com/DevDiv/_git/PostBuildSteps#path=%2Fsrc%2FSubmitPullRequest%2FProgram.cs&version=GBmaster&_a=contents
         private static async Task SetAutoCompleteAsync(GitPullRequest pullRequest, string commitMessage, CancellationToken cancellationToken)
         {
-            var gitClient = VsConnection.GetClient<GitHttpClient>();
+            var gitClient = VisualStudioRepoConnection.GetClient<GitHttpClient>();
             var repository = pullRequest.Repository;
             try
             {
@@ -314,18 +313,18 @@ namespace Roslyn.Insertion
             cancellationToken.ThrowIfCancellationRequested();
 
             Console.WriteLine($"Getting build with build number {version}");
-            var buildClient = BuildConnection.GetClient<BuildHttpClient>();
+            var buildClient = ComponentBuildConnection.GetClient<BuildHttpClient>();
 
-            var definitions = await buildClient.GetDefinitionsAsync(project: Options.BuildProjectName, name: Options.BuildQueueName);
+            var definitions = await buildClient.GetDefinitionsAsync(project: Options.ComponentBuildProjectNameOrFallback, name: Options.ComponentBuildQueueName);
             var builds = await buildClient.GetBuildsAsync(
-                project: Options.BuildProjectName,
+                project: Options.ComponentBuildProjectNameOrFallback,
                 definitions: definitions.Select(d => d.Id),
                 buildNumber: version.ToString(),
                 statusFilter: BuildStatus.Completed,
                 cancellationToken: cancellationToken);
 
             return (from build in builds
-                    where version == BuildVersion.FromTfsBuildNumber(build.BuildNumber, Options.BuildQueueName)
+                    where version == BuildVersion.FromTfsBuildNumber(build.BuildNumber, Options.ComponentBuildQueueName)
                     orderby build.FinishTime descending
                     select build).FirstOrDefault();
         }
@@ -339,7 +338,7 @@ namespace Roslyn.Insertion
                 return artifacts;
             }
 
-            var buildClient = BuildConnection.GetClient<BuildHttpClient>();
+            var buildClient = ComponentBuildConnection.GetClient<BuildHttpClient>();
 
             Debug.Assert(ReferenceEquals(build,
                 (await GetInsertableComponentBuildsAsync(buildClient, cancellationToken, new[] { build })).Single()));
@@ -385,7 +384,7 @@ namespace Roslyn.Insertion
 
         private static async Task<string> DownloadBuildArtifactsAsync(BuildHttpClient buildClient, Build build, BuildArtifact artifact, CancellationToken cancellationToken)
         {
-            var tempDirectory = Path.Combine(Path.GetTempPath(), string.Concat(Options.InsertionName, Options.BranchName).Replace(" ", "_").Replace("/", "_"));
+            var tempDirectory = Path.Combine(Path.GetTempPath(), string.Concat(Options.InsertionName, Options.ComponentBranchName).Replace(" ", "_").Replace("/", "_"));
             if (Directory.Exists(tempDirectory))
             {
                 // Be judicious and clean up old artifacts so we do not eat up memory on the scheduler machine.
@@ -405,7 +404,7 @@ namespace Roslyn.Insertion
 
             Stopwatch watch = Stopwatch.StartNew();
 
-            using (Stream s = await buildClient.GetArtifactContentZipAsync(Options.BuildProjectName, build.Id, artifact.Name, cancellationToken))
+            using (Stream s = await buildClient.GetArtifactContentZipAsync(Options.ComponentBuildProjectNameOrFallback, build.Id, artifact.Name, cancellationToken))
             using (var ms = new MemoryStream())
             {
                 await s.CopyToAsync(ms);
@@ -420,15 +419,15 @@ namespace Roslyn.Insertion
             return Path.Combine(tempDirectory, artifact.Name);
         }
 
-        private static async Task<Component[]> GetLatestComponentsAsync(Build newestBuild, InsertionArtifacts buildArtifacts, CancellationToken cancellationToken)
+        private static async Task<Component[]> GetLatestBuildComponentsAsync(Build newestBuild, InsertionArtifacts buildArtifacts, CancellationToken cancellationToken)
         {
-            var logText = await GetComponentDropLogAsync(newestBuild, cancellationToken);
-            var urls = GetComponentManifestUrls(logText);
-            var components = await GetComponentsFromManifests(urls, buildArtifacts);
+            var logText = await GetComponentBuildDropLogAsync(newestBuild, cancellationToken);
+            var urls = GetBuildComponentManifestUrls(logText);
+            var components = await GetBuildComponentsFromManifests(urls, buildArtifacts);
             return components;
         }
 
-        private static async Task<Component[]> GetComponentsFromManifests(string[] urls, InsertionArtifacts buildArtifacts)
+        private static async Task<Component[]> GetBuildComponentsFromManifests(string[] urls, InsertionArtifacts buildArtifacts)
         {
             if (urls == null || urls.Length == 0)
             {
@@ -497,7 +496,7 @@ namespace Roslyn.Insertion
             }
         }
 
-        private static string[] GetComponentManifestUrls(string logText)
+        private static string[] GetBuildComponentManifestUrls(string logText)
         {
             const string startingString = "Manifest Url(s):";
             var manifestStart = logText.IndexOf(startingString);
@@ -532,17 +531,17 @@ namespace Roslyn.Insertion
             return urls;
         }
 
-        private static async Task<string> GetComponentDropLogAsync(Build newestBuild, CancellationToken cancellationToken)
+        private static async Task<string> GetComponentBuildDropLogAsync(Build newestBuild, CancellationToken cancellationToken)
         {
-            var buildClient = BuildConnection.GetClient<BuildHttpClient>();
+            var buildClient = ComponentBuildConnection.GetClient<BuildHttpClient>();
 
-            var allLogs = await buildClient.GetBuildLogsAsync(Options.BuildProjectName, newestBuild.Id, cancellationToken: cancellationToken);
+            var allLogs = await buildClient.GetBuildLogsAsync(Options.ComponentBuildProjectNameOrFallback, newestBuild.Id, cancellationToken: cancellationToken);
             foreach (var log in allLogs)
             {
-                var headerLine = await buildClient.GetBuildLogLinesAsync(Options.BuildProjectName, newestBuild.Id, log.Id, startLine: 0, endLine: 1, cancellationToken: cancellationToken);
+                var headerLine = await buildClient.GetBuildLogLinesAsync(Options.ComponentBuildProjectNameOrFallback, newestBuild.Id, log.Id, startLine: 0, endLine: 1, cancellationToken: cancellationToken);
                 if (headerLine[0].Contains("Upload VSTS Drop"))
                 {
-                    using var stream = await buildClient.GetBuildLogAsync(Options.BuildProjectName, newestBuild.Id, log.Id, cancellationToken: cancellationToken);
+                    using var stream = await buildClient.GetBuildLogAsync(Options.ComponentBuildProjectNameOrFallback, newestBuild.Id, log.Id, cancellationToken: cancellationToken);
                     var logText = await new StreamReader(stream).ReadToEndAsync();
                     return logText;
                 }

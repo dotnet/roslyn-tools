@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Configuration;
 
 using Microsoft.Azure.KeyVault;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
@@ -25,11 +24,11 @@ partial class RoslynInsertionToolCommandline
         // ********************** Load Default Settings **************************
         var settings = Settings.Default;
         var options = new RoslynInsertionToolOptions()
-            .WithUsername(settings.UserName)
-            .WithVisualStudioAzdoUri(settings.VisualStudioAzdoUri)
-            .WithBuildQueueName(settings.BuildQueueName)
+            .WithVisualStudioRepoAzdoUsername(settings.VisualStudioRepoAzdoUserName)
+            .WithVisualStudioRepoAzdoUri(settings.VisualStudioRepoAzdoUri)
+            .WithVisualStudioRepoProjectName(settings.VisualStudioRepoProjectName)
+            .WithComponentBuildQueueName(settings.BuildQueueName)
             .WithBuildConfig(settings.BuildConfig)
-            .WithVisualStudioProjectName(settings.VisualStudioProjectName)
             .WithBuildDropPath(settings.BuildDropPath)
             .WithInsertionBranchName(settings.InsertionBranchName)
             .WithInsertCoreXTPackages(settings.InsertCoreXTPackages)
@@ -63,34 +62,24 @@ partial class RoslynInsertionToolCommandline
                 t => options = options.WithInsertToolset(true)
             },
             {
-                "u=|username=",
-                $"Username to authenticate with AzDO *and* git. Defaults to \"{options.Username}\".",
-                username => options = options.WithUsername(username)
+                "u=|username=|visualstudiorepoazdousername=",
+                $"Username to authenticate with AzDO *and* git. Defaults to \"{options.VisualStudioRepoAzdoUsername}\".",
+                visualStudioRepoAzdoUsername => options = options.WithVisualStudioRepoAzdoUsername(visualStudioRepoAzdoUsername)
             },
             {
-                "p=|password=",
+                "p=|password=|visualstudiorepoazdopassword=",
                 "The password used to authenticate both AzDO *and* git. If not specified will attempt to load from Azure KeyVault.",
-                password => options = options.WithPassword(password)
+                visualStudioRepoAzdoPassword => options = options.WithVisualStudioRepoAzdoPassword(visualStudioRepoAzdoPassword)
             },
             {
-                "bu=|buildusername=",
-                $"Username to authenticate with the Build AzDO. Required if **buildazdouri** is specified.",
-                buildUsername => options = options.WithBuildUsername(buildUsername)
+                "vstsurl=|visualstudiorepoazdouri=",
+                $"The url to the default collection of the AzDO server. Defaults to \"{options.VisualStudioRepoAzdoUri}\".",
+                visualStudioRepoAzdoUri => options = options.WithVisualStudioRepoAzdoUri(visualStudioRepoAzdoUri)
             },
             {
-                "bp=|buildpassword=",
-                "The password used to authenticate with the Build AzDO. Required if **buildazdouri** is specified.",
-                buildPassword => options = options.WithBuildPassword(buildPassword)
-            },
-            {
-                "vstsurl=|visualstudioazdouri=",
-                $"The url to the default collection of the VSTS server. Defaults to \"{options.VisualStudioAzdoUri}\".",
-                visualStudioAzdoUri => options = options.WithVisualStudioAzdoUri(visualStudioAzdoUri)
-            },
-            {
-                "tfspn=|tfsprojectname=|vspn=|visualstudioprojectname=",
-                $"The project that contains the branch specified in **visualstudiobranchname**. Defaults to \"{options.VisualStudioProjectName}\".",
-                visualStudioProjectName => options = options.WithVisualStudioProjectName(visualStudioProjectName)
+                "tfspn=|tfsprojectname=|vspn=|visualstudiorepoprojectname=",
+                $"The project that contains the branch specified in **visualstudiobranchname**. Defaults to \"{options.VisualStudioRepoProjectName}\".",
+                visualStudioRepoProjectName => options = options.WithVisualStudioRepoProjectName(visualStudioRepoProjectName)
             },
             {
                 "vsbn=|visualstudiobranchname=",
@@ -98,24 +87,34 @@ partial class RoslynInsertionToolCommandline
                 visualStudioBranchName => options = options.WithVisualStudioBranchName(visualStudioBranchName)
             },
             {
-                "buildazdouri=",
-                $"The url to the default collection of the AzDO server containing the build you wish to insert. Defaults to the **visualstudioazdouri** if unspecified.",
-                buildAzdoUri => options = options.WithBuildAzdoUri(buildAzdoUri)
+                "cbu=|componentbuildazdousername=",
+                $"Username to authenticate with the Component Build AzDO. Required if **componentbuildazdouri** is specified.",
+                componentBuildAzdoUsername => options = options.WithComponentBuildAzdoUsername(componentBuildAzdoUsername)
             },
             {
-                "bpn=|buildprojectname=",
-                $"The name of the build queue producing signed bits you wish to insert. Defaults to match the **visualstudioprojectname** option.",
-                buildProjetName => options = options.WithBuildProjectName(buildProjetName)
+                "cbp=|componentbuildazdopassword=",
+                "The password used to authenticate with the Component Build AzDO. Required if **componentbuildazdouri** is specified.",
+                componentBuildAzdoPassword => options = options.WithComponentBuildAzdoPassword(componentBuildAzdoPassword)
             },
             {
-                "bq=|buildqueue=",
-                $"The name of the build queue producing signed bits you wish to insert. Defaults to \"{options.BuildQueueName}\".",
-                buildQueueName => options = options.WithBuildQueueName(buildQueueName)
+                "cburi=|componentbuildazdouri=",
+                $"The url to the default collection of the AzDO server containing the build you wish to insert. Defaults to the **visualstudiorepoazdouri** if unspecified.",
+                componentBuildAzdoUri => options = options.WithComponentBuildAzdoUri(componentBuildAzdoUri)
             },
             {
-                "bn=|branchname=",
+                "cbpn=|componentbuildprojectname=",
+                $"The name of the build queue producing signed bits you wish to insert. Defaults to match the **visualstudiorepoprojectname** option.",
+                componentBuildProjectName => options = options.WithComponentBuildProjectName(componentBuildProjectName)
+            },
+            {
+                "bq=|buildqueue=|componentbuildqueue=",
+                $"The name of the build queue producing signed bits you wish to insert. Defaults to \"{options.ComponentBuildQueueName}\".",
+                componentBuildQueueName => options = options.WithComponentBuildQueueName(componentBuildQueueName)
+            },
+            {
+                "bn=|branchname=|componentbranchname=",
                 "The branch we are inserting *from*.",
-                branchName => options = options.WithBranchName(branchName)
+                componentBranchName => options = options.WithComponentBranchName(componentBranchName)
             },
             {
                 "nbn=|newbranchname=|insertionbranchname=",
@@ -270,33 +269,47 @@ partial class RoslynInsertionToolCommandline
             return true;
         }
 
-        if (string.IsNullOrEmpty(options.Password))
+        if (string.IsNullOrEmpty(options.VisualStudioRepoAzdoPassword))
         {
             if (!string.IsNullOrEmpty(options.ClientId) && !string.IsNullOrEmpty(options.ClientSecret))
             {
                 Console.WriteLine($"Attempting to get credentials from KeyVault.");
                 try
                 {
-                    var password = await GetSecret(settings.VsoSecretName, options);
-                    options = options.WithPassword(password);
+                    var visualStudioRepoAzdoPassword = await GetSecret(settings.VisualStudioRepoSecretName, options);
+                    options = options.WithVisualStudioRepoAzdoPassword(visualStudioRepoAzdoPassword);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Failed to get VS credential");
+                    Console.WriteLine($"Failed to get VS Repo Azdo credential");
                     Console.WriteLine(e.Message);
                     return false;
                 }
+            }
+            else
+            {
+                Console.Error.WriteLine("No password provided and no client secret for KeyVault provided.");
+                Console.Error.WriteLine("If you want to develop the tool locally, do the following:");
+                Console.Error.WriteLine("1. Go to https://devdiv.visualstudio.com/_usersSettings/tokens and generate a token.");
+                Console.Error.WriteLine("2. Add the command line arguments `/username=myusername@microsoft.com /password=myauthtoken`");
+                return false;
+            }
+        }
 
+        if (string.IsNullOrEmpty(options.ComponentBuildAzdoPassword))
+        {
+            if (!string.IsNullOrEmpty(options.ClientId) && !string.IsNullOrEmpty(options.ClientSecret))
+            {
                 try
                 {
-                    var buildPassword = await GetSecret(settings.BuildSecretName, options);
-                    options = options.WithBuildPassword(buildPassword);
+                    var componentBuildAzdoPassword = await GetSecret(settings.ComponentBuildSecretName, options);
+                    options = options.WithComponentBuildAzdoPassword(componentBuildAzdoPassword);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Failed to get Build credential. Using VS credential instead.");
+                    Console.WriteLine($"Failed to get Component Build Azdo credential. Using VS Repo Azdo credential instead.");
                     Console.WriteLine(e.Message);
-                    options = options.WithBuildPassword(options.Password);
+                    options = options.WithComponentBuildAzdoPassword(options.VisualStudioRepoAzdoPassword);
                 }
             }
             else

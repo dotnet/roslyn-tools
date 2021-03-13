@@ -42,35 +42,35 @@ namespace Roslyn.Insertion
 
             try
             {
-                Console.WriteLine($"Verifying given authentication for {Options.VisualStudioAzdoUri}");
+                Console.WriteLine($"Verifying given authentication for {Options.VisualStudioRepoAzdoUri}");
                 try
                 {
-                    VsConnection.Authenticate();
+                    VisualStudioRepoConnection.Authenticate();
                 }
                 catch (Exception ex)
                 {
-                    LogError($"Could not authenticate with {Options.VisualStudioAzdoUri}");
+                    LogError($"Could not authenticate with {Options.VisualStudioRepoAzdoUri}");
                     LogError(ex);
                     return (false, 0);
                 }
 
-                Console.WriteLine($"Verification succeeded for {Options.VisualStudioAzdoUri}");
+                Console.WriteLine($"Verification succeeded for {Options.VisualStudioRepoAzdoUri}");
 
-                if (BuildConnection != VsConnection)
+                if (ComponentBuildConnection != VisualStudioRepoConnection)
                 {
-                    Console.WriteLine($"Verifying given authentication for {Options.BuildAzdoUri}");
+                    Console.WriteLine($"Verifying given authentication for {Options.ComponentBuildAzdoUri}");
                     try
                     {
-                        BuildConnection.Authenticate();
+                        ComponentBuildConnection.Authenticate();
                     }
                     catch (Exception ex)
                     {
-                        LogError($"Could not authenticate with {Options.BuildAzdoUri}");
+                        LogError($"Could not authenticate with {Options.ComponentBuildAzdoUri}");
                         LogError(ex);
                         return (false, 0);
                     }
 
-                    Console.WriteLine($"Verification succeeded for {Options.BuildAzdoUri}");
+                    Console.WriteLine($"Verification succeeded for {Options.ComponentBuildAzdoUri}");
                 }
 
                 // ********************** Create dummy PR *****************************
@@ -109,8 +109,8 @@ namespace Roslyn.Insertion
                 // Get the version from DevOps Pipelines queue, e.g. Roslyn-Main-Signed-Release.
                 if (string.IsNullOrEmpty(Options.SpecificBuild))
                 {
-                    buildToInsert = await GetLatestPassedBuildAsync(cancellationToken);
-                    buildVersion = BuildVersion.FromTfsBuildNumber(buildToInsert.BuildNumber, Options.BuildQueueName);
+                    buildToInsert = await GetLatestPassedComponentBuildAsync(cancellationToken);
+                    buildVersion = BuildVersion.FromTfsBuildNumber(buildToInsert.BuildNumber, Options.ComponentBuildQueueName);
                     Console.WriteLine("Found build number " + buildVersion);
 
                     //  Get the latest build, whether passed or failed.  If the buildToInsert has already been inserted but
@@ -128,7 +128,7 @@ namespace Roslyn.Insertion
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // *********** Look up existing PR ********************
-                var gitClient = VsConnection.GetClient<GitHttpClient>();
+                var gitClient = VisualStudioRepoConnection.GetClient<GitHttpClient>();
                 var branches = await gitClient.GetRefsAsync(
                     VSRepoId,
                     filter: $"heads/{Options.VisualStudioBranchName}",
@@ -249,7 +249,7 @@ namespace Roslyn.Insertion
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating CoreXT components file");
 
-                    var components = await GetLatestComponentsAsync(buildToInsert, insertionArtifacts, cancellationToken);
+                    var components = await GetLatestBuildComponentsAsync(buildToInsert, insertionArtifacts, cancellationToken);
                     var shouldSave = false;
                     foreach (var newComponent in components)
                     {
@@ -331,12 +331,12 @@ namespace Roslyn.Insertion
                         GeneratedRefName = $"refs/heads/{cherryPickBranchName}"
                     };
                     // Cherry-pick VS commits into insertion branch.
-                    var cherryPick = await gitClient.CreateCherryPickAsync(cherryPickArgs, Options.VisualStudioProjectName, VSRepoId, cancellationToken: cancellationToken);
+                    var cherryPick = await gitClient.CreateCherryPickAsync(cherryPickArgs, Options.VisualStudioRepoProjectName, VSRepoId, cancellationToken: cancellationToken);
                     while (cherryPick.Status < GitAsyncOperationStatus.Completed)
                     {
                         Console.WriteLine($"Cherry-pick progress: {cherryPick.DetailedStatus?.Progress ?? 0:P}");
                         await Task.Delay(5000);
-                        cherryPick = await gitClient.GetCherryPickAsync(options.VisualStudioProjectName, cherryPick.CherryPickId, VSRepoId, cancellationToken: cancellationToken);
+                        cherryPick = await gitClient.GetCherryPickAsync(options.VisualStudioRepoProjectName, cherryPick.CherryPickId, VSRepoId, cancellationToken: cancellationToken);
                     }
                     Console.WriteLine($"Cherry-pick status: {cherryPick.Status}");
 
@@ -427,7 +427,7 @@ namespace Roslyn.Insertion
                         // If this insertion was queued for PR validation, for a dev branch, or for a feature branch,
                         // then add the build queuer as a reviewer instead of mlinfraswat.
                         var isPrValidation = !string.IsNullOrEmpty(GetBuildPRNumber(buildToInsert));
-                        var isDevOrFeatureBranch = Options.BranchName.StartsWith("dev/") || Options.BranchName.StartsWith("features/");
+                        var isDevOrFeatureBranch = Options.ComponentBranchName.StartsWith("dev/") || Options.ComponentBranchName.StartsWith("features/");
 
                         var reviewerId = isPrValidation || isDevOrFeatureBranch
                             ? buildToInsert.RequestedBy.Id
