@@ -5,7 +5,7 @@
     <merge from="dev15.9.x" to="release/dev16.4-vs-deps" />
     <merge from="release/dev16.4-vs-deps" to="release/dev16.7-vs-deps" />
     <merge from="release/dev16.7-vs-deps" to="release/dev16.9-vs-deps" />
-      
+
     <!-- Roslyn last servicing branch (flowing into current branch) -->
     <merge from="release/dev16.9-vs-deps" to="release/dev16.10" />
 
@@ -29,11 +29,12 @@
     <merge from="main" to="features/list-patterns" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/interpolated-string" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/improved-definite-assignment" owners="RikkiGibson" frequency="weekly" />
+    <merge from="main" to="features/caller-argument-expression" owners="333fred" frequency="weekly" />
   </repo>
   <repo owner="dotnet" name="roslyn-sdk">
     <merge from="dev16.0.x" to="main" />
   </repo>
-    
+
   <!-- Project System repo -->
   <repo owner="dotnet" name="project-system">
     <merge from="dev15.0.x" to="dev15.9.x" />
@@ -43,7 +44,7 @@
     <merge from="dev16.8.x" to="dev16.9.x" />
     <merge from="dev16.9.x" to="main" />
   </repo>
-    
+
   <repo owner="dotnet" name="templates">
     <merge from="dev15.9.x" to="dev16.0.x" />
     <merge from="dev16.0.x" to="master" />
@@ -84,7 +85,7 @@
   <repo owner="dotnet" name="msbuild-language-service">
     <merge from="master" to="dev/prototype" />
   </repo>
-    
+
   <!-- dotnet-format service branches -->
   <repo owner="dotnet" name="format">
     <merge from="master" to="release/6.0" />
