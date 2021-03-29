@@ -11,11 +11,11 @@
 
     <!-- Roslyn non-vs-deps branches (flowing between releases) -->
     <merge from="release/dev16.10" to="main" />
-    <merge from="main" to="release/dev17.0" />
+    <!--merge from="main" to="release/dev17.0" /-->
 
     <!-- Roslyn vs-deps branches (flowing between releases) -->
     <merge from="release/dev16.10-vs-deps" to="main-vs-deps" />
-    <merge from="main-vs-deps" to="release/dev17.0-vs-deps" />
+    <!--merge from="main-vs-deps" to="release/dev17.0-vs-deps" /-->
 
     <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
     <merge from="release/dev16.10" to="release/dev16.10-vs-deps" />
