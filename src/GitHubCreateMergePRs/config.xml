@@ -1,5 +1,5 @@
 <config>
-  <repo owner="dotnet" name="roslyn" mergeOwners="allisonchou">
+  <repo owner="dotnet" name="roslyn" mergeOwners="dibarbet">
     <!-- For a list of VS versions under servicing, see https://docs.microsoft.com/en-us/visualstudio/releases/2019/servicing#support-options-for-enterprise-and-professional-customers -->
     <!-- Roslyn servicing branches (flowing between releases) -->
     <merge from="dev15.9.x" to="release/dev16.4-vs-deps" />
