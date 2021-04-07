@@ -31,6 +31,7 @@
     <merge from="main" to="features/improved-definite-assignment" owners="RikkiGibson" frequency="weekly" />
     <merge from="main" to="features/caller-argument-expression" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/extended-property-patterns" owners="333fred" frequency="weekly" />
+    <merge from="main" to="features/value_tracking" owners="ryzngard" frequency="weekly" />
   </repo>
 
   <repo owner="dotnet" name="roslyn-sdk">
