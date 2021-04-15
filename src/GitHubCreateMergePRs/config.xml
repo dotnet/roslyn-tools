@@ -81,7 +81,7 @@
     <merge from="2.9.x" to="main" />
     <merge from="release/5.0.1xx" to="release/5.0.2xx" />
     <merge from="release/5.0.2xx" to="main" />
-    <merge from="main" to="release/6.0.1xx-preview4" />
+    <merge from="main" to="release/6.0.1xx-preview5" />
   </repo>
 
   <!-- testimpact branches -->
