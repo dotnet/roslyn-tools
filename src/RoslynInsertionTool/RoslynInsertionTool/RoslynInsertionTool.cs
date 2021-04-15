@@ -42,19 +42,36 @@ namespace Roslyn.Insertion
 
             try
             {
-                Console.WriteLine($"Verifying given authentication for {Options.VSTSUri}");
+                Console.WriteLine($"Verifying given authentication for {Options.VisualStudioRepoAzdoUri}");
                 try
                 {
-                    ProjectCollection.Authenticate();
+                    VisualStudioRepoConnection.Authenticate();
                 }
                 catch (Exception ex)
                 {
-                    LogError($"Could not authenticate with {Options.VSTSUri}");
+                    LogError($"Could not authenticate with {Options.VisualStudioRepoAzdoUri}");
                     LogError(ex);
                     return (false, 0);
                 }
 
-                Console.WriteLine($"Verification succeeded for {Options.VSTSUri}");
+                Console.WriteLine($"Verification succeeded for {Options.VisualStudioRepoAzdoUri}");
+
+                if (ComponentBuildConnection != VisualStudioRepoConnection)
+                {
+                    Console.WriteLine($"Verifying given authentication for {Options.ComponentBuildAzdoUri}");
+                    try
+                    {
+                        ComponentBuildConnection.Authenticate();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError($"Could not authenticate with {Options.ComponentBuildAzdoUri}");
+                        LogError(ex);
+                        return (false, 0);
+                    }
+
+                    Console.WriteLine($"Verification succeeded for {Options.ComponentBuildAzdoUri}");
+                }
 
                 // ********************** Create dummy PR *****************************
                 if (Options.CreateDummyPr)
@@ -62,7 +79,7 @@ namespace Roslyn.Insertion
                     GitPullRequest dummyPR;
                     try
                     {
-                        dummyPR = await CreatePlaceholderBranchAsync(cancellationToken);
+                        dummyPR = await CreatePlaceholderVSBranchAsync(cancellationToken);
                     }
                     catch (Exception ex)
                     {
@@ -92,18 +109,18 @@ namespace Roslyn.Insertion
                 // Get the version from DevOps Pipelines queue, e.g. Roslyn-Main-Signed-Release.
                 if (string.IsNullOrEmpty(Options.SpecificBuild))
                 {
-                    buildToInsert = await GetLatestPassedBuildAsync(cancellationToken);
-                    buildVersion = BuildVersion.FromTfsBuildNumber(buildToInsert.BuildNumber, Options.BuildQueueName);
+                    buildToInsert = await GetLatestPassedComponentBuildAsync(cancellationToken);
+                    buildVersion = BuildVersion.FromTfsBuildNumber(buildToInsert.BuildNumber, Options.ComponentBuildQueueName);
                     Console.WriteLine("Found build number " + buildVersion);
 
                     //  Get the latest build, whether passed or failed.  If the buildToInsert has already been inserted but
                     //  there is a later failing build, then send an error
-                    latestBuild = await GetLatestBuildAsync(cancellationToken);
+                    latestBuild = await GetLatestComponentBuildAsync(cancellationToken);
                 }
                 else
                 {
                     buildVersion = BuildVersion.FromString(Options.SpecificBuild);
-                    buildToInsert = await GetSpecificBuildAsync(buildVersion, cancellationToken);
+                    buildToInsert = await GetSpecificComponentBuildAsync(buildVersion, cancellationToken);
                 }
 
                 var insertionArtifacts = await GetInsertionArtifactsAsync(buildToInsert, cancellationToken);
@@ -111,7 +128,7 @@ namespace Roslyn.Insertion
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // *********** Look up existing PR ********************
-                var gitClient = ProjectCollection.GetClient<GitHttpClient>();
+                var gitClient = VisualStudioRepoConnection.GetClient<GitHttpClient>();
                 var branches = await gitClient.GetRefsAsync(
                     VSRepoId,
                     filter: $"heads/{Options.VisualStudioBranchName}",
@@ -232,7 +249,7 @@ namespace Roslyn.Insertion
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating CoreXT components file");
 
-                    var components = await GetLatestComponentsAsync(buildToInsert, insertionArtifacts, cancellationToken);
+                    var components = await GetLatestBuildComponentsAsync(buildToInsert, insertionArtifacts, cancellationToken);
                     var shouldSave = false;
                     foreach (var newComponent in components)
                     {
@@ -257,10 +274,7 @@ namespace Roslyn.Insertion
                 // ************* Ensure the build is retained on the servers *************
                 if (Options.RetainInsertedBuild && retainBuild && !buildToInsert.KeepForever.GetValueOrDefault())
                 {
-                    Console.WriteLine("Marking inserted build for retention.");
-                    buildToInsert.KeepForever = true;
-                    var buildClient = ProjectCollection.GetClient<BuildHttpClient>();
-                    await buildClient.UpdateBuildAsync(buildToInsert);
+                    await RetainComponentBuild(buildToInsert);
                 }
 
                 // ************* Bail out if there are no changes ************************
@@ -316,12 +330,13 @@ namespace Roslyn.Insertion
                         OntoRefName = $"refs/heads/{insertionBranchName}",
                         GeneratedRefName = $"refs/heads/{cherryPickBranchName}"
                     };
-                    var cherryPick = await gitClient.CreateCherryPickAsync(cherryPickArgs, Options.TFSProjectName, VSRepoId, cancellationToken: cancellationToken);
+                    // Cherry-pick VS commits into insertion branch.
+                    var cherryPick = await gitClient.CreateCherryPickAsync(cherryPickArgs, Options.VisualStudioRepoProjectName, VSRepoId, cancellationToken: cancellationToken);
                     while (cherryPick.Status < GitAsyncOperationStatus.Completed)
                     {
                         Console.WriteLine($"Cherry-pick progress: {cherryPick.DetailedStatus?.Progress ?? 0:P}");
                         await Task.Delay(5000);
-                        cherryPick = await gitClient.GetCherryPickAsync(options.TFSProjectName, cherryPick.CherryPickId, VSRepoId, cancellationToken: cancellationToken);
+                        cherryPick = await gitClient.GetCherryPickAsync(options.VisualStudioRepoProjectName, cherryPick.CherryPickId, VSRepoId, cancellationToken: cancellationToken);
                     }
                     Console.WriteLine($"Cherry-pick status: {cherryPick.Status}");
 
@@ -350,7 +365,7 @@ namespace Roslyn.Insertion
                 }
 
                 // ********************* Create pull request *****************************
-                var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
+                var oldBuild = await GetSpecificComponentBuildAsync(oldComponentVersion, cancellationToken);
                 var prDescriptionMarkdown = CreatePullRequestDescription(oldBuild, buildToInsert, useMarkdown: true);
 
                 if (buildToInsert.Result == BuildResult.PartiallySucceeded)
@@ -412,13 +427,13 @@ namespace Roslyn.Insertion
                         // If this insertion was queued for PR validation, for a dev branch, or for a feature branch,
                         // then add the build queuer as a reviewer instead of mlinfraswat.
                         var isPrValidation = !string.IsNullOrEmpty(GetBuildPRNumber(buildToInsert));
-                        var isDevOrFeatureBranch = Options.BranchName.StartsWith("dev/") || Options.BranchName.StartsWith("features/");
+                        var isDevOrFeatureBranch = Options.ComponentBranchName.StartsWith("dev/") || Options.ComponentBranchName.StartsWith("features/");
 
                         var reviewerId = isPrValidation || isDevOrFeatureBranch
                             ? buildToInsert.RequestedBy.Id
                             : MLInfraSwatUserId.ToString();
 
-                        pullRequest = await CreatePullRequestAsync(insertionBranchName, prDescriptionMarkdown, buildVersion.ToString(), options.TitlePrefix, reviewerId, cancellationToken);
+                        pullRequest = await CreateVSPullRequestAsync(insertionBranchName, prDescriptionMarkdown, buildVersion.ToString(), options.TitlePrefix, reviewerId, cancellationToken);
                         if (pullRequest == null)
                         {
                             LogError($"Unable to create pull request for '{insertionBranchName}'");
@@ -447,10 +462,10 @@ namespace Roslyn.Insertion
                             // When creating Draft PRs no policies are automatically started.
                             // If we do not queue a CloudBuild the Perf DDRITs request will
                             // spin waiting for a build to test against until it timesout.
-                            await QueueBuildPolicy(pullRequest, "CloudBuild - PR");
+                            await QueueVSBuildPolicy(pullRequest, "CloudBuild - PR");
                         }
 
-                        await QueueBuildPolicy(pullRequest, "Request Perf DDRITs");
+                        await QueueVSBuildPolicy(pullRequest, "Request Perf DDRITs");
                     }
                     catch (Exception ex)
                     {
@@ -461,9 +476,9 @@ namespace Roslyn.Insertion
                     if (Options.CreateDraftPr)
                     {
                         // When creating Draft PRs no policies are automatically started.
-                        await TryQueueBuildPolicy(pullRequest, "Insertion Hash Check", insertionBranchName);
-                        await TryQueueBuildPolicy(pullRequest, "Insertion Sign Check", insertionBranchName);
-                        await TryQueueBuildPolicy(pullRequest, "Insertion Symbol Check", insertionBranchName);
+                        await TryQueueVSBuildPolicy(pullRequest, "Insertion Hash Check", insertionBranchName);
+                        await TryQueueVSBuildPolicy(pullRequest, "Insertion Sign Check", insertionBranchName);
+                        await TryQueueVSBuildPolicy(pullRequest, "Insertion Symbol Check", insertionBranchName);
                     }
                 }
 

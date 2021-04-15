@@ -26,27 +26,27 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("vslsnap@microsoft.com")]
-        public string UserName {
+        public string VisualStudioRepoAzdoUserName {
             get {
-                return ((string)(this["UserName"]));
+                return ((string)(this["VisualStudioRepoAzdoUserName"]));
             }
         }
 
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("https://devdiv.visualstudio.com/DefaultCollection")]
-        public string VSTSUrl {
+        public string VisualStudioRepoAzdoUri {
             get {
-                return ((string)(this["VSTSUrl"]));
+                return ((string)(this["VisualStudioRepoAzdoUri"]));
             }
         }
 
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("DevDiv")]
-        public string TFSProjectName {
+        public string VisualStudioRepoProjectName {
             get {
-                return ((string)(this["TFSProjectName"]));
+                return ((string)(this["VisualStudioRepoProjectName"]));
             }
         }
 
@@ -62,9 +62,9 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("dev/vslsnap/insertions/")]
-        public string NewBranchName {
+        public string InsertionBranchName {
             get {
-                return ((string)(this["NewBranchName"]));
+                return ((string)(this["InsertionBranchName"]));
             }
         }
 
@@ -170,9 +170,20 @@ namespace Roslyn.Insertion {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("vslsnap-vso-auth-token")]
-        public string VsoSecretName {
+        public string VisualStudioRepoSecretName {
             get {
-                return ((string)(this["VsoSecretName"]));
+                return ((string)(this["VisualStudioRepoSecretName"]));
+            }
+        }
+
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("vslsnap-build-auth-token")]
+        public string ComponentBuildSecretName
+        {
+            get
+            {
+                return ((string)(this["ComponentBuildSecretName"]));
             }
         }
 
