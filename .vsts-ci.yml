@@ -122,5 +122,4 @@ stages:
       # https://github.com/dotnet/arcade/issues/2871 is resolved.
       enableSymbolValidation: false
       enableSourceLinkValidation: false
-
-
+      publishingInfraVersion: 3
