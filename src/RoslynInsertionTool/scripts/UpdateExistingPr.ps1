@@ -3,6 +3,8 @@ param([string] $clientId,
       [string] $requiredValueSentinel,
       [string] $defaultValueSentinel,
       [string] $buildQueueName,
+      [string] $componentAzdoUri,
+      [string] $componentProjectName,
       [string] $componentBranchName,
       [string] $componentName,
       [string] $dropPath,
@@ -27,6 +29,8 @@ EnsureRequiredValue -friendlyName "ComponentBranchName" -value $componentBranchN
 EnsureRequiredValue -friendlyName "VisualStudioBranchName" -value $visualStudioBranchName
 EnsureRequiredValue -friendlyName "ExistingPR" -value $existingPr
 
+$componentAzdoUri = GetComponentAzdoUri -componentAzdoUri $componentAzdoUri
+$componentProjectName = GetComponentProjectName -componentProjectName $componentProjectName
 $buildQueueName = GetBuildQueueName -componentName $componentName -buildQueueName $buildQueueName
 $dropPathFlag = GetDropPathFlag -componentName $componentName -dropPath $dropPath
 $insertCore = GetInsertCore -componentName $componentName -insertCore $insertCore
@@ -44,4 +48,4 @@ if($overwritePR)
   $overwritePrflag = "/overwritepr"
 }
 
-& $PSScriptRoot\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag
+& $PSScriptRoot\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag $componentAzdoUri $componentProjectName
