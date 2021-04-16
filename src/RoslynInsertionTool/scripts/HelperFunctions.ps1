@@ -13,6 +13,22 @@ function IsDefaultValue([string] $value) {
     return ($value -eq "") -or ($value -eq $defaultValueSentinel)
 }
 
+function GetComponentAzdoUri([string] $componentAzdoUri) {
+    if (IsDefaultValue $componentAzdoUri) {
+        return ""
+    } else {
+        return "/cburi=$componentAzdoUri"
+    }
+}
+
+function GetComponentProjectName([string] $componentProjectName) {
+    if (IsDefaultValue $componentProjectName) {
+        return ""
+    } else {
+        return "/cbpn=$componentProjectName"
+    }
+}
+
 function GetBuildQueueName([string] $componentName, [string] $buildQueueName) {
     if (IsDefaultValue $buildQueueName) {
         switch ($componentName) {
