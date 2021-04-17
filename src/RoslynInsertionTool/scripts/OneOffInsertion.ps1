@@ -31,6 +31,7 @@ EnsureRequiredValue -friendlyName "VisualStudioBranchName" -value $visualStudioB
 
 $componentAzdoUri = GetComponentAzdoUri -componentAzdoUri $componentAzdoUri
 $componentProjectName = GetComponentProjectName -componentProjectName $componentProjectName
+$componentUserName = GetComponentUserName -componentAzdoUri $componentAzdoUri
 $buildQueueName = GetBuildQueueName -componentName $componentName -buildQueueName $buildQueueName
 $dropPathFlag = GetDropPathFlag -componentName $componentName -dropPath $dropPath
 $insertCore = GetInsertCore -componentName $componentName -insertCore $insertCore
@@ -49,5 +50,5 @@ if ($insertionCount -lt 1) {
 }
 
 for ($i = 0; $i -lt $insertionCount; $i++) {
-    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $componentAzdoUri $componentProjectName
+    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $componentAzdoUri $componentProjectName $componentUserName
 }

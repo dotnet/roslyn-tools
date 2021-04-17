@@ -29,6 +29,14 @@ function GetComponentProjectName([string] $componentProjectName) {
     }
 }
 
+function GetComponentUserName([string] $componentAzdoUri) {
+    if (IsDefaultValue $componentAzdoUri) {
+        return ""
+    } else {
+        return "/cbu=vslsnap@microsoft.com"
+    }
+}
+
 function GetBuildQueueName([string] $componentName, [string] $buildQueueName) {
     if (IsDefaultValue $buildQueueName) {
         switch ($componentName) {
