@@ -197,7 +197,16 @@ namespace Roslyn.Insertion
                     // *********** Copy OptimizationInputs.props file ***********************
                     foreach (var propsFile in insertionArtifacts.GetOptProfPropertyFiles())
                     {
-                        var targetFilePath = "src/Tests/config/runsettings/Official/OptProf/External/" + Path.GetFileName(propsFile);
+                        var propsFilename = Path.GetFileName(propsFile);
+                        if (propsFilename == "dotnet-roslyn.props")
+                        {
+                            // Since the propsFilename is based on repo name, during Roslyn's transition from inserting
+                            // from GH dotnet/roslyn builds to inserting from dnceng dotnet-roslyn builds, this will
+                            // ensure that we look for the proper props filename.
+                            propsFilename = "dotnet.roslyn.props";
+                        }
+
+                        var targetFilePath = $"src/Tests/config/runsettings/Official/OptProf/External/{propsFilename}";
 
                         var version = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = baseBranch.ObjectId };
                         var stream = await gitClient.GetItemContentAsync(VSRepoId, targetFilePath, download: true, versionDescriptor: version);
