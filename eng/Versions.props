@@ -12,7 +12,8 @@
     <SystemValueTupleVersion>4.4.0</SystemValueTupleVersion>
     <SystemIOCompressionVersion>4.3.0</SystemIOCompressionVersion>
     <SystemIOPackagingVersion>4.5.0</SystemIOPackagingVersion>
-    <SystemNetHttpVersion>4.3.3</SystemNetHttpVersion>
+    <SystemNetHttpVersion>4.3.4</SystemNetHttpVersion>
+    <SystemTextRegularExpressions>4.1.0</SystemTextRegularExpressions>
     <!-- VS -->
     <EnvDTEVersion>8.0.0</EnvDTEVersion>
     <MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion>10.0.30319</MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion>
@@ -36,9 +37,11 @@
     <MicrosoftBuildVersion>15.6.82</MicrosoftBuildVersion>
     <MicrosoftBuildTasksCoreVersion>15.6.82</MicrosoftBuildTasksCoreVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryVersion>5.2.0</MicrosoftIdentityModelClientsActiveDirectoryVersion>
-    <MicrosoftTeamFoundationServerClientVersion>15.112.1</MicrosoftTeamFoundationServerClientVersion>
-    <MicrosoftVisualStudioServicesClientVersion>15.112.1</MicrosoftVisualStudioServicesClientVersion>
-    <MicrosoftVisualStudioServicesDistributedTaskClientVersion>15.112.1-preview</MicrosoftVisualStudioServicesDistributedTaskClientVersion>
+    <MicrosoftTeamFoundationServerClientVersion>15.120.0-preview</MicrosoftTeamFoundationServerClientVersion>
+    <MicrosoftTeamFoundationServerExtendedClientVersion>15.120.0-preview</MicrosoftTeamFoundationServerExtendedClientVersion>
+    <MicrosoftTeamFoundationDistributedTaskWebApi>15.120.0-preview</MicrosoftTeamFoundationDistributedTaskWebApi>
+    <MicrosoftVisualStudioServicesClientVersion>15.120.0-preview</MicrosoftVisualStudioServicesClientVersion>
+    <WindowsAzureStorage>8.1.0</WindowsAzureStorage>
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>

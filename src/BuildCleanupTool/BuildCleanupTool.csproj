@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="$(MicrosoftIdentityModelClientsActiveDirectoryVersion)" />
     <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="$(MicrosoftTeamFoundationServerClientVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="$(MicrosoftVisualStudioServicesClientVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.DistributedTask.Client" Version="$(MicrosoftVisualStudioServicesDistributedTaskClientVersion)" />
+    <PackageReference Include="Microsoft.TeamFoundation.DistributedTask.WebApi" Version="$(MicrosoftTeamFoundationDistributedTaskWebApi)" />
   </ItemGroup>
 
 </Project>
