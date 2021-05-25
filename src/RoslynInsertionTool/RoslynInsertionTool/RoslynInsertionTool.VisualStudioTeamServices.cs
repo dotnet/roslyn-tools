@@ -419,135 +419,43 @@ namespace Roslyn.Insertion
             return Path.Combine(tempDirectory, artifact.Name);
         }
 
-        private static async Task<Component[]> GetLatestBuildComponentsAsync(Build newestBuild, InsertionArtifacts buildArtifacts, CancellationToken cancellationToken)
+        private static Component[] GetLatestBuildComponents(Build newestBuild, InsertionArtifacts buildArtifacts, CancellationToken cancellationToken)
         {
-            var logText = await GetComponentBuildDropLogAsync(newestBuild, cancellationToken);
-            var urls = GetBuildComponentManifestUrls(logText);
-            var components = await GetBuildComponentsFromManifests(urls, buildArtifacts);
-            return components;
+            return Directory.EnumerateFiles(buildArtifacts.RootDirectory, "*.vsman", SearchOption.AllDirectories)
+                .Select(GetComponentFromManifestFile)
+                .ToArray();
         }
 
-        private static async Task<Component[]> GetBuildComponentsFromManifests(string[] urls, InsertionArtifacts buildArtifacts)
+        private static Component GetComponentFromManifestFile(string filePath)
         {
-            if (urls == null || urls.Length == 0)
-            {
-                Console.WriteLine("GetComponentsFromManifests: No URLs specified.");
-                return Array.Empty<Component>();
-            }
+            Console.WriteLine($"GetComponentFromManifestFile: Opening manifest from {filePath}.");
+            var fileName = Path.GetFileName(filePath);
+            var manifestJson = File.ReadAllText(filePath);
 
-            var result = new Component[urls.Length];
-            for (var i = 0; i < urls.Length; i++)
+            var manifest = JsonConvert.DeserializeAnonymousType(manifestJson, new
             {
-                var urlString = urls[i];
-
-                Uri uri;
-                try
+                info = new
                 {
-                    uri = new Uri(urlString);
-                }
-                catch (Exception ex)
+                    manifestName = "",
+                    buildVersion = ""
+                },
+                packages = new[]
                 {
-                    Console.WriteLine($"Exception thrown creating Uri from {urlString}: {ex}");
-                    throw;
+                    new
+                    {
+                        payloads = new[]
+                        {
+                            new
+                            {
+                                url = ""
+                            }
+                        }
+                    }
                 }
-
-                var fileName = urlString.Split(';').Last();
-                var name = fileName.Remove(fileName.Length - 6, 6);
-                // Search the build artifacts for a copy of the manifest file.
-                var localFilePath = Directory.Exists(buildArtifacts.RootDirectory)
-                    ? Directory.EnumerateFiles(buildArtifacts.RootDirectory, Path.GetFileName(fileName), SearchOption.AllDirectories).SingleOrDefault() // Some component filename entries are more complex, ex. "bootstrapper/4536430/f2dfd6c8-c4fe-4a6e-bb40-3130b7002264/OverlaidInstallerManifest.vsman"
-                    : null;
-                var version = localFilePath != null
-                    ? GetComponentVersionFromFile(localFilePath)
-                    : await GetComponentVersionFromUri(uri);
-                result[i] = new Component(name, fileName, uri, version);
-            }
-
-            return result;
-        }
-
-        private static string GetComponentVersionFromFile(string filePath)
-        {
-            Console.WriteLine($"GetComponentVersionFromFile: Opening manifest from {filePath}.");
-            var manifestText = File.ReadAllText(filePath);
-            return GetComponentVersionFromJson(manifestText);
-        }
-
-        private static async Task<string> GetComponentVersionFromUri(Uri uri)
-        {
-            using (var client = new System.Net.WebClient())
-            {
-                Console.WriteLine($"GetComponentVersionFromUri: Downloading manifest from {uri}.");
-                var manifestText = await client.DownloadStringTaskAsync(uri);
-                return GetComponentVersionFromJson(manifestText);
-            }
-        }
-
-        private static string GetComponentVersionFromJson(string json)
-        {
-            using (var stringStream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
-            using (var streamReader = new StreamReader(stringStream))
-            using (var reader = new JsonTextReader(streamReader))
-            {
-                var jsonDocument = (JObject)JToken.ReadFrom(reader);
-                var infoObject = (JObject)jsonDocument["info"];
-                var version = infoObject.Value<string>("buildVersion"); // might not be present
-                return version;
-            }
-        }
-
-        private static string[] GetBuildComponentManifestUrls(string logText)
-        {
-            const string startingString = "Manifest Url(s):";
-            var manifestStart = logText.IndexOf(startingString);
-            if (manifestStart == -1)
-            {
-                throw new Exception($"Could not locate string '{startingString}'");
-            }
-
-            // We're looking for URLs in the form of:
-            // https://vsdrop.corp.microsoft.com/file/v1/Products/DevDiv/dotnet/roslyn/dev15-rc2/20161122.1;PortableFacades.vsman
-            const string pattern = @"https://.*vsman\r?$";
-            var regex = new Regex(pattern, RegexOptions.Multiline);
-            var input = logText.Substring(manifestStart);
-            var matches = regex.Matches(input);
-
-            if (matches.Count == 0)
-            {
-                throw new Exception($"No URLs found.");
-            }
-
-            var urls = new string[matches.Count];
-            for (var i = 0; i < matches.Count; i++)
-            {
-                urls[i] = matches[i].Value.Trim();
-            }
-
-            foreach (var url in urls)
-            {
-                Console.WriteLine($"Manifest URL: {url}");
-            }
-
-            return urls;
-        }
-
-        private static async Task<string> GetComponentBuildDropLogAsync(Build newestBuild, CancellationToken cancellationToken)
-        {
-            var buildClient = ComponentBuildConnection.GetClient<BuildHttpClient>();
-
-            var allLogs = await buildClient.GetBuildLogsAsync(Options.ComponentBuildProjectNameOrFallback, newestBuild.Id, cancellationToken: cancellationToken);
-            foreach (var log in allLogs)
-            {
-                var headerLine = await buildClient.GetBuildLogLinesAsync(Options.ComponentBuildProjectNameOrFallback, newestBuild.Id, log.Id, startLine: 0, endLine: 1, cancellationToken: cancellationToken);
-                if (headerLine[0].Contains("Upload VSTS Drop"))
-                {
-                    using var stream = await buildClient.GetBuildLogAsync(Options.ComponentBuildProjectNameOrFallback, newestBuild.Id, log.Id, cancellationToken: cancellationToken);
-                    var logText = await new StreamReader(stream).ReadToEndAsync();
-                    return logText;
-                }
-            }
-
-            throw new Exception($"Build {newestBuild.BuildNumber} did not upload its contents to VSTS Drop and is invalid.");
+            });
+            // Everything is uploaded to the same drop, so we can take the url of a package and generate the manifest url.
+            var url = new Uri($"{manifest.packages[0].payloads[0].url.Split(';')[0]};{fileName}");
+            return new Component(manifest.info.manifestName, fileName, url, manifest.info.buildVersion);
         }
 
         internal static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
