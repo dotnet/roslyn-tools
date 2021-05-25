@@ -552,12 +552,13 @@ namespace Roslyn.Insertion
 
         internal static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
         {
+            var repoId = tobuild.Repository.Id; // e.g. dotnet/roslyn when GitHub, 7b863b8d-8cc3-431d-b06b-7136cc32bbe6 when AzDO
+
+            var fromSHA = fromBuild.SourceVersion;
+            var toSHA = tobuild.SourceVersion;
+
             if (tobuild.Repository.Type == "GitHub")
             {
-                var repoId = tobuild.Repository.Id; // e.g. dotnet/roslyn
-
-                var fromSHA = fromBuild.SourceVersion;
-                var toSHA = tobuild.SourceVersion;
 
                 var restEndpoint = $"https://api.github.com/repos/{repoId}/compare/{fromSHA}...{toSHA}";
                 var client = new HttpClient();
@@ -610,6 +611,34 @@ namespace Roslyn.Insertion
                     .ToList();
 
                 return (result, $"//github.com/{repoId}/compare/{fromSHA}...{toSHA}?w=1");
+            }
+            else if (tobuild.Repository.Type == "TfsGit")
+            {
+                var gitClient = ComponentBuildConnection.GetClient<GitHttpClient>();
+                var getCommits = (await gitClient.GetCommitsAsync(
+                    repoId,
+                    new GitQueryCommitsCriteria()
+                    {
+                        ItemVersion = new GitVersionDescriptor() { Version = fromSHA, VersionType = GitVersionType.Commit },
+                        CompareVersion = new GitVersionDescriptor() { Version = toSHA, VersionType = GitVersionType.Commit }
+                    }))
+                    // AzDO does not provide the full commit message, so we must query for each commit to provide better messages for PR merge commits.
+                    .Select(c => gitClient.GetCommitAsync(c.CommitId, repoId));
+                var commits = (await Task.WhenAll(getCommits))
+                    .Select(c =>
+                        new GitCommit()
+                        {
+                            Author = c.Author.Name,
+                            Committer = c.Committer.Name,
+                            CommitDate = c.Committer.Date,
+                            Message = c.Comment,
+                            CommitId = c.CommitId,
+                            RemoteUrl = c.RemoteUrl
+                        })
+                    .ToList();
+
+                // AzDO does not have a UI for comparing two commits. Instead generate the REST API call to retrieve commits between two SHAs.
+                return (commits, $"{tobuild.Repository.Url.OriginalString.Replace("_git", "_apis/git/repositories")}/commits?searchCriteria.itemVersion.version={fromSHA}&searchCriteria.itemVersion.versionType=commit&searchCriteria.compareVersion.version={toSHA}&searchCriteria.compareVersion.versionType=commit");
             }
 
             throw new NotSupportedException("Only builds created from GitHub repos support enumerating commits.");

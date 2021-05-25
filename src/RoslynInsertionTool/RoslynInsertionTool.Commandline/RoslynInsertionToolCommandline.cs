@@ -290,7 +290,7 @@ partial class RoslynInsertionToolCommandline
             {
                 Console.Error.WriteLine("No password provided and no client secret for KeyVault provided.");
                 Console.Error.WriteLine("If you want to develop the tool locally, do the following:");
-                Console.Error.WriteLine("1. Go to https://devdiv.visualstudio.com/_usersSettings/tokens and generate a token.");
+                Console.Error.WriteLine("1. Go to https://devdiv.visualstudio.com/_usersSettings/tokens and generate a token with the following scopes: vso.build_execute,vso.code_full,vso.release_execute,vso.packaging");
                 Console.Error.WriteLine("2. Add the command line arguments `/username=myusername@microsoft.com /password=myauthtoken`");
                 return false;
             }
@@ -316,8 +316,8 @@ partial class RoslynInsertionToolCommandline
             {
                 Console.Error.WriteLine("No password provided and no client secret for KeyVault provided.");
                 Console.Error.WriteLine("If you want to develop the tool locally, do the following:");
-                Console.Error.WriteLine("1. Go to https://devdiv.visualstudio.com/_usersSettings/tokens and generate a token.");
-                Console.Error.WriteLine("2. Add the command line arguments `/username=myusername@microsoft.com /password=myauthtoken`");
+                Console.Error.WriteLine("1. Go to https://dnceng.visualstudio.com/_usersSettings/tokens and generate a token with the following scopes: vso.build_execute,vso.code_full,vso.release_execute,vso.packaging");
+                Console.Error.WriteLine("2. Add the command line arguments `/componentbuildazdousername=myusername@microsoft.com /componentbuildazdopassword=myauthtoken`");
                 return false;
             }
         }
