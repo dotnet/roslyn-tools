@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -26,6 +27,14 @@ namespace Roslyn.Insertion
         //You'll get something like https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequests?_a=active&createdBy=GUID-here
         public static readonly Guid MLInfraSwatUserId = new Guid("6c25b447-1d90-4840-8fde-d8b22cb8733e");
         public static readonly Guid VSLSnapUserId = new Guid("9f64bc2f-479b-429f-a665-fec80e130b1f");
+
+        /// <summary>
+        /// Dnceng maintain and build from a copy of dotnet/roslyn. When trying to get the build from dnceng, it will
+        /// only return the id of the copy, not the real dotnet/roslyn in GitHub.
+        /// Therefore, we need this to map back to Roslyn
+        /// </summary>
+        public static readonly ImmutableDictionary<string, string> dncengRepoNameToGitHubId = ImmutableDictionary<string, string>
+            .Empty.Add("dotnet-roslyn", "dotnet/roslyn");
 
         private static List<string> WarningMessages { get; } = new List<string>();
 
@@ -618,9 +627,15 @@ namespace Roslyn.Insertion
         {
             var prValidationMessage = string.Empty;
 
-            if (build.Repository.Type == "GitHub")
+            var type = build.Repository.Type;
+            if (type == "GitHub" || Options.ComponentBuildProjectName == "internal")
             {
-                var repoURL = $"http://github.com/{build.Repository.Id}";
+                var repoId = type == "GitHub"
+                    ? build.Repository.Id
+                    : dncengRepoNameToGitHubId[build.Repository.Name];
+                // e.g. dotnet/roslyn
+
+                var repoURL = $"http://github.com/{repoId}";
 
                 string prNumber = GetBuildPRNumber(build);
                 if (!string.IsNullOrEmpty(prNumber))

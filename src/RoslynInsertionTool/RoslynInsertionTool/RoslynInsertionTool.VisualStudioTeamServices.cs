@@ -552,9 +552,13 @@ namespace Roslyn.Insertion
 
         internal static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
         {
-            if (tobuild.Repository.Type == "GitHub")
+            var type = tobuild.Repository.Type;
+            if (type == "GitHub" || Options.ComponentBuildProjectName == "internal")
             {
-                var repoId = tobuild.Repository.Id; // e.g. dotnet/roslyn
+                var repoId = type == "GitHub"
+                    ? tobuild.Repository.Id
+                    : dncengRepoNameToGitHubId[tobuild.Repository.Name];
+                // e.g. dotnet/roslyn
 
                 var fromSHA = fromBuild.SourceVersion;
                 var toSHA = tobuild.SourceVersion;
@@ -612,7 +616,7 @@ namespace Roslyn.Insertion
                 return (result, $"//github.com/{repoId}/compare/{fromSHA}...{toSHA}?w=1");
             }
 
-            throw new NotSupportedException("Only builds created from GitHub repos support enumerating commits.");
+            throw new NotSupportedException($"Only builds created from GitHub or Dnceng repos support enumerating commits. The actual repo type: {tobuild.Repository.Type}");
         }
 
         private static readonly Regex IsReleaseFlowCommit = new Regex(@"^Merge pull request #\d+ from dotnet/merges/");
