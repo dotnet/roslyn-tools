@@ -632,9 +632,14 @@ namespace Roslyn.Insertion
                 return prDescription;
             }
 
+
             var description = new StringBuilder(prDescription + Environment.NewLine);
 
-            var repoURL = $"//github.com/{oldBuild.Repository.Id}";
+            var repoId = oldBuild.Repository.Type == "GitHub"
+                ? oldBuild.Repository.Id
+                : dncengRepoNameToGitHubId[oldBuild.Repository.Name];
+
+            var repoURL = $"//github.com/{repoId}";
 
             var commitHeaderAdded = false;
             var mergePRHeaderAdded = false;
