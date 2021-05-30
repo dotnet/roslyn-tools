@@ -632,6 +632,10 @@ namespace Roslyn.Insertion
                 return prDescription;
             }
 
+            if (oldBuild.Repository.Type != "Github" && Options.ComponentBuildProjectName != "internal")
+            {
+                return prDescription;
+            }
 
             var description = new StringBuilder(prDescription + Environment.NewLine);
 
