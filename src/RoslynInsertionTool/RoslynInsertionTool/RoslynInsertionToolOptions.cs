@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 
 namespace Roslyn.Insertion
@@ -69,7 +70,8 @@ namespace Roslyn.Insertion
             string titlePrefix,
             bool createDraftPr,
             bool setAutoComplete,
-            ImmutableArray<string> cherryPick)
+            ImmutableArray<string> cherryPick,
+            ImmutableArray<string> skipCoreXTPackages)
         {
             VisualStudioRepoAzdoUsername = visualStudioRepoAzdoUsername;
             VisualStudioRepoAzdoPassword = visualStudioRepoAzdoPassword;
@@ -108,6 +110,7 @@ namespace Roslyn.Insertion
             CreateDraftPr = createDraftPr;
             SetAutoComplete = setAutoComplete;
             CherryPick = cherryPick;
+            SkipCoreXTPackages = skipCoreXTPackages;
         }
 
         public RoslynInsertionToolOptions Update(
@@ -147,7 +150,8 @@ namespace Roslyn.Insertion
             Optional<string> titlePrefix = default,
             Optional<bool> createDraftPr = default,
             Optional<bool> setAutoComplete = default,
-            Optional<ImmutableArray<string>> cherryPick = default)
+            Optional<ImmutableArray<string>> cherryPick = default,
+            Optional<ImmutableArray<string>> skipCoreXTPackages = default)
         {
             return new RoslynInsertionToolOptions(
                 visualStudioRepoAzdoUsername: visualStudioRepoAzdoUsername.ValueOrFallback(VisualStudioRepoAzdoUsername),
@@ -186,7 +190,8 @@ namespace Roslyn.Insertion
                 titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix),
                 createDraftPr: createDraftPr.ValueOrFallback(CreateDraftPr),
                 setAutoComplete: setAutoComplete.ValueOrFallback(SetAutoComplete),
-                cherryPick: cherryPick.ValueOrFallback(CherryPick));
+                cherryPick: cherryPick.ValueOrFallback(CherryPick),
+                skipCoreXTPackages: skipCoreXTPackages.ValueOrFallback(SkipCoreXTPackages));
         }
 
         public RoslynInsertionToolOptions WithRunRPSInValidation(bool runRPSInValidation) => Update(runRPSInValidation: runRPSInValidation);
@@ -262,6 +267,8 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions WithSetAutoComplete(bool setAutoComplete) => Update(setAutoComplete: setAutoComplete);
 
         public RoslynInsertionToolOptions WithCherryPick(ImmutableArray<string> cherryPick) => Update(cherryPick: cherryPick);
+
+        public RoslynInsertionToolOptions WithSkipCoreXTPackages(string skipCoreXTPackages) => Update(skipCoreXTPackages: skipCoreXTPackages.Split(',').Select(packageName => packageName.Trim()).ToImmutableArray());
 
         public string VisualStudioRepoAzdoUsername { get; }
 
@@ -339,6 +346,8 @@ namespace Roslyn.Insertion
         public bool SetAutoComplete { get; }
 
         public ImmutableArray<string> CherryPick { get; }
+
+        public ImmutableArray<string> SkipCoreXTPackages { get; }
 
         public bool Valid
         {

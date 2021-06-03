@@ -261,5 +261,16 @@ namespace Roslyn.Insertion {
                 return ((bool)(this["CreateDraftPr"]));
             }
         }
+
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("VS.Tools.Roslyn")]
+        public string SkipCoreXTPackages
+        {
+            get
+            {
+                return ((string)(this["SkipCoreXTPackages"]));
+            }
+        }
     }
 }

@@ -191,6 +191,7 @@ namespace Roslyn.Insertion
                         buildVersion,
                         coreXT,
                         insertionArtifacts.GetPackagesDirectory(),
+                        Options.SkipCoreXTPackages,
                         cancellationToken);
                     retainBuild |= success;
 

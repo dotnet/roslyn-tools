@@ -117,6 +117,14 @@ function GetCherryPick([string] $cherryPick) {
     }
 }
 
+function GetSkipCoreXTPackages([string] $skipCoreXTPackages) {
+    if (IsDefaultValue $skipCoreXTPackages) {
+        return ""
+    } else {
+        return "/skipcorextpackages=$skipCoreXTPackages"
+    }
+}
+
 function GetQueueValidation([string] $visualStudioBranchName, [string] $queueValidation) {
     if (IsDefaultValue $queueValidation) {
         if ($visualStudioBranchName -eq "lab/ml") {
