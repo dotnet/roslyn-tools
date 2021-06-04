@@ -7,6 +7,7 @@ param([string] $clientId,
       [string] $componentProjectName,
       [string] $componentBranchName,
       [string] $componentName,
+      [string] $componentGitHubRepoName,
       [string] $dropPath,
       [string] $existingPr,
       [string] $insertCore,
@@ -31,6 +32,7 @@ EnsureRequiredValue -friendlyName "ExistingPR" -value $existingPr
 
 $componentAzdoUri = GetComponentAzdoUri -componentAzdoUri $componentAzdoUri
 $componentProjectName = GetComponentProjectName -componentProjectName $componentProjectName
+$componentGitHubRepoName = GetComponentGitHubRepoName -componentGitHubRepoName $componentGitHubRepoName
 $componentUserName = GetComponentUserName -componentAzdoUri $componentAzdoUri
 $buildQueueName = GetBuildQueueName -componentName $componentName -buildQueueName $buildQueueName
 $dropPathFlag = GetDropPathFlag -componentName $componentName -dropPath $dropPath
@@ -49,4 +51,4 @@ if($overwritePR)
   $overwritePrflag = "/overwritepr"
 }
 
-& $PSScriptRoot\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag $componentAzdoUri $componentProjectName $componentUserName
+& $PSScriptRoot\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName

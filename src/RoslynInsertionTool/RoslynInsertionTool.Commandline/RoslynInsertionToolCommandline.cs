@@ -117,6 +117,11 @@ partial class RoslynInsertionToolCommandline
                 componentBranchName => options = options.WithComponentBranchName(componentBranchName)
             },
             {
+                "componentgithubreponame=",
+                "The github repo name that hosts the component's source code.",
+                componentGitHubRepoName => options = options.WithComponentGitHubRepoName(componentGitHubRepoName)
+            },
+            {
                 "nbn=|newbranchname=|insertionbranchname=",
                 $"The name of the branch we create when staging our insertion. Will have the current date and insertion branch appended to it. If empty a new branch and pull request are not created (for local testing purposes only). Defaults to \"{options.InsertionBranchName}\".",
                 insertionBranchName => options = options.WithInsertionBranchName(insertionBranchName)
