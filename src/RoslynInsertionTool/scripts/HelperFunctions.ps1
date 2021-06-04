@@ -29,6 +29,14 @@ function GetComponentProjectName([string] $componentProjectName) {
     }
 }
 
+function GetComponentGitHubRepoName([string] $componentGitHubRepoName) {
+    if (IsDefaultValue $componentGitHubRepoName) {
+      return ""
+    } else {
+      return "/componentgithubreponame=$componentGitHubRepoName"
+    }
+}
+
 function GetComponentUserName([string] $componentAzdoUri) {
     if (IsDefaultValue $componentAzdoUri) {
         return ""

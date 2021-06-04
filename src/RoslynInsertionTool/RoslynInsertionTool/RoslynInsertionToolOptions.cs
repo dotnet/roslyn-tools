@@ -44,6 +44,7 @@ namespace Roslyn.Insertion
             string componentBuildProjectName,
             string componentBuildQueueName,
             string componentBranchName,
+            string componentGitHubRepoName,
             string buildConfig,
             string insertionBranchName,
             string buildDropPath,
@@ -82,6 +83,7 @@ namespace Roslyn.Insertion
             ComponentBuildProjectName = componentBuildProjectName;
             ComponentBuildQueueName = componentBuildQueueName;
             ComponentBranchName = componentBranchName;
+            ComponentGitHubRepoName = componentGitHubRepoName;
             BuildConfig = buildConfig;
             InsertionBranchName = insertionBranchName;
             BuildDropPath = buildDropPath;
@@ -122,6 +124,7 @@ namespace Roslyn.Insertion
             Optional<string> componentBuildProjectName = default,
             Optional<string> componentBuildQueueName = default,
             Optional<string> componentBranchName = default,
+            Optional<string> componentGitHubRepoName = default,
             Optional<string> buildConfig = default,
             Optional<string> insertionBranchName = default,
             Optional<string> buildDropPath = default,
@@ -161,6 +164,7 @@ namespace Roslyn.Insertion
                 componentBuildProjectName: componentBuildProjectName.ValueOrFallback(ComponentBuildProjectName),
                 componentBuildQueueName: componentBuildQueueName.ValueOrFallback(ComponentBuildQueueName),
                 componentBranchName: componentBranchName.ValueOrFallback(ComponentBranchName),
+                componentGitHubRepoName: componentGitHubRepoName.ValueOrFallback(ComponentGitHubRepoName),
                 buildConfig: buildConfig.ValueOrFallback(BuildConfig),
                 insertionBranchName: insertionBranchName.ValueOrFallback(InsertionBranchName),
                 buildDropPath: buildDropPath.ValueOrFallback(BuildDropPath),
@@ -222,6 +226,8 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions WithComponentBuildQueueName(string componentBuildQueueName) => Update(componentBuildQueueName: componentBuildQueueName);
 
         public RoslynInsertionToolOptions WithComponentBranchName(string componentBranchName) => Update(componentBranchName: componentBranchName);
+
+        public RoslynInsertionToolOptions WithComponentGitHubRepoName(string componentGitHubRepoName) => Update(componentGitHubRepoName: componentGitHubRepoName);
 
         public RoslynInsertionToolOptions WithBuildConfig(string buildConfig) => Update(buildConfig: buildConfig);
 
@@ -287,6 +293,8 @@ namespace Roslyn.Insertion
         public string ComponentBuildQueueName { get; }
 
         public string ComponentBranchName { get; }
+
+        public string ComponentGitHubRepoName { get; }
 
         public string BuildConfig { get; }
 
