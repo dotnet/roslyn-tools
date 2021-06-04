@@ -691,6 +691,7 @@ namespace Roslyn.Insertion
             return result;
         }
 
+        private static readonly Regex IsAzDOReleaseFlowCommit = new Regex(@"^Merged PR \d+: Merging .* to ");
         private static readonly Regex IsAzDOMergePRCommit = new Regex(@"^Merged PR (\d+):");
         public static string GetAzDOPullRequestUrl(string repoURL, string prNumber)
             => $"{repoURL}/pullrequest/{prNumber}";
@@ -708,6 +709,20 @@ namespace Roslyn.Insertion
             {
                 // Exclude arcade dependency updates
                 if (commit.Author == "DotNet Bot")
+                {
+                    mergePRFound = true;
+                    continue;
+                }
+
+                // Exclude OneLoc localization PRs
+                if (commit.Author == "Project Collection Build Service (devdiv)")
+                {
+                    mergePRFound = true;
+                    continue;
+                }
+
+                // Exclude merge commits from auto code-flow PRs (e.g. main to Dev17)
+                if (IsAzDOReleaseFlowCommit.Match(commit.Message).Success)
                 {
                     mergePRFound = true;
                     continue;

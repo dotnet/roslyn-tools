@@ -301,7 +301,7 @@ partial class RoslynInsertionToolCommandline
             }
         }
 
-        if (string.IsNullOrEmpty(options.ComponentBuildAzdoPassword))
+        if (!string.IsNullOrEmpty(options.ComponentBuildAzdoUri) && string.IsNullOrEmpty(options.ComponentBuildAzdoPassword))
         {
             if (!string.IsNullOrEmpty(options.ClientId) && !string.IsNullOrEmpty(options.ClientSecret))
             {
