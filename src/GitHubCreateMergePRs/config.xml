@@ -49,8 +49,7 @@
     <merge from="dev16.8.x" to="dev16.9.x" />
     <merge from="dev16.9.x" to="dev16.10.x" />
     <merge from="dev16.10.x" to="dev16.11.x" />
-    <merge from="dev16.11.x" to="dev17Preview1" owners="dmonroym"/>
-    <merge from="dev17Preview1" to="main"/>
+    <merge from="dev16.11.x" to="main" owners="dmonroym"/>
   </repo>
   
   <!-- NuGet.BuildTasks repo -->
