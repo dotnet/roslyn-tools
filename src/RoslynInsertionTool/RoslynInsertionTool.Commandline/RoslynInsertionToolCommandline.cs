@@ -117,6 +117,11 @@ partial class RoslynInsertionToolCommandline
                 componentBranchName => options = options.WithComponentBranchName(componentBranchName)
             },
             {
+                "componentgithubreponame=",
+                "The github repo name that hosts the component's source code.",
+                componentGitHubRepoName => options = options.WithComponentGitHubRepoName(componentGitHubRepoName)
+            },
+            {
                 "nbn=|newbranchname=|insertionbranchname=",
                 $"The name of the branch we create when staging our insertion. Will have the current date and insertion branch appended to it. If empty a new branch and pull request are not created (for local testing purposes only). Defaults to \"{options.InsertionBranchName}\".",
                 insertionBranchName => options = options.WithInsertionBranchName(insertionBranchName)
@@ -295,13 +300,13 @@ partial class RoslynInsertionToolCommandline
             {
                 Console.Error.WriteLine("No password provided and no client secret for KeyVault provided.");
                 Console.Error.WriteLine("If you want to develop the tool locally, do the following:");
-                Console.Error.WriteLine("1. Go to https://devdiv.visualstudio.com/_usersSettings/tokens and generate a token.");
+                Console.Error.WriteLine("1. Go to https://devdiv.visualstudio.com/_usersSettings/tokens and generate a token with the following scopes: vso.build_execute,vso.code_full,vso.release_execute,vso.packaging");
                 Console.Error.WriteLine("2. Add the command line arguments `/username=myusername@microsoft.com /password=myauthtoken`");
                 return false;
             }
         }
 
-        if (string.IsNullOrEmpty(options.ComponentBuildAzdoPassword))
+        if (!string.IsNullOrEmpty(options.ComponentBuildAzdoUri) && string.IsNullOrEmpty(options.ComponentBuildAzdoPassword))
         {
             if (!string.IsNullOrEmpty(options.ClientId) && !string.IsNullOrEmpty(options.ClientSecret))
             {
@@ -321,8 +326,8 @@ partial class RoslynInsertionToolCommandline
             {
                 Console.Error.WriteLine("No password provided and no client secret for KeyVault provided.");
                 Console.Error.WriteLine("If you want to develop the tool locally, do the following:");
-                Console.Error.WriteLine("1. Go to https://devdiv.visualstudio.com/_usersSettings/tokens and generate a token.");
-                Console.Error.WriteLine("2. Add the command line arguments `/username=myusername@microsoft.com /password=myauthtoken`");
+                Console.Error.WriteLine("1. Go to https://dnceng.visualstudio.com/_usersSettings/tokens and generate a token with the following scopes: vso.build_execute,vso.code_full,vso.release_execute,vso.packaging");
+                Console.Error.WriteLine("2. Add the command line arguments `/componentbuildazdousername=myusername@microsoft.com /componentbuildazdopassword=myauthtoken`");
                 return false;
             }
         }

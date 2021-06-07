@@ -14,11 +14,13 @@ using System.Threading.Tasks;
 
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.Client;
+using Microsoft.TeamFoundation.Client.Reporting;
 using Microsoft.TeamFoundation.Policy.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Task = System.Threading.Tasks.Task;
 
 namespace Roslyn.Insertion
 {
@@ -552,26 +554,69 @@ namespace Roslyn.Insertion
 
         internal static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
         {
-            if (tobuild.Repository.Type == "GitHub")
+            var repoId = !string.IsNullOrEmpty(Options.ComponentGitHubRepoName)
+                ? Options.ComponentGitHubRepoName
+                : tobuild.Repository.Id; // e.g. dotnet/roslyn when GitHub, 7b863b8d-8cc3-431d-b06b-7136cc32bbe6 when AzDO
+
+            var fromSHA = fromBuild.SourceVersion;
+            var toSHA = tobuild.SourceVersion;
+
+            if (tobuild.Repository.Type == "GitHub" || !string.IsNullOrEmpty(Options.ComponentGitHubRepoName))
             {
-                var repoId = tobuild.Repository.Id; // e.g. dotnet/roslyn
+                return await GetChangesBetweenBuildsFromGitHubAsync(repoId, fromSHA, toSHA);
+            }
+            else if (tobuild.Repository.Type == "TfsGit")
+            {
+                return await GetChangesBetweenBuildsFromAzDOAsync(tobuild, repoId, fromSHA, toSHA);
+            }
 
-                var fromSHA = fromBuild.SourceVersion;
-                var toSHA = tobuild.SourceVersion;
+            throw new NotSupportedException("Only builds created from GitHub & AzDO repos support enumerating commits.");
+        }
 
-                var restEndpoint = $"https://api.github.com/repos/{repoId}/compare/{fromSHA}...{toSHA}";
-                var client = new HttpClient();
-                var request = new HttpRequestMessage(HttpMethod.Get, restEndpoint);
-                request.Headers.Add("User-Agent", "RoslynInsertionTool");
-
-                var response = await client.SendAsync(request);
-                var content = await response.Content.ReadAsStringAsync();
-
-                // https://developer.github.com/v3/repos/commits/
-                var data = JsonConvert.DeserializeAnonymousType(content, new
+        private static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsFromAzDOAsync(Build tobuild, string repoId, string fromSHA, string toSHA)
+        {
+            var gitClient = ComponentBuildConnection.GetClient<GitHttpClient>();
+            var getCommits = (await gitClient.GetCommitsAsync(
+                repoId,
+                new GitQueryCommitsCriteria()
                 {
-                    commits = new[]
+                    ItemVersion = new GitVersionDescriptor() { Version = fromSHA, VersionType = GitVersionType.Commit },
+                    CompareVersion = new GitVersionDescriptor() { Version = toSHA, VersionType = GitVersionType.Commit }
+                }))
+                // AzDO does not provide the full commit message, so we must query for each commit to provide better messages for PR merge commits.
+                .Select(c => gitClient.GetCommitAsync(c.CommitId, repoId));
+            var commits = (await Task.WhenAll(getCommits))
+                .Select(c =>
+                    new GitCommit()
                     {
+                        Author = c.Author.Name,
+                        Committer = c.Committer.Name,
+                        CommitDate = c.Committer.Date,
+                        Message = c.Comment,
+                        CommitId = c.CommitId,
+                        RemoteUrl = c.Links.Links["web"].ToString()
+                    })
+                .ToList();
+
+            // AzDO does not have a UI for comparing two commits. Instead generate the REST API call to retrieve commits between two SHAs.
+            return (commits, $"{tobuild.Repository.Url.OriginalString.Replace("_git", "_apis/git/repositories")}/commits?searchCriteria.itemVersion.version={fromSHA}&searchCriteria.itemVersion.versionType=commit&searchCriteria.compareVersion.version={toSHA}&searchCriteria.compareVersion.versionType=commit");
+        }
+
+        private static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsFromGitHubAsync(string repoId, string fromSHA, string toSHA)
+        {
+            var restEndpoint = $"https://api.github.com/repos/{repoId}/compare/{fromSHA}...{toSHA}";
+            var client = new HttpClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, restEndpoint);
+            request.Headers.Add("User-Agent", "RoslynInsertionTool");
+
+            var response = await client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // https://developer.github.com/v3/repos/commits/
+            var data = JsonConvert.DeserializeAnonymousType(content, new
+            {
+                commits = new[]
+                {
                         new
                         {
                             sha = "",
@@ -592,32 +637,25 @@ namespace Roslyn.Insertion
                             html_url = ""
                         }
                     }
-                });
+            });
 
-                var result = data.commits
-                    .Select(d =>
-                        new GitCommit()
-                        {
-                            Author = d.commit.author.name,
-                            Committer = d.commit.committer.name,
-                            CommitDate = DateTime.Parse(d.commit.author.date),
-                            Message = d.commit.message,
-                            CommitId = d.sha,
-                            RemoteUrl = d.html_url
-                        })
-                    // show HEAD first, base last
-                    .Reverse()
-                    .ToList();
+            var result = data.commits
+                .Select(d =>
+                    new GitCommit()
+                    {
+                        Author = d.commit.author.name,
+                        Committer = d.commit.committer.name,
+                        CommitDate = DateTime.Parse(d.commit.author.date),
+                        Message = d.commit.message,
+                        CommitId = d.sha,
+                        RemoteUrl = d.html_url
+                    })
+                // show HEAD first, base last
+                .Reverse()
+                .ToList();
 
-                return (result, $"//github.com/{repoId}/compare/{fromSHA}...{toSHA}?w=1");
-            }
-
-            throw new NotSupportedException("Only builds created from GitHub repos support enumerating commits.");
+            return (result, $"//github.com/{repoId}/compare/{fromSHA}...{toSHA}?w=1");
         }
-
-        private static readonly Regex IsReleaseFlowCommit = new Regex(@"^Merge pull request #\d+ from dotnet/merges/");
-        private static readonly Regex IsMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
-        private static readonly Regex IsSquashedPRCommit = new Regex(@"\(#(\d+)\)(?:\n|$)");
 
         internal static string AppendChangesToDescription(string prDescription, Build oldBuild, List<GitCommit> changes)
         {
@@ -630,7 +668,136 @@ namespace Roslyn.Insertion
 
             var description = new StringBuilder(prDescription + Environment.NewLine);
 
-            var repoURL = $"//github.com/{oldBuild.Repository.Id}";
+            var repoId = !string.IsNullOrEmpty(Options.ComponentGitHubRepoName)
+                ? Options.ComponentGitHubRepoName
+                : oldBuild.Repository.Id; // e.g. dotnet/roslyn when GitHub, 7b863b8d-8cc3-431d-b06b-7136cc32bbe6 when AzDO
+
+            if (oldBuild.Repository.Type == "GitHub" || !string.IsNullOrEmpty(Options.ComponentGitHubRepoName))
+            {
+                AppendGitHubChangesToDescription(changes, hardLimit, description, repoId);
+            }
+            else if (oldBuild.Repository.Type == "TfsGit")
+            {
+                AppendAzDOChangesToDescription(oldBuild, changes, hardLimit, description);
+            }
+
+            var result = description.ToString();
+            if (result.Length > hardLimit)
+            {
+                LogWarning($"PR description is {result.Length} characters long, but the limit is {hardLimit}.");
+                LogWarning(result);
+            }
+
+            return result;
+        }
+
+        private static readonly Regex IsAzDOReleaseFlowCommit = new Regex(@"^Merged PR \d+: Merging .* to ");
+        private static readonly Regex IsAzDOMergePRCommit = new Regex(@"^Merged PR (\d+):");
+        public static string GetAzDOPullRequestUrl(string repoURL, string prNumber)
+            => $"{repoURL}/pullrequest/{prNumber}";
+
+        private static void AppendAzDOChangesToDescription(Build oldBuild, List<GitCommit> changes, int hardLimit, StringBuilder description)
+        {
+            var repoURL = oldBuild.Repository.Url.AbsoluteUri;
+
+            var commitHeaderAdded = false;
+            var mergePRHeaderAdded = false;
+            var mergePRFound = false;
+
+            // This needs to be updated with heuristics for determining merge commits which represent PRs being merged.
+            foreach (var commit in changes)
+            {
+                // Exclude arcade dependency updates
+                if (commit.Author == "DotNet Bot")
+                {
+                    mergePRFound = true;
+                    continue;
+                }
+
+                // Exclude OneLoc localization PRs
+                if (commit.Author == "Project Collection Build Service (devdiv)")
+                {
+                    mergePRFound = true;
+                    continue;
+                }
+
+                // Exclude merge commits from auto code-flow PRs (e.g. main to Dev17)
+                if (IsAzDOReleaseFlowCommit.Match(commit.Message).Success)
+                {
+                    mergePRFound = true;
+                    continue;
+                }
+
+                // Merge PR Messages are in the form "Merged PR 320820: Resolving encoding issue on test summary pane, using UTF8 now\n\nAdded a StreamWriterWrapper to resolve encoding issue"
+                string comment = commit.Message.Split('\n')[0];
+                string prNumber = string.Empty;
+
+                var match = IsAzDOMergePRCommit.Match(commit.Message);
+                if (match.Success)
+                {
+                    prNumber = match.Groups[1].Value;
+                    mergePRFound = true;
+                }
+                else
+                {
+                    // Todo: Determine if there is a format for AzDO squash merges that preserves the PR #
+                }
+
+                // We will print commit comments until we find the first merge PR
+                if (!match.Success && mergePRFound)
+                {
+                    continue;
+                }
+
+                string prLink;
+
+                if (match.Success)
+                {
+                    if (commitHeaderAdded && !mergePRHeaderAdded)
+                    {
+                        mergePRHeaderAdded = true;
+                        description.AppendLine("### Merged PRs:");
+                    }
+
+                    prLink = $@"- [{comment}]({GetAzDOPullRequestUrl(repoURL, prNumber)})";
+                }
+                else
+                {
+                    if (!commitHeaderAdded)
+                    {
+                        commitHeaderAdded = true;
+                        description.AppendLine("### Commits since last PR:");
+                    }
+
+                    var shortSHA = commit.CommitId.Substring(0, 7);
+                    prLink = $@"- [{comment} ({shortSHA})]({commit.RemoteUrl})";
+                }
+
+                const string limitMessage = "Changelog truncated due to description length limit.";
+
+                // we want to be able to fit this PR link, as well as the limit message (plus line breaks) in case the next PR link doesn't fit
+                int limit = hardLimit - (prLink.Length + Environment.NewLine.Length) - (limitMessage.Length + Environment.NewLine.Length);
+                if (description.Length > limit)
+                {
+                    description.AppendLine(limitMessage);
+                    break;
+                }
+                else
+                {
+                    description.AppendLine(prLink);
+                }
+            }
+        }
+
+        private static readonly Regex IsGitHubReleaseFlowCommit = new Regex(@"^Merge pull request #\d+ from dotnet/merges/");
+        private static readonly Regex IsGitHubMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
+        private static readonly Regex IsGitHubSquashedPRCommit = new Regex(@"\(#(\d+)\)(?:\n|$)");
+        public static string GetGitHubPullRequestUrl(string repoURL, string prNumber)
+            => $"{repoURL}/pull/{prNumber}";
+
+        private static void AppendGitHubChangesToDescription(List<GitCommit> changes, int hardLimit, StringBuilder description, string repoId)
+        {
+            var repoURL = $"//github.com/{repoId}";
 
             var commitHeaderAdded = false;
             var mergePRHeaderAdded = false;
@@ -652,7 +819,7 @@ namespace Roslyn.Insertion
                 }
 
                 // Exclude merge commits from auto code-flow PRs (e.g. merges/main-to-main-vs-deps)
-                if (IsReleaseFlowCommit.Match(commit.Message).Success)
+                if (IsGitHubReleaseFlowCommit.Match(commit.Message).Success)
                 {
                     mergePRFound = true;
                     continue;
@@ -661,7 +828,7 @@ namespace Roslyn.Insertion
                 string comment = string.Empty;
                 string prNumber = string.Empty;
 
-                var match = IsMergePRCommit.Match(commit.Message);
+                var match = IsGitHubMergePRCommit.Match(commit.Message);
                 if (match.Success)
                 {
                     prNumber = match.Groups[1].Value;
@@ -675,7 +842,7 @@ namespace Roslyn.Insertion
                 }
                 else
                 {
-                    match = IsSquashedPRCommit.Match(commit.Message);
+                    match = IsGitHubSquashedPRCommit.Match(commit.Message);
                     if (match.Success)
                     {
                         prNumber = match.Groups[1].Value;
@@ -740,19 +907,7 @@ namespace Roslyn.Insertion
                     description.AppendLine(prLink);
                 }
             }
-
-            var result = description.ToString();
-            if (result.Length > hardLimit)
-            {
-                LogWarning($"PR description is {result.Length} characters long, but the limit is {hardLimit}.");
-                LogWarning(result);
-            }
-
-            return result;
         }
-
-        public static string GetGitHubPullRequestUrl(string repoURL, string prNumber)
-            => $"{repoURL}/pull/{prNumber}";
 
         internal struct GitCommit
         {

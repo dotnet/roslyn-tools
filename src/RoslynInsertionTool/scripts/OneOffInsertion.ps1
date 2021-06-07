@@ -7,6 +7,7 @@ param([string] $clientId,
       [string] $componentProjectName,
       [string] $componentBranchName,
       [string] $componentName,
+      [string] $componentGitHubRepoName,
       [string] $dropPath,
       [string] $insertCore,
       [string] $insertDevDiv,
@@ -32,6 +33,7 @@ EnsureRequiredValue -friendlyName "VisualStudioBranchName" -value $visualStudioB
 
 $componentAzdoUri = GetComponentAzdoUri -componentAzdoUri $componentAzdoUri
 $componentProjectName = GetComponentProjectName -componentProjectName $componentProjectName
+$componentGitHubRepoName = GetComponentGitHubRepoName -componentGitHubRepoName $componentGitHubRepoName
 $componentUserName = GetComponentUserName -componentAzdoUri $componentAzdoUri
 $buildQueueName = GetBuildQueueName -componentName $componentName -buildQueueName $buildQueueName
 $dropPathFlag = GetDropPathFlag -componentName $componentName -dropPath $dropPath
@@ -52,5 +54,5 @@ if ($insertionCount -lt 1) {
 }
 
 for ($i = 0; $i -lt $insertionCount; $i++) {
-    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentUserName
+    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName
 }
