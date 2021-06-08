@@ -264,7 +264,7 @@ namespace Roslyn.Insertion {
 
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("VS.Tools.Roslyn")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string SkipCoreXTPackages
         {
             get

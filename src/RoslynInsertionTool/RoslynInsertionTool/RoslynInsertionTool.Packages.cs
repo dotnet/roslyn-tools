@@ -51,7 +51,7 @@ namespace Roslyn.Insertion
 
                 var package = PackageInfo.ParsePackageFileName(fileName);
 
-                if (packagesToBeIgnored.Any(p => p == package.PackageName))
+                if (package.IsRoslynToolsetCompiler || packagesToBeIgnored.Any(p => p == package.PackageName))
                 {
                     continue;
                 }

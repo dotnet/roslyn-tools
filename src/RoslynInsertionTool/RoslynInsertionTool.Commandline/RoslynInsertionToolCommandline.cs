@@ -250,7 +250,7 @@ partial class RoslynInsertionToolCommandline
             },
             {
                 "skipcorextpackages=",
-                $"An optional comma-separated list of CoreXT packages to be skipped when inserting/updating. Defaults to \"{string.Join(",", options.SkipCoreXTPackages)}\".",
+                $"An optional comma-separated list of CoreXT packages to be skipped when inserting/updating.",
                 skipCoreXTPackages => options = options.WithSkipCoreXTPackages(skipCoreXTPackages)
             },
         };

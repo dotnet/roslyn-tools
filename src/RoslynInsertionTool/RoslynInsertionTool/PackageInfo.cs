@@ -31,6 +31,8 @@ namespace Roslyn.Insertion
 
         public bool IsRoslyn => LibraryName == "Roslyn";
 
+        public bool IsRoslynToolsetCompiler => PackageName == RoslynToolsetPackageName;
+
         public PackageInfo(string packageName, string libraryName, NuGetVersion version)
         {
             PackageName = packageName;
