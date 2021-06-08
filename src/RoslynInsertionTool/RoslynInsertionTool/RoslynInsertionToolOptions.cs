@@ -275,7 +275,7 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions WithCherryPick(ImmutableArray<string> cherryPick) => Update(cherryPick: cherryPick);
 
         public RoslynInsertionToolOptions WithSkipCoreXTPackages(string skipCoreXTPackages) =>
-            Update(skipCoreXTPackages: skipCoreXTPackages.Split(',').Select(packageName => packageName.Trim()).Where(packageName => !string.IsNullOrEmpty(packageName)).ToImmutableArray());
+            Update(skipCoreXTPackages: (skipCoreXTPackages ?? string.Empty).Split(',').Select(packageName => packageName.Trim()).Where(packageName => !string.IsNullOrEmpty(packageName)).ToImmutableArray());
 
         public string VisualStudioRepoAzdoUsername { get; }
 
