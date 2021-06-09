@@ -14,7 +14,6 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Mono.Options;
 
 using Roslyn.Insertion;
-
 using static Roslyn.Insertion.RoslynInsertionTool;
 
 partial class RoslynInsertionToolCommandline
@@ -42,7 +41,8 @@ partial class RoslynInsertionToolCommandline
             .WithRunDDRITsInValidation(settings.RunDDRITsInValidation)
             .WithRunRPSInValidation(settings.RunRPSInValidation)
             .WithLogFileLocation(settings.LogFileLocation)
-            .WithCreateDraftPr(settings.CreateDraftPr);
+            .WithCreateDraftPr(settings.CreateDraftPr)
+            .WithSkipCoreXTPackages(settings.SkipCoreXTPackages);
 
         // ************************ Process Arguments ****************************
         bool showHelp = false;
@@ -247,6 +247,11 @@ partial class RoslynInsertionToolCommandline
                 "cherrypick=",
                 $"An optional comma-separated list of VS commits to cherry-pick into the insertion.",
                 cherryPick => options = options.WithCherryPick(cherryPick.Split(',').Select(sha => sha.Trim()).ToImmutableArray())
+            },
+            {
+                "skipcorextpackages=",
+                $"An optional comma-separated list of CoreXT packages to be skipped when inserting/updating.",
+                skipCoreXTPackages => options = options.WithSkipCoreXTPackages(skipCoreXTPackages)
             },
         };
 

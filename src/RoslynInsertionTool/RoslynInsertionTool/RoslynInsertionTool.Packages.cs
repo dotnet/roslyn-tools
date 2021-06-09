@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using NuGet.Versioning;
 
@@ -30,6 +32,7 @@ namespace Roslyn.Insertion
             BuildVersion buildVersion,
             CoreXT coreXT,
             string packagesDir,
+            ImmutableArray<string> packagesToBeIgnored,
             CancellationToken cancellationToken)
         {
             bool shouldRetainBuild = false;
@@ -48,9 +51,8 @@ namespace Roslyn.Insertion
 
                 var package = PackageInfo.ParsePackageFileName(fileName);
 
-                if (package.IsRoslynToolsetCompiler)
+                if (package.IsRoslynToolsetCompiler || packagesToBeIgnored.Any(p => p == package.PackageName))
                 {
-                    // The toolset compiler is inserted separately
                     continue;
                 }
 
