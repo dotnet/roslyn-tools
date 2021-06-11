@@ -18,6 +18,7 @@ using Microsoft.TeamFoundation.Client.Reporting;
 using Microsoft.TeamFoundation.Policy.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Task = System.Threading.Tasks.Task;
@@ -594,7 +595,7 @@ namespace Roslyn.Insertion
                         CommitDate = c.Committer.Date,
                         Message = c.Comment,
                         CommitId = c.CommitId,
-                        RemoteUrl = c.Links.Links["web"].ToString()
+                        RemoteUrl = ((ReferenceLink)c.Links.Links["web"]).Href
                     })
                 .ToList();
 
