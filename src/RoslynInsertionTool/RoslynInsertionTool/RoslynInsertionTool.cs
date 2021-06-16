@@ -259,7 +259,7 @@ namespace Roslyn.Insertion
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating CoreXT components file");
 
-                    var components = await GetLatestBuildComponentsAsync(buildToInsert, insertionArtifacts, cancellationToken);
+                    var components = GetLatestBuildComponents(buildToInsert, insertionArtifacts, cancellationToken);
                     var shouldSave = false;
                     foreach (var newComponent in components)
                     {
