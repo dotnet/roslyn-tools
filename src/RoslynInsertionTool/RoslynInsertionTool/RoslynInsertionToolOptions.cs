@@ -72,7 +72,8 @@ namespace Roslyn.Insertion
             bool createDraftPr,
             bool setAutoComplete,
             ImmutableArray<string> cherryPick,
-            ImmutableArray<string> skipCoreXTPackages)
+            ImmutableArray<string> skipCoreXTPackages,
+            string reviewerGUID)
         {
             VisualStudioRepoAzdoUsername = visualStudioRepoAzdoUsername;
             VisualStudioRepoAzdoPassword = visualStudioRepoAzdoPassword;
@@ -113,6 +114,7 @@ namespace Roslyn.Insertion
             SetAutoComplete = setAutoComplete;
             CherryPick = cherryPick;
             SkipCoreXTPackages = skipCoreXTPackages;
+            ReviewerGUID = reviewerGUID;
         }
 
         public RoslynInsertionToolOptions Update(
@@ -154,7 +156,8 @@ namespace Roslyn.Insertion
             Optional<bool> createDraftPr = default,
             Optional<bool> setAutoComplete = default,
             Optional<ImmutableArray<string>> cherryPick = default,
-            Optional<ImmutableArray<string>> skipCoreXTPackages = default)
+            Optional<ImmutableArray<string>> skipCoreXTPackages = default,
+            Optional<string> reviewerGUID = default)
         {
             return new RoslynInsertionToolOptions(
                 visualStudioRepoAzdoUsername: visualStudioRepoAzdoUsername.ValueOrFallback(VisualStudioRepoAzdoUsername),
@@ -195,7 +198,8 @@ namespace Roslyn.Insertion
                 createDraftPr: createDraftPr.ValueOrFallback(CreateDraftPr),
                 setAutoComplete: setAutoComplete.ValueOrFallback(SetAutoComplete),
                 cherryPick: cherryPick.ValueOrFallback(CherryPick),
-                skipCoreXTPackages: skipCoreXTPackages.ValueOrFallback(SkipCoreXTPackages));
+                skipCoreXTPackages: skipCoreXTPackages.ValueOrFallback(SkipCoreXTPackages),
+                reviewerGUID: reviewerGUID.ValueOrFallback(ReviewerGUID));
         }
 
         public RoslynInsertionToolOptions WithRunRPSInValidation(bool runRPSInValidation) => Update(runRPSInValidation: runRPSInValidation);
@@ -277,6 +281,8 @@ namespace Roslyn.Insertion
         public RoslynInsertionToolOptions WithSkipCoreXTPackages(string skipCoreXTPackages) =>
             Update(skipCoreXTPackages: (skipCoreXTPackages ?? string.Empty).Split(',').Select(packageName => packageName.Trim()).Where(packageName => !string.IsNullOrEmpty(packageName)).ToImmutableArray());
 
+        public RoslynInsertionToolOptions WithReviewerGUID(string reviewerGUID) => Update(reviewerGUID: reviewerGUID);
+
         public string VisualStudioRepoAzdoUsername { get; }
 
         public string VisualStudioRepoAzdoPassword { get; }
@@ -357,6 +363,8 @@ namespace Roslyn.Insertion
         public ImmutableArray<string> CherryPick { get; }
 
         public ImmutableArray<string> SkipCoreXTPackages { get; }
+
+        public string ReviewerGUID { get; }
 
         public bool Valid
         {
