@@ -255,7 +255,7 @@ partial class RoslynInsertionToolCommandline
             },
             {
                 "reviewerGUID=",
-                "The Visual Studio branch we are inserting *into*.",
+                "The GUID of the reviewer ID you'd like to add to your PRs by default (usually your team's).",
                 reviewerGUID => options = options.WithReviewerGUID(reviewerGUID)
             },
         };
