@@ -253,6 +253,11 @@ partial class RoslynInsertionToolCommandline
                 $"An optional comma-separated list of CoreXT packages to be skipped when inserting/updating.",
                 skipCoreXTPackages => options = options.WithSkipCoreXTPackages(skipCoreXTPackages)
             },
+            {
+                "reviewerGUID=",
+                "The Visual Studio branch we are inserting *into*.",
+                reviewerGUID => options = options.WithReviewerGUID(reviewerGUID)
+            },
         };
 
         List<string> extraArguments = null;
