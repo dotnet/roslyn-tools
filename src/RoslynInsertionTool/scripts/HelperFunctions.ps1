@@ -201,3 +201,12 @@ function GetCreateDraftPR([string] $createDraftPR) {
         return $createDraftPR
     }
 }
+
+function GetReviewerGUID([string] $reviewerGUID) {
+    if (IsDefaultValue $reviewerGUID) {
+        return ""
+    }
+    else {
+        return $reviewerGUID
+    }
+}

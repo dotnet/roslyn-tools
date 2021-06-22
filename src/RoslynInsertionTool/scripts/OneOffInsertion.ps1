@@ -23,7 +23,8 @@ param([string] $clientId,
       [string] $autoComplete,
       [string] $createDraftPR,
       [string] $cherryPick,
-      [string] $skipCoreXTPackages)
+      [string] $skipCoreXTPackages,
+      [string] $reviewerGUID)
 
 . $PSScriptRoot\HelperFunctions.ps1
 
@@ -48,11 +49,12 @@ $autoComplete = GetAutoComplete -autoComplete $autoComplete
 $createDraftPR = GetCreateDraftPR -createDraftPR $createDraftPR
 $cherryPick = GetCherryPick -cherryPick $cherryPick
 $skipCoreXTPackages = GetSkipCoreXTPackages -skipCoreXTPackages $skipCoreXTPackages
+$reviewerGUID = GetReviewerGUID -reviewerGUID $reviewerGUID
 
 if ($insertionCount -lt 1) {
     $insertionCount = 1
 }
 
 for ($i = 0; $i -lt $insertionCount; $i++) {
-    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName
+    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" "/reviewerGUID=$reviewerGUID" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName
 }
