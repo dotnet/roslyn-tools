@@ -73,8 +73,12 @@ The default values for these (again, from app.config) are almost always what you
 | **/iw**=true | **/insertWillowPackages**=true | |
 | **/ri**=false | **/retaininsertedbuild**=false | Whether or not the inserted build will be marked for retention. |
 
-## Testing the tool locally
+## Testing the tool 
 
-To test locally one can set the /roslyndroppath to a local bin directory and /newbranchname to empty string. The insertion tool then applies necessary changes to the local enlistment without creating a branch and pull request, fetching the source binaries from the specified local bin directory.
+You'll want to create some mock PRs to test out your changes. To avoid any unwanted changes from actually merging you'll want to set `/dpr=true` so these tests only create drafts, and to avoid wasting resources `/qv=false` so no cloudbuilds or tests are automatically triggered.
 
-```D:\Roslyn\Closed\Tools\Source\RoslynInsertionTool\RoslynInsertionTool.Commandline\bin\Debug\RIT.exe /vsbn=lab/vsuml /bn=Roslyn-Main-Signed-Release /ep=D:\vsuml /rdp=D:\Roslyn\Open\Binaries\Debug /nbn=""```
+Additionally you will have to provide authentication by following these steps:
+ 1. Go to https://devdiv.visualstudio.com/_usersSettings/tokens and generate a token with the following scopes: vso.build_execute,vso.code_full,vso.release_execute,vso.packaging
+ 2. Add the command line arguments `/username=myusername@microsoft.com /password=myauthtoken`
+
+```G:\roslyn-tools\artifacts\bin\RIT\Debug\net46\RIT.exe /username=dmon@microsoft.com /password=token /in="Project System" /bn=main /bq=DotNet-Project-System /vsbn=main /ic=true /id=false /ua=true /uc=false /dpr=true /qv=false```
