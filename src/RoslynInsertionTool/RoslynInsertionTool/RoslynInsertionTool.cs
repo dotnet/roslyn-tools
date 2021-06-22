@@ -24,7 +24,6 @@ namespace Roslyn.Insertion
         public static readonly Guid VSRepoId = new Guid("a290117c-5a8a-40f7-bc2c-f14dbe3acf6d");
         //Easiest way to get these GUIDs is to create a PR search in AzDo
         //You'll get something like https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequests?_a=active&createdBy=GUID-here
-        public static readonly Guid MLInfraSwatUserId = new Guid("6c25b447-1d90-4840-8fde-d8b22cb8733e");
         public static readonly Guid VSLSnapUserId = new Guid("9f64bc2f-479b-429f-a665-fec80e130b1f");
 
         private static List<string> WarningMessages { get; } = new List<string>();
@@ -37,7 +36,6 @@ namespace Roslyn.Insertion
         {
             Options = options;
             Console.WriteLine($"{Environment.NewLine}New Insertion Into {Options.VisualStudioBranchName} Started{Environment.NewLine}");
-
             var newPackageFiles = new List<string>();
 
             try
@@ -434,14 +432,17 @@ namespace Roslyn.Insertion
                     Console.WriteLine($"Create Pull Request");
                     try
                     {
-                        // If this insertion was queued for PR validation, for a dev branch, or for a feature branch,
-                        // then add the build queuer as a reviewer instead of mlinfraswat.
+                        // If this insertion was queued for PR validation, for a dev branch, for a feature branch,
+                        // or if no default reviewer is specified, then add the build queuer as a reviewer.
                         var isPrValidation = !string.IsNullOrEmpty(GetBuildPRNumber(buildToInsert));
                         var isDevOrFeatureBranch = Options.ComponentBranchName.StartsWith("dev/") || Options.ComponentBranchName.StartsWith("features/");
+                        bool hasReviewer = !string.IsNullOrEmpty(Options.ReviewerGUID);
 
-                        var reviewerId = isPrValidation || isDevOrFeatureBranch
+                        // Easiest way to get the reviewer GUIDs is to create a PR search in AzDo
+                        // You'll get something like https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequests?_a=active&createdBy=GUID-here
+                        var reviewerId = (isPrValidation || isDevOrFeatureBranch) || !hasReviewer
                             ? buildToInsert.RequestedBy.Id
-                            : MLInfraSwatUserId.ToString();
+                            : Options.ReviewerGUID;
 
                         pullRequest = await CreateVSPullRequestAsync(insertionBranchName, prDescriptionMarkdown, buildVersion.ToString(), options.TitlePrefix, reviewerId, cancellationToken);
                         if (pullRequest == null)
