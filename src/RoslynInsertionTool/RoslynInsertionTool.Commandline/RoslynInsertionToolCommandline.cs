@@ -255,7 +255,9 @@ partial class RoslynInsertionToolCommandline
             },
             {
                 "reviewerGUID=",
-                "The GUID of the reviewer ID you'd like to add to your PRs by default (usually your team's).",
+                "The GUID of the reviewer ID you'd like to add to your PRs by default (usually your team's).\n" +
+                "Easiest way to get these GUIDs is to create a PR search in AzDo specifying the team or person in the Created By field\n" +
+                "You'll get the GUID in the URL",
                 reviewerGUID => options = options.WithReviewerGUID(reviewerGUID)
             },
         };
