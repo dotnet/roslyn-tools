@@ -323,7 +323,6 @@ namespace Roslyn.Insertion
                 project: Options.ComponentBuildProjectNameOrFallback,
                 definitions: definitions.Select(d => d.Id),
                 buildNumber: version.ToString(),
-                statusFilter: BuildStatus.Completed,
                 cancellationToken: cancellationToken);
 
             return (from build in builds
