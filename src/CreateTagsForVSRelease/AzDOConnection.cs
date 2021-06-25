@@ -9,7 +9,7 @@ using Azure.Security.KeyVault.Secrets;
 
 namespace CreateTagsForVSRelease
 {
-    internal sealed class AzDOConnection: IDisposable
+    internal sealed class AzDOConnection : IDisposable
     {
         private bool _disposed = false;
 
