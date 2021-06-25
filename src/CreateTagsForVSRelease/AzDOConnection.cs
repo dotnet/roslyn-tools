@@ -1,0 +1,51 @@
+using Microsoft.TeamFoundation.Build.WebApi;
+using Microsoft.TeamFoundation.SourceControl.WebApi;
+using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.WebApi;
+using System;
+using System.Net.Http;
+using System.Net;
+using Azure.Security.KeyVault.Secrets;
+
+namespace CreateTagsForVSRelease
+{
+    internal sealed class AzDOConnection: IDisposable
+    {
+        private bool _disposed = false;
+
+        public string BuildProjectName { get; }
+        public string BuildDefinitionName { get; }
+        private VssConnection Connection { get; }
+        public GitHttpClient GitClient { get; }
+        public BuildHttpClient BuildClient { get; }
+        public HttpClient NuGetClient { get; }
+
+        public AzDOConnection(string azdoUrl, string projectName, string buildDefinitionName, SecretClient client, string secretName)
+        {
+            BuildProjectName = projectName;
+            BuildDefinitionName = buildDefinitionName;
+
+            var azureDevOpsSecret = client.GetSecret(secretName);
+            var credential = new NetworkCredential("vslsnap", azureDevOpsSecret.Value.Value);
+
+            Connection = new VssConnection(new Uri(azdoUrl), new WindowsCredential(credential));
+            NuGetClient = new HttpClient(new HttpClientHandler { Credentials = credential });
+
+            GitClient = Connection.GetClient<GitHttpClient>();
+            BuildClient = Connection.GetClient<BuildHttpClient>();
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+
+                Connection.Dispose();
+                GitClient.Dispose();
+                BuildClient.Dispose();
+                NuGetClient.Dispose();
+            }
+        }
+    }
+}
