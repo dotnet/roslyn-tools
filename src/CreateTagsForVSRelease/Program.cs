@@ -3,8 +3,6 @@ using Azure.Security.KeyVault.Secrets;
 using LibGit2Sharp;
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
-using Microsoft.VisualStudio.Services.Common;
-using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Immutable;
@@ -20,25 +18,18 @@ namespace CreateTagsForVSRelease
 {
     public static class Program
     {
-        private const string BuildDefinitionName = "Roslyn-Signed";
-
         public static async Task Main(string[] args)
         {
             var client = new SecretClient(
                 vaultUri: new Uri("https://roslyninfra.vault.azure.net:443"),
                 credential: new DefaultAzureCredential(includeInteractiveCredentials: true));
 
-            var azureDevOpsSecret = await client.GetSecretAsync("vslsnap-vso-auth-token");
-            var credential = new NetworkCredential("vslsnap", azureDevOpsSecret.Value.Value);
-            using var connection = new VssConnection(
-                new Uri("https://devdiv.visualstudio.com/DefaultCollection"),
-                new WindowsCredential(credential));
+            using var devdivConnection = new AzDOConnection("https://devdiv.visualstudio.com/DefaultCollection", "DevDiv", "Roslyn-Signed", client, "vslsnap-vso-auth-token");
+            using var dncengConnection = new AzDOConnection("https://dnceng.visualstudio.com/DefaultCollection", "internal", "dotnet-roslyn CI", client, "vslsnap-build-auth-token");
 
-            using var gitClient = await connection.GetClientAsync<GitHttpClient>();
-            using var buildClient = await connection.GetClientAsync<BuildHttpClient>();
-            using var nugetClient = new HttpClient(new HttpClientHandler { Credentials = credential });
+            var connections = new[] { devdivConnection, dncengConnection };
 
-            var visualStudioReleases = await GetVisualStudioReleasesAsync(gitClient);
+            var visualStudioReleases = await GetVisualStudioReleasesAsync(devdivConnection.GitClient);
             var roslynRepository = new Repository(args[0]);
             var existingTags = roslynRepository.Tags.ToImmutableArray();
 
@@ -46,15 +37,24 @@ namespace CreateTagsForVSRelease
             {
                 var roslynTagName = TryGetRoslynTagName(visualStudioRelease);
 
-                if (roslynTagName != null)
+                if (roslynTagName is not null)
                 {
                     if (!existingTags.Any(t => t.FriendlyName == roslynTagName))
                     {
                         Console.WriteLine($"Tag {roslynTagName} is missing.");
 
-                        var roslynBuild = await TryGetRoslynBuildForReleaseAsync(visualStudioRelease, gitClient, buildClient, nugetClient);
+                        RoslynBuildInformation? roslynBuild = null;
+                        foreach (var connection in connections)
+                        {
+                            roslynBuild = await TryGetRoslynBuildForReleaseAsync(visualStudioRelease, devdivConnection, connection);
 
-                        if (roslynBuild != null)
+                            if (roslynBuild is not null)
+                            {
+                                break;
+                            }
+                        }
+
+                        if (roslynBuild is not null)
                         {
                             Console.WriteLine($"Tagging {roslynBuild.CommitSha} as {roslynTagName}.");
 
@@ -75,36 +75,41 @@ namespace CreateTagsForVSRelease
             }
         }
 
-        private static async Task<RoslynBuildInformation?> TryGetRoslynBuildForReleaseAsync(VisualStudioVersion release, GitHttpClient gitClient, BuildHttpClient buildClient, HttpClient nugetClient)
+        private static async Task<RoslynBuildInformation?> TryGetRoslynBuildForReleaseAsync(VisualStudioVersion release, AzDOConnection vsConnection, AzDOConnection connection)
         {
-            GitRepository vsRepository = await GetVSRepositoryAsync(gitClient);
+            try
+            {
+                var (branchName, buildNumber) = await TryGetRoslynBranchAndBuildNumberForReleaseAsync(release, vsConnection.GitClient);
+                if (string.IsNullOrEmpty(branchName) || string.IsNullOrEmpty(buildNumber))
+                {
+                    return null;
+                }
 
-            var (branchName, buildNumber) = await TryGetRoslynBranchAndBuildNumberForReleaseAsync(release, vsRepository, gitClient);
-            if (string.IsNullOrEmpty(branchName) || string.IsNullOrEmpty(buildNumber))
+                var commitSha = await TryGetRoslynCommitShaFromBuildAsync(connection, buildNumber)
+                    ?? await TryGetRoslynCommitShaFromNuspecAsync(vsConnection.NuGetClient, release, vsConnection.GitClient);
+                if (string.IsNullOrEmpty(commitSha))
+                {
+                    return null;
+                }
+
+                var buildId = connection.BuildDefinitionName + "_" + buildNumber;
+
+                return new RoslynBuildInformation(commitSha, branchName, buildId);
+            }
+            catch
             {
                 return null;
             }
-
-            var commitSha = await TryGetRoslynCommitShaFromBuildAsync(buildClient, vsRepository, buildNumber)
-                ?? await TryGetRoslynCommitShaFromNuspecAsync(nugetClient, release, vsRepository, gitClient);
-            if (string.IsNullOrEmpty(commitSha))
-            {
-                return null;
-            }
-
-            var buildId = BuildDefinitionName + "_" + buildNumber;
-
-            return new RoslynBuildInformation(commitSha, branchName, buildId);
         }
 
         private static async Task<(string branchName, string buildNumber)> TryGetRoslynBranchAndBuildNumberForReleaseAsync(
             VisualStudioVersion release,
-            GitRepository vsRepository,
-            GitHttpClient gitClient)
+            GitHttpClient vsGitClient)
         {
+            GitRepository vsRepository = await GetVSRepositoryAsync(vsGitClient);
             var commit = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = release.CommitSha };
 
-            using var componentsJsonStream = await gitClient.GetItemContentAsync(
+            using var componentsJsonStream = await vsGitClient.GetItemContentAsync(
                 vsRepository.Id,
                 @".corext\Configs\dotnetcodeanalysis-components.json",
                 download: true,
@@ -127,19 +132,18 @@ namespace CreateTagsForVSRelease
             }
 
             var urlSegments = new Uri(parts[0]).Segments;
-            var branchName = string.Join("", urlSegments.SkipWhile(segment => segment != "roslyn/").Skip(1).TakeWhile(segment => segment.EndsWith("/"))).TrimEnd('/');
+            var branchName = string.Join("", urlSegments.SkipWhile(segment => !segment.EndsWith("roslyn/")).Skip(1).TakeWhile(segment => segment.EndsWith("/"))).TrimEnd('/');
             var buildNumber = urlSegments.Last();
 
             return (branchName, buildNumber);
         }
 
         private static async Task<string?> TryGetRoslynCommitShaFromBuildAsync(
-            BuildHttpClient buildClient,
-            GitRepository vsRepository,
+            AzDOConnection buildConnection,
             string buildNumber)
         {
-            var buildDefinition = (await buildClient.GetDefinitionsAsync(vsRepository.ProjectReference.Id, name: BuildDefinitionName)).Single();
-            var build = (await buildClient.GetBuildsAsync(buildDefinition.Project.Id, definitions: new[] { buildDefinition.Id }, buildNumber: buildNumber)).SingleOrDefault();
+            var buildDefinition = (await buildConnection.BuildClient.GetDefinitionsAsync(buildConnection.BuildProjectName, name: buildConnection.BuildDefinitionName)).Single();
+            var build = (await buildConnection.BuildClient.GetBuildsAsync(buildDefinition.Project.Id, definitions: new[] { buildDefinition.Id }, buildNumber: buildNumber)).SingleOrDefault();
 
             if (build == null)
             {
@@ -152,12 +156,12 @@ namespace CreateTagsForVSRelease
         private static async Task<string?> TryGetRoslynCommitShaFromNuspecAsync(
             HttpClient nugetClient,
             VisualStudioVersion release,
-            GitRepository vsRepository,
-            GitHttpClient gitClient)
+            GitHttpClient vsGitClient)
         {
+            GitRepository vsRepository = await GetVSRepositoryAsync(vsGitClient);
             var commit = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = release.CommitSha };
 
-            using var defaultConfigStream = await gitClient.GetItemContentAsync(
+            using var defaultConfigStream = await vsGitClient.GetItemContentAsync(
                 vsRepository.Id,
                 @".corext\Configs\default.config",
                 download: true,
