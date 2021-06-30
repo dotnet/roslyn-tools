@@ -19,22 +19,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="$(MicrosoftVisualStudioSDKVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.ExtensionEngine" Version="$(MicrosoftVisualStudioExtensionEngineVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.ExtensionManager" Version="$(MicrosoftVisualStudioExtensionManagerVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.ExtensionManager.Implementation" Version="$(MicrosoftVisualStudioExtensionManagerImplementationVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.RegDetour" Version="$(MicrosoftVisualStudioRegDetourVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Setup" Version="$(MicrosoftVisualStudioSetupVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Common" Version="$(MicrosoftVisualStudioSetupCommonVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Engine" Version="$(MicrosoftVisualStudioSetupEngineVersion)" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Settings.15.0" Version="$(MicrosoftVisualStudioSettings150Version)" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150Version)" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="$(MicrosoftVisualStudioThreadingVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
-    <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
-    <PackageReference Include="System.ValueTuple" Version="$(SystemValueTupleVersion)" />
-    <PackageReference Include="EnvDTE" Version="$(EnvDTEVersion)" />
-    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Interop.10.0.DesignTime" Version="$(MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion)" />
-    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Interop.11.0.DesignTime" Version="$(MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion)" />
   </ItemGroup>
 </Project>
