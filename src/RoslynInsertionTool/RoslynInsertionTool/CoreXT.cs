@@ -20,15 +20,22 @@ namespace Roslyn.Insertion
         private static HashSet<string> dirtyFiles;
 
         private const string DefaultConfigPath = ".corext/Configs/default.config";
+        private const string LegacyProjectPropsPath = "src/ConfigData/Packages/LegacyProjects.props";
         private const string ComponentsJsonPath = ".corext/Configs/components.json";
+
         private readonly string _defaultConfigOriginal;
+        private readonly string _legacyPropsOriginal;
 
         public XDocument ConfigDocument { get; }
+        public XDocument LegacyPropsDocument { get; }
 
-        public CoreXT(string configOriginalText)
+        private CoreXT(string configOriginalText, string legacyOriginalText)
         {
             _defaultConfigOriginal = configOriginalText;
             ConfigDocument = XDocument.Parse(configOriginalText, LoadOptions.None);
+
+            _legacyPropsOriginal = legacyOriginalText;
+            LegacyPropsDocument = XDocument.Parse(legacyOriginalText, LoadOptions.None);
         }
 
         public static async Task<CoreXT> Load(GitHttpClient gitClient, string commitId)
@@ -41,8 +48,14 @@ namespace Roslyn.Insertion
                 DefaultConfigPath,
                 download: true,
                 versionDescriptor: vsBranch);
+            using var legacyPropsStream = await gitClient.GetItemContentAsync(
+                vsRepoId,
+                LegacyProjectPropsPath,
+                download: true,
+                versionDescriptor: vsBranch);
 
             var defaultConfigOriginal = await new StreamReader(defaultConfigStream).ReadToEndAsync();
+            var legacyPropsOriginal = await new StreamReader(legacyPropsStream).ReadToEndAsync();
 
             ComponentToFileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             ComponentFileToDocumentMap = new Dictionary<string, (string, JObject)>(StringComparer.OrdinalIgnoreCase);
@@ -50,12 +63,28 @@ namespace Roslyn.Insertion
 
             await PopulateComponentJsonMaps(gitClient, commitId);
 
-            return new CoreXT(defaultConfigOriginal);
+            return new CoreXT(defaultConfigOriginal, legacyPropsOriginal);
         }
 
-        public GitChange SaveConfigOpt()
+        public (GitChange defaultConfigOpt, GitChange legacyPropsOpt) SaveConfig()
         {
-            return RoslynInsertionTool.GetChangeOpt(DefaultConfigPath, _defaultConfigOriginal, ConfigDocument.ToFullString());
+            var defaultConfigOpt = RoslynInsertionTool.GetChangeOpt(DefaultConfigPath, _defaultConfigOriginal, toFullString(_defaultConfigOriginal, ConfigDocument));
+            var legacyPropsOpt = RoslynInsertionTool.GetChangeOpt(LegacyProjectPropsPath, _legacyPropsOriginal, toFullString(_legacyPropsOriginal, LegacyPropsDocument));
+            return (defaultConfigOpt, legacyPropsOpt);
+
+            static string toFullString(string original, XDocument document)
+            {
+                var documentString = document.Declaration switch
+                {
+                    null => "",
+                    var decl => decl.ToString() + "\n"
+                } + document.ToString();
+                if (original.EndsWith("\n"))
+                {
+                    documentString += "\n";
+                }
+                return documentString;
+            }
         }
 
         public List<GitChange> SaveComponents()
@@ -83,13 +112,22 @@ namespace Roslyn.Insertion
             return changes;
         }
 
-        public XAttribute GetVersionAttribute(PackageInfo packageInfo)
+        public XAttribute GetDefaultConfigVersionAttribute(PackageInfo packageInfo)
         {
             return ConfigDocument.Root
                 .Elements("packages")
                 .Elements("package")
                 .Where(p => p.Attribute("id")?.Value == packageInfo.PackageName)
                 .Select(x => x.Attribute("version")).SingleOrDefault();
+        }
+
+        public XAttribute GetLegacyPropsVersionAttributeOpt(PackageInfo packageInfo)
+        {
+            return LegacyPropsDocument.Root
+                .Elements("ItemGroup")
+                .Elements("PackageReference")
+                .Where(p => p.Attribute("Update")?.Value == packageInfo.PackageName)
+                .Select(x => x.Attribute("Version")).SingleOrDefault();
         }
 
         public XElement GetClosestFollowingPackageElement(PackageInfo packageInfo)
@@ -102,6 +140,9 @@ namespace Roslyn.Insertion
 
         internal void AddNewPackage(PackageInfo packageInfo)
         {
+            throw new NotSupportedException("Adding a new package is not supported until we also update for LegacyProjects.props");
+
+#pragma warning disable CS0162 // Unreachable code detected
             var followingElement = GetClosestFollowingPackageElement(packageInfo);
 
             var package = new XElement(
@@ -112,12 +153,16 @@ namespace Roslyn.Insertion
                 new XAttribute("tags", "exapis"));
 
             followingElement.AddAfterSelf(package);
+#pragma warning restore CS0162 // Unreachable code detected
         }
 
         public void UpdatePackageVersion(PackageInfo packageInfo)
         {
-            var versionAttribute = GetVersionAttribute(packageInfo);
+            var versionAttribute = GetDefaultConfigVersionAttribute(packageInfo);
             versionAttribute.SetValue(packageInfo.Version.ToString());
+
+            var legacyPropsVersionAttribute = GetLegacyPropsVersionAttributeOpt(packageInfo);
+            legacyPropsVersionAttribute?.SetValue(packageInfo.Version.ToString());
         }
 
         public static NuGetVersion GetPackageVersion(XAttribute versionAttribute)
@@ -127,7 +172,7 @@ namespace Roslyn.Insertion
 
         public bool TryGetPackageVersion(PackageInfo packageInfo, out NuGetVersion version)
         {
-            var attribute = GetVersionAttribute(packageInfo);
+            var attribute = GetDefaultConfigVersionAttribute(packageInfo);
             if (attribute == null)
             {
                 version = default;

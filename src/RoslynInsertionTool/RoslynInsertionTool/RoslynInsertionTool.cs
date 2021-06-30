@@ -243,10 +243,15 @@ namespace Roslyn.Insertion
 
                 // ************ Update .corext\Configs\default.config ********************
                 cancellationToken.ThrowIfCancellationRequested();
-                Console.WriteLine($"Updating CoreXT default.config file");
-                if (coreXT.SaveConfigOpt() is GitChange configChange)
+                Console.WriteLine($"Updating CoreXT default.config and LegacyProjects.props files");
+                var (defaultConfigChange, legacyPropsChange) = coreXT.SaveConfig();
+                if (defaultConfigChange is not null)
                 {
-                    allChanges.Add(configChange);
+                    allChanges.Add(defaultConfigChange);
+                }
+                if (legacyPropsChange is not null)
+                {
+                    allChanges.Add(legacyPropsChange);
                 }
 
                 // *********** Update .corext\Configs\components.json ********************
@@ -554,11 +559,6 @@ namespace Roslyn.Insertion
             }
 
             UpdatePackage(previousPackageVersion, buildVersion, coreXT, package);
-        }
-
-        public static string ToFullString(this XDocument document)
-        {
-            return document.Declaration.ToString() + "\n" + document.ToString();
         }
 
         public static bool IsWhiteSpaceOnlyChange(string s1, string s2)
