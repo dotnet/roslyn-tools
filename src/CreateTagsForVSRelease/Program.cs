@@ -1,7 +1,6 @@
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using LibGit2Sharp;
-using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Newtonsoft.Json.Linq;
 using System;
@@ -296,6 +295,10 @@ namespace CreateTagsForVSRelease
             if (release.MainVersion.StartsWith("16."))
             {
                 tag += "2019-";
+            }
+            else if (release.MainVersion.StartsWith("17."))
+            {
+                tag += "2022-";
             }
             else
             {
