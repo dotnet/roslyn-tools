@@ -7,30 +7,30 @@
     <PreReleaseVersionLabel>beta3</PreReleaseVersionLabel>
     <!-- CoreFX -->
     <MicrosoftExtensionsFileSystemGlobbingVersion>2.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
-    <SystemCollectionsImmutableVersion>1.3.1</SystemCollectionsImmutableVersion>
+    <SystemCollectionsImmutableVersion>5.0.0</SystemCollectionsImmutableVersion>
     <SystemReflectionMetadataVersion>1.4.2</SystemReflectionMetadataVersion>
-    <SystemValueTupleVersion>4.4.0</SystemValueTupleVersion>
+    <SystemValueTupleVersion>4.5.0</SystemValueTupleVersion>
     <SystemIOCompressionVersion>4.3.0</SystemIOCompressionVersion>
     <SystemIOPackagingVersion>4.5.0</SystemIOPackagingVersion>
     <SystemNetHttpVersion>4.3.4</SystemNetHttpVersion>
     <SystemTextRegularExpressions>4.1.0</SystemTextRegularExpressions>
     <!-- VS -->
-    <EnvDTEVersion>8.0.0</EnvDTEVersion>
-    <MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion>10.0.30319</MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion>
-    <MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion>11.0.61030</MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion>
-    <MicrosoftVisualStudioShell150Version>15.0.26606</MicrosoftVisualStudioShell150Version>
-    <MicrosoftVisualStudioSettings150Version>15.0.26606</MicrosoftVisualStudioSettings150Version>
-    <MicrosoftBuildUtilitiesCoreVersion>15.1.548</MicrosoftBuildUtilitiesCoreVersion>
+    <EnvDTEVersion>17.0.0-previews-2-31429-540</EnvDTEVersion>
+    <MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion>17.0.0-preview-2-31223-079</MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion>
+    <MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion>17.0.0-preview-2-31223-079</MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion>
+    <MicrosoftVisualStudioShell150Version>17.0.0-previews-2-31429-540</MicrosoftVisualStudioShell150Version>
+    <MicrosoftVisualStudioSettings150Version>17.0.0-previews-2-31429-540</MicrosoftVisualStudioSettings150Version>
+    <MicrosoftBuildUtilitiesCoreVersion>17.0.0-preview-21329-01</MicrosoftBuildUtilitiesCoreVersion>
     <MicrosoftVisualStudioExtensionEngineVersion>15.0.27428-alpha</MicrosoftVisualStudioExtensionEngineVersion>
     <MicrosoftVisualStudioExtensionManagerVersion>15.0.27428-alpha</MicrosoftVisualStudioExtensionManagerVersion>
     <MicrosoftVisualStudioExtensionManagerImplementationVersion>15.0.27428-alpha</MicrosoftVisualStudioExtensionManagerImplementationVersion>
-    <MicrosoftVisualStudioRegDetourVersion>15.6.27413</MicrosoftVisualStudioRegDetourVersion>
+    <MicrosoftVisualStudioRegDetourVersion>17.0.0-previews-2-31429-540</MicrosoftVisualStudioRegDetourVersion>
     <MicrosoftVisualStudioSetupVersion>15.0.27428-alpha</MicrosoftVisualStudioSetupVersion>
     <MicrosoftVisualStudioSetupCommonVersion>15.0.27428-alpha</MicrosoftVisualStudioSetupCommonVersion>
     <MicrosoftVisualStudioSetupEngineVersion>15.0.27428-alpha</MicrosoftVisualStudioSetupEngineVersion>
-    <MicrosoftVisualStudioThreadingVersion>15.6.31</MicrosoftVisualStudioThreadingVersion>
+    <MicrosoftVisualStudioThreadingVersion>17.0.26-alpha</MicrosoftVisualStudioThreadingVersion>
     <!-- Libs -->
-    <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
+    <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
     <MoqVersion>4.5.21</MoqVersion>
     <NuGetVersioningVersion>4.4.0</NuGetVersioningVersion>
     <MicrosoftAzureKeyVaultVersion>3.0.0</MicrosoftAzureKeyVaultVersion>
