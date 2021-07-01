@@ -561,6 +561,7 @@ namespace Roslyn.Insertion
             UpdatePackage(previousPackageVersion, buildVersion, coreXT, package);
         }
 
+#nullable enable
         public static bool IsWhiteSpaceOnlyChange(string s1, string s2)
         {
             return removeNewlines(s1) == removeNewlines(s2);
@@ -568,8 +569,13 @@ namespace Roslyn.Insertion
             string removeNewlines(string s) => s.Replace("\r\n", "").Replace("\n", "");
         }
 
-        public static GitChange GetChangeOpt(string path, string originalText, string newText)
+        public static GitChange? GetChangeOpt(string path, string? originalText, string? newText)
         {
+            if (originalText is null || newText is null)
+            {
+                return null;
+            }
+
             if (!IsWhiteSpaceOnlyChange(originalText, newText))
             {
                 return new GitChange
@@ -585,6 +591,7 @@ namespace Roslyn.Insertion
                 return null;
             }
         }
+#nullable restore
 
         private static string CreatePullRequestDescription(Build oldBuild, Build buildToinsert, bool useMarkdown)
         {
