@@ -64,8 +64,11 @@ namespace Roslyn.Insertion
 
                 legacyPropsOriginal = await new StreamReader(legacyPropsStream).ReadToEndAsync();
             }
-            catch (VssServiceException)
+            catch (VssServiceException ex)
             {
+                Console.WriteLine("Unable to load LegacyProjects.props. It will not be updated in this insertion.");
+                Console.WriteLine(ex.Message);
+
                 legacyPropsOriginal = null;
             }
 
