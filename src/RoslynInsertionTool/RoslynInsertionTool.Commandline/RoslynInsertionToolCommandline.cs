@@ -234,6 +234,11 @@ partial class RoslynInsertionToolCommandline
                 titlePrefix => options = options with { TitlePrefix = titlePrefix }
             },
             {
+                "ts=|titlesuffix=",
+                "Append the generated pull request's title with the specified value.",
+                titleSuffix => options = options with { TitleSuffix = titleSuffix }
+            },
+            {
                 "dpr=|createdraftpr=",
                 "Create an insertion PR that is marked as a draft.",
                 createDraftPr => options = options with { CreateDraftPr = bool.Parse(createDraftPr) }
