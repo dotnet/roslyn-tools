@@ -53,6 +53,7 @@ namespace Roslyn.Insertion
         public string ClientId { get; init; }
         public string ClientSecret { get; init; }
         public string TitlePrefix { get; init; }
+        public string TitleSuffix { get; init; }
         public bool SetAutoComplete { get; init; }
         public ImmutableArray<string> CherryPick { get; init; }
         public string ReviewerGUID { get; init; }

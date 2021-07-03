@@ -420,7 +420,7 @@ namespace Roslyn.Insertion
                     {
                         if (Options.OverwritePr)
                         {
-                            pullRequest = await OverwritePullRequestAsync(pullRequestId, prDescriptionMarkdown, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
+                            pullRequest = await OverwritePullRequestAsync(pullRequestId, prDescriptionMarkdown, buildVersion.ToString(), cancellationToken);
                         }
                         pullRequestId = pullRequest.PullRequestId;
                     }
@@ -449,7 +449,7 @@ namespace Roslyn.Insertion
                             ? buildToInsert.RequestedBy.Id
                             : Options.ReviewerGUID;
 
-                        pullRequest = await CreateVSPullRequestAsync(insertionBranchName, prDescriptionMarkdown, buildVersion.ToString(), options.TitlePrefix, reviewerId, cancellationToken);
+                        pullRequest = await CreateVSPullRequestAsync(insertionBranchName, prDescriptionMarkdown, buildVersion.ToString(), reviewerId, cancellationToken);
                         if (pullRequest == null)
                         {
                             LogError($"Unable to create pull request for '{insertionBranchName}'");

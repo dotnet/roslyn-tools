@@ -55,16 +55,13 @@ namespace Roslyn.Insertion
         /// </summary>
         private static TfsTeamProjectCollection ComponentBuildConnection => LazyComponentBuildConnection.Value;
 
-        private static GitPullRequest CreatePullRequest(string sourceBranch, string targetBranch, string description, string buildToInsert, string titlePrefix, string reviewerId)
+        private static GitPullRequest CreatePullRequest(string sourceBranch, string targetBranch, string description, string buildToInsert, string reviewerId)
         {
             Console.WriteLine($"Creating pull request sourceBranch:{sourceBranch} targetBranch:{targetBranch} description:{description}");
-            var prefix = string.IsNullOrEmpty(titlePrefix)
-                ? string.Empty
-                : titlePrefix + " ";
 
             return new GitPullRequest
             {
-                Title = GetPullRequestTitle(buildToInsert, prefix),
+                Title = GetPullRequestTitle(buildToInsert),
                 Description = description,
                 SourceRefName = sourceBranch,
                 TargetRefName = targetBranch,
@@ -73,32 +70,39 @@ namespace Roslyn.Insertion
             };
         }
 
-        private static string GetPullRequestTitle(string buildToInsert, string prefix)
+        private static string GetPullRequestTitle(string buildToInsert)
         {
-            return $"{prefix}{Options.InsertionName} '{Options.ComponentBranchName}/{buildToInsert}' Insertion into {Options.VisualStudioBranchName}";
+            var prefix = string.IsNullOrEmpty(Options.TitlePrefix)
+                ? string.Empty
+                : Options.TitlePrefix + " ";
+            var suffix = string.IsNullOrEmpty(Options.TitleSuffix)
+                ? string.Empty
+                : " " + Options.TitleSuffix;
+
+            return $"{prefix}{Options.InsertionName} '{Options.ComponentBranchName}/{buildToInsert}' Insertion into {Options.VisualStudioBranchName}{suffix}";
         }
 
-        private static async Task<GitPullRequest> CreateVSPullRequestAsync(string branchName, string message, string buildToInsert, string titlePrefix, string reviewerId, CancellationToken cancellationToken)
+        private static async Task<GitPullRequest> CreateVSPullRequestAsync(string branchName, string message, string buildToInsert, string reviewerId, CancellationToken cancellationToken)
         {
             var gitClient = VisualStudioRepoConnection.GetClient<GitHttpClient>();
             Console.WriteLine($"Getting remote repository from {Options.VisualStudioBranchName} in {Options.VisualStudioRepoProjectName}");
             var repository = await gitClient.GetRepositoryAsync(project: Options.VisualStudioRepoProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
             return await gitClient.CreatePullRequestAsync(
-                    CreatePullRequest("refs/heads/" + branchName, "refs/heads/" + Options.VisualStudioBranchName, message, buildToInsert, titlePrefix, reviewerId),
+                    CreatePullRequest("refs/heads/" + branchName, "refs/heads/" + Options.VisualStudioBranchName, message, buildToInsert, reviewerId),
                     repository.Id,
                     supportsIterations: null,
                     userState: null,
                     cancellationToken);
         }
 
-        public static async Task<GitPullRequest> OverwritePullRequestAsync(int pullRequestId, string message, string buildToInsert, string titlePrefix, CancellationToken cancellationToken)
+        public static async Task<GitPullRequest> OverwritePullRequestAsync(int pullRequestId, string message, string buildToInsert, CancellationToken cancellationToken)
         {
             var gitClient = VisualStudioRepoConnection.GetClient<GitHttpClient>();
 
             return await gitClient.UpdatePullRequestAsync(
                 new GitPullRequest
                 {
-                    Title = GetPullRequestTitle(buildToInsert, titlePrefix),
+                    Title = GetPullRequestTitle(buildToInsert),
                     Description = message,
                     IsDraft = Options.CreateDraftPr
                 },

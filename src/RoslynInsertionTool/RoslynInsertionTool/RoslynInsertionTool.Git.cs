@@ -58,7 +58,6 @@ namespace Roslyn.Insertion
                 branchName,
                 $"PLACEHOLDER INSERTION FOR {Options.InsertionName}",
                 "Not Specified",
-                Options.TitlePrefix,
                 reviewerId: Options.ReviewerGUID,
                 cancellationToken);
         }
