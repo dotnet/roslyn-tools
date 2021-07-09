@@ -242,10 +242,12 @@ git push upstream {prBranchName} --force
             var createPrData = JsonConvert.DeserializeAnonymousType(await response.Content.ReadAsStringAsync(), new
             {
                 number = "",
+                node_id = "",
                 mergeable = (bool?)null
             });
 
             var prNumber = createPrData.number;
+            var prNodeId = createPrData.node_id;
             var hasConflicts = !createPrData.mergeable;
 
             if (hasConflicts == null)
@@ -296,6 +298,44 @@ git push upstream {prBranchName} --force
             if (!response.IsSuccessStatusCode)
             {
                 return (true, response);
+            }
+
+            // https://docs.github.com/en/graphql/reference/mutations#enablepullrequestautomerge
+            response = await _client.PostAsyncAsJson("https://api.github.com/graphql", JsonConvert.SerializeObject(new {
+                query = @"
+mutation ($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!) {
+  enablePullRequestAutoMerge(input: {
+    pullRequestId: $pullRequestId,
+    mergeMethod: $mergeMethod
+  }) {
+    pullRequest {
+      autoMergeRequest {
+        enabledAt
+        enabledBy {
+          login
+        }
+      }
+    }
+  }
+}",
+                variables = new
+                {
+                    pullRequestId = prNodeId,
+                    mergeMethod = "MERGE"
+                }
+            }));
+
+            var enableAutoMergeData = JsonConvert.DeserializeAnonymousType(
+                await response.Content.ReadAsStringAsync(),
+                new { errors = new[] { new { message = "" } } });
+
+            if (enableAutoMergeData.errors is { } errors)
+            {
+                Console.WriteLine("Failed to enable automerge on PR.");
+                foreach (var err in errors)
+                {
+                    Console.WriteLine(err.message);
+                }
             }
 
             return (true, null);
