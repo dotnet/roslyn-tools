@@ -27,10 +27,7 @@
 
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/source-generators" owners="chsienki" frequency="weekly" />
-    <merge from="main" to="features/FileScopedNamespaces" owners="RikkiGibson" frequency="weekly" />
-    <merge from="main" to="features/interpolated-string-constants" owners="333fred,kevinsun-dev" frequency="weekly" />
     <merge from="main" to="features/list-patterns" owners="333fred" frequency="weekly" />
-    <merge from="main" to="features/interpolated-string" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/caller-argument-expression" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/extended-property-patterns" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/value_tracking" owners="ryzngard" frequency="weekly" />
