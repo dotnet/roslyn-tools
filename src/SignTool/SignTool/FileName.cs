@@ -18,7 +18,7 @@ namespace SignTool
 
         internal bool IsAssembly => PathUtil.IsAssembly(Name);
         internal bool IsVsix => PathUtil.IsVsix(Name);
-        internal bool IsNupkg => PathUtil.IsVsix(Name);
+        internal bool IsNupkg => PathUtil.IsNupkg(Name);
         internal bool IsZipContainer => PathUtil.IsZipContainer(Name);
 
         internal FileName(string rootBinaryPath, string relativePath, string sha256Hash = null)
