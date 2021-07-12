@@ -1,11 +1,12 @@
 <!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>Exe</OutputType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <CopyNuGetImplementations>true</CopyNuGetImplementations>
+    <NoWarn>$(NoWarn);MSB3270</NoWarn>
 
     <!-- Using an explicit nuspec file since NuGet Pack target currently doesn't support including dependencies in tools packages -->
     <IsPackable>true</IsPackable>
@@ -18,23 +19,14 @@
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <PackageReference Include="Microsoft.VisualStudio.ExtensionEngine" Version="$(MicrosoftVisualStudioExtensionEngineVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.ExtensionManager" Version="$(MicrosoftVisualStudioExtensionManagerVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.ExtensionManager.Implementation" Version="$(MicrosoftVisualStudioExtensionManagerImplementationVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.RegDetour" Version="$(MicrosoftVisualStudioRegDetourVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Setup" Version="$(MicrosoftVisualStudioSetupVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Common" Version="$(MicrosoftVisualStudioSetupCommonVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Engine" Version="$(MicrosoftVisualStudioSetupEngineVersion)" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Settings.15.0" Version="$(MicrosoftVisualStudioSettings150Version)" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150Version)" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="$(MicrosoftVisualStudioThreadingVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
-    <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
-    <PackageReference Include="System.ValueTuple" Version="$(SystemValueTupleVersion)" />
-    <PackageReference Include="EnvDTE" Version="$(EnvDTEVersion)" />
-    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Interop.10.0.DesignTime" Version="$(MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion)" />
-    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Interop.11.0.DesignTime" Version="$(MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion)" />
+    <PackageReference Include="Microsoft.Internal.VisualStudio.Interop" Version="$(MicrosoftInternalVisualStudioInteropVersion)" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.Extensibility.Testing.SupportFiles" GeneratePathProperty="true" Version="$(MicrosoftVisualStudioExtensibilityTestingSupportFilesVersion)" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="$(MicrosoftVisualStudioSDKVersion)" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.Settings.15.0" Version="$(MicrosoftVisualStudioSettings150Version)" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.ExtensionEngine" HintPath="$(PkgMicrosoft_VisualStudio_Extensibility_Testing_SupportFiles)\build\ref\17\Microsoft.VisualStudio.ExtensionEngine.dll" Private="false" />
+    <Reference Include="Microsoft.VisualStudio.ExtensionManager" HintPath="$(PkgMicrosoft_VisualStudio_Extensibility_Testing_SupportFiles)\build\ref\17\Microsoft.VisualStudio.ExtensionManager.dll" Private="false" />
+    <Reference Include="Microsoft.VisualStudio.ExtensionManager.Implementation" HintPath="$(PkgMicrosoft_VisualStudio_Extensibility_Testing_SupportFiles)\build\ref\17\Microsoft.VisualStudio.ExtensionManager.Implementation.dll" Private="false" />
   </ItemGroup>
 </Project>
