@@ -13,8 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.TeamFoundation.Build.WebApi;
-using Microsoft.TeamFoundation.Client;
-using Microsoft.TeamFoundation.Client.Reporting;
 using Microsoft.TeamFoundation.Policy.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
@@ -27,13 +25,13 @@ namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
-        private static readonly Lazy<TfsTeamProjectCollection> LazyVisualStudioRepoConnection = new(() =>
+        private static readonly Lazy<VssConnection> LazyVisualStudioRepoConnection = new(() =>
         {
             Console.WriteLine($"Creating VisualStudioRepoConnection object from {Options.VisualStudioRepoAzdoUri}");
-            return new TfsTeamProjectCollection(new Uri(Options.VisualStudioRepoAzdoUri), new VssBasicCredential(Options.VisualStudioRepoAzdoUsername, Options.VisualStudioRepoAzdoPassword));
+            return new VssConnection(new Uri(Options.VisualStudioRepoAzdoUri), new VssBasicCredential(Options.VisualStudioRepoAzdoUsername, Options.VisualStudioRepoAzdoPassword));
         });
 
-        private static readonly Lazy<TfsTeamProjectCollection> LazyComponentBuildConnection = new(() =>
+        private static readonly Lazy<VssConnection> LazyComponentBuildConnection = new(() =>
         {
             if (string.IsNullOrEmpty(Options.ComponentBuildAzdoUri))
             {
@@ -42,18 +40,18 @@ namespace Roslyn.Insertion
             }
 
             Console.WriteLine($"Creating ComponentBuildConnection object from {Options.ComponentBuildAzdoUri}");
-            return new TfsTeamProjectCollection(new Uri(Options.ComponentBuildAzdoUri), new VssBasicCredential(Options.ComponentBuildAzdoUsername, Options.ComponentBuildAzdoPassword));
+            return new VssConnection(new Uri(Options.ComponentBuildAzdoUri), new VssBasicCredential(Options.ComponentBuildAzdoUsername, Options.ComponentBuildAzdoPassword));
         });
 
         /// <summary>
         /// Used to connect to the AzDO instance which contains the VS repo.
         /// </summary>
-        private static TfsTeamProjectCollection VisualStudioRepoConnection => LazyVisualStudioRepoConnection.Value;
+        private static VssConnection VisualStudioRepoConnection => LazyVisualStudioRepoConnection.Value;
 
         /// <summary>
         /// Used to connect to the AzDO instance which contains the repo of the Component being inserted.
         /// </summary>
-        private static TfsTeamProjectCollection ComponentBuildConnection => LazyComponentBuildConnection.Value;
+        private static VssConnection ComponentBuildConnection => LazyComponentBuildConnection.Value;
 
         private static GitPullRequest CreatePullRequest(string sourceBranch, string targetBranch, string description, string buildToInsert, string reviewerId)
         {
@@ -158,7 +156,7 @@ namespace Roslyn.Insertion
             CancellationToken cancellationToken,
             IEnumerable<Build> builds)
         {
-            List<Build> buildsWithValidArtifacts = new List<Build>();
+            var buildsWithValidArtifacts = new List<Build>();
             foreach (var build in builds)
             {
                 if (build.Tags?.Contains($"DoesNotRequireInsertion_{Options.VisualStudioBranchName}") == true)
@@ -414,10 +412,8 @@ namespace Roslyn.Insertion
             using (var ms = new MemoryStream())
             {
                 await s.CopyToAsync(ms);
-                using (ZipArchive archive = new ZipArchive(ms))
-                {
-                    archive.ExtractToDirectory(tempDirectory);
-                }
+                using var archive = new ZipArchive(ms);
+                archive.ExtractToDirectory(tempDirectory);
             }
 
             Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds / 1000} seconds");

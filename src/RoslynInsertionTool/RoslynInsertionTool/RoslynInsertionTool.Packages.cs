@@ -29,7 +29,6 @@ namespace Roslyn.Insertion
         /// Updates the specified NuGet packages.  Returns `true` if the package was successfully updated.
         /// </summary>
         private static (bool success, List<string> newPackageFiles) UpdatePackages(
-            BuildVersion buildVersion,
             CoreXT coreXT,
             string packagesDir,
             ImmutableArray<string> packagesToBeIgnored,
@@ -66,7 +65,7 @@ namespace Roslyn.Insertion
                     continue;
                 }
 
-                UpdatePackage(previousPackageVersion, buildVersion, coreXT, package);
+                UpdatePackage(previousPackageVersion, coreXT, package);
             }
 
             return (shouldRetainBuild, newPackageFiles);
@@ -74,7 +73,6 @@ namespace Roslyn.Insertion
 
         private static void UpdatePackage(
             NuGetVersion previousPackageVersion,
-            BuildVersion buildVersion,
             CoreXT coreXT,
             PackageInfo package)
         {

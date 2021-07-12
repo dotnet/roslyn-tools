@@ -336,8 +336,7 @@ namespace Roslyn.Insertion
 
             if (!string.IsNullOrEmpty(componentName))
             {
-                string componentFileName;
-                if (ComponentToFileMap.TryGetValue(componentName, out componentFileName))
+                if (ComponentToFileMap.TryGetValue(componentName, out string componentFileName))
                 {
                     // ValueTuple is not covariant so we need to suppress the warning on 'pair'
                     ComponentFileToDocumentMap.TryGetValue(componentFileName, out pair!);

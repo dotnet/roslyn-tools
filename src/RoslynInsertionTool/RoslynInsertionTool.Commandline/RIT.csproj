@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>RoslynInsertionTool</RootNamespace>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFrameworks>net472;net5.0</TargetFrameworks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Prefer32Bit>false</Prefer32Bit>
 
@@ -19,14 +19,10 @@
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Threading" />
-    <Reference Include="System.Web" />
+    <ProjectReference Include="..\RoslynInsertionTool\RoslynInsertionTool.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Colorful.Console" Version="1.0.5" />
-    <PackageReference Include="Microsoft.Azure.KeyVault" Version="2.0.6" />
+    <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.5" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Settings.Designer.cs">
@@ -40,11 +36,6 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AsyncProcess\AsyncProcess.csproj" />
-    <ProjectReference Include="..\RoslynInsertionTool\RoslynInsertionTool.csproj" />
-    <ProjectReference Include="..\SingleThreadSynchronizationContext\SingleThreadSynchronizationContext.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\scripts\*.ps1" CopyToOutputDirectory="PreserveNewest" />
