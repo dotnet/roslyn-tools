@@ -27,8 +27,7 @@
 
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/source-generators" owners="chsienki" frequency="weekly" />
-    <merge from="main" to="features/list-patterns" owners="333fred" frequency="weekly" />
-    <merge from="main" to="features/caller-argument-expression" owners="333fred" frequency="weekly" />
+    <merge from="main" to="features/list-patterns" owners="333fred,jcouv" frequency="weekly" />
     <merge from="main" to="features/extended-property-patterns" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/value_tracking" owners="ryzngard" frequency="weekly" />
     <merge from="main" to="features/inline_errors" owners="akhera99" frequency="weekly" />
