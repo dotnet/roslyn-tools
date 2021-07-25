@@ -81,7 +81,7 @@
     <merge from="2.9.x" to="main" />
     <merge from="release/5.0.3xx" to="main" />
     <merge from="release/6.0.1xx-preview6" to="release/6.0.1xx-preview7" />
-    <merge from="release/6.0.1xx" to="release/6.0.1xx-preview7" />
+    <merge from="release/6.0.1xx-preview7" to="release/6.0.1xx" />
     <merge from="main" to="release/6.0.1xx" />
   </repo>
 
