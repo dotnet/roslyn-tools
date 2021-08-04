@@ -77,7 +77,6 @@
 
   <PropertyGroup Condition="'$(DotNetBuildOffline)' != 'true'">
     <RestoreSources>$(RestoreSources);https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json</RestoreSources>
-    <RestoreSources Condition="'$(UsingToolXliff)' == 'true' and $(MicrosoftDotNetXliffTasksVersion.Contains('-'))">$(RestoreSources);https://dotnetmygetlegacy.blob.core.windows.net/dotnet-core/index.json</RestoreSources>
     <RestoreSources Condition="'$(UsingToolMicrosoftNetCompilers)' == 'true' and $(MicrosoftNetCompilersVersion.Contains('-'))">$(RestoreSources);https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json</RestoreSources>
     <RestoreSources Condition="'$(UsingToolNetFrameworkReferenceAssemblies)' == 'true'">$(RestoreSources);https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json</RestoreSources>
     <RestoreSources Condition="$(XUnitVersion.Contains('-')) or $(XUnitRunnerVisualStudioVersion.Contains('-')) or $(XUnitRunnerVisualStudioVersion.Contains('-'))">$(RestoreSources);https://www.myget.org/F/xunit/api/v3/index.json</RestoreSources>
