@@ -436,42 +436,47 @@ namespace Roslyn.Insertion
 
         private static Component GetComponentFromManifestFile(string filePath)
         {
-            try
-            {
-                Console.WriteLine($"GetComponentFromManifestFile: Opening manifest from {filePath}.");
-                var fileName = Path.GetFileName(filePath);
-                var manifestJson = File.ReadAllText(filePath);
+            Console.WriteLine($"GetComponentFromManifestFile: Opening manifest from {filePath}.");
+            var fileName = Path.GetFileName(filePath);
+            var manifestJson = File.ReadAllText(filePath);
 
-                var manifest = JsonConvert.DeserializeAnonymousType(manifestJson, new
+            var manifest = JsonConvert.DeserializeAnonymousType(manifestJson, new
+            {
+                info = new
                 {
-                    info = new
+                    manifestName = "",
+                    buildVersion = ""
+                },
+                packages = new[]
+                {
+                new
+                {
+                    payloads = new[]
                     {
-                        manifestName = "",
-                        buildVersion = ""
-                    },
-                    packages = new[]
-                    {
-                    new
-                    {
-                        payloads = new[]
+                        new
                         {
-                            new
-                            {
-                                url = ""
-                            }
+                            url = ""
                         }
                     }
                 }
-                });
-                // Everything is uploaded to the same drop, so we can take the url of a package and generate the manifest url.
-                var url = new Uri($"{manifest.packages[0].payloads[0].url.Split(';')[0]};{fileName}");
-                return new Component(manifest.info.manifestName, fileName, url, manifest.info.buildVersion);
             }
-            catch
+            });
+
+            // Find the first package payload where the url is in the expected format `http://{drop url};{filename}`
+            var payload = manifest?.packages
+                .Where(package => package?.payloads is not null)
+                .SelectMany(package => package.payloads)
+                .FirstOrDefault(payload => payload?.url?.Contains(";") == true);
+
+            if (payload is null)
             {
                 Console.WriteLine($"GetComponentFromManifestFile: Manifest {filePath} did not contain an insertable component.");
                 return null;
             }
+
+            // Everything is uploaded to the same drop, so we can take the url of a package and generate the manifest url.
+            var url = new Uri($"{payload.url.Split(';')[0]};{fileName}");
+            return new Component(manifest.info.manifestName, fileName, url, manifest.info.buildVersion);
         }
 
         internal static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
