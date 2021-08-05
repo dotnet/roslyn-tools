@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -429,24 +430,27 @@ namespace Roslyn.Insertion
         {
             return Directory.EnumerateFiles(buildArtifacts.RootDirectory, "*.vsman", SearchOption.AllDirectories)
                 .Select(GetComponentFromManifestFile)
+                .OfType<Component>()
                 .ToArray();
         }
 
         private static Component GetComponentFromManifestFile(string filePath)
         {
-            Console.WriteLine($"GetComponentFromManifestFile: Opening manifest from {filePath}.");
-            var fileName = Path.GetFileName(filePath);
-            var manifestJson = File.ReadAllText(filePath);
-
-            var manifest = JsonConvert.DeserializeAnonymousType(manifestJson, new
+            try
             {
-                info = new
+                Console.WriteLine($"GetComponentFromManifestFile: Opening manifest from {filePath}.");
+                var fileName = Path.GetFileName(filePath);
+                var manifestJson = File.ReadAllText(filePath);
+
+                var manifest = JsonConvert.DeserializeAnonymousType(manifestJson, new
                 {
-                    manifestName = "",
-                    buildVersion = ""
-                },
-                packages = new[]
-                {
+                    info = new
+                    {
+                        manifestName = "",
+                        buildVersion = ""
+                    },
+                    packages = new[]
+                    {
                     new
                     {
                         payloads = new[]
@@ -458,10 +462,16 @@ namespace Roslyn.Insertion
                         }
                     }
                 }
-            });
-            // Everything is uploaded to the same drop, so we can take the url of a package and generate the manifest url.
-            var url = new Uri($"{manifest.packages[0].payloads[0].url.Split(';')[0]};{fileName}");
-            return new Component(manifest.info.manifestName, fileName, url, manifest.info.buildVersion);
+                });
+                // Everything is uploaded to the same drop, so we can take the url of a package and generate the manifest url.
+                var url = new Uri($"{manifest.packages[0].payloads[0].url.Split(';')[0]};{fileName}");
+                return new Component(manifest.info.manifestName, fileName, url, manifest.info.buildVersion);
+            }
+            catch
+            {
+                Console.WriteLine($"GetComponentFromManifestFile: Manifest {filePath} did not contain an insertable component.");
+                return null;
+            }
         }
 
         internal static async Task<(List<GitCommit> changes, string diffLink)> GetChangesBetweenBuildsAsync(Build fromBuild, Build tobuild, CancellationToken cancellationToken)
