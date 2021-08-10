@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 # EditorConfig is awesome: http://EditorConfig.org
 ###############################################################################
 
@@ -45,3 +45,6 @@ indent_size = 2
 ###############################################################################
 [*.sln]
 indent_style = tab
+
+[*.{cs}]
+file_header_template = Licensed to the.NET Foundation under one or more agreements.\nThe.NET Foundation licenses this file to you under the MIT license.\nSee the License.txt file in the project root for more information.
