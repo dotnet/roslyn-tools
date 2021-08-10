@@ -10,7 +10,7 @@
   <PropertyGroup>
     <LangVersion>Latest</LangVersion>
     <IsShipping>false</IsShipping>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
     <!--
       Most projects in the repo do not participate in source build.
