@@ -5,25 +5,20 @@
     <merge from="dev15.9.x" to="release/dev16.4-vs-deps" />
     <merge from="release/dev16.4-vs-deps" to="release/dev16.7-vs-deps" />
     <merge from="release/dev16.7-vs-deps" to="release/dev16.9-vs-deps" />
-
+    <merge from="release/dev16.9-vs-deps" to="release/dev16.11-vs-deps" />
+      
     <!-- Roslyn last servicing branch (flowing into current branch) -->
-    <merge from="release/dev16.9-vs-deps" to="release/dev16.10" />
+    <merge from="release/dev16.11-vs-deps" to="release/dev17.0" />
 
     <!-- Roslyn non-vs-deps branches (flowing between releases) -->
-    <merge from="release/dev16.10" to="release/dev16.11" />
-    <merge from="release/dev16.11" to="release/dev17.0" />
     <merge from="release/dev17.0" to="main" />
     <merge from="main" to="release/dev17.1-preview1" />
 
     <!-- Roslyn vs-deps branches (flowing between releases) -->
-    <merge from="release/dev16.10-vs-deps" to="release/dev16.11-vs-deps" />
-    <merge from="release/dev16.11-vs-deps" to="release/dev17.0-vs-deps" />
     <merge from="release/dev17.0-vs-deps" to="main-vs-deps" />
     <merge from="main-vs-deps" to="release/dev17.1-preview1-vs-deps" />
       
     <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
-    <merge from="release/dev16.10" to="release/dev16.10-vs-deps" />
-    <merge from="release/dev16.11" to="release/dev16.11-vs-deps" />
     <merge from="release/dev17.0" to="release/dev17.0-vs-deps" />
     <merge from="main" to="main-vs-deps" />
 
