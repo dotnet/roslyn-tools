@@ -157,7 +157,7 @@ namespace VsixExpInstaller
 
                 var assemblyResolutionPaths = new string[] {
                     // Microsoft.VisualStudio.Threading, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-                    Path.Combine(vsInstallDir, @"Common7\IDE\PublicAssemblies\Microsoft.VisualStudio.Threading.16.0"),
+                    Path.Combine(vsInstallDir, @"Common7\IDE\PublicAssemblies\Microsoft.VisualStudio.Threading.17.x"),
                     // Newtonsoft.Json, Version=12.0.0.2, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed
                     Path.Combine(vsInstallDir, @"Common7\IDE\PrivateAssemblies\Newtonsoft.Json.12.0.0.2"),
                     Path.Combine(vsInstallDir, @"Common7\IDE"),
