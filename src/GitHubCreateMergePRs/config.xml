@@ -97,7 +97,7 @@
 
   <!-- dotnet-format service branches -->
   <repo owner="dotnet" name="format" mergeOwners="joerobich">
-    <merge from="release/5.x" to="main" />
-    <merge from="main" to="release/6.x" />
+    <merge from="release/5.x" to="release/6.x" />
+    <merge from="release/6.x" to="main" />
   </repo>
 </config>
