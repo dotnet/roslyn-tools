@@ -70,7 +70,6 @@
     <merge from="release/fcs" to="main" />
 
     <!-- regular branch flow -->
-    <merge from="main" to="release/dev17.0" />
     <merge from="feature/auto-widen" to="feature/erased-unions" />
   </repo>
 
