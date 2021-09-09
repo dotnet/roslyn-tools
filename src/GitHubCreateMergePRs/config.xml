@@ -28,7 +28,7 @@
     <merge from="main" to="features/extended-property-patterns" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/value_tracking" owners="ryzngard" frequency="weekly" />
     <merge from="main" to="features/inline_errors" owners="akhera99" frequency="weekly" />
-    <merge from="main" to="features/RawStringLiterals" owners="CyrusNajmabadi" frequency="weekly" />
+    <merge from="main" to="features/RawStringLiterals" owners="CyrusNajmabadi" frequency="daily" />
   </repo>
 
   <repo owner="dotnet" name="roslyn-sdk">
