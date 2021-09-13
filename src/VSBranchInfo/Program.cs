@@ -15,24 +15,19 @@ namespace VSBranchInfo
 {
     public static class Program
     {
-        // TODO: Look at the VS repo and compute these dynamically
-        private static readonly string[] s_visualStudioBranches = new[] { "rel/d16.11", "rel/d17.0", "main" };
-
         public static async Task Main(string[] args)
         {
-            if (args.Length == 0)
-            {
-                args = s_visualStudioBranches;
-                Console.WriteLine("Using default branch names. Specify branches to check as command line parameters.");
-                Console.WriteLine();
-            }
-
             var client = new SecretClient(
                  vaultUri: new Uri("https://roslyninfra.vault.azure.net:443"),
                  credential: new DefaultAzureCredential(includeInteractiveCredentials: true));
 
             using var devdivConnection = new AzDOConnection("https://devdiv.visualstudio.com/DefaultCollection", "DevDiv", "Roslyn-Signed", client, "vslsnap-vso-auth-token");
             using var dncengConnection = new AzDOConnection("https://dnceng.visualstudio.com/DefaultCollection", "internal", "dotnet-roslyn CI", client, "vslsnap-build-auth-token");
+
+            if (args.Length == 0)
+            {
+                args = await GetDefaultVSBranches(devdivConnection);
+            }
 
             foreach (var branch in args)
             {
@@ -45,6 +40,42 @@ namespace VSBranchInfo
                 {
                     WriteError(ex);
                 }
+            }
+        }
+
+        private static async Task<string[]> GetDefaultVSBranches(AzDOConnection devdiv)
+        {
+            Console.WriteLine("Finding branches in the VS repository. This may take a while...");
+            Console.WriteLine("You can skip this specifying branches as command line arguments.");
+            Console.WriteLine();
+
+            var vsRepository = await devdiv.GitClient.GetRepositoryAsync("DevDiv", "VS");
+
+            var branches = await devdiv.GitClient.GetBranchesAsync(vsRepository.Id);
+
+            // Get the top 4 branches. In theory:
+            //   1. main
+            //   2. next version
+            //   3. current version
+            //   4. previous version
+            return (from b in branches
+                    where b.Name == "main" || b.Name.StartsWith("rel/d")
+                    let ver = GetVersionNumber(b)
+                    orderby ver descending
+                    select b.Name).Take(4).ToArray();
+
+            static Version GetVersionNumber(GitBranchStats b)
+            {
+                // Sort main to the top, always
+                if (b.Name == "main")
+                {
+                    return new Version(999, 9999);
+                }
+                else if (Version.TryParse(b.Name.Substring(5), out var version))
+                {
+                    return version;
+                }
+                return new Version(0, 0);
             }
         }
 
