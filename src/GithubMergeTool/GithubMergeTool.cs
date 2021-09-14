@@ -74,6 +74,31 @@ namespace GithubMergeTool
             bool addAutoMergeLabel,
             bool isAutoTriggered)
         {
+            // Compare the two branches for unsynced commits
+            // https://docs.github.com/en/rest/reference/repos#compare-two-commits
+            var compareResponse = await _client.GetAsync($"/repos/{repoOwner}/{repoName}/compare/{srcBranch}...{destBranch}");
+
+            if (compareResponse.StatusCode != HttpStatusCode.OK)
+            {
+                return (false, compareResponse);
+            }
+
+            var compareData = JsonConvert.DeserializeAnonymousType(await compareResponse.Content.ReadAsStringAsync(),
+                new
+                {
+                    status = "",
+                    ahead_by = 0,
+                    behind_by = 0,
+                    total_commits = 0
+                });
+
+            var branchesSynched = compareData.behind_by == 0;
+            if (branchesSynched)
+            {
+                Console.WriteLine("The branches are already synched.");
+                return (false, null); // `null` means the branch is all caught up.
+            }
+
             // Get the SHA for the source branch
             // https://developer.github.com/v3/git/refs/#get-a-single-reference
             var response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/git/refs/heads/{srcBranch}");
@@ -303,7 +328,8 @@ git push upstream {prBranchName} --force
             }
 
             // https://docs.github.com/en/graphql/reference/mutations#enablepullrequestautomerge
-            response = await _client.PostAsyncAsJson("https://api.github.com/graphql", JsonConvert.SerializeObject(new {
+            response = await _client.PostAsyncAsJson("https://api.github.com/graphql", JsonConvert.SerializeObject(new
+            {
                 query = @"
 mutation ($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!) {
   enablePullRequestAutoMerge(input: {
