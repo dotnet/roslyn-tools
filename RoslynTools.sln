@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29411.138
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31710.301
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModifyVsixManifest", "src\ModifyVsixManifest\ModifyVsixManifest.csproj", "{0EAEBB0A-EE12-4929-8B0A-6953B0E852F9}"
 EndProject
@@ -72,7 +72,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubCreateMergePRs", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PRFinder", "src\RoslynInsertionTool\PRFinder\PRFinder.csproj", "{15BE78E3-355F-4B15-ABB4-FA750B2D846B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateTagsForVSRelease", "src\CreateTagsForVSRelease\CreateTagsForVSRelease.csproj", "{08AAEF36-C81B-4BAE-8172-EA0D3139B0BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreateTagsForVSRelease", "src\CreateTagsForVSRelease\CreateTagsForVSRelease.csproj", "{08AAEF36-C81B-4BAE-8172-EA0D3139B0BE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSBranchInfo", "src\VSBranchInfo\VSBranchInfo.csproj", "{D10CCD63-A7F6-4310-81AA-0D00526320D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -396,6 +398,18 @@ Global
 		{08AAEF36-C81B-4BAE-8172-EA0D3139B0BE}.Release|x64.Build.0 = Release|Any CPU
 		{08AAEF36-C81B-4BAE-8172-EA0D3139B0BE}.Release|x86.ActiveCfg = Release|Any CPU
 		{08AAEF36-C81B-4BAE-8172-EA0D3139B0BE}.Release|x86.Build.0 = Release|Any CPU
+		{D10CCD63-A7F6-4310-81AA-0D00526320D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D10CCD63-A7F6-4310-81AA-0D00526320D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D10CCD63-A7F6-4310-81AA-0D00526320D1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D10CCD63-A7F6-4310-81AA-0D00526320D1}.Debug|x64.Build.0 = Debug|Any CPU
+		{D10CCD63-A7F6-4310-81AA-0D00526320D1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D10CCD63-A7F6-4310-81AA-0D00526320D1}.Debug|x86.Build.0 = Debug|Any CPU
+		{D10CCD63-A7F6-4310-81AA-0D00526320D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D10CCD63-A7F6-4310-81AA-0D00526320D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D10CCD63-A7F6-4310-81AA-0D00526320D1}.Release|x64.ActiveCfg = Release|Any CPU
+		{D10CCD63-A7F6-4310-81AA-0D00526320D1}.Release|x64.Build.0 = Release|Any CPU
+		{D10CCD63-A7F6-4310-81AA-0D00526320D1}.Release|x86.ActiveCfg = Release|Any CPU
+		{D10CCD63-A7F6-4310-81AA-0D00526320D1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
