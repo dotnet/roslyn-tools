@@ -49,7 +49,7 @@
 
   <repo owner="dotnet" name="templates">
     <merge from="dev15.9.x" to="dev16.0.x" />
-    <merge from="dev16.0.x" to="master" />
+    <merge from="dev16.0.x" to="main" />
   </repo>
 
   <repo owner="dotnet" name="fsharp">
@@ -76,15 +76,9 @@
     <merge from="main" to="release/7.0.1xx" />
   </repo>
 
-  <!-- testimpact branches -->
-  <repo owner="dotnet" name="testimpact">
-    <merge from="dev16.7.x" to="master" />
-    <merge from="master" to="feature/vnext" />
-  </repo>
-
   <!-- msbuild language service branches -->
   <repo owner="dotnet" name="msbuild-language-service">
-    <merge from="master" to="dev/prototype" />
+    <merge from="main" to="dev/prototype" />
   </repo>
 
   <!-- dotnet-format service branches -->
