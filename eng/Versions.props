@@ -23,7 +23,7 @@
     <!-- Libs -->
     <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
     <MoqVersion>4.5.21</MoqVersion>
-    <NuGetVersioningVersion>4.4.0</NuGetVersioningVersion>
+    <NuGetVersioningVersion>5.11.0</NuGetVersioningVersion>
     <MicrosoftAzureKeyVaultVersion>3.0.0</MicrosoftAzureKeyVaultVersion>
     <MicrosoftBuildVersion>15.6.82</MicrosoftBuildVersion>
     <MicrosoftBuildTasksCoreVersion>15.6.82</MicrosoftBuildTasksCoreVersion>
