@@ -29,6 +29,7 @@
     <merge from="main" to="features/value_tracking" owners="ryzngard" frequency="weekly" />
     <merge from="main" to="features/inline_errors" owners="akhera99" frequency="weekly" />
     <merge from="main" to="features/RawStringLiterals" owners="CyrusNajmabadi" frequency="daily" />
+    <merge from="main" to="features/snappy/nodelay" owners="CyrusNajmabadi" frequency="weekly" />
   </repo>
 
   <repo owner="dotnet" name="roslyn-sdk">
