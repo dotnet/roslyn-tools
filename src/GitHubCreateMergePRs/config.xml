@@ -21,6 +21,7 @@
     <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
     <merge from="release/dev17.0" to="release/dev17.0-vs-deps" />
     <merge from="main" to="main-vs-deps" />
+    <merge from="release/dev17.1-preview1" to="release/dev17.1-preview1-vs-deps" />
 
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/source-generators" owners="chsienki" frequency="weekly" />
