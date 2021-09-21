@@ -33,7 +33,6 @@ namespace Roslyn.Insertion
         private const string PackagePropsDir = "src/ConfigData/Packages";
 
         private readonly string _defaultConfigOriginal;
-        private readonly string? _legacyPropsOriginal;
 
         public XDocument ConfigDocument { get; }
 
