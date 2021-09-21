@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
@@ -22,25 +22,24 @@ namespace Roslyn.Insertion
     {
         private static Dictionary<string, string> ComponentToFileMap = null!;
         private static Dictionary<string, (string original, JObject document)> ComponentFileToDocumentMap = null!;
-        private static HashSet<string> dirtyFiles = null!;
+        private static HashSet<string> dirtyComponentFiles = null!;
+
+        private static Dictionary<string, ICollection<string>> PackageToPropFilesMap = null!;
+        private static Dictionary<string, (string original, XDocument document)> PackagePropFileToDocumentMap = null!;
+        private static HashSet<string> dirtyPropsFiles = null!;
 
         private const string DefaultConfigPath = ".corext/Configs/default.config";
-        private const string LegacyProjectPropsPath = "src/ConfigData/Packages/LegacyProjects.props";
         private const string ComponentsJsonPath = ".corext/Configs/components.json";
+        private const string PackagePropsDir = "src/ConfigData/Packages";
 
         private readonly string _defaultConfigOriginal;
-        private readonly string? _legacyPropsOriginal;
 
         public XDocument ConfigDocument { get; }
-        public XDocument? LegacyPropsDocument { get; }
 
-        private CoreXT(string configOriginalText, string? legacyOriginalText)
+        private CoreXT(string configOriginalText)
         {
             _defaultConfigOriginal = configOriginalText;
             ConfigDocument = XDocument.Parse(configOriginalText, LoadOptions.None);
-
-            _legacyPropsOriginal = legacyOriginalText;
-            LegacyPropsDocument = legacyOriginalText is null ? null : XDocument.Parse(legacyOriginalText, LoadOptions.None);
         }
 
         public static async Task<CoreXT> Load(GitHttpClient gitClient, string commitId)
@@ -55,39 +54,32 @@ namespace Roslyn.Insertion
                 versionDescriptor: vsBranch);
             var defaultConfigOriginal = await new StreamReader(defaultConfigStream).ReadToEndAsync();
 
-            string? legacyPropsOriginal;
-            try
-            {
-                using var legacyPropsStream = await gitClient.GetItemContentAsync(
-                    vsRepoId,
-                    LegacyProjectPropsPath,
-                    download: true,
-                    versionDescriptor: vsBranch);
-
-                legacyPropsOriginal = await new StreamReader(legacyPropsStream).ReadToEndAsync();
-            }
-            catch (VssServiceException ex)
-            {
-                Console.WriteLine("Unable to load LegacyProjects.props. It will not be updated in this insertion.");
-                Console.WriteLine(ex.Message);
-
-                legacyPropsOriginal = null;
-            }
-
             ComponentToFileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             ComponentFileToDocumentMap = new Dictionary<string, (string, JObject)>(StringComparer.OrdinalIgnoreCase);
-            dirtyFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            dirtyComponentFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            PackageToPropFilesMap = new Dictionary<string, ICollection<string>>(StringComparer.OrdinalIgnoreCase);
+            PackagePropFileToDocumentMap = new Dictionary<string, (string original, XDocument document)>(StringComparer.OrdinalIgnoreCase);
+            dirtyPropsFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             await PopulateComponentJsonMaps(gitClient, commitId);
+            await PopulatePackagePropFileMaps(gitClient, commitId);
 
-            return new CoreXT(defaultConfigOriginal, legacyPropsOriginal);
+            return new CoreXT(defaultConfigOriginal);
         }
 
-        public (GitChange? defaultConfig, GitChange? legacyProps) SaveConfig()
+        public IEnumerable<GitChange?> SaveConfigs()
         {
-            var defaultConfig = RoslynInsertionTool.GetChangeOpt(DefaultConfigPath, _defaultConfigOriginal, toFullString(_defaultConfigOriginal, ConfigDocument));
-            var legacyProps = RoslynInsertionTool.GetChangeOpt(LegacyProjectPropsPath, _legacyPropsOriginal, toFullString(_legacyPropsOriginal, LegacyPropsDocument));
-            return (defaultConfig, legacyProps);
+            yield return RoslynInsertionTool.GetChangeOpt(DefaultConfigPath, _defaultConfigOriginal, toFullString(_defaultConfigOriginal, ConfigDocument));
+
+            foreach (var propFile in dirtyPropsFiles)
+            {
+                (string? original, XDocument? document) pair = (null, null);
+                if (PackagePropFileToDocumentMap.TryGetValue(propFile, out pair!))
+                {
+                    yield return RoslynInsertionTool.GetChangeOpt(propFile, pair.original, toFullString(pair.original, pair.document));
+                }
+            }
 
             static string? toFullString(string? original, XDocument? document)
             {
@@ -114,7 +106,7 @@ namespace Roslyn.Insertion
             var changes = new List<GitChange>();
             foreach (var kvp in ComponentFileToDocumentMap)
             {
-                if (dirtyFiles.Contains(kvp.Key))
+                if (dirtyComponentFiles.Contains(kvp.Key))
                 {
                     var (original, doc) = kvp.Value;
                     if (doc is null)
@@ -134,7 +126,7 @@ namespace Roslyn.Insertion
             return changes;
         }
 
-        public XAttribute? GetDefaultConfigVersionAttribute(PackageInfo packageInfo)
+        private XAttribute? GetDefaultConfigVersionAttribute(PackageInfo packageInfo)
         {
             return ConfigDocument.Root
                 .Elements("packages")
@@ -143,16 +135,16 @@ namespace Roslyn.Insertion
                 .Select(x => x.Attribute("version")).SingleOrDefault();
         }
 
-        public XAttribute? GetLegacyPropsVersionAttributeOpt(PackageInfo packageInfo)
+        private static XAttribute? GetVersionAttributeInPropsFileOpt(XDocument document, PackageInfo packageInfo)
         {
-            return LegacyPropsDocument?.Root
+            return document?.Root
                 .Elements("ItemGroup")
                 .Elements("PackageReference")
                 .Where(p => p.Attribute("Update")?.Value == packageInfo.PackageName)
                 .Select(x => x.Attribute("Version")).SingleOrDefault();
         }
 
-        public XElement GetClosestFollowingPackageElement(PackageInfo packageInfo)
+        private XElement GetClosestFollowingPackageElement(PackageInfo packageInfo)
         {
             return ConfigDocument.Root.
                 Elements("packages").
@@ -183,8 +175,20 @@ namespace Roslyn.Insertion
             var versionAttribute = GetDefaultConfigVersionAttribute(packageInfo);
             versionAttribute?.SetValue(packageInfo.Version.ToString());
 
-            var legacyPropsVersionAttribute = GetLegacyPropsVersionAttributeOpt(packageInfo);
-            legacyPropsVersionAttribute?.SetValue(packageInfo.Version.ToString());
+            if (PackageToPropFilesMap.TryGetValue(packageInfo.PackageName, out var propFiles))
+            {
+                foreach (var file in propFiles)
+                {
+                    (string? original, XDocument? document) pair = (null, null);
+                    if (PackagePropFileToDocumentMap.TryGetValue(file, out pair!))
+                    {
+                        var propsVersionAttribute = GetVersionAttributeInPropsFileOpt(pair.document!, packageInfo);
+                        propsVersionAttribute?.SetValue(packageInfo.Version.ToString());
+
+                        dirtyPropsFiles.Add(file);
+                    }
+                }
+            }
         }
 
         public static NuGetVersion GetPackageVersion(XAttribute versionAttribute)
@@ -251,7 +255,7 @@ namespace Roslyn.Insertion
                 }
 
                 string componentFilePath = ComponentToFileMap[component.Name];
-                dirtyFiles.Add(componentFilePath);
+                dirtyComponentFiles.Add(componentFilePath);
             }
         }
 
@@ -347,6 +351,74 @@ namespace Roslyn.Insertion
             }
 
             return pair;
+        }
+
+        private static async Task PopulatePackagePropFileMaps(
+            GitHttpClient gitClient,
+            string commitId)
+        {
+            var versionDescriptor = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
+            var propsFiles = await gitClient.GetItemsAsync(RoslynInsertionTool.VSRepoId,
+                scopePath: PackagePropsDir,
+                recursionLevel: VersionControlRecursionType.OneLevel,
+                download: true,
+                versionDescriptor: versionDescriptor);
+
+            foreach (var item in propsFiles)
+            {
+                if (item.IsFolder || item.IsSymbolicLink)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    using var fileStream = await gitClient.GetItemContentAsync(RoslynInsertionTool.VSRepoId, path: item.Path, versionDescriptor: versionDescriptor);
+                    var content = await new StreamReader(fileStream).ReadToEndAsync();
+                    var (original, document) = (content, XDocument.Parse(content));
+                    if (document != null && !PackagePropFileToDocumentMap.ContainsKey(item.Path))
+                    {
+                        PackagePropFileToDocumentMap[item.Path] = (original, document);
+                    }
+
+                    PopulatePackageToPropFileMap(document!, item.Path);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Unable to parse file {item.Path}");
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+
+        private static void PopulatePackageToPropFileMap(XDocument document, string propFileName)
+        {
+            try
+            {
+                var packageRefs = document.Root
+                    .Elements("ItemGroup")
+                    .Elements("PackageReference");
+
+                foreach (var packageRef in packageRefs)
+                {
+                    var name = packageRef.Attribute("Update")?.Value;
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        if (!PackageToPropFilesMap.ContainsKey(name!))
+                        {
+                            PackageToPropFilesMap[name!] = new List<string>();
+                        }
+
+                        PackageToPropFilesMap[name!].Add(propFileName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Swallow exceptions reading any of these files.
+                Console.WriteLine($"Could not load contents of {propFileName}");
+                Console.WriteLine(ex.Message);
+            }
         }
     }
 }

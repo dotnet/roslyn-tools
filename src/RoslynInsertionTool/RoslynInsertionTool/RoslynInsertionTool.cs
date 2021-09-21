@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
@@ -245,15 +245,13 @@ namespace Roslyn.Insertion
 
                 // ************ Update .corext\Configs\default.config ********************
                 cancellationToken.ThrowIfCancellationRequested();
-                Console.WriteLine($"Updating CoreXT default.config and LegacyProjects.props files");
-                var (defaultConfigChange, legacyPropsChange) = coreXT.SaveConfig();
-                if (defaultConfigChange is not null)
+                Console.WriteLine($"Updating CoreXT default.config and props files under src/ConfigData/Packages");
+                foreach (var configChange in coreXT.SaveConfigs())
                 {
-                    allChanges.Add(defaultConfigChange);
-                }
-                if (legacyPropsChange is not null)
-                {
-                    allChanges.Add(legacyPropsChange);
+                    if (configChange is not null)
+                    {
+                        allChanges.Add(configChange);
+                    }
                 }
 
                 // *********** Update .corext\Configs\components.json ********************
