@@ -235,7 +235,7 @@ Usually the most recent change to a file between the two branches is considered 
 Sometimes merge conflicts may be present on GitHub but merging locally will work without conflicts. This is due to differences between the merge algorithm used in local git versus the one used by GitHub.
 ``` bash
 git fetch --all
-git checkout {prBranchName}
+git checkout -t upstream/{prBranchName}
 git reset --hard upstream/{destBranch}
 git merge upstream/{srcBranch}
 # Fix merge conflicts
