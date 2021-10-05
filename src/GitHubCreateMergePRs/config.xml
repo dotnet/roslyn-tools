@@ -38,7 +38,7 @@
   <!-- Project System repo -->
   <repo owner="dotnet" name="project-system">
     <merge from="dev16.11.x" to="main" />
-    <merge from="main" to="dev17.1.x" />
+    <merge from="dev17.0.x" to="main" />
   </repo>
   
   <!-- NuGet.BuildTasks repo -->
