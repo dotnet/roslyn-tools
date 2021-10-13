@@ -54,15 +54,18 @@
   <repo owner="dotnet" name="fsharp">
     <!-- releases -->
     <merge from="dev16.0" to="main" /><!-- latest LTS -->
-    <merge from="release/dev16.8" to="main" /><!-- latest RTM -->
+    <merge from="release/dev16.11" to="main" /><!-- latest RTM -->
     <merge from="release/dev16.9" to="release/dev16.10" />
-    <merge from="release/dev16.10" to="release/dev17.0" />
+    <merge from="release/dev16.10" to="release/dev16.11" />
+    <merge from="release/dev16.11" to="release/dev17.0" />
+    <merge from="release/dev17.0" to="release/dev17.1" />
 
     <!-- FCS -->
     <merge from="release/dev16.9" to="release/fcs" />
     <merge from="release/fcs" to="main" />
 
     <!-- regular branch flow -->
+    <merge from="main" to="release/dev17.1" />
     <merge from="feature/auto-widen" to="feature/erased-unions" />
   </repo>
 
