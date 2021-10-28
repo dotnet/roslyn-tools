@@ -90,4 +90,8 @@
     <merge from="release/6.0.1xx-rc2" to="release/6.x" />
     <merge from="release/6.x" to="main" />
   </repo>
+    
+  <repo owner="dotnet" name="linker" mergeOwners="angocke,sbomer">
+    <merge from="release/6.0.2xx" to="main" />
+  </repo>
 </config>
