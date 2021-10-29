@@ -12,6 +12,23 @@ jobs:
   steps:
   - script: .\eng\common\CIBuild.cmd -configuration $(_configuration) -prepareMachine
 
+  - task: PublishTestResults@2
+    displayName: Publish xUnit Test Results
+    inputs:
+      testRunner: XUnit
+      testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(_configuration)\*.xml'
+      mergeTestResults: true
+      testRunTitle: 'Test Windows $(_configuration)'
+    condition: always()
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish Logs
+    inputs:
+      targetPath: '$(Build.SourcesDirectory)/artifacts/log/$(_configuration)'
+      artifactName: 'Windows $(_configuration) Logs - $(System.JobAttempt)'
+    continueOnError: true
+    condition: not(succeeded())
+
 - job: Linux
   pool:
     vmImage: ubuntu-16.04
@@ -24,3 +41,20 @@ jobs:
         _configuration: Release
   steps:
   - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine
+
+  - task: PublishTestResults@2
+    displayName: Publish xUnit Test Results
+    inputs:
+      testRunner: XUnit
+      testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_configuration)/*.xml'
+      mergeTestResults: true
+      testRunTitle: 'Test Linux $(_configuration)'
+    condition: always()
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish Logs
+    inputs:
+      targetPath: '$(Build.SourcesDirectory)/artifacts/log/$(_configuration)'
+      artifactName: 'Linux $(_configuration) Logs - $(System.JobAttempt)'
+    continueOnError: true
+    condition: not(succeeded())
