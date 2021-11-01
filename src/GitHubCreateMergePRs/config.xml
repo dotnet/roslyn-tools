@@ -39,10 +39,10 @@
   </repo>
 
   <!-- Project System repo -->
-  <!-- <repo owner="dotnet" name="project-system">
+  <repo owner="dotnet" name="project-system">
     <merge from="dev16.11.x" to="main" />
     <merge from="dev17.0.x" to="main" />
-  </repo> -->
+  </repo>
   
   <!-- NuGet.BuildTasks repo -->
   <repo owner="dotnet" name="NuGet.BuildTasks">
