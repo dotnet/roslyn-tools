@@ -111,7 +111,7 @@ namespace Roslyn.Insertion
                 {
                     buildToInsert = await GetLatestPassedComponentBuildAsync(cancellationToken);
                     buildVersion = BuildVersion.FromTfsBuildNumber(buildToInsert.BuildNumber, Options.ComponentBuildQueueName);
-                    Console.WriteLine("Found build number " + buildVersion);
+                    Console.WriteLine("Found " + buildToInsert.Definition.Name + " build number " + buildVersion);
 
                     //  Get the latest build, whether passed or failed.  If the buildToInsert has already been inserted but
                     //  there is a later failing build, then send an error
