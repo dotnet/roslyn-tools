@@ -154,7 +154,7 @@ namespace Roslyn.Insertion
 
         internal void AddNewPackage(PackageInfo packageInfo)
         {
-            throw new NotSupportedException("Adding a new package is not supported until we also update for LegacyProjects.props");
+            Console.WriteLine("##vso[task.logissue type=warning] Adding a new package is not supported until we also update for LegacyProjects.props");
 
 #pragma warning disable CS0162 // Unreachable code detected
             var followingElement = GetClosestFollowingPackageElement(packageInfo);
