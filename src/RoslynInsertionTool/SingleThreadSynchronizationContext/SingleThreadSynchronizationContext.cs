@@ -10,7 +10,7 @@ namespace System.Threading.Tasks
     public sealed class SingleThreadSynchronizationContext : SynchronizationContext, IDisposable
     {
         /// <summary>The queue of work items.</summary>
-        private readonly BlockingCollection<KeyValuePair<SendOrPostCallback, object>> queue = new BlockingCollection<KeyValuePair<SendOrPostCallback, object>>();
+        private readonly BlockingCollection<KeyValuePair<SendOrPostCallback, object>> queue = new();
 
         /// <summary>Dispatches an asynchronous message to the synchronization context.</summary>
         /// <param name="callback">The System.Threading.SendOrPostCallback delegate to call.</param>

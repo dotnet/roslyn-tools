@@ -23,7 +23,7 @@ namespace Roslyn.Insertion
         public static readonly Guid VSRepoId = new("a290117c-5a8a-40f7-bc2c-f14dbe3acf6d");
         //Easiest way to get these GUIDs is to create a PR search in AzDo
         //You'll get something like https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequests?_a=active&createdBy=GUID-here
-        public static readonly Guid VSLSnapUserId = new Guid("9f64bc2f-479b-429f-a665-fec80e130b1f");
+        public static readonly Guid VSLSnapUserId = new("9f64bc2f-479b-429f-a665-fec80e130b1f");
 
         private static List<string> WarningMessages { get; } = new List<string>();
 
@@ -603,7 +603,7 @@ namespace Roslyn.Insertion
         private static string CreatePullRequestDescription(Build oldBuild, Build buildToinsert, bool useMarkdown)
         {
             var oldBuildDescription = "";
-            if (oldBuild is object)
+            if (oldBuild is not null)
             {
                 oldBuildDescription = useMarkdown
                     ? $"from {oldBuild.GetBuildDescriptionMarkdown()} "

@@ -4,7 +4,7 @@
   <PropertyGroup>
     <RootNamespace>RoslynInsertionTool</RootNamespace>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net472;net5</TargetFrameworks>
+    <TargetFrameworks>net6.0;net472</TargetFrameworks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Prefer32Bit>false</Prefer32Bit>
 

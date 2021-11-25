@@ -184,7 +184,7 @@ namespace Roslyn.Insertion
         {
             // ********************* Verify Build Passed *****************************
             cancellationToken.ThrowIfCancellationRequested();
-            Build newestBuild = null;
+            Build newestBuild;
             Console.WriteLine($"Get Latest Passed Component Build");
             try
             {
@@ -616,8 +616,8 @@ namespace Roslyn.Insertion
             return result;
         }
 
-        private static readonly Regex IsAzDOReleaseFlowCommit = new Regex(@"^Merged PR \d+: Merging .* to ");
-        private static readonly Regex IsAzDOMergePRCommit = new Regex(@"^Merged PR (\d+):");
+        private static readonly Regex IsAzDOReleaseFlowCommit = new(@"^Merged PR \d+: Merging .* to ");
+        private static readonly Regex IsAzDOMergePRCommit = new(@"^Merged PR (\d+):");
         public static string GetAzDOPullRequestUrl(string repoURL, string prNumber)
             => $"{repoURL}/pullrequest/{prNumber}";
 
@@ -714,9 +714,9 @@ namespace Roslyn.Insertion
             }
         }
 
-        private static readonly Regex IsGitHubReleaseFlowCommit = new Regex(@"^Merge pull request #\d+ from dotnet/merges/");
-        private static readonly Regex IsGitHubMergePRCommit = new Regex(@"^Merge pull request #(\d+) from");
-        private static readonly Regex IsGitHubSquashedPRCommit = new Regex(@"\(#(\d+)\)(?:\n|$)");
+        private static readonly Regex IsGitHubReleaseFlowCommit = new(@"^Merge pull request #\d+ from dotnet/merges/");
+        private static readonly Regex IsGitHubMergePRCommit = new(@"^Merge pull request #(\d+) from");
+        private static readonly Regex IsGitHubSquashedPRCommit = new(@"\(#(\d+)\)(?:\n|$)");
         public static string GetGitHubPullRequestUrl(string repoURL, string prNumber)
             => $"{repoURL}/pull/{prNumber}";
 

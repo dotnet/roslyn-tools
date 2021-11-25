@@ -74,7 +74,7 @@ namespace Roslyn.Insertion
 
             foreach (var propFile in dirtyPropsFiles)
             {
-                (string? original, XDocument? document) pair = (null, null);
+                (string? original, XDocument? document) pair;
                 if (PackagePropFileToDocumentMap.TryGetValue(propFile, out pair!))
                 {
                     yield return RoslynInsertionTool.GetChangeOpt(propFile, pair.original, toFullString(pair.original, pair.document));
@@ -179,7 +179,7 @@ namespace Roslyn.Insertion
             {
                 foreach (var file in propFiles)
                 {
-                    (string? original, XDocument? document) pair = (null, null);
+                    (string? original, XDocument? document) pair;
                     if (PackagePropFileToDocumentMap.TryGetValue(file, out pair!))
                     {
                         var propsVersionAttribute = GetVersionAttributeInPropsFileOpt(pair.document!, packageInfo);

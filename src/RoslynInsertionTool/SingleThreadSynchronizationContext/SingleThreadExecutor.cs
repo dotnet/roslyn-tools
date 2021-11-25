@@ -11,13 +11,11 @@ namespace System.Threading.Tasks
             var previousSynchronizationContext = SynchronizationContext.Current;
             try
             {
-                using (var singleThreadedSynchronizationContext = new SingleThreadSynchronizationContext())
-                {
-                    SynchronizationContext.SetSynchronizationContext(singleThreadedSynchronizationContext);
-                    task = task.ContinueWith(delegate { singleThreadedSynchronizationContext.Complete(); }, TaskScheduler.Default);
-                    singleThreadedSynchronizationContext.RunOnCurrentThread();
-                    task.GetAwaiter().GetResult();
-                }
+                using var singleThreadedSynchronizationContext = new SingleThreadSynchronizationContext();
+                SynchronizationContext.SetSynchronizationContext(singleThreadedSynchronizationContext);
+                task = task.ContinueWith(delegate { singleThreadedSynchronizationContext.Complete(); }, TaskScheduler.Default);
+                singleThreadedSynchronizationContext.RunOnCurrentThread();
+                task.GetAwaiter().GetResult();
             }
             finally
             {
@@ -30,13 +28,11 @@ namespace System.Threading.Tasks
             var previousSynchronizationContext = SynchronizationContext.Current;
             try
             {
-                using (var singleThreadedSynchronizationContext = new SingleThreadSynchronizationContext())
-                {
-                    SynchronizationContext.SetSynchronizationContext(singleThreadedSynchronizationContext);
-                    task = task.ContinueWith(delegate { singleThreadedSynchronizationContext.Complete(); }, TaskScheduler.Default);
-                    singleThreadedSynchronizationContext.RunOnCurrentThread();
-                    await task.ConfigureAwait(false);
-                }
+                using var singleThreadedSynchronizationContext = new SingleThreadSynchronizationContext();
+                SynchronizationContext.SetSynchronizationContext(singleThreadedSynchronizationContext);
+                task = task.ContinueWith(delegate { singleThreadedSynchronizationContext.Complete(); }, TaskScheduler.Default);
+                singleThreadedSynchronizationContext.RunOnCurrentThread();
+                await task.ConfigureAwait(false);
             }
             finally
             {
