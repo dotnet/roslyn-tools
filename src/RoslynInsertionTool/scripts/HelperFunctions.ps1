@@ -13,6 +13,38 @@ function IsDefaultValue([string] $value) {
     return ($value -eq "") -or ($value -eq $defaultValueSentinel)
 }
 
+function GetComponentAzdoUri([string] $componentAzdoUri) {
+    if (IsDefaultValue $componentAzdoUri) {
+        return ""
+    } else {
+        return "/cburi=$componentAzdoUri"
+    }
+}
+
+function GetComponentProjectName([string] $componentProjectName) {
+    if (IsDefaultValue $componentProjectName) {
+        return ""
+    } else {
+        return "/cbpn=$componentProjectName"
+    }
+}
+
+function GetComponentGitHubRepoName([string] $componentGitHubRepoName) {
+    if (IsDefaultValue $componentGitHubRepoName) {
+      return ""
+    } else {
+      return "/componentgithubreponame=$componentGitHubRepoName"
+    }
+}
+
+function GetComponentUserName([string] $componentAzdoUri) {
+    if (IsDefaultValue $componentAzdoUri) {
+        return ""
+    } else {
+        return "/cbu=vslsnap@microsoft.com"
+    }
+}
+
 function GetBuildQueueName([string] $componentName, [string] $buildQueueName) {
     if (IsDefaultValue $buildQueueName) {
         switch ($componentName) {
@@ -93,6 +125,14 @@ function GetCherryPick([string] $cherryPick) {
     }
 }
 
+function GetSkipCoreXTPackages([string] $skipCoreXTPackages) {
+    if (IsDefaultValue $skipCoreXTPackages) {
+        return ""
+    } else {
+        return "/skipcorextpackages=$skipCoreXTPackages"
+    }
+}
+
 function GetQueueValidation([string] $visualStudioBranchName, [string] $queueValidation) {
     if (IsDefaultValue $queueValidation) {
         if ($visualStudioBranchName -eq "lab/ml") {
@@ -159,5 +199,14 @@ function GetCreateDraftPR([string] $createDraftPR) {
     }
     else {
         return $createDraftPR
+    }
+}
+
+function GetReviewerGUID([string] $reviewerGUID) {
+    if (IsDefaultValue $reviewerGUID) {
+        return ""
+    }
+    else {
+        return $reviewerGUID
     }
 }

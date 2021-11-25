@@ -1,108 +1,96 @@
 <config>
-  <repo owner="dotnet" name="roslyn">
-    <!-- Roslyn servicing branches -->
-    <merge from="dev15.9.x" to="dev16.0-vs-deps" />
-    <merge from="dev16.0-vs-deps" to="release/dev16.3" />
+  <repo owner="dotnet" name="roslyn" mergeOwners="allisonchou">
+    <!-- For a list of VS versions under servicing, see https://docs.microsoft.com/en-us/visualstudio/releases/2019/servicing#support-options-for-enterprise-and-professional-customers -->
+    <!-- Roslyn servicing branches (flowing between releases) -->
+    <merge from="dev15.9.x" to="release/dev16.4-vs-deps" />
+    <merge from="release/dev16.4-vs-deps" to="release/dev16.7-vs-deps" />
+    <merge from="release/dev16.7-vs-deps" to="release/dev16.9-vs-deps" />
+    <merge from="release/dev16.9-vs-deps" to="release/dev16.11-vs-deps" />
+    <merge from="release/dev16.11-vs-deps" to="release/dev17.0-vs-deps" />
+     
+    <!-- Roslyn last servicing branch (flowing into current branch) -->
+    <merge from="release/dev17.0-vs-deps" to="release/dev17.1" />
 
-    <!-- Roslyn branches (non-vs-deps) (flowing between releases) -->
-    <merge from="release/dev16.3" to="release/dev16.4" />
-    <merge from="release/dev16.4" to="release/dev16.5" />
-    <merge from="release/dev16.5" to="release/dev16.6" />
-    <merge from="release/dev16.6" to="release/dev16.7" />
-    <merge from="release/dev16.7" to="release/dev16.8" />
-    <merge from="release/dev16.8" to="release/dev16.9" />
-    <merge from="release/dev16.9" to="release/dev16.10" />
-    <merge from="release/dev16.10" to="main" />
+    <!-- Roslyn non-vs-deps branches (flowing between releases) -->
+    <merge from="release/dev17.1" to="main" />
 
-    <!-- Roslyn branches (between vs-deps branches) -->
-    <merge from="release/dev16.3-vs-deps" to="release/dev16.4-vs-deps" />
-    <merge from="release/dev16.4-vs-deps" to="release/dev16.5-vs-deps" />
-    <merge from="release/dev16.5-vs-deps" to="release/dev16.6-vs-deps" />
-    <merge from="release/dev16.6-vs-deps" to="release/dev16.7-vs-deps" />
-    <merge from="release/dev16.7-vs-deps" to="release/dev16.8-vs-deps" />
-    <merge from="release/dev16.8-vs-deps" to="release/dev16.9-vs-deps" />
-    <merge from="release/dev16.9-vs-deps" to="release/dev16.10-vs-deps" />
-    <merge from="release/dev16.10-vs-deps" to="main-vs-deps" />
-
+    <!-- Roslyn vs-deps branches (flowing between releases) -->
+    <merge from="release/dev17.1-vs-deps" to="main-vs-deps" />
+      
     <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
-    <merge from="release/dev16.3" to="release/dev16.3-vs-deps" />
-    <merge from="release/dev16.4" to="release/dev16.4-vs-deps" />
-    <merge from="release/dev16.5" to="release/dev16.5-vs-deps" />
-    <merge from="release/dev16.6" to="release/dev16.6-vs-deps" />
-    <merge from="release/dev16.7" to="release/dev16.7-vs-deps" />
-    <merge from="release/dev16.8" to="release/dev16.8-vs-deps" />
-    <merge from="release/dev16.9" to="release/dev16.9-vs-deps" />
-    <merge from="release/dev16.10" to="release/dev16.10-vs-deps" />
+    <merge from="release/dev17.1" to="release/dev17.1-vs-deps" />
     <merge from="main" to="main-vs-deps" />
 
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/source-generators" owners="chsienki" frequency="weekly" />
-    <merge from="main" to="features/FileScopedNamespaces" owners="chsienki" frequency="weekly" />
-    <merge from="main" to="features/interpolated-string-constants" owners="333fred,kevinsun-dev" frequency="weekly" />
-    <merge from="main" to="features/list-patterns" owners="333fred" frequency="weekly" />
-    <merge from="main" to="features/interpolated-string" owners="333fred" frequency="weekly" />
+    <merge from="main" to="features/list-patterns" owners="333fred,jcouv" frequency="weekly" />
+    <merge from="main" to="features/extended-property-patterns" owners="333fred" frequency="weekly" />
+    <merge from="main" to="features/value_tracking" owners="ryzngard" frequency="weekly" />
+    <merge from="main" to="features/RawStringLiterals" owners="CyrusNajmabadi" frequency="daily" />
+    <merge from="main" to="features/snappy/nodelay" owners="CyrusNajmabadi" frequency="weekly" />
+    <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
   </repo>
+
   <repo owner="dotnet" name="roslyn-sdk">
     <merge from="dev16.0.x" to="main" />
+    <merge from="main" to="dev17.0" />
   </repo>
-    
+
   <!-- Project System repo -->
   <repo owner="dotnet" name="project-system">
-    <merge from="dev15.0.x" to="dev15.9.x" />
-    <merge from="dev15.9.x" to="dev16.0.x" />
-    <merge from="dev16.0.x" to="dev16.7.x" />
-    <merge from="dev16.7.x" to="dev16.8.x" />
-    <merge from="dev16.8.x" to="dev16.9.x" />
-    <merge from="dev16.9.x" to="main" />
+    <merge from="dev16.11.x" to="main" />
+    <merge from="dev17.0.x" to="main" />
   </repo>
-    
+  
+  <!-- NuGet.BuildTasks repo -->
+  <repo owner="dotnet" name="NuGet.BuildTasks">
+    <merge from="main" to="dev17.0.x" />
+  </repo>
+
   <repo owner="dotnet" name="templates">
     <merge from="dev15.9.x" to="dev16.0.x" />
-    <merge from="dev16.0.x" to="master" />
+    <merge from="dev16.0.x" to="main" />
   </repo>
+
   <repo owner="dotnet" name="fsharp">
     <!-- releases -->
     <merge from="dev16.0" to="main" /><!-- latest LTS -->
-    <merge from="release/dev16.8" to="main" /><!-- latest RTM -->
+    <merge from="release/dev17.0" to="main" /><!-- latest RTM -->
     <merge from="release/dev16.9" to="release/dev16.10" />
+    <merge from="release/dev16.10" to="release/dev16.11" />
+    <merge from="release/dev16.11" to="release/dev17.0" />
+    <merge from="release/dev17.0" to="release/dev17.1" />
 
     <!-- FCS -->
-    <merge from="release/dev16.9" to="release/fcs" />
+    <merge from="release/dev17.0" to="release/fcs" />
     <merge from="release/fcs" to="main" />
 
     <!-- regular branch flow -->
-    <merge from="main" to="release/dev16.10" />
-    <merge from="main" to="release/dev17.0" />
-    <merge from="main" to="feature/auto-widen" />
-    <merge from="main" to="feature/nullness" />
-    <merge from="main" to="feature/ext" />
-    <merge from="main" to="feature/tasks" />
+    <merge from="main" to="release/dev17.1" />
     <merge from="feature/auto-widen" to="feature/erased-unions" />
   </repo>
 
   <!-- roslyn-analyzer branches -->
   <repo owner="dotnet" name="roslyn-analyzers">
     <merge from="2.9.x" to="main" />
-    <merge from="release/5.0.1xx" to="release/5.0.2xx" />
-    <merge from="release/5.0.2xx" to="release/6.0.1xx-preview1" />
-    <merge from="release/6.0.1xx-preview1" to="release/6.0.1xx-preview2" />
-    <merge from="release/6.0.1xx-preview2" to="release/6.0.1xx-preview3" />
-    <merge from="main" to="release/6.0.1xx-preview3" />
-  </repo>
-
-  <!-- testimpact branches -->
-  <repo owner="dotnet" name="testimpact">
-    <merge from="dev16.7.x" to="master" />
-    <merge from="master" to="feature/vnext" />
+    <merge from="release/5.0.3xx" to="release/6.0.1xx" />
+    <merge from="release/6.0.1x" to="release/6.0.2xx" />
+    <merge from="release/6.0.2xx" to="main" />
   </repo>
 
   <!-- msbuild language service branches -->
   <repo owner="dotnet" name="msbuild-language-service">
-    <merge from="master" to="dev/prototype" />
+    <merge from="main" to="dev/prototype" />
+  </repo>
+
+  <!-- dotnet-format service branches -->
+  <repo owner="dotnet" name="format" mergeOwners="joerobich">
+    <merge from="release/5.x" to="release/6.x" />
+    <merge from="release/6.0.1xx-rc2" to="release/6.x" />
+    <merge from="release/6.x" to="main" />
   </repo>
     
-  <!-- dotnet-format service branches -->
-  <repo owner="dotnet" name="format">
-    <merge from="master" to="release/6.0" />
+  <repo owner="dotnet" name="linker" mergeOwners="angocke,sbomer">
+    <merge from="release/6.0.2xx" to="main" />
   </repo>
 </config>

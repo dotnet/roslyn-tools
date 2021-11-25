@@ -3,7 +3,7 @@
 // README: This is a simple test script for trying out local changes.
 // Nothing in this file runs in production.
 
-#r "../../artifacts/bin/GithubMergeTool/Debug/netcoreapp2.1/GithubMergeTool.dll"
+#r "../../artifacts/bin/GithubMergeTool/Debug/netcoreapp3.1/GithubMergeTool.dll"
 
 using System;
 using System.Net;

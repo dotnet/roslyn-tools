@@ -3,8 +3,11 @@ param([string] $clientId,
       [string] $requiredValueSentinel,
       [string] $defaultValueSentinel,
       [string] $buildQueueName,
+      [string] $componentAzdoUri,
+      [string] $componentProjectName,
       [string] $componentBranchName,
       [string] $componentName,
+      [string] $componentGitHubRepoName,
       [string] $dropPath,
       [string] $insertCore,
       [string] $insertDevDiv,
@@ -15,11 +18,14 @@ param([string] $clientId,
       [string] $updateCoreXTLibraries,
       [string] $visualStudioBranchName,
       [string] $titlePrefix,
+      [string] $titleSuffix,
       [string] $writePullRequest,
       [int] $insertionCount,
       [string] $autoComplete,
       [string] $createDraftPR,
-      [string] $cherryPick)
+      [string] $cherryPick,
+      [string] $skipCoreXTPackages,
+      [string] $reviewerGUID)
 
 . $PSScriptRoot\HelperFunctions.ps1
 
@@ -27,6 +33,10 @@ EnsureRequiredValue -friendlyName "ComponentName" -value $componentName
 EnsureRequiredValue -friendlyName "ComponentBranchName" -value $componentBranchName
 EnsureRequiredValue -friendlyName "VisualStudioBranchName" -value $visualStudioBranchName
 
+$componentAzdoUri = GetComponentAzdoUri -componentAzdoUri $componentAzdoUri
+$componentProjectName = GetComponentProjectName -componentProjectName $componentProjectName
+$componentGitHubRepoName = GetComponentGitHubRepoName -componentGitHubRepoName $componentGitHubRepoName
+$componentUserName = GetComponentUserName -componentAzdoUri $componentAzdoUri
 $buildQueueName = GetBuildQueueName -componentName $componentName -buildQueueName $buildQueueName
 $dropPathFlag = GetDropPathFlag -componentName $componentName -dropPath $dropPath
 $insertCore = GetInsertCore -componentName $componentName -insertCore $insertCore
@@ -39,11 +49,13 @@ $updateCoreXTLibraries = GetUpdateCoreXTLibraries -componentName $componentName 
 $autoComplete = GetAutoComplete -autoComplete $autoComplete
 $createDraftPR = GetCreateDraftPR -createDraftPR $createDraftPR
 $cherryPick = GetCherryPick -cherryPick $cherryPick
+$skipCoreXTPackages = GetSkipCoreXTPackages -skipCoreXTPackages $skipCoreXTPackages
+$reviewerGUID = GetReviewerGUID -reviewerGUID $reviewerGUID
 
 if ($insertionCount -lt 1) {
     $insertionCount = 1
 }
 
 for ($i = 0; $i -lt $insertionCount; $i++) {
-    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick
+    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/ts=$titleSuffix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" "/reviewerGUID=$reviewerGUID" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName
 }

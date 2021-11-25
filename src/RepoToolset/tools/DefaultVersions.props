@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. See the License.txt file in the project root for more information. -->
 <Project>
 
   <!--
@@ -54,7 +54,7 @@
     <RoslynToolsModifyVsixManifestVersion Condition="'$(RoslynToolsModifyVsixManifestVersion)' == ''">1.0.0-beta2-63011-06</RoslynToolsModifyVsixManifestVersion>
     <RoslynToolsNuGetRepackVersion Condition="'$(RoslynToolsNuGetRepackVersion)' == ''">1.0.0-beta2-63011-06</RoslynToolsNuGetRepackVersion>
     <RoslynToolsSignToolVersion Condition="'$(RoslynToolsSignToolVersion)' == ''">1.0.0-beta2-63011-06</RoslynToolsSignToolVersion>
-    <XliffTasksVersion Condition="'$(XliffTasksVersion)' == ''">0.2.0-beta-63004-01</XliffTasksVersion>
+    <MicrosoftDotNetXliffTasksVersion Condition="'$(MicrosoftDotNetXliffTasksVersion)' == ''">1.0.0-beta.21376.1</MicrosoftDotNetXliffTasksVersion>
     <XUnitVersion Condition="'$(XUnitVersion)' == ''">2.3.1</XUnitVersion>
     <XUnitRunnerConsoleVersion Condition="'$(XUnitRunnerConsoleVersion)' == ''">$(XUnitVersion)</XUnitRunnerConsoleVersion>
     <XUnitRunnerVisualStudioVersion Condition="'$(XUnitRunnerVisualStudioVersion)' == ''">$(XUnitVersion)</XUnitRunnerVisualStudioVersion>
@@ -77,7 +77,6 @@
 
   <PropertyGroup Condition="'$(DotNetBuildOffline)' != 'true'">
     <RestoreSources>$(RestoreSources);https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json</RestoreSources>
-    <RestoreSources Condition="'$(UsingToolXliff)' == 'true' and $(XliffTasksVersion.Contains('-'))">$(RestoreSources);https://dotnetmygetlegacy.blob.core.windows.net/dotnet-core/index.json</RestoreSources>
     <RestoreSources Condition="'$(UsingToolMicrosoftNetCompilers)' == 'true' and $(MicrosoftNetCompilersVersion.Contains('-'))">$(RestoreSources);https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json</RestoreSources>
     <RestoreSources Condition="'$(UsingToolNetFrameworkReferenceAssemblies)' == 'true'">$(RestoreSources);https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json</RestoreSources>
     <RestoreSources Condition="$(XUnitVersion.Contains('-')) or $(XUnitRunnerVisualStudioVersion.Contains('-')) or $(XUnitRunnerVisualStudioVersion.Contains('-'))">$(RestoreSources);https://www.myget.org/F/xunit/api/v3/index.json</RestoreSources>

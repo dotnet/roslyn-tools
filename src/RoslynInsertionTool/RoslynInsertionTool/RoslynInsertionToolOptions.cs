@@ -1,314 +1,78 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the License.txt file in the project root for more information.
 
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
+
+#if !NETCOREAPP
+namespace System.Runtime.CompilerServices
+{
+    class IsExternalInit { }
+}
+#endif
 
 namespace Roslyn.Insertion
 {
-    // borrowed from https://github.com/dotnet/roslyn/blob/main/src/Compilers/Core/Portable/Optional.cs
-    public readonly struct Optional<T>
+    public record RoslynInsertionToolOptions(
+        string VisualStudioRepoAzdoUsername,
+        string VisualStudioRepoAzdoUri,
+        string VisualStudioRepoProjectName,
+        string ComponentBuildQueueName,
+        string BuildConfig,
+        string InsertionBranchName,
+        string BuildDropPath,
+        bool InsertCoreXTPackages,
+        bool UpdateCoreXTLibraries,
+        bool InsertDevDivSourceFiles,
+        bool InsertWillowPackages,
+        string InsertionName,
+        bool RetainInsertedBuild,
+        bool QueueValidationBuild,
+        string ValidationBuildQueueName,
+        bool RunDDRITsInValidation,
+        bool RunRPSInValidation,
+        string LogFileLocation,
+        bool CreateDraftPr,
+        ImmutableArray<string> SkipCoreXTPackages)
     {
-        public bool HasValue { get; }
-        public T Value { get; }
 
-        public Optional(T value)
-        {
-            HasValue = true;
-            Value = value;
-        }
-
-        public T ValueOrFallback(T fallback)
-        {
-            return HasValue ? Value : fallback;
-        }
-
-        public static implicit operator Optional<T>(T value)
-        {
-            return new Optional<T>(value);
-        }
-    }
-
-    public sealed class RoslynInsertionToolOptions
-    {
-        public RoslynInsertionToolOptions() { }
-
-        private RoslynInsertionToolOptions(
-            string username,
-            string password,
-            string visualStudioBranchName,
-            string buildQueueName,
-            string branchName,
-            string buildConfig,
-            string vstsUri,
-            string tfsProjectName,
-            string newBranchName,
-            string buildDropPath,
-            string specificBuild,
-            bool insertCoreXTPackages,
-            bool updateCoreXTLibraries,
-            bool updateAssemblyVersions,
-            bool insertDevDivSourceFiles,
-            bool insertWillowPackages,
-            string insertionName,
-            bool insertToolset,
-            bool retainInsertedBuild,
-            bool queueValidationBuild,
-            string validationBuildQueueName,
-            bool runDDRITsInValidation,
-            bool runRPSInValidation,
-            bool createDummyPr,
-            int updateExistingPr,
-            bool overwritePr,
-            string logFileLocation,
-            string clientId,
-            string clientSecret,
-            string titlePrefix,
-            bool createDraftPr,
-            bool setAutoComplete,
-            ImmutableArray<string> cherryPick)
-        {
-            Username = username;
-            Password = password;
-            VisualStudioBranchName = visualStudioBranchName;
-            BuildQueueName = buildQueueName;
-            BranchName = branchName;
-            BuildConfig = buildConfig;
-            VSTSUri = vstsUri;
-            TFSProjectName = tfsProjectName;
-            NewBranchName = newBranchName;
-            BuildDropPath = buildDropPath;
-            SpecificBuild = specificBuild;
-            InsertCoreXTPackages = insertCoreXTPackages;
-            UpdateCoreXTLibraries = updateCoreXTLibraries;
-            UpdateAssemblyVersions = updateAssemblyVersions;
-            InsertDevDivSourceFiles = insertDevDivSourceFiles;
-            InsertWillowPackages = insertWillowPackages;
-            InsertionName = insertionName;
-            InsertToolset = insertToolset;
-            RetainInsertedBuild = retainInsertedBuild;
-            QueueValidationBuild = queueValidationBuild;
-            ValidationBuildQueueName = validationBuildQueueName;
-            RunDDRITsInValidation = runDDRITsInValidation;
-            RunRPSInValidation = runRPSInValidation;
-            CreateDummyPr = createDummyPr;
-            UpdateExistingPr = updateExistingPr;
-            OverwritePr = overwritePr;
-            LogFileLocation = logFileLocation;
-            ClientId = clientId;
-            ClientSecret = clientSecret;
-            TitlePrefix = titlePrefix;
-            CreateDraftPr = createDraftPr;
-            SetAutoComplete = setAutoComplete;
-            CherryPick = cherryPick;
-        }
-
-        public RoslynInsertionToolOptions Update(
-            Optional<string> username = default,
-            Optional<string> password = default,
-            Optional<string> visualStudioBranchName = default,
-            Optional<string> buildQueueName = default,
-            Optional<string> branchName = default,
-            Optional<string> buildConfig = default,
-            Optional<string> vstsUri = default,
-            Optional<string> tfsProjectName = default,
-            Optional<string> newBranchName = default,
-            Optional<string> buildDropPath = default,
-            Optional<string> specificBuild = default,
-            Optional<bool> insertCoreXTPackages = default,
-            Optional<bool> updateCoreXTLibraries = default,
-            Optional<bool> updateAssemblyVersions = default,
-            Optional<bool> insertDevDivSourceFiles = default,
-            Optional<bool> insertWillowPackages = default,
-            Optional<string> insertionName = default,
-            Optional<bool> insertToolset = default,
-            Optional<bool> retainInsertedBuild = default,
-            Optional<bool> queueValidationBuild = default,
-            Optional<string> validationBuildQueueName = default,
-            Optional<bool> runDDRITsInValidation = default,
-            Optional<bool> runRPSInValidation = default,
-            Optional<bool> createDummyPr = default,
-            Optional<int> updateExistingPr = default,
-            Optional<bool> overwritePr = default,
-            Optional<string> logFileLocation = default,
-            Optional<string> clientId = default,
-            Optional<string> clientSecret = default,
-            Optional<string> titlePrefix = default,
-            Optional<bool> createDraftPr = default,
-            Optional<bool> setAutoComplete = default,
-            Optional<ImmutableArray<string>> cherryPick = default)
-        {
-            return new RoslynInsertionToolOptions(
-                username: username.ValueOrFallback(Username),
-                password: password.ValueOrFallback(Password),
-                visualStudioBranchName: visualStudioBranchName.ValueOrFallback(VisualStudioBranchName),
-                buildQueueName: buildQueueName.ValueOrFallback(BuildQueueName),
-                branchName: branchName.ValueOrFallback(BranchName),
-                buildConfig: buildConfig.ValueOrFallback(BuildConfig),
-                vstsUri: vstsUri.ValueOrFallback(VSTSUri),
-                tfsProjectName: tfsProjectName.ValueOrFallback(TFSProjectName),
-                newBranchName: newBranchName.ValueOrFallback(NewBranchName),
-                buildDropPath: buildDropPath.ValueOrFallback(BuildDropPath),
-                specificBuild: specificBuild.ValueOrFallback(SpecificBuild),
-                insertCoreXTPackages: insertCoreXTPackages.ValueOrFallback(InsertCoreXTPackages),
-                updateCoreXTLibraries: updateCoreXTLibraries.ValueOrFallback(UpdateCoreXTLibraries),
-                updateAssemblyVersions: updateAssemblyVersions.ValueOrFallback(UpdateAssemblyVersions),
-                insertDevDivSourceFiles: insertDevDivSourceFiles.ValueOrFallback(InsertDevDivSourceFiles),
-                insertWillowPackages: insertWillowPackages.ValueOrFallback(InsertWillowPackages),
-                insertionName: insertionName.ValueOrFallback(InsertionName),
-                insertToolset: insertToolset.ValueOrFallback(InsertToolset),
-                retainInsertedBuild: retainInsertedBuild.ValueOrFallback(RetainInsertedBuild),
-                queueValidationBuild: queueValidationBuild.ValueOrFallback(QueueValidationBuild),
-                validationBuildQueueName: validationBuildQueueName.ValueOrFallback(ValidationBuildQueueName),
-                runDDRITsInValidation: runDDRITsInValidation.ValueOrFallback(RunDDRITsInValidation),
-                runRPSInValidation: runRPSInValidation.ValueOrFallback(RunRPSInValidation),
-                createDummyPr: createDummyPr.ValueOrFallback(CreateDummyPr),
-                updateExistingPr: updateExistingPr.ValueOrFallback(UpdateExistingPr),
-                overwritePr: overwritePr.ValueOrFallback(OverwritePr),
-                logFileLocation: logFileLocation.ValueOrFallback(LogFileLocation),
-                clientId: clientId.ValueOrFallback(ClientId),
-                clientSecret: clientSecret.ValueOrFallback(ClientSecret),
-                titlePrefix: titlePrefix.ValueOrFallback(TitlePrefix),
-                createDraftPr: createDraftPr.ValueOrFallback(CreateDraftPr),
-                setAutoComplete: setAutoComplete.ValueOrFallback(SetAutoComplete),
-                cherryPick: cherryPick.ValueOrFallback(CherryPick));
-        }
-
-        public RoslynInsertionToolOptions WithRunRPSInValidation(bool runRPSInValidation) => Update(runRPSInValidation: runRPSInValidation);
-
-        public RoslynInsertionToolOptions WithRunDDRITsInValidation(bool runDDRITsInValidation) => Update(runDDRITsInValidation: runDDRITsInValidation);
-
-        public RoslynInsertionToolOptions WithValidationBuildQueueName(string validationBuildQueueName) => Update(validationBuildQueueName: validationBuildQueueName);
-
-        public RoslynInsertionToolOptions WithQueueValidationBuild(bool queueValidationBuild) => Update(queueValidationBuild: queueValidationBuild);
-
-        public RoslynInsertionToolOptions WithInsertToolset(bool insertToolset) => Update(insertToolset: insertToolset);
-
-        public RoslynInsertionToolOptions WithInsertedBuildRetained(bool retainInsertedBuild) => Update(retainInsertedBuild: retainInsertedBuild);
-
-        public RoslynInsertionToolOptions WithUsername(string username) => Update(username: username);
-
-        public RoslynInsertionToolOptions WithPassword(string password) => Update(password: password);
-
-        public RoslynInsertionToolOptions WithVisualStudioBranchName(string visualStudioBranchName) => Update(visualStudioBranchName: visualStudioBranchName);
-
-        public RoslynInsertionToolOptions WithBuildQueueName(string buildQueueName) => Update(buildQueueName: buildQueueName);
-
-        public RoslynInsertionToolOptions WithbranchName(string branchName) => Update(branchName: branchName);
-
-        public RoslynInsertionToolOptions WithBuildConfig(string buildConfig) => Update(buildConfig: buildConfig);
-
-        public RoslynInsertionToolOptions WithVSTSUrl(string vstsUri) => Update(vstsUri: vstsUri);
-
-        public RoslynInsertionToolOptions WithTFSProjectName(string tfsProjectName) => Update(tfsProjectName: tfsProjectName);
-
-        public RoslynInsertionToolOptions WithNewBranchName(string newBranchName) => Update(newBranchName: newBranchName);
-
-        public RoslynInsertionToolOptions WithBuildDropPath(string buildDropPath) => Update(buildDropPath: buildDropPath);
-
-        public RoslynInsertionToolOptions WithSpecificBuild(string specificBuild) => Update(specificBuild: specificBuild);
-
-        public RoslynInsertionToolOptions WithInsertCoreXTPackages(bool insertCoreXTPackages) => Update(insertCoreXTPackages: insertCoreXTPackages);
-
-        public RoslynInsertionToolOptions WithInsertDevDivSourceFiles(bool insertDevDivSourceFiles) => Update(insertDevDivSourceFiles: insertDevDivSourceFiles);
-
-        public RoslynInsertionToolOptions WithInsertWillowPackages(bool insertWillowPackages) => Update(insertWillowPackages: insertWillowPackages);
-
-        public RoslynInsertionToolOptions WithInsertionName(string insertionName) => Update(insertionName: insertionName);
-
-        public RoslynInsertionToolOptions WithUpdateCoreXTLLibraries(bool updateCoreXTLibraries) => Update(updateCoreXTLibraries: updateCoreXTLibraries);
-
-        public RoslynInsertionToolOptions WithUpdateAssemblyVersions(bool updateAssemblyVersions) => Update(updateAssemblyVersions: updateAssemblyVersions);
-
-        public RoslynInsertionToolOptions WithCreateDummyPr(bool createDummyPr) => Update(createDummyPr: createDummyPr);
-
-        public RoslynInsertionToolOptions WithUpdateExistingPr(int updateExistingPr) => Update(updateExistingPr: updateExistingPr);
-
-        public RoslynInsertionToolOptions WithOverwritePr(bool overwritePr) => Update(overwritePr: overwritePr);
-
-        public RoslynInsertionToolOptions WithLogFileLocation(string logFileLocation) => Update(logFileLocation: logFileLocation);
-
-        public RoslynInsertionToolOptions WithClientId(string clientId) => Update(clientId: clientId);
-
-        public RoslynInsertionToolOptions WithClientSecret(string clientSecret) => Update(clientSecret: clientSecret);
-
-        public RoslynInsertionToolOptions WithTitlePrefix(string titlePrefix) => Update(titlePrefix: titlePrefix);
-
-        public RoslynInsertionToolOptions WithCreateDraftPr(bool createDraftPr) => Update(createDraftPr: createDraftPr);
-
-        public RoslynInsertionToolOptions WithSetAutoComplete(bool setAutoComplete) => Update(setAutoComplete: setAutoComplete);
-
-        public RoslynInsertionToolOptions WithCherryPick(ImmutableArray<string> cherryPick) => Update(cherryPick: cherryPick);
-
-        public string Username { get; }
-
-        public string Password { get; }
-
-        public string VisualStudioBranchName { get; }
-
-        public string BuildQueueName { get; }
-
-        public string BranchName { get; }
-
-        public string BuildConfig { get; }
-
-        public string VSTSUri { get; }
-
-        public string TFSProjectName { get; }
-
-        public string NewBranchName { get; }
-
-        public string BuildDropPath { get; }
-
-        public string SpecificBuild { get; }
-
-        public bool InsertCoreXTPackages { get; }
-
-        public bool UpdateCoreXTLibraries { get; }
-
-        public bool UpdateAssemblyVersions { get; }
-
-        public bool InsertDevDivSourceFiles { get; }
-
-        public bool InsertWillowPackages { get; }
-
-        public string InsertionName { get; }
-
-        public bool InsertToolset { get; }
-
-        public bool RetainInsertedBuild { get; }
-
-        public bool QueueValidationBuild { get; }
-
-        public string ValidationBuildQueueName { get; }
-
-        public bool RunDDRITsInValidation { get; }
-
-        public bool RunRPSInValidation { get; }
-
-        public bool CreateDummyPr { get; }
-
-        public int UpdateExistingPr { get; }
-
-        public bool OverwritePr { get; }
-
-        public string LogFileLocation { get; }
-
-        public string ClientId { get; }
-
-        public string ClientSecret { get; }
-
-        public string TitlePrefix { get; }
-
-        public bool CreateDraftPr { get; }
-
-        public bool SetAutoComplete { get; }
-
-        public ImmutableArray<string> CherryPick { get; }
+        public string VisualStudioRepoAzdoPassword { get; init; }
+        public string VisualStudioBranchName { get; init; }
+        public string ComponentBuildAzdoUsername { get; init; }
+        public string ComponentBuildAzdoPassword { get; init; }
+        public string ComponentBuildAzdoUri { get; init; }
+        public string ComponentBuildProjectName { get; init; }
+        public string ComponentBranchName { get; init; }
+        public string ComponentGitHubRepoName { get; init; }
+        public string SpecificBuild { get; init; }
+        public bool UpdateAssemblyVersions { get; init; }
+        public bool InsertToolset { get; init; }
+        public bool CreateDummyPr { get; init; }
+        public int UpdateExistingPr { get; init; }
+        public bool OverwritePr { get; init; }
+        public string ClientId { get; init; }
+        public string ClientSecret { get; init; }
+        public string TitlePrefix { get; init; }
+        public string TitleSuffix { get; init; }
+        public bool SetAutoComplete { get; init; }
+        public ImmutableArray<string> CherryPick { get; init; }
+        public string ReviewerGUID { get; init; }
+
+        public string ComponentBuildProjectNameOrFallback
+            => ComponentBuildProjectName ?? VisualStudioRepoProjectName;
 
         public bool Valid
         {
             get
             {
+                if (ComponentBuildAzdoUri != null && (ComponentBuildAzdoUsername is null || ComponentBuildAzdoPassword is null))
+                {
+                    // When the Build AzDO instance is separate from the VS AzDO instance, separate credentials must be specified.
+                    return false;
+                }
+
                 if (CreateDummyPr)
                 {
                     // only InsertionName and VisualStudioBranchName are required for creating a dummy pr
@@ -325,22 +89,22 @@ namespace Roslyn.Insertion
                         !CreateDummyPr &&
                         (!CreateDraftPr || OverwritePr) && // Create draft PR can only be specified when overwriting an existing pr
                         !string.IsNullOrEmpty(InsertionName) &&
-                        !string.IsNullOrEmpty(BranchName) &&
+                        !string.IsNullOrEmpty(ComponentBranchName) &&
                         !string.IsNullOrEmpty(VisualStudioBranchName) &&
-                        !string.IsNullOrEmpty(BuildQueueName);
+                        !string.IsNullOrEmpty(ComponentBuildQueueName);
                 }
                 else
                 {
                     return
                         !OverwritePr &&
-                        !string.IsNullOrEmpty(Username) &&
-                        !string.IsNullOrEmpty(Password) &&
+                        !string.IsNullOrEmpty(VisualStudioRepoAzdoUsername) &&
+                        !string.IsNullOrEmpty(VisualStudioRepoAzdoPassword) &&
                         !string.IsNullOrEmpty(VisualStudioBranchName) &&
-                        !string.IsNullOrEmpty(BuildQueueName) &&
-                        !string.IsNullOrEmpty(BranchName) &&
+                        !string.IsNullOrEmpty(ComponentBuildQueueName) &&
+                        !string.IsNullOrEmpty(ComponentBranchName) &&
                         !string.IsNullOrEmpty(BuildConfig) &&
-                        !string.IsNullOrEmpty(VSTSUri) &&
-                        !string.IsNullOrEmpty(TFSProjectName) &&
+                        !string.IsNullOrEmpty(VisualStudioRepoAzdoUri) &&
+                        !string.IsNullOrEmpty(VisualStudioRepoProjectName) &&
                         !string.IsNullOrEmpty(BuildDropPath);
                 }
             }
@@ -351,6 +115,19 @@ namespace Roslyn.Insertion
             get
             {
                 var builder = new StringBuilder();
+
+                if (ComponentBuildAzdoUri != VisualStudioRepoAzdoUri)
+                {
+                    if (ComponentBuildAzdoUsername is null)
+                    {
+                        builder.AppendLine($"When {nameof(ComponentBuildAzdoUri)} is specified you must also specify the {nameof(ComponentBuildAzdoUsername)}.");
+                    }
+
+                    if (ComponentBuildAzdoPassword is null)
+                    {
+                        builder.AppendLine($"When {nameof(ComponentBuildAzdoUri)} is specified you must also specify the {nameof(ComponentBuildAzdoPassword)}.");
+                    }
+                }
 
                 if (CreateDummyPr)
                 {
@@ -389,9 +166,9 @@ namespace Roslyn.Insertion
                         builder.AppendLine($"{nameof(InsertionName).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(BranchName))
+                    if (string.IsNullOrEmpty(ComponentBranchName))
                     {
-                        builder.AppendLine($"{nameof(BranchName).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(ComponentBranchName).ToLowerInvariant()} is required");
                     }
 
                     if (string.IsNullOrEmpty(VisualStudioBranchName))
@@ -399,9 +176,9 @@ namespace Roslyn.Insertion
                         builder.AppendLine($"{nameof(VisualStudioBranchName).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(BuildQueueName))
+                    if (string.IsNullOrEmpty(ComponentBuildQueueName))
                     {
-                        builder.AppendLine($"{nameof(BuildQueueName).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(ComponentBuildQueueName).ToLowerInvariant()} is required");
                     }
                 }
                 else
@@ -412,14 +189,14 @@ namespace Roslyn.Insertion
                         builder.AppendLine($"{nameof(OverwritePr).ToLowerInvariant()} can only be used with {nameof(UpdateExistingPr).ToLowerInvariant()}.");
                     }
 
-                    if (string.IsNullOrEmpty(Username))
+                    if (string.IsNullOrEmpty(VisualStudioRepoAzdoUsername))
                     {
-                        builder.AppendLine($"{nameof(Username).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(VisualStudioRepoAzdoUsername).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(Password))
+                    if (string.IsNullOrEmpty(VisualStudioRepoAzdoPassword))
                     {
-                        builder.AppendLine($"{nameof(Password).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(VisualStudioRepoAzdoPassword).ToLowerInvariant()} is required");
                     }
 
                     if (string.IsNullOrEmpty(VisualStudioBranchName))
@@ -427,14 +204,14 @@ namespace Roslyn.Insertion
                         builder.AppendLine($"{nameof(VisualStudioBranchName).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(BuildQueueName))
+                    if (string.IsNullOrEmpty(ComponentBuildQueueName))
                     {
-                        builder.AppendLine($"{nameof(BuildQueueName).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(ComponentBuildQueueName).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(BranchName))
+                    if (string.IsNullOrEmpty(ComponentBranchName))
                     {
-                        builder.AppendLine($"{nameof(BranchName).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(ComponentBranchName).ToLowerInvariant()} is required");
                     }
 
                     if (string.IsNullOrEmpty(BuildConfig))
@@ -442,14 +219,14 @@ namespace Roslyn.Insertion
                         builder.AppendLine($"{nameof(BuildConfig).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(VSTSUri))
+                    if (string.IsNullOrEmpty(VisualStudioRepoAzdoUri))
                     {
-                        builder.AppendLine($"{nameof(VSTSUri).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(VisualStudioRepoAzdoUri).ToLowerInvariant()} is required");
                     }
 
-                    if (string.IsNullOrEmpty(TFSProjectName))
+                    if (string.IsNullOrEmpty(VisualStudioRepoProjectName))
                     {
-                        builder.AppendLine($"{nameof(TFSProjectName).ToLowerInvariant()} is required");
+                        builder.AppendLine($"{nameof(VisualStudioRepoProjectName).ToLowerInvariant()} is required");
                     }
 
                     if (string.IsNullOrEmpty(BuildDropPath))

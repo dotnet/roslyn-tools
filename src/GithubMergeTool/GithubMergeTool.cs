@@ -1,4 +1,6 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the License.txt file in the project root for more information.
 
 using Newtonsoft.Json;
 using System;
@@ -72,6 +74,31 @@ namespace GithubMergeTool
             bool addAutoMergeLabel,
             bool isAutoTriggered)
         {
+            // Compare the two branches for unsynced commits
+            // https://docs.github.com/en/rest/reference/repos#compare-two-commits
+            var compareResponse = await _client.GetAsync($"/repos/{repoOwner}/{repoName}/compare/{srcBranch}...{destBranch}");
+
+            if (compareResponse.StatusCode != HttpStatusCode.OK)
+            {
+                return (false, compareResponse);
+            }
+
+            var compareData = JsonConvert.DeserializeAnonymousType(await compareResponse.Content.ReadAsStringAsync(),
+                new
+                {
+                    status = "",
+                    ahead_by = 0,
+                    behind_by = 0,
+                    total_commits = 0
+                });
+
+            var branchesSynched = compareData.behind_by == 0;
+            if (branchesSynched)
+            {
+                Console.WriteLine("The branches are already synched.");
+                return (false, null); // `null` means the branch is all caught up.
+            }
+
             // Get the SHA for the source branch
             // https://developer.github.com/v3/git/refs/#get-a-single-reference
             var response = await _client.GetAsync($"repos/{repoOwner}/{repoName}/git/refs/heads/{srcBranch}");
@@ -187,7 +214,7 @@ namespace GithubMergeTool
                 }
             }
 
-            string autoTriggeredMessage = isAutoTriggered ? "" : $@"(created from a manual run of the PR generation tool)\n";
+            string autoTriggeredMessage = isAutoTriggered ? "" : "(created from a manual run of the PR generation tool)";
 
             var prMessage = $@"
 This is an automatically generated pull request from {srcBranch} into {destBranch}.
@@ -208,7 +235,7 @@ Usually the most recent change to a file between the two branches is considered 
 Sometimes merge conflicts may be present on GitHub but merging locally will work without conflicts. This is due to differences between the merge algorithm used in local git versus the one used by GitHub.
 ``` bash
 git fetch --all
-git checkout {prBranchName}
+git checkout -t upstream/{prBranchName}
 git reset --hard upstream/{destBranch}
 git merge upstream/{srcBranch}
 # Fix merge conflicts
@@ -242,10 +269,12 @@ git push upstream {prBranchName} --force
             var createPrData = JsonConvert.DeserializeAnonymousType(await response.Content.ReadAsStringAsync(), new
             {
                 number = "",
+                node_id = "",
                 mergeable = (bool?)null
             });
 
             var prNumber = createPrData.number;
+            var prNodeId = createPrData.node_id;
             var hasConflicts = !createPrData.mergeable;
 
             if (hasConflicts == null)
@@ -286,11 +315,55 @@ git push upstream {prBranchName} --force
                     assignees = new[] { new { login = "" } }
                 });
                 Console.WriteLine("Actual assignees: " + (assigneeData.assignees.Any() ? string.Join(", ", assigneeData.assignees.Select(a => a.login)) : "(none)"));
+
+                if (hasConflicts == true)
+                {
+                    response = await PostComment(prNumber, "⚠ This PR has merge conflicts. " + string.Join(" ", prOwners.Select(owner => "@" + owner)));
+                }
             }
 
             if (!response.IsSuccessStatusCode)
             {
                 return (true, response);
+            }
+
+            // https://docs.github.com/en/graphql/reference/mutations#enablepullrequestautomerge
+            response = await _client.PostAsyncAsJson("https://api.github.com/graphql", JsonConvert.SerializeObject(new
+            {
+                query = @"
+mutation ($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!) {
+  enablePullRequestAutoMerge(input: {
+    pullRequestId: $pullRequestId,
+    mergeMethod: $mergeMethod
+  }) {
+    pullRequest {
+      autoMergeRequest {
+        enabledAt
+        enabledBy {
+          login
+        }
+      }
+    }
+  }
+}",
+                variables = new
+                {
+                    pullRequestId = prNodeId,
+                    mergeMethod = "MERGE"
+                }
+            }));
+
+            var enableAutoMergeData = JsonConvert.DeserializeAnonymousType(
+                await response.Content.ReadAsStringAsync(),
+                new { errors = new[] { new { message = "" } } });
+
+            if (enableAutoMergeData.errors is { } errors)
+            {
+                Console.WriteLine("Failed to enable automerge on PR.");
+                foreach (var err in errors)
+                {
+                    Console.WriteLine(err.message);
+                }
             }
 
             return (true, null);

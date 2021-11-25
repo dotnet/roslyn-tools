@@ -1,4 +1,6 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the License.txt file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -134,6 +136,7 @@ public class Program
         foreach (var repo in config.Root.Elements("repo"))
         {
             var owner = repo.Attribute("owner").Value;
+            var mergeOwners = repo.Attribute("mergeOwners")?.Value.Split(',').ToList() ?? new List<string>();
             var name = repo.Attribute("name").Value;
 
             // We don't try to update existing PR unless asked.
@@ -149,7 +152,7 @@ public class Program
                     continue;
                 }
 
-                var prOwners = merge.Attribute("owners")?.Value.Split(',').ToList() ?? new List<string>();
+                var prOwners = merge.Attribute("owners")?.Value.Split(',').ToList() ?? mergeOwners;
                 var addAutoMergeLabel = bool.Parse(merge.Attribute("addAutoMergeLabel")?.Value ?? "true");
                 try
                 {

@@ -1,4 +1,6 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the License.txt file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -14,7 +16,6 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Mono.Options;
 
 using Roslyn.Insertion;
-
 using static Roslyn.Insertion.RoslynInsertionTool;
 
 partial class RoslynInsertionToolCommandline
@@ -23,26 +24,27 @@ partial class RoslynInsertionToolCommandline
     {
         // ********************** Load Default Settings **************************
         var settings = Settings.Default;
-        var options = new RoslynInsertionToolOptions()
-            .WithUsername(settings.UserName)
-            .WithVSTSUrl(settings.VSTSUrl)
-            .WithBuildQueueName(settings.BuildQueueName)
-            .WithBuildConfig(settings.BuildConfig)
-            .WithTFSProjectName(settings.TFSProjectName)
-            .WithBuildDropPath(settings.BuildDropPath)
-            .WithNewBranchName(settings.NewBranchName)
-            .WithInsertCoreXTPackages(settings.InsertCoreXTPackages)
-            .WithUpdateCoreXTLLibraries(settings.UpdateCoreXTLibraries)
-            .WithInsertDevDivSourceFiles(settings.InsertDevDivSourceFiles)
-            .WithInsertWillowPackages(settings.InsertWillowPackages)
-            .WithInsertionName(settings.InsertionName)
-            .WithInsertedBuildRetained(settings.RetainInsertedBuild)
-            .WithQueueValidationBuild(settings.QueueValidationBuild)
-            .WithValidationBuildQueueName(settings.ValidationBuildQueueName)
-            .WithRunDDRITsInValidation(settings.RunDDRITsInValidation)
-            .WithRunRPSInValidation(settings.RunRPSInValidation)
-            .WithLogFileLocation(settings.LogFileLocation)
-            .WithCreateDraftPr(settings.CreateDraftPr);
+        var options = new RoslynInsertionToolOptions(
+            VisualStudioRepoAzdoUsername: settings.VisualStudioRepoAzdoUserName,
+            VisualStudioRepoAzdoUri: settings.VisualStudioRepoAzdoUri,
+            VisualStudioRepoProjectName: settings.VisualStudioRepoProjectName,
+            ComponentBuildQueueName: settings.BuildQueueName,
+            BuildConfig: settings.BuildConfig,
+            BuildDropPath: settings.BuildDropPath,
+            InsertionBranchName: settings.InsertionBranchName,
+            InsertCoreXTPackages: settings.InsertCoreXTPackages,
+            UpdateCoreXTLibraries: settings.UpdateCoreXTLibraries,
+            InsertDevDivSourceFiles: settings.InsertDevDivSourceFiles,
+            InsertWillowPackages: settings.InsertWillowPackages,
+            InsertionName: settings.InsertionName,
+            RetainInsertedBuild: settings.RetainInsertedBuild,
+            QueueValidationBuild: settings.QueueValidationBuild,
+            ValidationBuildQueueName: settings.ValidationBuildQueueName,
+            RunDDRITsInValidation: settings.RunDDRITsInValidation,
+            RunRPSInValidation: settings.RunRPSInValidation,
+            LogFileLocation: settings.LogFileLocation,
+            CreateDraftPr: settings.CreateDraftPr,
+            SkipCoreXTPackages: ParseSkipCoreXTPackages(settings.SkipCoreXTPackages));
 
         // ************************ Process Arguments ****************************
         bool showHelp = false;
@@ -59,144 +61,169 @@ partial class RoslynInsertionToolCommandline
             {
                 "t|toolsetupdate",
                 "Updates the Roslyn toolset used in the VS branch.",
-                t => options = options.WithInsertToolset(true)
+                t => options = options with { InsertToolset = true }
             },
             {
-                "u=|username=",
-                $"Username to authenticate with VSTS *and* git. Defaults to \"{options.Username}\".",
-                username => options = options.WithUsername(username)
+                "u=|username=|visualstudiorepoazdousername=",
+                $"Username to authenticate with AzDO *and* git. Defaults to \"{options.VisualStudioRepoAzdoUsername}\".",
+                visualStudioRepoAzdoUsername => options = options with { VisualStudioRepoAzdoUsername = visualStudioRepoAzdoUsername }
             },
             {
-                "p=|password=",
-                "The password used to authenticate both VSTS *and* git. If not specified will attempt to load from Azure KeyVault.",
-                password => options = options.WithPassword(password)
+                "p=|password=|visualstudiorepoazdopassword=",
+                "The password used to authenticate both AzDO *and* git. If not specified will attempt to load from Azure KeyVault.",
+                visualStudioRepoAzdoPassword => options = options with { VisualStudioRepoAzdoPassword = visualStudioRepoAzdoPassword }
+            },
+            {
+                "vstsurl=|visualstudiorepoazdouri=",
+                $"The url to the default collection of the AzDO server. Defaults to \"{options.VisualStudioRepoAzdoUri}\".",
+                visualStudioRepoAzdoUri => options = options with { VisualStudioRepoAzdoUri = visualStudioRepoAzdoUri }
+            },
+            {
+                "tfspn=|tfsprojectname=|vspn=|visualstudiorepoprojectname=",
+                $"The project that contains the branch specified in **visualstudiobranchname**. Defaults to \"{options.VisualStudioRepoProjectName}\".",
+                visualStudioRepoProjectName => options = options with { VisualStudioRepoProjectName = visualStudioRepoProjectName }
             },
             {
                 "vsbn=|visualstudiobranchname=",
                 "The Visual Studio branch we are inserting *into*.",
-                visualStudioBranchName => options = options.WithVisualStudioBranchName(visualStudioBranchName)
+                visualStudioBranchName => options = options with { VisualStudioBranchName = visualStudioBranchName }
             },
             {
-                "bn=|branchname=",
+                "cbu=|componentbuildazdousername=",
+                $"Username to authenticate with the Component Build AzDO. Required if **componentbuildazdouri** is specified.",
+                componentBuildAzdoUsername => options = options with { ComponentBuildAzdoUsername = componentBuildAzdoUsername }
+            },
+            {
+                "cbp=|componentbuildazdopassword=",
+                "The password used to authenticate with the Component Build AzDO. Required if **componentbuildazdouri** is specified.",
+                componentBuildAzdoPassword => options = options with { ComponentBuildAzdoPassword = componentBuildAzdoPassword }
+            },
+            {
+                "cburi=|componentbuildazdouri=",
+                $"The url to the default collection of the AzDO server containing the build you wish to insert. Defaults to the **visualstudiorepoazdouri** if unspecified.",
+                componentBuildAzdoUri => options = options with { ComponentBuildAzdoUri = componentBuildAzdoUri }
+            },
+            {
+                "cbpn=|componentbuildprojectname=",
+                $"The name of the build queue producing signed bits you wish to insert. Defaults to match the **visualstudiorepoprojectname** option.",
+                componentBuildProjectName => options = options with { ComponentBuildProjectName = componentBuildProjectName }
+            },
+            {
+                "bq=|buildqueue=|componentbuildqueue=",
+                $"The name of the build queue producing signed bits you wish to insert. Defaults to \"{options.ComponentBuildQueueName}\".",
+                componentBuildQueueName => options = options with { ComponentBuildQueueName = componentBuildQueueName }
+            },
+            {
+                "bn=|branchname=|componentbranchname=",
                 "The branch we are inserting *from*.",
-                branchName => options = options.WithbranchName(branchName)
+                componentBranchName => options = options with { ComponentBranchName = componentBranchName }
             },
             {
-                "bq=|buildqueue=",
-                $"The name of the build queue producing signed bits you wish to insert. Defaults to \"{options.BuildQueueName}\".",
-                buildQueueName => options = options.WithBuildQueueName(buildQueueName)
+                "componentgithubreponame=",
+                "The github repo name that hosts the component's source code.",
+                componentGitHubRepoName => options = options with { ComponentGitHubRepoName = componentGitHubRepoName }
             },
             {
-                "vstsurl=",
-                $"The url to the default collection of the VSTS server. Defaults to \"{options.VSTSUri}\".",
-                vstsUrl => options = options.WithVSTSUrl(vstsUrl)
-            },
-            {
-                "tfspn=|tfsprojectname=",
-                $"The project that contains the branch specified in **visualstudiobranchname**. Defaults to \"{options.TFSProjectName}\".",
-                tfsProjectName => options = options.WithTFSProjectName(tfsProjectName)
-            },
-            {
-                "nbn=|newbranchname=",
-                $"The name of the branch we create when staging our insertion. Will have the current date and insertion branch appended to it. If empty a new branch and pull request are not created (for local testing purposes only). Defaults to \"{options.NewBranchName}\".",
-                newBranchName => options = options.WithNewBranchName(newBranchName)
+                "nbn=|newbranchname=|insertionbranchname=",
+                $"The name of the branch we create when staging our insertion. Will have the current date and insertion branch appended to it. If empty a new branch and pull request are not created (for local testing purposes only). Defaults to \"{options.InsertionBranchName}\".",
+                insertionBranchName => options = options with { InsertionBranchName = insertionBranchName }
             },
             {
                 "dp=|droppath=",
                 $"Location where the signed binaries are dropped. Will use this path in combination with **branchname** to find signed binaries, " +
                 $"unless the path ends with `artifacts\\VSSetup\\Debug` or `artifacts\\VSSetup\\Release` in Arcade repositories, or " +
                 $"`Binaries\\Debug` or `Binaries\\Release` in legacy repositories (for local testing purposes only). Defaults to \"{options.BuildDropPath}\".",
-                dropPath => options = options.WithBuildDropPath(dropPath)
+                dropPath => options = options with { BuildDropPath = dropPath }
             },
             {
                 "sb=|specificbuild=",
                 "Only the latest build is inserted by default, and `rit.exe` will exit if no discovered passing builds are newer than the currently inserted version. By specifying this setting `rit.exe` will skip this logic and insert the specified build.",
-                specificbuild => options = options.WithSpecificBuild(specificbuild)
+                specificbuild => options = options with { SpecificBuild = specificbuild }
             },
             {
                 "ic=|insertcorextpackages=",
                 $"Defaults to \"{options.InsertCoreXTPackages}\".",
-                insertCoreXTPackages => options = options.WithInsertCoreXTPackages(bool.Parse(insertCoreXTPackages))
+                insertCoreXTPackages => options = options with { InsertCoreXTPackages = bool.Parse(insertCoreXTPackages) }
             },
             {
                 "uc=|updatecorextlibraries=",
                 $"Updates a props file used by CoreXT for generating links to library paths. Defaults to \"{options.UpdateCoreXTLibraries}\".",
-                updateCoreXTLibraries => options = options.WithUpdateCoreXTLLibraries(bool.Parse(updateCoreXTLibraries))
+                updateCoreXTLibraries => options = options with { UpdateCoreXTLibraries = bool.Parse(updateCoreXTLibraries) }
             },
             {
                 "ua=|updateassemblyversions=",
                 $"Updates the binding redirects for the insertion components. Defaults to \"{options.UpdateAssemblyVersions}\".",
-                updateAssemblyVersions => options = options.WithUpdateAssemblyVersions(bool.Parse(updateAssemblyVersions))
+                updateAssemblyVersions => options = options with { UpdateAssemblyVersions = bool.Parse(updateAssemblyVersions) }
             },
             {
                 "id=|insertdevdivsourcefiles=",
                 $"Defaults to \"{options.InsertDevDivSourceFiles}\".",
-                insertDevDivSourceFiles => options = options.WithInsertDevDivSourceFiles(bool.Parse(insertDevDivSourceFiles))
+                insertDevDivSourceFiles => options = options with { InsertDevDivSourceFiles = bool.Parse(insertDevDivSourceFiles) }
             },
             {
                 "iw=|insertWillowPackages=",
                 $"Defaults to \"{options.InsertWillowPackages}\".",
-                insertWillowPackages => options = options.WithInsertWillowPackages(bool.Parse(insertWillowPackages))
+                insertWillowPackages => options = options with { InsertWillowPackages = bool.Parse(insertWillowPackages) }
             },
             {
                 "in=|insertionName=",
                 $"The \"friendly\" name of the components being inserted, e.g., Roslyn, Live Unit Testing, Project System. Defaults to \"{options.InsertionName}\".",
-                insertionName=> options = options.WithInsertionName(insertionName)
+                insertionName=> options = options with { InsertionName = insertionName }
             },
             {
                 "ri=|retaininsertedbuild=",
                 $"Whether or not the inserted build will be marked for retention. Defaults to \"{options.RetainInsertedBuild}\".",
-                retainInserted => options = options.WithInsertedBuildRetained(bool.Parse(retainInserted))
+                retainInserted => options = options with { RetainInsertedBuild = bool.Parse(retainInserted) }
             },
             {
                 "qv=|queuevalidationbuild=",
                 $"Creates a VS validation build of the newly created branch. A comment is added to the PR with a link to the build. RPS and DDRITs are included by default.  Defaults to \"{options.QueueValidationBuild}\".",
-                queueValidationBuild => options = options.WithQueueValidationBuild(bool.Parse(queueValidationBuild))
+                queueValidationBuild => options = options with { QueueValidationBuild = bool.Parse(queueValidationBuild) }
             },
             {
                 "vbq=|validationbuildqueue=",
                 $"The name of the build queue to use for validation builds. Defaults to \"{options.ValidationBuildQueueName}\".",
-                validationBuildQueueName => options = options.WithValidationBuildQueueName(validationBuildQueueName)
+                validationBuildQueueName => options = options with { ValidationBuildQueueName = validationBuildQueueName }
             },
             {
                 "rd=|runddritsinvalidation=",
                 $"Whether or not to run DDRITs as part of a validation build. Defaults to \"{options.RunDDRITsInValidation}\".",
-                runDDRITsInValidation => options = options.WithRunDDRITsInValidation(bool.Parse(runDDRITsInValidation))
+                runDDRITsInValidation => options = options with { RunDDRITsInValidation = bool.Parse(runDDRITsInValidation) }
             },
             {
                 "rr=|runrpsinvalidation=",
                 $"Whether or not to run RPS tests as part of a validation build.  Defaults to \"{options.RunRPSInValidation}\".",
-                runRPSInValidation => options = options.WithRunRPSInValidation(bool.Parse(runRPSInValidation))
+                runRPSInValidation => options = options with { RunRPSInValidation = bool.Parse(runRPSInValidation) }
             },
             {
                 "dm|createdummypr",
                 $"Create a dummy insertion PR that will be updated later.",
-                createDummyPr => options = options.WithCreateDummyPr(true)
+                createDummyPr => options = options with { CreateDummyPr = true }
             },
             {
                 "upr=|updateexistingpr=",
                 "Update the specified existing PR with new build information.",
-                updateExistingPr => options = options.WithUpdateExistingPr(int.Parse(updateExistingPr))
+                updateExistingPr => options = options with { UpdateExistingPr = int.Parse(updateExistingPr) }
             },
             {
                 "opr|overwritepr",
                 "Indicates that the PR specified by \"updateexistingpr\" needs to be overwritten.",
-                overwritePr => options = options.WithOverwritePr(true)
+                overwritePr => options = options with { OverwritePr = true }
             },
             {
                 "ll=|loglocation=",
                 "The location of the log file to be written.  Defaults to `rit.log`.",
-                logFileLocation => options = options.WithLogFileLocation(logFileLocation)
+                logFileLocation => options = options with { LogFileLocation = logFileLocation }
             },
             {
                 "ci=|clientid=",
                 "The client ID to use for authentication token retreival.",
-                clientId => options = options.WithClientId(clientId)
+                clientId => options = options with { ClientId = clientId }
             },
             {
                 "cs=|clientsecret=",
                 "The client secret to use for authentication token retreival.",
-                clientSecret => options = options.WithClientSecret(clientSecret)
+                clientSecret => options = options with { ClientSecret = clientSecret }
             },
             {
                 "wpr=|writepullrequest=",
@@ -206,22 +233,39 @@ partial class RoslynInsertionToolCommandline
             {
                 "tp=|titleprefix=",
                 "Prepend the generated pull request's title with the specified value.",
-                titlePrefix => options = options.WithTitlePrefix(titlePrefix)
+                titlePrefix => options = options with { TitlePrefix = titlePrefix }
+            },
+            {
+                "ts=|titlesuffix=",
+                "Append the generated pull request's title with the specified value.",
+                titleSuffix => options = options with { TitleSuffix = titleSuffix }
             },
             {
                 "dpr=|createdraftpr=",
                 "Create an insertion PR that is marked as a draft.",
-                createDraftPr => options = options.WithCreateDraftPr(bool.Parse(createDraftPr))
+                createDraftPr => options = options with { CreateDraftPr = bool.Parse(createDraftPr) }
             },
             {
                 "ac=|setautocomplete=",
                 $"Sets the PR to Auto-Complete once all requirements are met. Defaults to \"{options.SetAutoComplete}\".",
-                setAutoComplete => options = options.WithSetAutoComplete(bool.Parse(setAutoComplete))
+                setAutoComplete => options = options with { SetAutoComplete = bool.Parse(setAutoComplete) }
             },
             {
                 "cherrypick=",
                 $"An optional comma-separated list of VS commits to cherry-pick into the insertion.",
-                cherryPick => options = options.WithCherryPick(cherryPick.Split(',').Select(sha => sha.Trim()).ToImmutableArray())
+                cherryPick => options = options with { CherryPick = cherryPick.Split(',').Select(sha => sha.Trim()).ToImmutableArray() }
+            },
+            {
+                "skipcorextpackages=",
+                $"An optional comma-separated list of CoreXT packages to be skipped when inserting/updating.",
+                skipCoreXTPackages => options = options with { SkipCoreXTPackages = ParseSkipCoreXTPackages(skipCoreXTPackages) }
+            },
+            {
+                "reviewerGUID=",
+                "The GUID of the reviewer ID you'd like to add to your PRs by default (usually your team's).\n" +
+                "Easiest way to get these GUIDs is to create a PR search in AzDo specifying the team or person in the Created By field\n" +
+                "You'll get the GUID in the URL",
+                reviewerGUID => options = options with { ReviewerGUID = reviewerGUID }
             },
         };
 
@@ -249,19 +293,19 @@ partial class RoslynInsertionToolCommandline
             return true;
         }
 
-        if (string.IsNullOrEmpty(options.Password))
+        if (string.IsNullOrEmpty(options.VisualStudioRepoAzdoPassword))
         {
             if (!string.IsNullOrEmpty(options.ClientId) && !string.IsNullOrEmpty(options.ClientSecret))
             {
                 Console.WriteLine($"Attempting to get credentials from KeyVault.");
                 try
                 {
-                    var password = await GetSecret(settings.VsoSecretName, options);
-                    options = options.WithPassword(password);
+                    var visualStudioRepoAzdoPassword = await GetSecret(settings.VisualStudioRepoSecretName, options);
+                    options = options with { VisualStudioRepoAzdoPassword = visualStudioRepoAzdoPassword };
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Failed to get credential");
+                    Console.WriteLine($"Failed to get VS Repo Azdo credential");
                     Console.WriteLine(e.Message);
                     return false;
                 }
@@ -270,8 +314,34 @@ partial class RoslynInsertionToolCommandline
             {
                 Console.Error.WriteLine("No password provided and no client secret for KeyVault provided.");
                 Console.Error.WriteLine("If you want to develop the tool locally, do the following:");
-                Console.Error.WriteLine("1. Go to https://devdiv.visualstudio.com/_usersSettings/tokens and generate a token.");
+                Console.Error.WriteLine("1. Go to https://devdiv.visualstudio.com/_usersSettings/tokens and generate a token with the following scopes: vso.build_execute,vso.code_full,vso.release_execute,vso.packaging");
                 Console.Error.WriteLine("2. Add the command line arguments `/username=myusername@microsoft.com /password=myauthtoken`");
+                return false;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(options.ComponentBuildAzdoUri) && string.IsNullOrEmpty(options.ComponentBuildAzdoPassword))
+        {
+            if (!string.IsNullOrEmpty(options.ClientId) && !string.IsNullOrEmpty(options.ClientSecret))
+            {
+                try
+                {
+                    var componentBuildAzdoPassword = await GetSecret(settings.ComponentBuildSecretName, options);
+                    options = options with { ComponentBuildAzdoPassword = componentBuildAzdoPassword };
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Failed to get Component Build Azdo credential. Using VS Repo Azdo credential instead.");
+                    Console.WriteLine(e.Message);
+                    options = options with { ComponentBuildAzdoPassword = options.VisualStudioRepoAzdoPassword };
+                }
+            }
+            else
+            {
+                Console.Error.WriteLine("No password provided and no client secret for KeyVault provided.");
+                Console.Error.WriteLine("If you want to develop the tool locally, do the following:");
+                Console.Error.WriteLine("1. Go to https://dnceng.visualstudio.com/_usersSettings/tokens and generate a token with the following scopes: vso.build_execute,vso.code_full,vso.release_execute,vso.packaging");
+                Console.Error.WriteLine("2. Add the command line arguments `/componentbuildazdousername=myusername@microsoft.com /componentbuildazdopassword=myauthtoken`");
                 return false;
             }
         }
@@ -292,6 +362,15 @@ partial class RoslynInsertionToolCommandline
         }
 
         return success;
+    }
+
+    private static ImmutableArray<string> ParseSkipCoreXTPackages(string skipCoreXTPackages)
+    {
+        return (skipCoreXTPackages ?? string.Empty)
+            .Split(',')
+            .Select(packageName => packageName.Trim())
+            .Where(packageName => !string.IsNullOrEmpty(packageName))
+            .ToImmutableArray();
     }
 
     /// <summary>

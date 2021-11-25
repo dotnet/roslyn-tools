@@ -1,4 +1,6 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the License.txt file in the project root for more information.
 
 using System;
 using System.Linq;
@@ -10,13 +12,13 @@ namespace Roslyn.Insertion
 {
     static partial class RoslynInsertionTool
     {
-        private static string GetNewBranchName() => $"{Options.NewBranchName}{Options.VisualStudioBranchName.Split('/').Last()}.{DateTime.Now:yyyyMMddHHmmss}";
+        private static string GetNewBranchName() => $"{Options.InsertionBranchName}{Options.VisualStudioBranchName.Split('/').Last()}.{DateTime.Now:yyyyMMddHHmmss}";
 
-        private static async Task<GitPullRequest> CreatePlaceholderBranchAsync(CancellationToken cancellationToken)
+        private static async Task<GitPullRequest> CreatePlaceholderVSBranchAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var gitClient = Connection.GetClient<GitHttpClient>();
-            var repository = await gitClient.GetRepositoryAsync(project: Options.TFSProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
+            var gitClient = VisualStudioRepoConnection.GetClient<GitHttpClient>();
+            var repository = await gitClient.GetRepositoryAsync(project: Options.VisualStudioRepoProjectName, repositoryId: "VS", cancellationToken: cancellationToken);
 
             var refs = await gitClient.GetRefsAsync(
                 repository.Id,
@@ -51,12 +53,11 @@ namespace Roslyn.Insertion
                 },
             }, repository.Id, cancellationToken: cancellationToken);
 
-            return await CreatePullRequestAsync(
+            return await CreateVSPullRequestAsync(
                 branchName,
                 $"PLACEHOLDER INSERTION FOR {Options.InsertionName}",
                 "Not Specified",
-                Options.TitlePrefix,
-                reviewerId: MLInfraSwatUserId.ToString(),
+                reviewerId: Options.ReviewerGUID,
                 cancellationToken);
         }
     }

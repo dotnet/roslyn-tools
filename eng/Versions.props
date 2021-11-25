@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. See the License.txt file in the project root for more information. -->
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -12,33 +13,26 @@
     <SystemValueTupleVersion>4.4.0</SystemValueTupleVersion>
     <SystemIOCompressionVersion>4.3.0</SystemIOCompressionVersion>
     <SystemIOPackagingVersion>4.5.0</SystemIOPackagingVersion>
-    <SystemNetHttpVersion>4.3.3</SystemNetHttpVersion>
+    <SystemNetHttpVersion>4.3.4</SystemNetHttpVersion>
+    <SystemTextRegularExpressions>4.1.0</SystemTextRegularExpressions>
     <!-- VS -->
-    <EnvDTEVersion>8.0.0</EnvDTEVersion>
-    <MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion>10.0.30319</MicrosoftInternalVisualStudioShellInterop100DesignTimeVersion>
-    <MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion>11.0.61030</MicrosoftInternalVisualStudioShellInterop110DesignTimeVersion>
-    <MicrosoftVisualStudioShell150Version>15.0.26606</MicrosoftVisualStudioShell150Version>
-    <MicrosoftVisualStudioSettings150Version>15.0.26606</MicrosoftVisualStudioSettings150Version>
-    <MicrosoftBuildUtilitiesCoreVersion>15.1.548</MicrosoftBuildUtilitiesCoreVersion>
-    <MicrosoftVisualStudioExtensionEngineVersion>15.0.27428-alpha</MicrosoftVisualStudioExtensionEngineVersion>
-    <MicrosoftVisualStudioExtensionManagerVersion>15.0.27428-alpha</MicrosoftVisualStudioExtensionManagerVersion>
-    <MicrosoftVisualStudioExtensionManagerImplementationVersion>15.0.27428-alpha</MicrosoftVisualStudioExtensionManagerImplementationVersion>
-    <MicrosoftVisualStudioRegDetourVersion>15.6.27413</MicrosoftVisualStudioRegDetourVersion>
-    <MicrosoftVisualStudioSetupVersion>15.0.27428-alpha</MicrosoftVisualStudioSetupVersion>
-    <MicrosoftVisualStudioSetupCommonVersion>15.0.27428-alpha</MicrosoftVisualStudioSetupCommonVersion>
-    <MicrosoftVisualStudioSetupEngineVersion>15.0.27428-alpha</MicrosoftVisualStudioSetupEngineVersion>
-    <MicrosoftVisualStudioThreadingVersion>15.6.31</MicrosoftVisualStudioThreadingVersion>
+    <MicrosoftInternalVisualStudioInteropVersion>17.0.0-previews-1-31318-291</MicrosoftInternalVisualStudioInteropVersion>
+    <MicrosoftVisualStudioSettings150Version>17.0.0-previews-1-31318-291</MicrosoftVisualStudioSettings150Version>
+    <MicrosoftVisualStudioExtensibilityTestingSupportFilesVersion>1.1.0</MicrosoftVisualStudioExtensibilityTestingSupportFilesVersion>
+    <MicrosoftVisualStudioSDKVersion>17.0.0-previews-1-31318-291</MicrosoftVisualStudioSDKVersion>
     <!-- Libs -->
     <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
     <MoqVersion>4.5.21</MoqVersion>
-    <NuGetVersioningVersion>4.4.0</NuGetVersioningVersion>
+    <NuGetVersioningVersion>5.11.0</NuGetVersioningVersion>
     <MicrosoftAzureKeyVaultVersion>3.0.0</MicrosoftAzureKeyVaultVersion>
     <MicrosoftBuildVersion>15.6.82</MicrosoftBuildVersion>
     <MicrosoftBuildTasksCoreVersion>15.6.82</MicrosoftBuildTasksCoreVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryVersion>5.2.0</MicrosoftIdentityModelClientsActiveDirectoryVersion>
-    <MicrosoftTeamFoundationServerClientVersion>15.112.1</MicrosoftTeamFoundationServerClientVersion>
-    <MicrosoftVisualStudioServicesClientVersion>15.112.1</MicrosoftVisualStudioServicesClientVersion>
-    <MicrosoftVisualStudioServicesDistributedTaskClientVersion>15.112.1-preview</MicrosoftVisualStudioServicesDistributedTaskClientVersion>
+    <MicrosoftTeamFoundationServerClientVersion>15.120.0-preview</MicrosoftTeamFoundationServerClientVersion>
+    <MicrosoftTeamFoundationServerExtendedClientVersion>15.120.0-preview</MicrosoftTeamFoundationServerExtendedClientVersion>
+    <MicrosoftTeamFoundationDistributedTaskWebApi>15.120.0-preview</MicrosoftTeamFoundationDistributedTaskWebApi>
+    <MicrosoftVisualStudioServicesClientVersion>15.120.0-preview</MicrosoftVisualStudioServicesClientVersion>
+    <WindowsAzureStorage>8.1.0</WindowsAzureStorage>
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>

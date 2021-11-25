@@ -3,8 +3,11 @@ param([string] $clientId,
       [string] $requiredValueSentinel,
       [string] $defaultValueSentinel,
       [string] $buildQueueName,
+      [string] $componentAzdoUri,
+      [string] $componentProjectName,
       [string] $componentBranchName,
       [string] $componentName,
+      [string] $componentGitHubRepoName,
       [string] $dropPath,
       [string] $existingPr,
       [string] $insertCore,
@@ -18,7 +21,8 @@ param([string] $clientId,
       [string] $writePullRequest,
       [switch] $overwritePR,
       [string] $autoComplete,
-      [string] $createDraftPR)
+      [string] $createDraftPR,
+      [string] $reviewerGUID)
 
 . $PSScriptRoot\HelperFunctions.ps1
 
@@ -27,6 +31,10 @@ EnsureRequiredValue -friendlyName "ComponentBranchName" -value $componentBranchN
 EnsureRequiredValue -friendlyName "VisualStudioBranchName" -value $visualStudioBranchName
 EnsureRequiredValue -friendlyName "ExistingPR" -value $existingPr
 
+$componentAzdoUri = GetComponentAzdoUri -componentAzdoUri $componentAzdoUri
+$componentProjectName = GetComponentProjectName -componentProjectName $componentProjectName
+$componentGitHubRepoName = GetComponentGitHubRepoName -componentGitHubRepoName $componentGitHubRepoName
+$componentUserName = GetComponentUserName -componentAzdoUri $componentAzdoUri
 $buildQueueName = GetBuildQueueName -componentName $componentName -buildQueueName $buildQueueName
 $dropPathFlag = GetDropPathFlag -componentName $componentName -dropPath $dropPath
 $insertCore = GetInsertCore -componentName $componentName -insertCore $insertCore
@@ -38,10 +46,11 @@ $updateAssemblyVersions = GetUpdateAssemblyVersions -componentName $componentNam
 $updateCoreXTLibraries = GetUpdateCoreXTLibraries -componentName $componentName -updateCoreXTLibraries $updateCoreXTLibraries
 $autoComplete = GetAutoComplete -autoComplete $autoComplete
 $createDraftPR = GetCreateDraftPR -createDraftPR $createDraftPR
+$reviewerGUID = GetReviewerGUID -reviewerGUID $reviewerGUID
 
 if($overwritePR)
 {
   $overwritePrflag = "/overwritepr"
 }
 
-& $PSScriptRoot\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" $specificBuildFlag $toolsetFlag $dropPathFlag
+& $PSScriptRoot\RIT.exe "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/updateexistingpr=$existingPr" $overwritePrflag "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" "/reviewerGUID=$reviewerGUID" $specificBuildFlag $toolsetFlag $dropPathFlag $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName

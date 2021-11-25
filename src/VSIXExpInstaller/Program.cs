@@ -1,4 +1,6 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the License.txt file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -154,6 +156,10 @@ namespace VsixExpInstaller
                 devenvPath = GetDevenvPath(vsInstallDir);
 
                 var assemblyResolutionPaths = new string[] {
+                    // Microsoft.VisualStudio.Threading, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+                    Path.Combine(vsInstallDir, @"Common7\IDE\PublicAssemblies\Microsoft.VisualStudio.Threading.17.x"),
+                    // Newtonsoft.Json, Version=12.0.0.2, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed
+                    Path.Combine(vsInstallDir, @"Common7\IDE\PrivateAssemblies\Newtonsoft.Json.12.0.0.2"),
                     Path.Combine(vsInstallDir, @"Common7\IDE"),
                     Path.Combine(vsInstallDir, @"Common7\IDE\PrivateAssemblies"),
                     Path.Combine(vsInstallDir, @"Common7\IDE\PublicAssemblies")

@@ -1,4 +1,6 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the License.txt file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -21,8 +23,7 @@ namespace Roslyn.Insertion
         public static readonly Guid VSRepoId = new("a290117c-5a8a-40f7-bc2c-f14dbe3acf6d");
         //Easiest way to get these GUIDs is to create a PR search in AzDo
         //You'll get something like https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequests?_a=active&createdBy=GUID-here
-        public static readonly Guid MLInfraSwatUserId = new("6c25b447-1d90-4840-8fde-d8b22cb8733e");
-        public static readonly Guid VSLSnapUserId = new("9f64bc2f-479b-429f-a665-fec80e130b1f");
+        public static readonly Guid VSLSnapUserId = new Guid("9f64bc2f-479b-429f-a665-fec80e130b1f");
 
         private static List<string> WarningMessages { get; } = new List<string>();
 
@@ -34,30 +35,52 @@ namespace Roslyn.Insertion
         {
             Options = options;
             Console.WriteLine($"{Environment.NewLine}New Insertion Into {Options.VisualStudioBranchName} Started{Environment.NewLine}");
-
             var newPackageFiles = new List<string>();
 
             try
             {
-                Console.WriteLine($"Verifying given authentication for {Options.VSTSUri}");
+                Console.WriteLine($"Verifying given authentication for {Options.VisualStudioRepoAzdoUri}");
                 try
                 {
-                    await Connection.ConnectAsync(cancellationToken);
+                    await VisualStudioRepoConnection.ConnectAsync(cancellationToken);
 
-                    if (!Connection.HasAuthenticated)
+                    if (!VisualStudioRepoConnection.HasAuthenticated)
                     {
-                        LogError($"Could not authenticate with {Options.VSTSUri}");
+                        LogError($"Could not authenticate with {Options.VisualStudioRepoAzdoUri}");
                         return (false, 0);
                     }
                 }
                 catch (Exception ex)
                 {
-                    LogError($"Could not authenticate with {Options.VSTSUri}");
+                    LogError($"Could not authenticate with {Options.VisualStudioRepoAzdoUri}");
                     LogError(ex);
                     return (false, 0);
                 }
 
-                Console.WriteLine($"Verification succeeded for {Options.VSTSUri}");
+                Console.WriteLine($"Verification succeeded for {Options.VisualStudioRepoAzdoUri}");
+
+                if (ComponentBuildConnection != VisualStudioRepoConnection)
+                {
+                    Console.WriteLine($"Verifying given authentication for {Options.ComponentBuildAzdoUri}");
+                    try
+                    {
+                        await ComponentBuildConnection.ConnectAsync(cancellationToken);
+
+                        if (!ComponentBuildConnection.HasAuthenticated)
+                        {
+                            LogError($"Could not authenticate with {Options.ComponentBuildAzdoUri}");
+                            return (false, 0);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError($"Could not authenticate with {Options.ComponentBuildAzdoUri}");
+                        LogError(ex);
+                        return (false, 0);
+                    }
+
+                    Console.WriteLine($"Verification succeeded for {Options.ComponentBuildAzdoUri}");
+                }
 
                 // ********************** Create dummy PR *****************************
                 if (Options.CreateDummyPr)
@@ -65,7 +88,7 @@ namespace Roslyn.Insertion
                     GitPullRequest dummyPR;
                     try
                     {
-                        dummyPR = await CreatePlaceholderBranchAsync(cancellationToken);
+                        dummyPR = await CreatePlaceholderVSBranchAsync(cancellationToken);
                     }
                     catch (Exception ex)
                     {
@@ -95,18 +118,18 @@ namespace Roslyn.Insertion
                 // Get the version from DevOps Pipelines queue, e.g. Roslyn-Main-Signed-Release.
                 if (string.IsNullOrEmpty(Options.SpecificBuild))
                 {
-                    buildToInsert = await GetLatestPassedBuildAsync(cancellationToken);
-                    buildVersion = BuildVersion.FromTfsBuildNumber(buildToInsert.BuildNumber, Options.BuildQueueName);
-                    Console.WriteLine("Found build number " + buildVersion);
+                    buildToInsert = await GetLatestPassedComponentBuildAsync(cancellationToken);
+                    buildVersion = BuildVersion.FromTfsBuildNumber(buildToInsert.BuildNumber, Options.ComponentBuildQueueName);
+                    Console.WriteLine("Found " + buildToInsert.Definition.Name + " build number " + buildVersion);
 
                     //  Get the latest build, whether passed or failed.  If the buildToInsert has already been inserted but
                     //  there is a later failing build, then send an error
-                    latestBuild = await GetLatestBuildAsync(cancellationToken);
+                    latestBuild = await GetLatestComponentBuildAsync(cancellationToken);
                 }
                 else
                 {
                     buildVersion = BuildVersion.FromString(Options.SpecificBuild);
-                    buildToInsert = await GetSpecificBuildAsync(buildVersion, cancellationToken);
+                    buildToInsert = await GetSpecificComponentBuildAsync(buildVersion, cancellationToken);
                 }
 
                 var insertionArtifacts = await GetInsertionArtifactsAsync(buildToInsert, cancellationToken);
@@ -114,7 +137,7 @@ namespace Roslyn.Insertion
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // *********** Look up existing PR ********************
-                var gitClient = Connection.GetClient<GitHttpClient>();
+                var gitClient = VisualStudioRepoConnection.GetClient<GitHttpClient>();
                 var branches = await gitClient.GetRefsAsync(
                     VSRepoId,
                     filter: $"heads/{Options.VisualStudioBranchName}",
@@ -176,13 +199,23 @@ namespace Roslyn.Insertion
                     (success, newPackageFiles) = UpdatePackages(
                         coreXT,
                         insertionArtifacts.GetPackagesDirectory(),
+                        Options.SkipCoreXTPackages,
                         cancellationToken);
                     retainBuild |= success;
 
                     // *********** Copy OptimizationInputs.props file ***********************
                     foreach (var propsFile in insertionArtifacts.GetOptProfPropertyFiles())
                     {
-                        var targetFilePath = "src/Tests/config/runsettings/Official/OptProf/External/" + Path.GetFileName(propsFile);
+                        var propsFilename = Path.GetFileName(propsFile);
+                        if (propsFilename == "dotnet-roslyn.props")
+                        {
+                            // Since the propsFilename is based on repo name, during Roslyn's transition from inserting
+                            // from GH dotnet/roslyn builds to inserting from dnceng dotnet-roslyn builds, this will
+                            // ensure that we look for the proper props filename.
+                            propsFilename = "dotnet.roslyn.props";
+                        }
+
+                        var targetFilePath = $"src/Tests/config/runsettings/Official/OptProf/External/{propsFilename}";
 
                         var version = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = baseBranch.ObjectId };
                         var stream = await gitClient.GetItemContentAsync(VSRepoId, targetFilePath, download: true, versionDescriptor: version);
@@ -220,10 +253,13 @@ namespace Roslyn.Insertion
 
                 // ************ Update .corext\Configs\default.config ********************
                 cancellationToken.ThrowIfCancellationRequested();
-                Console.WriteLine($"Updating CoreXT default.config file");
-                if (coreXT.SaveConfigOpt() is GitChange configChange)
+                Console.WriteLine($"Updating CoreXT default.config and props files under src/ConfigData/Packages");
+                foreach (var configChange in coreXT.SaveConfigs())
                 {
-                    allChanges.Add(configChange);
+                    if (configChange is not null)
+                    {
+                        allChanges.Add(configChange);
+                    }
                 }
 
                 // *********** Update .corext\Configs\components.json ********************
@@ -234,7 +270,7 @@ namespace Roslyn.Insertion
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating CoreXT components file");
 
-                    var components = await GetLatestComponentsAsync(buildToInsert, insertionArtifacts, cancellationToken);
+                    var components = GetLatestBuildComponents(buildToInsert, insertionArtifacts, cancellationToken);
                     var shouldSave = false;
                     foreach (var newComponent in components)
                     {
@@ -259,10 +295,7 @@ namespace Roslyn.Insertion
                 // ************* Ensure the build is retained on the servers *************
                 if (Options.RetainInsertedBuild && retainBuild && !buildToInsert.KeepForever.GetValueOrDefault())
                 {
-                    Console.WriteLine("Marking inserted build for retention.");
-                    buildToInsert.KeepForever = true;
-                    var buildClient = Connection.GetClient<BuildHttpClient>();
-                    await buildClient.UpdateBuildAsync(buildToInsert);
+                    await RetainComponentBuild(buildToInsert);
                 }
 
                 // ************* Bail out if there are no changes ************************
@@ -318,12 +351,13 @@ namespace Roslyn.Insertion
                         OntoRefName = $"refs/heads/{insertionBranchName}",
                         GeneratedRefName = $"refs/heads/{cherryPickBranchName}"
                     };
-                    var cherryPick = await gitClient.CreateCherryPickAsync(cherryPickArgs, Options.TFSProjectName, VSRepoId, cancellationToken: cancellationToken);
+                    // Cherry-pick VS commits into insertion branch.
+                    var cherryPick = await gitClient.CreateCherryPickAsync(cherryPickArgs, Options.VisualStudioRepoProjectName, VSRepoId, cancellationToken: cancellationToken);
                     while (cherryPick.Status < GitAsyncOperationStatus.Completed)
                     {
                         Console.WriteLine($"Cherry-pick progress: {cherryPick.DetailedStatus?.Progress ?? 0:P}");
                         await Task.Delay(5000);
-                        cherryPick = await gitClient.GetCherryPickAsync(options.TFSProjectName, cherryPick.CherryPickId, VSRepoId, cancellationToken: cancellationToken);
+                        cherryPick = await gitClient.GetCherryPickAsync(options.VisualStudioRepoProjectName, cherryPick.CherryPickId, VSRepoId, cancellationToken: cancellationToken);
                     }
                     Console.WriteLine($"Cherry-pick status: {cherryPick.Status}");
 
@@ -352,7 +386,7 @@ namespace Roslyn.Insertion
                 }
 
                 // ********************* Create pull request *****************************
-                var oldBuild = await GetSpecificBuildAsync(oldComponentVersion, cancellationToken);
+                var oldBuild = await GetSpecificComponentBuildAsync(oldComponentVersion, cancellationToken);
                 var prDescriptionMarkdown = CreatePullRequestDescription(oldBuild, buildToInsert, useMarkdown: true);
 
                 if (buildToInsert.Result == BuildResult.PartiallySucceeded)
@@ -394,7 +428,7 @@ namespace Roslyn.Insertion
                     {
                         if (Options.OverwritePr)
                         {
-                            pullRequest = await OverwritePullRequestAsync(pullRequestId, prDescriptionMarkdown, buildVersion.ToString(), options.TitlePrefix, cancellationToken);
+                            pullRequest = await OverwritePullRequestAsync(pullRequestId, prDescriptionMarkdown, buildVersion.ToString(), cancellationToken);
                         }
                         pullRequestId = pullRequest.PullRequestId;
                     }
@@ -411,16 +445,19 @@ namespace Roslyn.Insertion
                     Console.WriteLine($"Create Pull Request");
                     try
                     {
-                        // If this insertion was queued for PR validation, for a dev branch, or for a feature branch,
-                        // then add the build queuer as a reviewer instead of mlinfraswat.
+                        // If this insertion was queued for PR validation, for a dev branch, for a feature branch,
+                        // or if no default reviewer is specified, then add the build queuer as a reviewer.
                         var isPrValidation = !string.IsNullOrEmpty(GetBuildPRNumber(buildToInsert));
-                        var isDevOrFeatureBranch = Options.BranchName.StartsWith("dev/") || Options.BranchName.StartsWith("features/");
+                        var isDevOrFeatureBranch = Options.ComponentBranchName.StartsWith("dev/") || Options.ComponentBranchName.StartsWith("features/");
+                        bool hasReviewer = !string.IsNullOrEmpty(Options.ReviewerGUID);
 
-                        var reviewerId = isPrValidation || isDevOrFeatureBranch
+                        // Easiest way to get the reviewer GUIDs is to create a PR search in AzDo
+                        // You'll get something like https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequests?_a=active&createdBy=GUID-here
+                        var reviewerId = (isPrValidation || isDevOrFeatureBranch) || !hasReviewer
                             ? buildToInsert.RequestedBy.Id
-                            : MLInfraSwatUserId.ToString();
+                            : Options.ReviewerGUID;
 
-                        pullRequest = await CreatePullRequestAsync(insertionBranchName, prDescriptionMarkdown, buildVersion.ToString(), options.TitlePrefix, reviewerId, cancellationToken);
+                        pullRequest = await CreateVSPullRequestAsync(insertionBranchName, prDescriptionMarkdown, buildVersion.ToString(), reviewerId, cancellationToken);
                         if (pullRequest == null)
                         {
                             LogError($"Unable to create pull request for '{insertionBranchName}'");
@@ -449,10 +486,10 @@ namespace Roslyn.Insertion
                             // When creating Draft PRs no policies are automatically started.
                             // If we do not queue a CloudBuild the Perf DDRITs request will
                             // spin waiting for a build to test against until it timesout.
-                            await QueueBuildPolicy(pullRequest, "CloudBuild - PR");
+                            await QueueVSBuildPolicy(pullRequest, "CloudBuild - PR");
                         }
 
-                        await QueueBuildPolicy(pullRequest, "Request Perf DDRITs");
+                        await QueueVSBuildPolicy(pullRequest, "Request Perf DDRITs");
                     }
                     catch (Exception ex)
                     {
@@ -463,9 +500,9 @@ namespace Roslyn.Insertion
                     if (Options.CreateDraftPr)
                     {
                         // When creating Draft PRs no policies are automatically started.
-                        await TryQueueBuildPolicy(pullRequest, "Insertion Hash Check", insertionBranchName);
-                        await TryQueueBuildPolicy(pullRequest, "Insertion Sign Check", insertionBranchName);
-                        await TryQueueBuildPolicy(pullRequest, "Insertion Symbol Check", insertionBranchName);
+                        await TryQueueVSBuildPolicy(pullRequest, "Insertion Hash Check", insertionBranchName);
+                        await TryQueueVSBuildPolicy(pullRequest, "Insertion Sign Check", insertionBranchName);
+                        await TryQueueVSBuildPolicy(pullRequest, "Insertion Symbol Check", insertionBranchName);
                     }
                 }
 
@@ -531,11 +568,7 @@ namespace Roslyn.Insertion
             UpdatePackage(previousPackageVersion, coreXT, package);
         }
 
-        public static string ToFullString(this XDocument document)
-        {
-            return document.Declaration.ToString() + "\n" + document.ToString();
-        }
-
+#nullable enable
         public static bool IsWhiteSpaceOnlyChange(string s1, string s2)
         {
             return removeNewlines(s1) == removeNewlines(s2);
@@ -543,8 +576,13 @@ namespace Roslyn.Insertion
             static string removeNewlines(string s) => s.Replace("\r\n", "").Replace("\n", "");
         }
 
-        public static GitChange GetChangeOpt(string path, string originalText, string newText)
+        public static GitChange? GetChangeOpt(string path, string? originalText, string? newText)
         {
+            if (originalText is null || newText is null)
+            {
+                return null;
+            }
+
             if (!IsWhiteSpaceOnlyChange(originalText, newText))
             {
                 return new GitChange
@@ -560,6 +598,7 @@ namespace Roslyn.Insertion
                 return null;
             }
         }
+#nullable restore
 
         private static string CreatePullRequestDescription(Build oldBuild, Build buildToinsert, bool useMarkdown)
         {

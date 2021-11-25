@@ -1,4 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the License.txt file in the project root for more information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -7,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
+using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Versioning;
@@ -15,17 +20,23 @@ namespace Roslyn.Insertion
 {
     internal class CoreXT
     {
-        private static Dictionary<string, string> ComponentToFileMap;
-        private static Dictionary<string, (string original, JObject document)> ComponentFileToDocumentMap;
-        private static HashSet<string> dirtyFiles;
+        private static Dictionary<string, string> ComponentToFileMap = null!;
+        private static Dictionary<string, (string original, JObject document)> ComponentFileToDocumentMap = null!;
+        private static HashSet<string> dirtyComponentFiles = null!;
+
+        private static Dictionary<string, ICollection<string>> PackageToPropFilesMap = null!;
+        private static Dictionary<string, (string original, XDocument document)> PackagePropFileToDocumentMap = null!;
+        private static HashSet<string> dirtyPropsFiles = null!;
 
         private const string DefaultConfigPath = ".corext/Configs/default.config";
         private const string ComponentsJsonPath = ".corext/Configs/components.json";
+        private const string PackagePropsDir = "src/ConfigData/Packages";
+
         private readonly string _defaultConfigOriginal;
 
         public XDocument ConfigDocument { get; }
 
-        public CoreXT(string configOriginalText)
+        private CoreXT(string configOriginalText)
         {
             _defaultConfigOriginal = configOriginalText;
             ConfigDocument = XDocument.Parse(configOriginalText, LoadOptions.None);
@@ -41,21 +52,53 @@ namespace Roslyn.Insertion
                 DefaultConfigPath,
                 download: true,
                 versionDescriptor: vsBranch);
-
             var defaultConfigOriginal = await new StreamReader(defaultConfigStream).ReadToEndAsync();
 
             ComponentToFileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             ComponentFileToDocumentMap = new Dictionary<string, (string, JObject)>(StringComparer.OrdinalIgnoreCase);
-            dirtyFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            dirtyComponentFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            PackageToPropFilesMap = new Dictionary<string, ICollection<string>>(StringComparer.OrdinalIgnoreCase);
+            PackagePropFileToDocumentMap = new Dictionary<string, (string original, XDocument document)>(StringComparer.OrdinalIgnoreCase);
+            dirtyPropsFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             await PopulateComponentJsonMaps(gitClient, commitId);
+            await PopulatePackagePropFileMaps(gitClient, commitId);
 
             return new CoreXT(defaultConfigOriginal);
         }
 
-        public GitChange SaveConfigOpt()
+        public IEnumerable<GitChange?> SaveConfigs()
         {
-            return RoslynInsertionTool.GetChangeOpt(DefaultConfigPath, _defaultConfigOriginal, ConfigDocument.ToFullString());
+            yield return RoslynInsertionTool.GetChangeOpt(DefaultConfigPath, _defaultConfigOriginal, toFullString(_defaultConfigOriginal, ConfigDocument));
+
+            foreach (var propFile in dirtyPropsFiles)
+            {
+                (string? original, XDocument? document) pair = (null, null);
+                if (PackagePropFileToDocumentMap.TryGetValue(propFile, out pair!))
+                {
+                    yield return RoslynInsertionTool.GetChangeOpt(propFile, pair.original, toFullString(pair.original, pair.document));
+                }
+            }
+
+            static string? toFullString(string? original, XDocument? document)
+            {
+                if (original is null || document is null)
+                {
+                    return null;
+                }
+
+                var documentString = document.Declaration switch
+                {
+                    null => "",
+                    var decl => decl.ToString() + "\n"
+                } + document.ToString();
+                if (original.EndsWith("\n"))
+                {
+                    documentString += "\n";
+                }
+                return documentString;
+            }
         }
 
         public List<GitChange> SaveComponents()
@@ -63,7 +106,7 @@ namespace Roslyn.Insertion
             var changes = new List<GitChange>();
             foreach (var kvp in ComponentFileToDocumentMap)
             {
-                if (dirtyFiles.Contains(kvp.Key))
+                if (dirtyComponentFiles.Contains(kvp.Key))
                 {
                     var (original, doc) = kvp.Value;
                     if (doc is null)
@@ -83,7 +126,7 @@ namespace Roslyn.Insertion
             return changes;
         }
 
-        public XAttribute GetVersionAttribute(PackageInfo packageInfo)
+        private XAttribute? GetDefaultConfigVersionAttribute(PackageInfo packageInfo)
         {
             return ConfigDocument.Root
                 .Elements("packages")
@@ -92,7 +135,16 @@ namespace Roslyn.Insertion
                 .Select(x => x.Attribute("version")).SingleOrDefault();
         }
 
-        public XElement GetClosestFollowingPackageElement(PackageInfo packageInfo)
+        private static XAttribute? GetVersionAttributeInPropsFileOpt(XDocument document, PackageInfo packageInfo)
+        {
+            return document?.Root
+                .Elements("ItemGroup")
+                .Elements("PackageReference")
+                .Where(p => p.Attribute("Update")?.Value == packageInfo.PackageName)
+                .Select(x => x.Attribute("Version")).SingleOrDefault();
+        }
+
+        private XElement GetClosestFollowingPackageElement(PackageInfo packageInfo)
         {
             return ConfigDocument.Root.
                 Elements("packages").
@@ -102,6 +154,9 @@ namespace Roslyn.Insertion
 
         internal void AddNewPackage(PackageInfo packageInfo)
         {
+            Console.WriteLine("##vso[task.logissue type=warning] Adding a new package is not supported until we also update for LegacyProjects.props");
+
+#pragma warning disable CS0162 // Unreachable code detected
             var followingElement = GetClosestFollowingPackageElement(packageInfo);
 
             var package = new XElement(
@@ -112,12 +167,28 @@ namespace Roslyn.Insertion
                 new XAttribute("tags", "exapis"));
 
             followingElement.AddAfterSelf(package);
+#pragma warning restore CS0162 // Unreachable code detected
         }
 
         public void UpdatePackageVersion(PackageInfo packageInfo)
         {
-            var versionAttribute = GetVersionAttribute(packageInfo);
-            versionAttribute.SetValue(packageInfo.Version.ToString());
+            var versionAttribute = GetDefaultConfigVersionAttribute(packageInfo);
+            versionAttribute?.SetValue(packageInfo.Version.ToString());
+
+            if (PackageToPropFilesMap.TryGetValue(packageInfo.PackageName, out var propFiles))
+            {
+                foreach (var file in propFiles)
+                {
+                    (string? original, XDocument? document) pair = (null, null);
+                    if (PackagePropFileToDocumentMap.TryGetValue(file, out pair!))
+                    {
+                        var propsVersionAttribute = GetVersionAttributeInPropsFileOpt(pair.document!, packageInfo);
+                        propsVersionAttribute?.SetValue(packageInfo.Version.ToString());
+
+                        dirtyPropsFiles.Add(file);
+                    }
+                }
+            }
         }
 
         public static NuGetVersion GetPackageVersion(XAttribute versionAttribute)
@@ -125,9 +196,9 @@ namespace Roslyn.Insertion
             return NuGetVersion.Parse(versionAttribute.Value);
         }
 
-        public bool TryGetPackageVersion(PackageInfo packageInfo, out NuGetVersion version)
+        public bool TryGetPackageVersion(PackageInfo packageInfo, out NuGetVersion? version)
         {
-            var attribute = GetVersionAttribute(packageInfo);
+            var attribute = GetDefaultConfigVersionAttribute(packageInfo);
             if (attribute == null)
             {
                 version = default;
@@ -138,25 +209,25 @@ namespace Roslyn.Insertion
             return true;
         }
 
-        public bool TryGetComponentByName(string componentName, out Component component)
+        public bool TryGetComponentByName(string componentName, out Component? component)
         {
             component = null;
 
-            (string _, JObject componentDocument) = GetJsonDocumentForComponent(componentName);
+            (_, JObject? componentDocument) = GetJsonDocumentForComponent(componentName);
 
             if (componentDocument == null)
             {
                 return false;
             }
 
-            var componentJSON = componentDocument["Components"][componentName];
+            var componentJSON = componentDocument["Components"]?[componentName];
             if (componentJSON == null)
             {
                 return false;
             }
 
-            var componentFilename = (string)componentJSON["fileName"];
-            var componentUri = new Uri((string)componentJSON["url"]);
+            var componentFilename = (string?)componentJSON["fileName"];
+            var componentUri = new Uri((string?)componentJSON["url"]);
             var version = componentJSON.Value<string>("version"); // might not be present
             component = new Component(componentName, componentFilename, componentUri, version);
             return true;
@@ -166,9 +237,8 @@ namespace Roslyn.Insertion
         {
             var (_, componentDocument) = GetJsonDocumentForComponent(component.Name);
 
-            if (componentDocument != null)
+            if (componentDocument?["Components"]?[component.Name] is JObject componentJSON)
             {
-                var componentJSON = (JObject)componentDocument["Components"][component.Name];
                 componentJSON["fileName"] = component.Filename;
                 componentJSON["url"] = component.Uri.ToString();
                 if (component.Version == null)
@@ -184,7 +254,7 @@ namespace Roslyn.Insertion
                 }
 
                 string componentFilePath = ComponentToFileMap[component.Name];
-                dirtyFiles.Add(componentFilePath);
+                dirtyComponentFiles.Add(componentFilePath);
             }
         }
 
@@ -204,12 +274,12 @@ namespace Roslyn.Insertion
                 {
                     foreach (var import in imports)
                     {
-                        string subComponentFileName = (string)import;
+                        var subComponentFileName = (string?)import;
 
                         if (!string.IsNullOrEmpty(subComponentFileName))
                         {
                             var componentsJSONPath = ".corext/Configs/" + subComponentFileName;
-                            var (original, jDoc) = await GetJsonDocumentForComponentsFile(gitClient, commitId, componentsJSONPath);
+                            (var original, var jDoc) = await GetJsonDocumentForComponentsFile(gitClient, commitId, componentsJSONPath);
 
                             if (jDoc != null && !ComponentFileToDocumentMap.ContainsKey(componentsJSONPath))
                             {
@@ -226,11 +296,9 @@ namespace Roslyn.Insertion
         {
             if (jDocument != null && !string.IsNullOrEmpty(componentsJsonFileName))
             {
-                var jComponents = (JObject)jDocument["Components"];
-
-                if (jComponents != null)
+                if (jDocument["Components"] is JObject jComponents)
                 {
-                    Dictionary<string, JToken> componentsMap = jComponents.ToObject<Dictionary<string, JToken>>();
+                    var componentsMap = jComponents.ToObject<Dictionary<string, JToken>>();
 
                     if (componentsMap != null && componentsMap.Any())
                     {
@@ -265,19 +333,88 @@ namespace Roslyn.Insertion
             }
         }
 
-        private (string original, JObject document) GetJsonDocumentForComponent(string componentName)
+        private (string? original, JObject? document) GetJsonDocumentForComponent(string componentName)
         {
-            (string, JObject) pair = (null, null);
+            (string?, JObject?) pair = (null, null);
 
             if (!string.IsNullOrEmpty(componentName))
             {
                 if (ComponentToFileMap.TryGetValue(componentName, out string componentFileName))
                 {
-                    ComponentFileToDocumentMap.TryGetValue(componentFileName, out pair);
+                    // ValueTuple is not covariant so we need to suppress the warning on 'pair'
+                    ComponentFileToDocumentMap.TryGetValue(componentFileName, out pair!);
                 }
             }
 
             return pair;
+        }
+
+        private static async Task PopulatePackagePropFileMaps(
+            GitHttpClient gitClient,
+            string commitId)
+        {
+            var versionDescriptor = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
+            var propsFiles = await gitClient.GetItemsAsync(RoslynInsertionTool.VSRepoId,
+                scopePath: PackagePropsDir,
+                recursionLevel: VersionControlRecursionType.OneLevel,
+                download: true,
+                versionDescriptor: versionDescriptor);
+
+            foreach (var item in propsFiles)
+            {
+                if (item.IsFolder || item.IsSymbolicLink)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    using var fileStream = await gitClient.GetItemContentAsync(RoslynInsertionTool.VSRepoId, path: item.Path, versionDescriptor: versionDescriptor);
+                    var content = await new StreamReader(fileStream).ReadToEndAsync();
+                    var (original, document) = (content, XDocument.Parse(content));
+                    if (document != null && !PackagePropFileToDocumentMap.ContainsKey(item.Path))
+                    {
+                        PackagePropFileToDocumentMap[item.Path] = (original, document);
+                    }
+
+                    PopulatePackageToPropFileMap(document!, item.Path);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Unable to parse file {item.Path}");
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+
+        private static void PopulatePackageToPropFileMap(XDocument document, string propFileName)
+        {
+            try
+            {
+                var packageRefs = document.Root
+                    .Elements("ItemGroup")
+                    .Elements("PackageReference");
+
+                foreach (var packageRef in packageRefs)
+                {
+                    var name = packageRef.Attribute("Update")?.Value;
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        if (!PackageToPropFilesMap.ContainsKey(name!))
+                        {
+                            PackageToPropFilesMap[name!] = new List<string>();
+                        }
+
+                        PackageToPropFilesMap[name!].Add(propFileName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Swallow exceptions reading any of these files.
+                Console.WriteLine($"Could not load contents of {propFileName}");
+                Console.WriteLine(ex.Message);
+            }
         }
     }
 }
