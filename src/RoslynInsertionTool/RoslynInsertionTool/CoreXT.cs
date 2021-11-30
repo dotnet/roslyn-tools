@@ -360,7 +360,7 @@ namespace Roslyn.Insertion
             var versionDescriptor = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
             var propsFiles = await gitClient.GetItemsAsync(RoslynInsertionTool.VSRepoId,
                 scopePath: PackagePropsDir,
-                recursionLevel: VersionControlRecursionType.OneLevel,
+                recursionLevel: VersionControlRecursionType.Full,
                 download: true,
                 versionDescriptor: versionDescriptor);
 
