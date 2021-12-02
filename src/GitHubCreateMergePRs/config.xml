@@ -25,7 +25,7 @@
     <merge from="main" to="features/source-generators" owners="chsienki" frequency="weekly" />
     <merge from="main" to="features/list-patterns" owners="333fred,jcouv" frequency="weekly" />
     <merge from="main" to="features/extended-property-patterns" owners="333fred" frequency="weekly" />
-    <merge from="main" to="features/value_tracking" owners="ryzngard" frequency="weekly" />
+    <merge from="main" to="features/rename_ui_rework" owners="ryzngard" frequency="daily" />
     <merge from="main" to="features/RawStringLiterals" owners="CyrusNajmabadi" frequency="daily" />
     <merge from="main" to="features/snappy/nodelay" owners="CyrusNajmabadi" frequency="weekly" />
     <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
