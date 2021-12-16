@@ -220,6 +220,24 @@ namespace Roslyn.Insertion
                             allChanges.Add(change);
                         }
                     }
+
+                    foreach (var propsFile in insertionArtifacts.GetSpeedometerPropertyFiles())
+                    {
+                        var propsFilename = Path.GetFileName(propsFile);
+
+                        var targetFilePath = $"src/Tests/config/runsettings/Official/Speedometer/External/{propsFilename}";
+
+                        var version = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = baseBranch.ObjectId };
+                        var stream = await gitClient.GetItemContentAsync(VSRepoId, targetFilePath, download: true, versionDescriptor: version);
+                        var originalContent = new StreamReader(stream).ReadToEnd();
+
+                        var newContent = File.ReadAllText(propsFile);
+
+                        if (GetChangeOpt(targetFilePath, originalContent, newContent) is GitChange change)
+                        {
+                            allChanges.Add(change);
+                        }
+                    }
                 }
 
                 if (Options.UpdateCoreXTLibraries || Options.UpdateAssemblyVersions)
