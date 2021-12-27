@@ -24,6 +24,7 @@
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/list-patterns" owners="333fred,jcouv" frequency="weekly" />
     <merge from="main" to="features/required-members" owners="333fred" frequency="weekly" />
+    <merge from="main" to="features/semi-auto-props" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/RawStringLiterals" owners="CyrusNajmabadi" frequency="daily" />
     <merge from="main" to="features/snappy/nodelay" owners="CyrusNajmabadi" frequency="weekly" />
     <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
