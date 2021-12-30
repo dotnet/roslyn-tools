@@ -56,7 +56,7 @@ namespace Roslyn.Insertion
 
         public override string[] GetSpeedometerPropertyFiles()
         {
-            var speedometerPath = Path.Combine(RootDirectory, "Insertion", "Speedometer");
+            var speedometerPath = Path.Combine(RootDirectory, "Insertion", "SpeedometerInputs");
             return Directory.Exists(speedometerPath)
                 ? Directory.EnumerateFiles(speedometerPath, "*.props", SearchOption.TopDirectoryOnly).ToArray()
                 : Array.Empty<string>();
