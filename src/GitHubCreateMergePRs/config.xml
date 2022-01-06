@@ -60,9 +60,10 @@
     <merge from="release/dev16.10" to="release/dev16.11" />
     <merge from="release/dev16.11" to="release/dev17.0" />
     <merge from="release/dev17.0" to="release/dev17.1" />
+    <merge from="release/dev17.1" to="release/dev17.2" />
 
     <!-- regular branch flow -->
-    <merge from="main" to="release/dev17.1" />
+    <merge from="main" to="release/dev17.2" />
     <merge from="feature/auto-widen" to="feature/erased-unions" />
   </repo>
 
