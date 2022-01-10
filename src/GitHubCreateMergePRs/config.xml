@@ -1,5 +1,5 @@
 <config>
-  <repo owner="dotnet" name="roslyn" mergeOwners="dibarbet">
+  <repo owner="dotnet" name="roslyn" mergeOwners="Cosifne">
     <!-- For a list of VS versions under servicing, see https://docs.microsoft.com/en-us/visualstudio/releases/2019/servicing#support-options-for-enterprise-and-professional-customers -->
     <!-- Roslyn servicing branches (flowing between releases) -->
     <merge from="dev15.9.x" to="release/dev16.4-vs-deps" />
@@ -7,7 +7,7 @@
     <merge from="release/dev16.7-vs-deps" to="release/dev16.9-vs-deps" />
     <merge from="release/dev16.9-vs-deps" to="release/dev16.11-vs-deps" />
     <merge from="release/dev16.11-vs-deps" to="release/dev17.0-vs-deps" />
-     
+
     <!-- Roslyn last servicing branch (flowing into current branch) -->
     <merge from="release/dev17.0-vs-deps" to="release/dev17.1" />
 
@@ -16,15 +16,15 @@
 
     <!-- Roslyn vs-deps branches (flowing between releases) -->
     <merge from="release/dev17.1-vs-deps" to="main-vs-deps" />
-      
+
     <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
     <merge from="release/dev17.1" to="release/dev17.1-vs-deps" />
     <merge from="main" to="main-vs-deps" />
 
     <!-- Roslyn feature branches -->
-    <merge from="main" to="features/source-generators" owners="chsienki" frequency="weekly" />
     <merge from="main" to="features/list-patterns" owners="333fred,jcouv" frequency="weekly" />
-    <merge from="main" to="features/extended-property-patterns" owners="333fred" frequency="weekly" />
+    <merge from="main" to="features/required-members" owners="333fred" frequency="weekly" />
+    <merge from="main" to="features/semi-auto-props" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/RawStringLiterals" owners="CyrusNajmabadi" frequency="daily" />
     <merge from="main" to="features/snappy/nodelay" owners="CyrusNajmabadi" frequency="weekly" />
     <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
@@ -41,7 +41,7 @@
     <merge from="dev16.11.x" to="main" />
     <merge from="dev17.0.x" to="main" />
   </repo>
-  
+
   <!-- NuGet.BuildTasks repo -->
   <repo owner="dotnet" name="NuGet.BuildTasks">
     <merge from="main" to="dev17.0.x" />
@@ -60,9 +60,10 @@
     <merge from="release/dev16.10" to="release/dev16.11" />
     <merge from="release/dev16.11" to="release/dev17.0" />
     <merge from="release/dev17.0" to="release/dev17.1" />
+    <merge from="release/dev17.1" to="release/dev17.2" />
 
     <!-- regular branch flow -->
-    <merge from="main" to="release/dev17.1" />
+    <merge from="main" to="release/dev17.2" />
     <merge from="feature/auto-widen" to="feature/erased-unions" />
   </repo>
 
