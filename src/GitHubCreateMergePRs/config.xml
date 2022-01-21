@@ -85,7 +85,6 @@
   </repo>
 
   <repo owner="dotnet" name="linker" mergeOwners="agocke,sbomer">
-    <merge from="release/6.0.2xx" to="main" />
     <merge from="main" to="feature/damAnalyzer" />
   </repo>
 </config>
