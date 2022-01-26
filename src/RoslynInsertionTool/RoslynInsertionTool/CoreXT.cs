@@ -11,7 +11,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
-using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Versioning;
@@ -30,7 +29,7 @@ namespace Roslyn.Insertion
 
         private const string DefaultConfigPath = ".corext/Configs/default.config";
         private const string ComponentsJsonPath = ".corext/Configs/components.json";
-        private const string PackagePropsDir = "src/ConfigData/Packages";
+        private const string PackagePropsPath = "Packages.props";
 
         private readonly string _defaultConfigOriginal;
 
@@ -138,8 +137,8 @@ namespace Roslyn.Insertion
         private static XAttribute? GetVersionAttributeInPropsFileOpt(XDocument document, PackageInfo packageInfo)
         {
             return document?.Root
-                .Elements("ItemGroup")
-                .Elements("PackageReference")
+                .Elements().Where(e => string.Equals(e.Name.LocalName, "ItemGroup"))
+                .Elements().Where(e => string.Equals(e.Name.LocalName, "PackageReference"))
                 .Where(p => p.Attribute("Update")?.Value == packageInfo.PackageName)
                 .Select(x => x.Attribute("Version")).SingleOrDefault();
         }
@@ -358,35 +357,66 @@ namespace Roslyn.Insertion
             string commitId)
         {
             var versionDescriptor = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
-            var propsFiles = await gitClient.GetItemsAsync(RoslynInsertionTool.VSRepoId,
-                scopePath: PackagePropsDir,
-                recursionLevel: VersionControlRecursionType.Full,
-                download: true,
-                versionDescriptor: versionDescriptor);
 
-            foreach (var item in propsFiles)
+            await ProcessPropsPath(PackagePropsPath, versionDescriptor);
+
+            if (PackagePropFileToDocumentMap.Any())
             {
-                if (item.IsFolder || item.IsSymbolicLink)
-                {
-                    continue;
-                }
+                var parentPackagesDoc = PackagePropFileToDocumentMap.First().Value.document;
 
-                try
+                var importedPropPaths = parentPackagesDoc.Root.Elements().Where(e => string.Equals(e.Name.LocalName, "Import"))
+                    .Select(e => e.Attributes("Project").FirstOrDefault()?.Value)
+                    .Where(a => a != null);
+
+                foreach(var propPath in importedPropPaths)
                 {
-                    using var fileStream = await gitClient.GetItemContentAsync(RoslynInsertionTool.VSRepoId, path: item.Path, versionDescriptor: versionDescriptor);
-                    var content = await new StreamReader(fileStream).ReadToEndAsync();
-                    var (original, document) = (content, XDocument.Parse(content));
-                    if (document != null && !PackagePropFileToDocumentMap.ContainsKey(item.Path))
+                    if (propPath.EndsWith(@"\**\*.props"))
                     {
-                        PackagePropFileToDocumentMap[item.Path] = (original, document);
+                        await ProcessPropsPath(propPath.Substring(0, propPath.IndexOf(@"\**\*.props")), versionDescriptor);
+                    }
+                    else if (propPath.EndsWith(@"\*.props"))
+                    {
+                        await ProcessPropsPath(propPath.Substring(0, propPath.IndexOf(@"\*.props")), versionDescriptor);
+                    }
+                    else
+                    {
+                        await ProcessPropsPath(propPath, versionDescriptor);
+                    }
+                }
+            }
+
+            async Task ProcessPropsPath(string propsPath, GitVersionDescriptor versionDescriptor)
+            {
+                var propsFiles = await gitClient.GetItemsAsync(RoslynInsertionTool.VSRepoId,
+                    scopePath: propsPath,
+                    recursionLevel: VersionControlRecursionType.Full,
+                    download: true,
+                    versionDescriptor: versionDescriptor);
+
+                foreach (var item in propsFiles)
+                {
+                    if (item.IsFolder || item.IsSymbolicLink)
+                    {
+                        continue;
                     }
 
-                    PopulatePackageToPropFileMap(document!, item.Path);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Unable to parse file {item.Path}");
-                    Console.WriteLine(ex.Message);
+                    try
+                    {
+                        using var fileStream = await gitClient.GetItemContentAsync(RoslynInsertionTool.VSRepoId, path: item.Path, versionDescriptor: versionDescriptor);
+                        var content = await new StreamReader(fileStream).ReadToEndAsync();
+                        var (original, document) = (content, XDocument.Parse(content));
+                        if (document != null && !PackagePropFileToDocumentMap.ContainsKey(item.Path))
+                        {
+                            PackagePropFileToDocumentMap[item.Path] = (original, document);
+                        }
+
+                        PopulatePackageToPropFileMap(document!, item.Path);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Unable to parse file {item.Path}");
+                        Console.WriteLine(ex.Message);
+                    }
                 }
             }
         }
@@ -396,8 +426,8 @@ namespace Roslyn.Insertion
             try
             {
                 var packageRefs = document.Root
-                    .Elements("ItemGroup")
-                    .Elements("PackageReference");
+                    .Elements().Where(e => string.Equals(e.Name.LocalName, "ItemGroup"))
+                    .Elements().Where(e => string.Equals(e.Name.LocalName, "PackageReference"));
 
                 foreach (var packageRef in packageRefs)
                 {
