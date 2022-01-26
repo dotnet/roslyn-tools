@@ -365,11 +365,12 @@ namespace Roslyn.Insertion
                 var parentPackagesDoc = PackagePropFileToDocumentMap.First().Value.document;
 
                 var importedPropPaths = parentPackagesDoc.Root.Elements().Where(e => string.Equals(e.Name.LocalName, "Import"))
-                    .Select(e => e.Attributes("Project").FirstOrDefault()?.Value)
-                    .Where(a => a != null);
+                    .Select(e => e.Attributes("Project").FirstOrDefault()?.Value);
 
                 foreach(var propPath in importedPropPaths)
                 {
+                    if (propPath == null) continue;
+
                     if (propPath.EndsWith(@"\**\*.props"))
                     {
                         await ProcessPropsPath(propPath.Substring(0, propPath.IndexOf(@"\**\*.props")), versionDescriptor);
