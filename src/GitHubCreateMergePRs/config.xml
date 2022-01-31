@@ -25,6 +25,7 @@
     <merge from="main" to="features/snappy/nodelay" owners="CyrusNajmabadi" frequency="weekly" />
     <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
     <merge from="main" to="features/rename_ui_rework" owners="ryzngard" frequency="daily" />
+    <merge from="main" to="features/semantic-snippets" owners="jmarolf,akhera99" frequency="daily" />
   </repo>
 
   <repo owner="dotnet" name="roslyn-sdk">
