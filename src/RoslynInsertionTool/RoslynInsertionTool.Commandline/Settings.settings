@@ -36,7 +36,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="KeyVaultUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://roslyninfra.vault.azure.net:443</Value>
+      <Value Profile="(Default)">https://managedlanguages.vault.azure.net</Value>
     </Setting>
     <Setting Name="VisualStudioRepoSecretName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">vslsnap-vso-auth-token</Value>

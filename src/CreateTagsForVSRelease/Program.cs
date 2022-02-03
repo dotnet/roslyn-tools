@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 using Azure.Identity;
@@ -23,7 +23,7 @@ namespace CreateTagsForVSRelease
         public static async Task Main(string[] args)
         {
             var client = new SecretClient(
-                vaultUri: new Uri("https://roslyninfra.vault.azure.net:443"),
+                vaultUri: new Uri("https://managedlanguages.vault.azure.net"),
                 credential: new DefaultAzureCredential(includeInteractiveCredentials: true));
 
             using var devdivConnection = new AzDOConnection("https://devdiv.visualstudio.com/DefaultCollection", "DevDiv", "Roslyn-Signed", client, "vslsnap-vso-auth-token");

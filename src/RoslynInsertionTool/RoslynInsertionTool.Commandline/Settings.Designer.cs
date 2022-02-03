@@ -154,7 +154,7 @@ namespace Roslyn.Insertion {
 
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("https://roslyninfra.vault.azure.net:443")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://managedlanguages.vault.azure.net")]
         public string KeyVaultUrl {
             get {
                 return ((string)(this["KeyVaultUrl"]));
