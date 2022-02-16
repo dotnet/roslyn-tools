@@ -20,7 +20,7 @@ namespace Microsoft.Roslyn.Tool.PRFinder
 
         const string RepoPRUrl = @"https://www.github.com/dotnet/roslyn";
 
-        public static async Task<int> FindPRsAsync(string previousCommitSha, string currentCommitSha)
+        public static int FindPRs(string previousCommitSha, string currentCommitSha)
         {
             using (var repo = new Repository(Environment.CurrentDirectory))
             {

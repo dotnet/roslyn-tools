@@ -32,7 +32,7 @@ namespace Microsoft.Roslyn.Tool.Commands
                 var previousCommit = context.ParseResult.GetValueForOption(PreviousCommitShaOption)!;
                 var currentCommit = context.ParseResult.GetValueForOption(CurrentCommitSHAOption)!;
 
-                return PRFinder.PRFinder.FindPRsAsync(previousCommit, currentCommit);
+                return Task.FromResult(PRFinder.PRFinder.FindPRs(previousCommit, currentCommit));
             }
         }
     }
