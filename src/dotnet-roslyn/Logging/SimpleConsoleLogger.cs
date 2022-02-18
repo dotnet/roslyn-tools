@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 using System.CommandLine;
+using System.CommandLine.IO;
 using System.CommandLine.Rendering;
 using Microsoft.Extensions.Logging;
 
@@ -18,15 +19,15 @@ internal class SimpleConsoleLogger : ILogger
     private readonly LogLevel _minimalLogLevel;
     private readonly LogLevel _minimalErrorLevel;
 
-    private static ImmutableDictionary<LogLevel, ConsoleColor> LogLevelColorMap => new Dictionary<LogLevel, ConsoleColor>
+    private static ImmutableDictionary<LogLevel, AnsiControlCode> LogLevelColorMap => new Dictionary<LogLevel, AnsiControlCode>()
     {
-        [LogLevel.Critical] = ConsoleColor.Red,
-        [LogLevel.Error] = ConsoleColor.Red,
-        [LogLevel.Warning] = ConsoleColor.Yellow,
-        [LogLevel.Information] = ConsoleColor.White,
-        [LogLevel.Debug] = ConsoleColor.Gray,
-        [LogLevel.Trace] = ConsoleColor.Gray,
-        [LogLevel.None] = ConsoleColor.White,
+        [LogLevel.Critical] = Ansi.Color.Foreground.Red,
+        [LogLevel.Error] = Ansi.Color.Foreground.Red,
+        [LogLevel.Warning] = Ansi.Color.Foreground.LightYellow,
+        [LogLevel.Information] = Ansi.Color.Foreground.Default,
+        [LogLevel.Debug] = Ansi.Color.Foreground.LightGray,
+        [LogLevel.Trace] = Ansi.Color.Foreground.LightGray,
+        [LogLevel.None] = Ansi.Color.Foreground.Default,
     }.ToImmutableDictionary();
 
     public SimpleConsoleLogger(IConsole console, LogLevel minimalLogLevel, LogLevel minimalErrorLevel)
@@ -72,7 +73,7 @@ internal class SimpleConsoleLogger : ILogger
     private void LogToTerminal(string message, LogLevel logLevel, bool logToErrorStream)
     {
         var messageColor = LogLevelColorMap[logLevel];
-        _terminal.ForegroundColor = messageColor;
+        _terminal.Out.Write(messageColor.EscapeSequence);
 
         LogToConsole(_terminal, message, logToErrorStream);
 
@@ -83,11 +84,11 @@ internal class SimpleConsoleLogger : ILogger
     {
         if (logToErrorStream)
         {
-            console.Error.Write($"{message}{Environment.NewLine}");
+            console.Error.WriteLine(message);
         }
         else
         {
-            console.Out.Write($"{message}{Environment.NewLine}");
+            console.Out.WriteLine(message);
         }
     }
 }

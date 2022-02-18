@@ -16,7 +16,7 @@ internal static class CommonOptions
     public static readonly Option<string> VerbosityOption = new Option<string>(new[] { "--verbosity", "-v" }, "Set the verbosity level. Allowed values are quiet, minimal, normal, detailed, and diagnostic.").FromAmong(VerbosityLevels);
 
     public static LogLevel ParseVerbosity(this ParseResult parseResult)
-{
+    {
         if (parseResult.HasOption(VerbosityOption) &&
             parseResult.GetValueForOption(VerbosityOption) is string { Length: > 0 } verbosity)
         {
