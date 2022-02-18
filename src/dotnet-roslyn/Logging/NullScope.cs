@@ -2,18 +2,17 @@
 // The.NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
-namespace Microsoft.Roslyn.Tool.Logging
+namespace Microsoft.Roslyn.Tool.Logging;
+
+internal class NullScope : IDisposable
 {
-    internal class NullScope : IDisposable
+    public static NullScope Instance { get; } = new NullScope();
+
+    private NullScope()
     {
-        public static NullScope Instance { get; } = new NullScope();
+    }
 
-        private NullScope()
-        {
-        }
-
-        public void Dispose()
-        {
-        }
+    public void Dispose()
+    {
     }
 }

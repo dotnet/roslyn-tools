@@ -5,35 +5,39 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 
-namespace Microsoft.Roslyn.Tool.Commands
+namespace Microsoft.Roslyn.Tool.Commands;
+
+using static CommonOptions;
+
+internal static class PRFinderCommand
 {
-    internal static class PRFinderCommand
+    private static readonly PrFinderCommandDefaultHandler s_prFinderCommandHandler = new();
+
+    internal static readonly Option<string> PreviousCommitShaOption = new Option<string>(new[] { "--previous", "-p" }, "SHA of the commit you want to start looking for PRs from") { IsRequired = true };
+    internal static readonly Option<string> CurrentCommitSHAOption = new Option<string>(new[] { "--current", "-c" }, "SHA of commit you want to stop looking for PRs at") { IsRequired = true };
+
+    public static Symbol GetCommand()
     {
-        private static readonly PrFinderCommandDefaultHandler s_prFinderCommandHandler = new();
-
-        internal static readonly Option<string> PreviousCommitShaOption = new Option<string>(new[] { "--previous", "-p" }, "SHA of the commit you want to start looking for PRs from") { IsRequired = true };
-        internal static readonly Option<string> CurrentCommitSHAOption = new Option<string>(new[] { "--current", "-c" }, "SHA of commit you want to stop looking for PRs at") { IsRequired = true };
-
-        public static Symbol GetCommand()
+        var prFinderCommand = new Command("pr-finder", "Find PRs between two commits")
         {
-            var prFinderCommand = new Command("pr-finder", "Find PRs between two commits")
-            {
-                PreviousCommitShaOption,
-                CurrentCommitSHAOption
-            };
-            prFinderCommand.Handler = s_prFinderCommandHandler;
-            return prFinderCommand;
-        }
+            PreviousCommitShaOption,
+            CurrentCommitSHAOption,
+            VerbosityOption
+        };
+        prFinderCommand.Handler = s_prFinderCommandHandler;
+        return prFinderCommand;
+    }
 
-        private class PrFinderCommandDefaultHandler : ICommandHandler
+    private class PrFinderCommandDefaultHandler : ICommandHandler
+    {
+        public async Task<int> InvokeAsync(InvocationContext context)
         {
-            public Task<int> InvokeAsync(InvocationContext context)
-            {
-                var previousCommit = context.ParseResult.GetValueForOption(PreviousCommitShaOption)!;
-                var currentCommit = context.ParseResult.GetValueForOption(CurrentCommitSHAOption)!;
+            var logger = context.SetupLogging();
 
-                return Task.FromResult(PRFinder.PRFinder.FindPRs(previousCommit, currentCommit));
-            }
+            var previousCommit = context.ParseResult.GetValueForOption(PreviousCommitShaOption)!;
+            var currentCommit = context.ParseResult.GetValueForOption(CurrentCommitSHAOption)!;
+
+            return await PRFinder.PRFinder.FindPRs(previousCommit, currentCommit, logger);
         }
     }
 }

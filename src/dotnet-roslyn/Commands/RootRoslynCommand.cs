@@ -4,13 +4,12 @@
 
 using System.CommandLine;
 
-namespace Microsoft.Roslyn.Tool.Commands
+namespace Microsoft.Roslyn.Tool.Commands;
+
+internal static class RootRoslynCommand
 {
-    internal static class RootRoslynCommand
+    public static RootCommand GetRootCommand() => new RootCommand()
     {
-        public static RootCommand GetRootCommand() => new RootCommand()
-        {
-            PRFinderCommand.GetCommand()
-        };
-    }
+        PRFinderCommand.GetCommand()
+    };
 }
