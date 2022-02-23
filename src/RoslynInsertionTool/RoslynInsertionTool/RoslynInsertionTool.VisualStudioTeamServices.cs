@@ -69,7 +69,7 @@ namespace Roslyn.Insertion
                 SourceRefName = sourceBranch,
                 TargetRefName = targetBranch,
                 IsDraft = Options.CreateDraftPr,
-                Reviewers = new[] { new IdentityRefWithVote { Id = reviewerId } }
+                Reviewers = !string.IsNullOrEmpty(reviewerId) ? new[] { new IdentityRefWithVote { Id = reviewerId } } : null
             };
         }
 
