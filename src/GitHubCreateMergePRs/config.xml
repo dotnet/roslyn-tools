@@ -17,6 +17,7 @@
     <!-- Roslyn release branches (flowing between releases) -->
     <merge from="release/dev17.1-vs-deps" to="release/dev17.2" />
     <merge from="release/dev17.2" to="main" />
+    <merge from="main" to="release/dev17.3" />
 
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/list-patterns" owners="333fred,jcouv" frequency="weekly" />
