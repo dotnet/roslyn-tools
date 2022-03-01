@@ -496,6 +496,9 @@ namespace Roslyn.Insertion
                         await TryQueueVSBuildPolicy(pullRequest, "Insertion Sign Check", insertionBranchName);
                         await TryQueueVSBuildPolicy(pullRequest, "Insertion Symbol Check", insertionBranchName);
                         await TryQueueVSBuildPolicy(pullRequest, "Cloudbuild - MSBuildRetail", insertionBranchName);
+                        await TryQueueVSBuildPolicy(pullRequest, "Required Tests", insertionBranchName);
+                        await TryQueueVSBuildPolicy(pullRequest, "Optional Tests", insertionBranchName);
+                        await TryQueueVSBuildPolicy(pullRequest, "Experimental Tests", insertionBranchName);
                     }
                 }
 
