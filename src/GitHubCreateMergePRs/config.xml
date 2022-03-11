@@ -42,11 +42,6 @@
     <merge from="dev17.2.x" to="main" />
   </repo>
 
-  <!-- NuGet.BuildTasks repo -->
-  <repo owner="dotnet" name="NuGet.BuildTasks">
-    <merge from="main" to="dev17.0.x" />
-  </repo>
-
   <repo owner="dotnet" name="templates">
     <merge from="dev15.9.x" to="dev16.0.x" />
     <merge from="dev16.0.x" to="main" />
