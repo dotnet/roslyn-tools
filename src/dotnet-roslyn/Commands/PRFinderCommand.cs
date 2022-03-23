@@ -37,7 +37,7 @@ internal static class PRFinderCommand
             var previousCommit = context.ParseResult.GetValueForOption(PreviousCommitShaOption)!;
             var currentCommit = context.ParseResult.GetValueForOption(CurrentCommitSHAOption)!;
 
-            return await PRFinder.PRFinder.FindPRs(previousCommit, currentCommit, logger);
+            return await PRFinder.PRFinder.FindPRsAsync(previousCommit, currentCommit, logger);
         }
     }
 }
