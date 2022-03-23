@@ -1,3 +1,7 @@
+// Licensed to the.NET Foundation under one or more agreements.
+// The.NET Foundation licenses this file to you under the MIT license.
+// See the License.txt file in the project root for more information.
+
 using System.Xml.Linq;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -6,13 +10,12 @@ using Microsoft.Roslyn.Utilities;
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Roslyn.VS;
 
-public static class VSBranchInfo
+internal static class VSBranchInfo
 {
-    public static async Task<int> GetInfoAsync(string branch, ILogger logger)
+    public static async Task<int> GetInfoAsync(string branch, Product product, ILogger logger)
     {
         try
         {
@@ -20,33 +23,62 @@ public static class VSBranchInfo
                 vaultUri: new Uri("https://managedlanguages.vault.azure.net"),
                 credential: new DefaultAzureCredential(includeInteractiveCredentials: true));
 
-            using var devdivConnection = new AzDOConnection("https://devdiv.visualstudio.com/DefaultCollection", "DevDiv", "Roslyn-Signed", client, "vslsnap-vso-auth-token");
-            using var dncengConnection = new AzDOConnection("https://dnceng.visualstudio.com/DefaultCollection", "internal", "dotnet-roslyn CI", client, "vslsnap-build-auth-token");
+            using var devdivConnection = new AzDOConnection("https://devdiv.visualstudio.com/DefaultCollection", "DevDiv", client, "vslsnap-vso-auth-token");
+            using var dncengConnection = new AzDOConnection("https://dnceng.visualstudio.com/DefaultCollection", "internal", client, "vslsnap-build-auth-token");
 
-            WriteHeader(branch);
-            await WriteRoslynBuildInfo(branch, devdivConnection, dncengConnection);
+            if (product is Product.Roslyn or Product.All)
+            {
+                WriteHeader($"Roslyn info from VS branch: {branch}");
 
-            return 0;
+                await WriteRoslynBuildInfo(branch, devdivConnection, dncengConnection);
+            }
+
+            if (product is Product.Razor or Product.All)
+            {
+                WriteHeader($"Razor info from VS branch: {branch}");
+
+                await WriteRazorBuildInfo(branch, devdivConnection, dncengConnection);
+            }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, message: "Error occurred: {0}", ex.Message);
+            logger.LogError(ex, "Error occurred: {0}", ex.Message);
+        }
 
-            return 1;
+        return 1;
+    }
+
+    private static async Task WriteRazorBuildInfo(string branch, AzDOConnection devdiv, AzDOConnection dnceng)
+    {
+        var buildNumber = await VisualStudioRepository.GetBuildNumberFromComponentJsonFileAsync(branch, devdiv, @".corext\Configs\aspnet-components.json", "Microsoft.VisualStudio.RazorExtension");
+
+        // Try getting build info from dnceng first
+        var builds = await dnceng.TryGetBuildsAsync("razor-tooling-ci-official", buildNumber);
+        if (builds is null or { Count: 0 })
+        {
+            throw new Exception($"Couldn't find build for build number: {buildNumber}");
+        }
+
+        foreach (var build in builds)
+        {
+            WriteBuild(build);
+
+            Console.WriteLine();
         }
     }
 
     private static async Task WriteRoslynBuildInfo(string branch, AzDOConnection devdiv, AzDOConnection dnceng)
     {
-        var (packageVersion, buildNumber) = await GetRoslynPackageInfo(branch, devdiv);
+        var buildNumber = await VisualStudioRepository.GetBuildNumberFromComponentJsonFileAsync(branch, devdiv, @".corext\Configs\dotnetcodeanalysis-components.json", "Microsoft.CodeAnalysis.LanguageServices");
+        var packageVersion = await GetRoslynPackageVersion(branch, devdiv);
 
         // Try getting build info from dnceng first
-        var builds = await TryGetBuilds(dnceng, buildNumber);
+        var builds = await dnceng.TryGetBuildsAsync("dotnet-roslyn CI", buildNumber);
         var buildConnection = dnceng;
         if (builds == null || builds.Count == 0)
         {
             // otherwise fallback to devdiv, where things used to be
-            builds = await TryGetBuilds(devdiv, buildNumber);
+            builds = await devdiv.TryGetBuildsAsync("Roslyn-Signed", buildNumber);
             buildConnection = devdiv;
         }
 
@@ -58,9 +90,7 @@ public static class VSBranchInfo
         foreach (var build in builds)
         {
             WriteNameAndValue("Package Version", packageVersion);
-            WriteNameAndValue("Commit Sha", build.SourceVersion);
-            WriteNameAndValue("Source branch", build.SourceBranch.Replace("refs/heads/", ""));
-            WriteNameAndValue("Build", ((ReferenceLink)build.Links.Links["web"]).Href);
+            WriteBuild(build);
 
             await WriteArtifactInfo(buildConnection, build);
 
@@ -68,32 +98,10 @@ public static class VSBranchInfo
         }
     }
 
-    private static async Task<(string packageVersion, string buildNumber)> GetRoslynPackageInfo(string branch, AzDOConnection devdiv)
+    private static async Task<string> GetRoslynPackageVersion(string branch, AzDOConnection devdiv)
     {
         var commit = new GitVersionDescriptor { VersionType = GitVersionType.Branch, Version = branch };
-        GitRepository vsRepository = await devdiv.GitClient.GetRepositoryAsync("DevDiv", "VS");
-
-        using var componentsJsonStream = await devdiv.GitClient.GetItemContentAsync(
-            vsRepository.Id,
-            @".corext\Configs\dotnetcodeanalysis-components.json",
-            download: true,
-            versionDescriptor: commit);
-
-        var fileContents = await new StreamReader(componentsJsonStream).ReadToEndAsync();
-        var componentsJson = JObject.Parse(fileContents);
-
-        var languageServicesUrlAndManifestName = componentsJson["Components"]?["Microsoft.CodeAnalysis.LanguageServices"]?["url"]?.ToString();
-
-        var parts = languageServicesUrlAndManifestName?.Split(';');
-        if (parts?.Length != 2)
-        {
-            throw new Exception($"Couldn't get URL and manifest. Got: {parts}");
-        }
-
-        if (!parts[1].EndsWith(".vsman"))
-        {
-            throw new Exception($"Couldn't get URL and manifest. Not a vsman file? Got: {parts}");
-        }
+        var vsRepository = await devdiv.GitClient.GetRepositoryAsync("DevDiv", "VS");
 
         using var defaultConfigStream = await devdiv.GitClient.GetItemContentAsync(
             vsRepository.Id,
@@ -101,7 +109,8 @@ public static class VSBranchInfo
             download: true,
             versionDescriptor: commit);
 
-        fileContents = await new StreamReader(defaultConfigStream).ReadToEndAsync();
+        using var streamReader = new StreamReader(defaultConfigStream);
+        var fileContents = await streamReader.ReadToEndAsync();
         var defaultConfig = XDocument.Parse(fileContents);
 
         var packageVersion = defaultConfig.Root?.Descendants("package").Where(p => p.Attribute("id")?.Value == "VS.ExternalAPIs.Roslyn").Select(p => p.Attribute("version")?.Value).FirstOrDefault();
@@ -111,23 +120,7 @@ public static class VSBranchInfo
             throw new Exception($"Couldn't find the Roslyn external APIs pacakge for branch: {branch}");
         }
 
-        var buildNumber = new Uri(parts[0]).Segments.Last();
-
-        return (packageVersion, buildNumber);
-    }
-
-    private static async Task<List<Build>?> TryGetBuilds(AzDOConnection connection, string buildNumber)
-    {
-        try
-        {
-            var buildDefinition = (await connection.BuildClient.GetDefinitionsAsync(connection.BuildProjectName, name: connection.BuildDefinitionName)).Single();
-            var builds = await connection.BuildClient.GetBuildsAsync(buildDefinition.Project.Id, definitions: new[] { buildDefinition.Id }, buildNumber: buildNumber);
-            return builds;
-        }
-        catch
-        {
-            return null;
-        }
+        return packageVersion;
     }
 
     // Inspired by Mitch Denny: https://dev.azure.com/mseng/AzureDevOps/_git/ArtifactTool?path=/src/ArtifactTool/Commands/PipelineArtifacts/PipelineArtifactDownloadCommand.cs&version=GBusers/midenn/fcs-integration&line=68&lineEnd=69&lineStartColumn=1&lineEndColumn=1&lineStyle=plain&_a=contents
@@ -155,14 +148,21 @@ public static class VSBranchInfo
             // Example of resourceData: "#/7029766/artifacttool-alpine-x64-Debug"
             var segments = resourceData.Split('/');
 
-            long containerId;
-            if (segments.Length == 3 && segments[0] == "#" && long.TryParse(segments[1], out containerId))
+            if (segments.Length == 3 && segments[0] == "#" && long.TryParse(segments[1], out var containerId))
             {
                 return (containerId, segments[2]);
             }
 
             throw new Exception($"Resource data value '{resourceData}' was not in expected format.");
         }
+    }
+
+    private static void WriteBuild(Build build)
+    {
+        WriteNameAndValue("Build Number", build.BuildNumber);
+        WriteNameAndValue("Commit SHA", build.SourceVersion);
+        WriteNameAndValue("Source Branch", build.SourceBranch.Replace("refs/heads/", ""));
+        WriteNameAndValue("Build", ((ReferenceLink)build.Links.Links["web"]).Href);
     }
 
     private static void WriteHeader(string branch)
