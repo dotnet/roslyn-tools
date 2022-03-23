@@ -19,7 +19,7 @@ internal class PRFinder
 
     const string RepoUrl = @"https://www.github.com/dotnet/roslyn";
 
-    public static async Task<int> FindPRs(string previousCommitSha, string currentCommitSha, ILogger logger)
+    public static async Task<int> FindPRsAsync(string previousCommitSha, string currentCommitSha, ILogger logger)
     {
         var previousCommitExists = (await ProcessRunner.RunProcessAsync("git", $"cat-file -t {previousCommitSha}")).ExitCode == 0;
         var currentCommitExists = (await ProcessRunner.RunProcessAsync("git", $"cat-file -t {currentCommitSha}")).ExitCode == 0;

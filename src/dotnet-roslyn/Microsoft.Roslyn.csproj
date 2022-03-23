@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
+    <ToolCommandName>roslyn</ToolCommandName>
     <Description>Command line tool for performing Roslyn infrastructure tasks.</Description>
 
     <IsPackable>true</IsPackable>

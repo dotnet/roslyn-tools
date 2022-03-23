@@ -10,6 +10,8 @@ internal static class RootRoslynCommand
 {
     public static RootCommand GetRootCommand() => new RootCommand()
     {
-        PRFinderCommand.GetCommand()
+        PRFinderCommand.GetCommand(),
+        NuGetPrepareCommand.GetCommand(),
+        NuGetPublishCommand.GetCommand(),
     };
 }

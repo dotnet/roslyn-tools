@@ -74,7 +74,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NugetDependencyFinder", "sr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-roslyn", "dotnet-roslyn", "{C68033E0-FB8F-4327-BFB5-B340A5A7778F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Roslyn.Tool", "src\dotnet-roslyn\Microsoft.Roslyn.Tool.csproj", "{1D14C80C-B4C3-42C1-BA4C-8A81427CA44D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Roslyn", "src\dotnet-roslyn\Microsoft.Roslyn.csproj", "{1D14C80C-B4C3-42C1-BA4C-8A81427CA44D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
