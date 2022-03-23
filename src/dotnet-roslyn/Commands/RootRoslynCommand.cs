@@ -13,5 +13,6 @@ internal static class RootRoslynCommand
         PRFinderCommand.GetCommand(),
         NuGetPrepareCommand.GetCommand(),
         NuGetPublishCommand.GetCommand(),
+        VSBranchInfoCommand.GetCommand()
     };
 }
