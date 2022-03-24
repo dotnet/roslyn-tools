@@ -2,7 +2,7 @@
   <!-- Removes files from the `*.symbols.nupkg` packages that cause errors with symbol publishing. -->
   <Target Name="StripFilesFromSymbolPackages" AfterTargets="Pack" BeforeTargets="BeforePublish">
     <ItemGroup>
-      <SymbolPackageWithBadFiles Include="$(ArtifactsNonShippingPackagesDir)**/Microsoft.Roslyn.*.symbols.nupkg" />
+      <SymbolPackageWithBadFiles Include="$(ArtifactsNonShippingPackagesDir)/Microsoft.Roslyn.*.symbols.nupkg" />
 
       <SymbolPackageFilesToStrip Include="tools/net6.0/any/runtimes/*/native/libgit2-*.so" />
     </ItemGroup>
