@@ -2,25 +2,24 @@
 // The.NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
-using System.Xml.Linq;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Roslyn.Utilities;
 using Microsoft.TeamFoundation.Build.WebApi;
-using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 
 namespace Microsoft.Roslyn.VS;
 
 internal static class VSBranchInfo
 {
-    private static IProduct[] s_productConfigs = new IProduct[]{
-        new Roslyn(),
-        new Razor()
+    public static IProduct[] AllProducts = new IProduct[]
+    {
+        new Products.Roslyn(),
+        new Products.Razor()
     };
 
-    public static async Task<int> GetInfoAsync(string branch, Product product, bool showArtifacts, ILogger logger)
+    public static async Task<int> GetInfoAsync(string branch, string product, bool showArtifacts, ILogger logger)
     {
         try
         {
@@ -31,12 +30,12 @@ internal static class VSBranchInfo
             using var devdivConnection = new AzDOConnection("https://devdiv.visualstudio.com/DefaultCollection", "DevDiv", client, "vslsnap-vso-auth-token");
             using var dncengConnection = new AzDOConnection("https://dnceng.visualstudio.com/DefaultCollection", "internal", client, "vslsnap-build-auth-token");
 
-            foreach (var productConfig in s_productConfigs)
+            foreach (var productConfig in AllProducts)
             {
-                if (product == Product.All ||
-                    productConfig.Product == product)
+                if (product.Equals("all", StringComparison.OrdinalIgnoreCase) ||
+                    product.Equals(productConfig.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    WriteHeader($"{productConfig.Product} info from VS branch {branch}");
+                    WriteHeader($"{productConfig.Name} info from VS branch {branch}");
 
                     await WritePackageInfo(productConfig, branch, devdivConnection);
                     await WriteBuildInfo(productConfig, branch, showArtifacts, devdivConnection, dncengConnection);
