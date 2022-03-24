@@ -4,7 +4,7 @@
     <ItemGroup>
       <PackageWithBadFiles Include="$(ArtifactsNonShippingPackagesDir)/Microsoft.Roslyn.*.nupkg" />
 
-      <PackageFilesToStrip Include="tools/net6.0/any/runtimes/*/native/libgit2-*.so" />
+      <PackageFilesToStrip Include="tools/net6.0/any/runtimes/alpine*/native/libgit2*.so" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -13,7 +13,7 @@
 
     <MakeDir Directories="$(PackageTempPath)" />
     <Unzip SourceFiles="%(PackageWithBadFiles.Identity)" DestinationFolder="$(PackageTempPath)" />
-    <Delete Files="$(PackageTempPath)\%(PackageFilesToStrip.Identity)" />
+    <Delete Files="$(PackageTempPath)/%(PackageFilesToStrip.Identity)" />
     <ZipDirectory SourceDirectory="$(PackageTempPath)" DestinationFile="%(PackageWithBadFiles.Identity)" Overwrite="true" />
     <RemoveDir Directories="$(PackageTempPath)" />
   </Target>
