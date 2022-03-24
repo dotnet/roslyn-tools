@@ -7,8 +7,10 @@
   <Target Name="StripFilesFromSymbolPackages" AfterTargets="Pack">
     <ItemGroup>
       <SymbolPackageWithBadFiles Include="$(ArtifactsNonShippingPackagesDir)\Microsoft.Roslyn.*.symbols.nupkg" />
-      <SymbolPackageFilesToStrip Include="tools/netcoreapp3.1/any/runtimes/*/native/libgit*.so" />
+
+      <SymbolPackageFilesToStrip Include="tools/net6.0/any/runtimes/*/native/libgit2-*.so" />
     </ItemGroup>
+
     <PropertyGroup>
       <PackageTempPath>$([System.IO.Path]::GetTempPath())/$([System.Guid]::NewGuid())</PackageTempPath>
     </PropertyGroup>
