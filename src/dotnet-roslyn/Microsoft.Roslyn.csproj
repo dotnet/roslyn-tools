@@ -16,10 +16,6 @@
       These identifiers are for generating the shim'd core executables for signing.
     -->
     <PackAsToolShimRuntimeIdentifiers Condition=" '$(DotnetBuildFromSource)' != 'true' ">win-x64;win-x86;osx-x64</PackAsToolShimRuntimeIdentifiers>
-    
-    <!-- enable building symbol packages -->
-    <DebugType>portable</DebugType>
-    <IncludeSymbols>true</IncludeSymbols>
   </PropertyGroup>
 
   <ItemGroup>
