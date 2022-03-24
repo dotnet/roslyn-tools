@@ -15,7 +15,12 @@ namespace Microsoft.Roslyn.VS;
 
 internal static class VSBranchInfo
 {
-    public static async Task<int> GetInfoAsync(string branch, Product product, ILogger logger)
+    private static IProduct[] s_productConfigs = new IProduct[]{
+        new Roslyn(),
+        new Razor()
+    };
+
+    public static async Task<int> GetInfoAsync(string branch, Product product, bool showArtifacts, ILogger logger)
     {
         try
         {
@@ -26,18 +31,18 @@ internal static class VSBranchInfo
             using var devdivConnection = new AzDOConnection("https://devdiv.visualstudio.com/DefaultCollection", "DevDiv", client, "vslsnap-vso-auth-token");
             using var dncengConnection = new AzDOConnection("https://dnceng.visualstudio.com/DefaultCollection", "internal", client, "vslsnap-build-auth-token");
 
-            if (product is Product.Roslyn or Product.All)
+            foreach (var productConfig in s_productConfigs)
             {
-                WriteHeader($"Roslyn info from VS branch: {branch}");
+                if (product == Product.All ||
+                    productConfig.Product == product)
+                {
+                    WriteHeader($"{productConfig.Product} info from VS branch {branch}");
 
-                await WriteRoslynBuildInfo(branch, devdivConnection, dncengConnection);
-            }
+                    await WritePackageInfo(productConfig, branch, devdivConnection);
+                    await WriteBuildInfo(productConfig, branch, showArtifacts, devdivConnection, dncengConnection);
 
-            if (product is Product.Razor or Product.All)
-            {
-                WriteHeader($"Razor info from VS branch: {branch}");
-
-                await WriteRazorBuildInfo(branch, devdivConnection, dncengConnection);
+                    Console.WriteLine();
+                }
             }
         }
         catch (Exception ex)
@@ -48,12 +53,26 @@ internal static class VSBranchInfo
         return 1;
     }
 
-    private static async Task WriteRazorBuildInfo(string branch, AzDOConnection devdiv, AzDOConnection dnceng)
+    private static async Task WritePackageInfo(IProduct product, string branch, AzDOConnection devdiv)
     {
-        var buildNumber = await VisualStudioRepository.GetBuildNumberFromComponentJsonFileAsync(branch, devdiv, @".corext\Configs\aspnet-components.json", "Microsoft.VisualStudio.RazorExtension");
+        if (product.PackageName is null)
+        {
+            return;
+        }
+
+        var packageVersion = await VisualStudioRepository.GetPackageVersionFromDefaultConfigAsync(branch, devdiv, product.PackageName);
+
+        WriteNameAndValue("Package Version", packageVersion);
+    }
+
+    private static async Task WriteBuildInfo(IProduct product, string branch, bool showArtifacts, AzDOConnection devdiv, AzDOConnection dnceng)
+    {
+        var buildNumber = await VisualStudioRepository.GetBuildNumberFromComponentJsonFileAsync(branch, devdiv, product.ComponentJsonFileName, product.ComponentName);
 
         // Try getting build info from dnceng first
-        var builds = await dnceng.TryGetBuildsAsync("razor-tooling-ci-official", buildNumber);
+        var builds = await dnceng.TryGetBuildsAsync(product.BuildPipelineName, buildNumber);
+        var buildConnection = dnceng;
+
         if (builds is null or { Count: 0 })
         {
             throw new Exception($"Couldn't find build for build number: {buildNumber}");
@@ -61,73 +80,27 @@ internal static class VSBranchInfo
 
         foreach (var build in builds)
         {
-            WriteBuild(build);
+            WriteNameAndValue("Build Number", build.BuildNumber);
+            WriteNameAndValue("Commit SHA", build.SourceVersion);
+            WriteNameAndValue("Link", $"{product.RepoBaseUrl}/tree/{build.SourceVersion}", "    ");
+            WriteNameAndValue("Source Branch", build.SourceBranch.Replace("refs/heads/", ""));
+            WriteNameAndValue("Build", ((ReferenceLink)build.Links.Links["web"]).Href);
 
-            Console.WriteLine();
+            if (showArtifacts)
+            {
+                await WriteArtifactInfo(product, buildConnection, build);
+            }
         }
-    }
-
-    private static async Task WriteRoslynBuildInfo(string branch, AzDOConnection devdiv, AzDOConnection dnceng)
-    {
-        var buildNumber = await VisualStudioRepository.GetBuildNumberFromComponentJsonFileAsync(branch, devdiv, @".corext\Configs\dotnetcodeanalysis-components.json", "Microsoft.CodeAnalysis.LanguageServices");
-        var packageVersion = await GetRoslynPackageVersion(branch, devdiv);
-
-        // Try getting build info from dnceng first
-        var builds = await dnceng.TryGetBuildsAsync("dotnet-roslyn CI", buildNumber);
-        var buildConnection = dnceng;
-        if (builds == null || builds.Count == 0)
-        {
-            // otherwise fallback to devdiv, where things used to be
-            builds = await devdiv.TryGetBuildsAsync("Roslyn-Signed", buildNumber);
-            buildConnection = devdiv;
-        }
-
-        if (builds is null or { Count: 0 })
-        {
-            throw new Exception($"Couldn't find build for package version: {packageVersion}, build number: {buildNumber}");
-        }
-
-        foreach (var build in builds)
-        {
-            WriteNameAndValue("Package Version", packageVersion);
-            WriteBuild(build);
-
-            await WriteArtifactInfo(buildConnection, build);
-
-            Console.WriteLine();
-        }
-    }
-
-    private static async Task<string> GetRoslynPackageVersion(string branch, AzDOConnection devdiv)
-    {
-        var commit = new GitVersionDescriptor { VersionType = GitVersionType.Branch, Version = branch };
-        var vsRepository = await devdiv.GitClient.GetRepositoryAsync("DevDiv", "VS");
-
-        using var defaultConfigStream = await devdiv.GitClient.GetItemContentAsync(
-            vsRepository.Id,
-            @".corext\Configs\default.config",
-            download: true,
-            versionDescriptor: commit);
-
-        using var streamReader = new StreamReader(defaultConfigStream);
-        var fileContents = await streamReader.ReadToEndAsync();
-        var defaultConfig = XDocument.Parse(fileContents);
-
-        var packageVersion = defaultConfig.Root?.Descendants("package").Where(p => p.Attribute("id")?.Value == "VS.ExternalAPIs.Roslyn").Select(p => p.Attribute("version")?.Value).FirstOrDefault();
-
-        if (packageVersion is null)
-        {
-            throw new Exception($"Couldn't find the Roslyn external APIs pacakge for branch: {branch}");
-        }
-
-        return packageVersion;
     }
 
     // Inspired by Mitch Denny: https://dev.azure.com/mseng/AzureDevOps/_git/ArtifactTool?path=/src/ArtifactTool/Commands/PipelineArtifacts/PipelineArtifactDownloadCommand.cs&version=GBusers/midenn/fcs-integration&line=68&lineEnd=69&lineStartColumn=1&lineEndColumn=1&lineStyle=plain&_a=contents
     // Note: He wishes not to have his name attached to it.
-    private static async Task WriteArtifactInfo(AzDOConnection connection, Build build)
+    private static async Task WriteArtifactInfo(IProduct product, AzDOConnection connection, Build build)
     {
-        var artifact = await connection.BuildClient.GetArtifactAsync(build.Project.Id, build.Id, "PackageArtifacts");
+        if (product.ArtifactsFolderName is null || product.ArtifactsSubFolderNames.Length == 0)
+            return;
+
+        var artifact = await connection.BuildClient.GetArtifactAsync(build.Project.Id, build.Id, product.ArtifactsFolderName);
 
         var (id, name) = ParseContainerId(artifact.Resource.Data);
 
@@ -137,8 +110,7 @@ internal static class VSBranchInfo
 
         var links = from i in items
                     where i.ItemType == VisualStudio.Services.FileContainer.ContainerItemType.Folder
-                    where i.Path == "PackageArtifacts/PreRelease" ||
-                          i.Path == "PackageArtifacts/Release"
+                    where product.ArtifactsSubFolderNames.Contains(i.Path)
                     select (i.Path.Split('/').Last(), i.ContentLocation + "&%24format=zip&saveAbsolutePath=false"); // %24 == $
 
         WriteNamesAndValues("Packages", links);
@@ -155,14 +127,6 @@ internal static class VSBranchInfo
 
             throw new Exception($"Resource data value '{resourceData}' was not in expected format.");
         }
-    }
-
-    private static void WriteBuild(Build build)
-    {
-        WriteNameAndValue("Build Number", build.BuildNumber);
-        WriteNameAndValue("Commit SHA", build.SourceVersion);
-        WriteNameAndValue("Source Branch", build.SourceBranch.Replace("refs/heads/", ""));
-        WriteNameAndValue("Build", ((ReferenceLink)build.Links.Links["web"]).Href);
     }
 
     private static void WriteHeader(string branch)
