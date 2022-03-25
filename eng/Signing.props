@@ -19,7 +19,9 @@
 
     <!-- Sign 3rd party dlls with 3rd party cert -->
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Newtonsoft.Json.Bson.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="Ben.Demystifier.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="Colorful.Console.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="LibGit2Sharp.dll" CertificateName="3PartySHA2" />
   </ItemGroup>
 </Project>
