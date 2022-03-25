@@ -17,10 +17,22 @@ internal class PRFinder
     public static string GetGitHubPullRequestUrl(string repoURL, string prNumber)
         => $"{repoURL}/pull/{prNumber}";
 
-    const string RepoUrl = @"https://www.github.com/dotnet/roslyn";
-
     public static async Task<int> FindPRsAsync(string previousCommitSha, string currentCommitSha, ILogger logger)
     {
+        var repoUrlResult = await ProcessRunner.RunProcessAsync("git", "remote get-url upstream");
+        if (repoUrlResult.ExitCode != 0)
+        {
+            repoUrlResult = await ProcessRunner.RunProcessAsync("git", "remote get-url origin");
+        }
+
+        if (repoUrlResult.ExitCode != 0)
+        {
+            logger.LogError($"Could not find repo url (from upstream or origin remote). Ensure you are running from a working folder and try again.");
+            return -1;
+        }
+
+        var repoUrl = repoUrlResult.Output;
+
         var previousCommitExists = (await ProcessRunner.RunProcessAsync("git", $"cat-file -t {previousCommitSha}")).ExitCode == 0;
         var currentCommitExists = (await ProcessRunner.RunProcessAsync("git", $"cat-file -t {currentCommitSha}")).ExitCode == 0;
 
@@ -65,7 +77,7 @@ internal class PRFinder
             });
         }
 
-        logger.LogInformation($@"Changes since [{previousCommitSha}]({RepoUrl}/commit/{previousCommitSha})");
+        logger.LogInformation($@"Changes since [{previousCommitSha}]({repoUrl}/commit/{previousCommitSha})");
 
         var commitHeaderAdded = false;
         var mergePRHeaderAdded = false;
@@ -141,7 +153,7 @@ internal class PRFinder
                 // Replace "#{prNumber}" with "{prNumber}" so that AzDO won't linkify it
                 comment = comment.Replace($"#{prNumber}", prNumber);
 
-                prLink = $@"- [{comment}]({GetGitHubPullRequestUrl(RepoUrl, prNumber)})";
+                prLink = $@"- [{comment}]({GetGitHubPullRequestUrl(repoUrl, prNumber)})";
             }
             else
             {
@@ -157,7 +169,7 @@ internal class PRFinder
                 // Take the subject line since it should be descriptive.
                 comment = $"{commit.Subject} ({shortSHA})";
 
-                prLink = $@"- [{comment}]({RepoUrl}/commit/{fullSHA})";
+                prLink = $@"- [{comment}]({repoUrl}/commit/{fullSHA})";
             }
 
             logger.LogInformation(prLink);
