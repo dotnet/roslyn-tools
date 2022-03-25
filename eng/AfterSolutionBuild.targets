@@ -1,10 +1,8 @@
 <Project>
   <!-- Removes files from the `*.symbols.nupkg` packages that cause errors with symbol publishing. -->
-  <Target Name="StripFilesFromSymbolsPackages" AfterTargets="BeforePublish" BeforeTargets="Publish">
+  <Target Name="StripFilesFromSymbolsPackages" AfterTargets="Pack">
     <ItemGroup>
       <SymbolsPackageWithBadFiles Include="$(ArtifactsNonShippingPackagesDir)/Microsoft.Roslyn.*.symbols.nupkg" />
-
-      <SymbolsPackageFilesToStrip Include="tools/net6.0/any/runtimes/*/native/libgit2*.so" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -13,7 +11,12 @@
 
     <MakeDir Directories="$(PackageTempPath)" />
     <Unzip SourceFiles="%(SymbolsPackageWithBadFiles.Identity)" DestinationFolder="$(PackageTempPath)" />
-    <Delete Files="$(PackageTempPath)/%(SymbolsPackageFilesToStrip.Identity)" />
+    
+    <ItemGroup>
+      <SymbolsPackageFilesToStrip Include="$(PackageTempPath)/tools/net6.0/any/runtimes/*/native/libgit2*.so" />
+    </ItemGroup>
+    
+    <Delete Files="%(SymbolsPackageFilesToStrip.Identity)" />
     <ZipDirectory SourceDirectory="$(PackageTempPath)" DestinationFile="%(SymbolsPackageWithBadFiles.Identity)" Overwrite="true" />
     <RemoveDir Directories="$(PackageTempPath)" />
   </Target>
