@@ -16,6 +16,7 @@ internal static class RootRoslynCommand
             NuGetPrepareCommand.GetCommand(),
             NuGetPublishCommand.GetCommand(),
             CreateReleaseTagsCommand.GetCommand(),
+            VSBranchInfoCommand.GetCommand(),
         };
         command.Name = "roslyn";
         return command;

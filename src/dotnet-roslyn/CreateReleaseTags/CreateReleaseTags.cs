@@ -143,8 +143,12 @@ public static class CreateReleaseTags
         var componentsJsonContents = await new StreamReader(componentsJsonStream).ReadToEndAsync();
         var componentsJson = JObject.Parse(componentsJsonContents);
 
-        var languageServicesUrlAndManifestName = (string)componentsJson["Components"]["Microsoft.CodeAnalysis.LanguageServices"]["url"];
-
+        var languageServicesUrlAndManifestName = (string?)componentsJson["Components"]?["Microsoft.CodeAnalysis.LanguageServices"]?["url"];
+        if (languageServicesUrlAndManifestName is null)
+        {
+            return default;
+        }
+        
         var parts = languageServicesUrlAndManifestName.Split(';');
         if (parts.Length != 2)
         {
@@ -285,7 +289,7 @@ public static class CreateReleaseTags
             }
 
             // It's not entirely clear to me how this format was chosen, but for consistency with old tags, we'll keep it
-            string buildId = buildInformation["Branch"].ToString().Replace("/", ".") + "-" + buildInformation["BuildNumber"];
+            string buildId = $"{buildInformation["Branch"]?.ToString().Replace("/", ".")}-{buildInformation["BuildNumber"]}";
 
             if (parts.Length == 2)
             {
