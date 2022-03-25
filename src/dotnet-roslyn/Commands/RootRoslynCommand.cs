@@ -8,11 +8,17 @@ namespace Microsoft.Roslyn.Tool.Commands;
 
 internal static class RootRoslynCommand
 {
-    public static RootCommand GetRootCommand() => new RootCommand()
+    public static RootCommand GetRootCommand()
     {
-        PRFinderCommand.GetCommand(),
-        NuGetPrepareCommand.GetCommand(),
-        NuGetPublishCommand.GetCommand(),
-        VSBranchInfoCommand.GetCommand()
-    };
+        var command = new RootCommand()
+        {
+            PRFinderCommand.GetCommand(),
+            NuGetPrepareCommand.GetCommand(),
+            NuGetPublishCommand.GetCommand(),
+            CreateReleaseTagsCommand.GetCommand(),
+            VSBranchInfoCommand.GetCommand(),
+        };
+        command.Name = "roslyn";
+        return command;
+    }
 }
