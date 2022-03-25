@@ -23,6 +23,7 @@ internal sealed class AzDOConnection : IDisposable
     public BuildHttpClient BuildClient { get; }
     public FileContainerHttpClient ContainerClient { get; }
     public ProjectHttpClient ProjectClient { get; }
+    public HttpClient NuGetClient { get; }
 
     public AzDOConnection(string azdoUrl, string projectName, SecretClient client, string secretName)
     {
@@ -39,6 +40,8 @@ internal sealed class AzDOConnection : IDisposable
         ContainerClient = Connection.GetClient<FileContainerHttpClient>();
 
         ProjectClient = Connection.GetClient<ProjectHttpClient>();
+
+        NuGetClient = new HttpClient(new HttpClientHandler { Credentials = credential });
     }
 
     public async Task<List<Build>?> TryGetBuildsAsync(string pipelineName, string buildNumber)
@@ -65,6 +68,7 @@ internal sealed class AzDOConnection : IDisposable
             GitClient.Dispose();
             BuildClient.Dispose();
             ContainerClient.Dispose();
+            NuGetClient.Dispose();
         }
     }
 }
