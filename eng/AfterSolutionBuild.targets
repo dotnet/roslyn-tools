@@ -1,10 +1,10 @@
 <Project>
-  <!-- Removes files from the `*.nupkg` packages that cause errors with symbol publishing. -->
-  <Target Name="StripFilesFromPackages" AfterTargets="Pack" BeforeTargets="BeforePublish">
+  <!-- Removes files from the `*.symbols.nupkg` packages that cause errors with symbol publishing. -->
+  <Target Name="StripFilesFromSymbolsPackages" AfterTargets="BeforePublish" BeforeTargets="Publish">
     <ItemGroup>
-      <PackageWithBadFiles Include="$(ArtifactsNonShippingPackagesDir)/Microsoft.Roslyn.*.nupkg" />
+      <SymbolsPackageWithBadFiles Include="$(ArtifactsNonShippingPackagesDir)/Microsoft.Roslyn.*.symbols.nupkg" />
 
-      <PackageFilesToStrip Include="tools/net6.0/any/runtimes/alpine*/native/libgit2*.so" />
+      <SymbolsPackageFilesToStrip Include="tools/net6.0/any/runtimes/*/native/libgit2*.so" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -12,9 +12,9 @@
     </PropertyGroup>
 
     <MakeDir Directories="$(PackageTempPath)" />
-    <Unzip SourceFiles="%(PackageWithBadFiles.Identity)" DestinationFolder="$(PackageTempPath)" />
-    <Delete Files="$(PackageTempPath)/%(PackageFilesToStrip.Identity)" />
-    <ZipDirectory SourceDirectory="$(PackageTempPath)" DestinationFile="%(PackageWithBadFiles.Identity)" Overwrite="true" />
+    <Unzip SourceFiles="%(SymbolsPackageWithBadFiles.Identity)" DestinationFolder="$(PackageTempPath)" />
+    <Delete Files="$(PackageTempPath)/%(SymbolsPackageFilesToStrip.Identity)" />
+    <ZipDirectory SourceDirectory="$(PackageTempPath)" DestinationFile="%(SymbolsPackageWithBadFiles.Identity)" Overwrite="true" />
     <RemoveDir Directories="$(PackageTempPath)" />
   </Target>
 
