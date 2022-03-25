@@ -143,7 +143,7 @@ public static class CreateReleaseTags
         var componentsJsonContents = await new StreamReader(componentsJsonStream).ReadToEndAsync();
         var componentsJson = JObject.Parse(componentsJsonContents);
 
-        var languageServicesUrlAndManifestName = (string)componentsJson["Components"]?["Microsoft.CodeAnalysis.LanguageServices"]?["url"];
+        var languageServicesUrlAndManifestName = (string?)componentsJson["Components"]?["Microsoft.CodeAnalysis.LanguageServices"]?["url"];
         if (languageServicesUrlAndManifestName is null)
         {
             return default;
