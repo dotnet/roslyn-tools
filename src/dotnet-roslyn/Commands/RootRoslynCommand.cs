@@ -19,6 +19,7 @@ internal static class RootRoslynCommand
             VSBranchInfoCommand.GetCommand(),
         };
         command.Name = "roslyn";
+        command.Description = "The command line tool for performing Roslyn infrastructure tasks.";
         return command;
     }
 }
