@@ -16,7 +16,7 @@ internal class CreateReleaseTagsCommand
 
     public static Symbol GetCommand()
     {
-        var command = new Command("create-release-tags", "Generates tags for VS releases in the Roslyn repo.")
+        var command = new Command("create-release-tags", "Generates git tags for VS releases in the Roslyn repo.")
         {
             VerbosityOption
         };

@@ -27,8 +27,8 @@ internal static class VSBranchInfo
                 vaultUri: new Uri("https://managedlanguages.vault.azure.net"),
                 credential: new DefaultAzureCredential(includeInteractiveCredentials: true));
 
-            using var devdivConnection = new AzDOConnection("https://devdiv.visualstudio.com/DefaultCollection", "DevDiv", client, "vslsnap-vso-auth-token");
-            using var dncengConnection = new AzDOConnection("https://dnceng.visualstudio.com/DefaultCollection", "internal", client, "vslsnap-build-auth-token");
+            using var devdivConnection = new AzDOConnection("https://devdiv.visualstudio.com/DefaultCollection", "DevDiv", buildDefinitionName: "", client, "vslsnap-vso-auth-token");
+            using var dncengConnection = new AzDOConnection("https://dnceng.visualstudio.com/DefaultCollection", "internal", buildDefinitionName: "", client, "vslsnap-build-auth-token");
 
             foreach (var productConfig in AllProducts)
             {

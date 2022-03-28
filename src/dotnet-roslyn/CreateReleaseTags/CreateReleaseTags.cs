@@ -6,6 +6,7 @@ using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
+using Microsoft.Roslyn.Utilities;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Newtonsoft.Json.Linq;
 using System.Collections.Immutable;
@@ -148,7 +149,7 @@ public static class CreateReleaseTags
         {
             return default;
         }
-        
+
         var parts = languageServicesUrlAndManifestName.Split(';');
         if (parts.Length != 2)
         {

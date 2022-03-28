@@ -2,82 +2,85 @@
 // The.NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
+using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
-using Microsoft.Roslyn.Tool.Utilities;
-using System.Text.RegularExpressions;
-
 namespace Microsoft.Roslyn.Tool.PRFinder;
 
 internal class PRFinder
 {
-    private static readonly Regex IsGitHubReleaseFlowCommit = new(@"^Merge pull request #\d+ from dotnet/merges/");
-    private static readonly Regex IsGitHubMergePRCommit = new(@"^Merge pull request #(\d+) from");
-    private static readonly Regex IsGitHubSquashedPRCommit = new(@"\(#(\d+)\)(?:\n|$)");
-
-    public static string GetGitHubPullRequestUrl(string repoURL, string prNumber)
-        => $"{repoURL}/pull/{prNumber}";
-
-    public static async Task<int> FindPRsAsync(string previousCommitSha, string currentCommitSha, ILogger logger)
+    public static int FindPRs(string previousCommitSha, string currentCommitSha, ILogger logger)
     {
-        var repoUrlResult = await ProcessRunner.RunProcessAsync("git", "remote get-url upstream");
-        if (repoUrlResult.ExitCode != 0)
-        {
-            repoUrlResult = await ProcessRunner.RunProcessAsync("git", "remote get-url origin");
-        }
+        using var repo = new Repository(Environment.CurrentDirectory);
 
-        if (repoUrlResult.ExitCode != 0)
-        {
-            logger.LogError($"Could not find repo url (from upstream or origin remote). Ensure you are running from a working folder and try again.");
-            return -1;
-        }
+        var currentCommit = repo.Lookup<Commit>(currentCommitSha);
+        var previousCommit = repo.Lookup<Commit>(previousCommitSha);
 
-        var repoUrl = repoUrlResult.Output;
-
-        var previousCommitExists = (await ProcessRunner.RunProcessAsync("git", $"cat-file -t {previousCommitSha}")).ExitCode == 0;
-        var currentCommitExists = (await ProcessRunner.RunProcessAsync("git", $"cat-file -t {currentCommitSha}")).ExitCode == 0;
-
-        if (!previousCommitExists)
+        if (previousCommit is null)
         {
             logger.LogError($"Previous commit SHA '{previousCommitSha}' does not exist. Please fetch and try again.");
             return -1;
         }
 
-        if (!currentCommitExists)
+        if (currentCommit is null)
         {
             logger.LogError($"Current commit SHA '{currentCommitSha}' does not exist. Please fetch and try again.");
             return -1;
         }
 
-        List<GitCommit> commitLog = new();
+        var remotes = repo.Network.Remotes.ToDictionary(remote => remote.Name);
+        if (!remotes.TryGetValue("upstream", out var remote)
+            && !remotes.TryGetValue("origin", out remote))
+        {
+            remote = remotes.Values.FirstOrDefault();
+        }
+
+        if (remote is null)
+        {
+            logger.LogError("No configured remote for this repository.");
+            return 1;
+        }
+
+        string repoUrl = string.Empty;
+        if (remote.Url.StartsWith("https://")) // https://github.com/dotnet/roslyn.git
+        {
+            repoUrl = remote.Url.EndsWith(".git")
+                ? remote.Url[..^4]
+                : remote.Url;
+        }
+        else if (remote.Url.StartsWith("git@")) // git@github.com:dotnet/roslyn.git
+        {
+            var colonIndex = remote.Url.IndexOf(':');
+            repoUrl = remote.Url.EndsWith(".git")
+                ? $"https://{remote.Url[4..colonIndex]}/{remote.Url[++colonIndex..^4]}"
+                : $"https://{remote.Url[4..colonIndex]}/{remote.Url[++colonIndex..]}";
+        }
+        else
+        {
+            logger.LogError($"Remote '{remote.Name}' has an unsupported Url format '{remote.Url}'.");
+            return 1;
+        }
+
+        var isGitHub = repoUrl.Contains("github.com");
+        var isAzure = repoUrl.Contains("azure.com");
+        if (!isGitHub && !isAzure)
+        {
+            logger.LogError($"Remote '{remote.Name}' has an unsupported URL host '{remote.Url}'.");
+            return 1;
+        }
+
+        IRepositoryHost host = isGitHub
+            ? new Hosts.GitHub()
+            : new Hosts.Azure();
 
         // Get commit history starting at the current commit and ending at the previous commit
-        var gitLogResult = await ProcessRunner.RunProcessAsync("git", $"log --date=\"format:%Y-%m-%d %H:%M\" --pretty=\"format:CommitId: %H <<|>>Author: %an <<|>>Committer: %cn <<|>>Subject: %s <<|>>Body: %b <<End>>\" \"{previousCommitSha}..{currentCommitSha}\"");
-        if (gitLogResult.ExitCode != 0)
-        {
-            logger.LogError(gitLogResult.Error);
-            return -1;
-        }
-
-        foreach (var commitLine in gitLogResult.Output.Split("<<End>>"))
-        {
-            if (!commitLine.TrimStart().StartsWith("CommitId: "))
+        var commitLog = repo.Commits.QueryBy(
+            new CommitFilter
             {
-                // Continuation of previous commit body text
-                continue;
-            }
-
-            var parts = commitLine.Split("<<|>>");
-            commitLog.Add(new GitCommit
-            {
-                CommitId = parts[0].Split("CommitId: ")[1].Trim(),
-                Author = parts[1].Split("Author: ")[1].Trim(),
-                Committer = parts[2].Split("Committer: ")[1].Trim(),
-                Subject = parts[3].Split("Subject: ")[1].Trim(),
-                Body = parts[4].Split("Body: ")[1].Trim()
+                IncludeReachableFrom = currentCommit,
+                ExcludeReachableFrom = previousCommit
             });
-        }
 
-        logger.LogInformation($@"Changes since [{previousCommitSha}]({repoUrl}/commit/{previousCommitSha})");
+        logger.LogInformation($"[View Complete Diff of Changes]({host.GetDiffUrl(repoUrl, previousCommitSha, currentCommitSha)})");
 
         var commitHeaderAdded = false;
         var mergePRHeaderAdded = false;
@@ -85,62 +88,19 @@ internal class PRFinder
 
         foreach (var commit in commitLog)
         {
-            // Once we've found a Merge PR we can exclude commits not committed by GitHub since Merge and Squash commits are committed by GitHub
-            if (commit.Committer != "GitHub" && mergePRFound)
-            {
-                continue;
-            }
+            host.ShouldSkip(commit, ref mergePRFound);
 
-            // Exclude arcade dependency updates
-            if (commit.Author == "dotnet-maestro[bot]")
-            {
-                mergePRFound = true;
-                continue;
-            }
-
-            // Exclude merge commits from auto code-flow PRs (e.g. merges/main-to-main-vs-deps)
-            if (IsGitHubReleaseFlowCommit.Match(commit.Subject).Success)
-            {
-                mergePRFound = true;
-                continue;
-            }
-
-            string comment = string.Empty;
-            string prNumber = string.Empty;
-
-            var match = IsGitHubMergePRCommit.Match(commit.Subject);
-            if (match.Success)
-            {
-                prNumber = match.Groups[1].Value;
-
-                // Merge PR Messages are in the form "Merge pull request #39526 from mavasani/GetValueUsageInfoAssert\n\nFix an assert in IOperationExtension.GetValueUsageInfo"
-                // Try and extract the 3rd line since it is the useful part of the message, otherwise take the first line.
-                comment = !string.IsNullOrEmpty(commit.Body)
-                    ? $"{commit.Body} ({prNumber})"
-                    : commit.Subject;
-            }
-            else
-            {
-                match = IsGitHubSquashedPRCommit.Match(commit.Subject);
-                if (match.Success)
-                {
-                    prNumber = match.Groups[1].Value;
-
-                    // Squash PR Messages are in the form "Nullable annotate TypeCompilationState and MessageID (#39449)"
-                    // Take the 1st line since it should be descriptive.
-                    comment = commit.Subject;
-                }
-            }
+            var wasMergeCommit = host.TryParseMergeInfo(commit, out var prNumber, out var comment);
 
             // We will print commit comments until we find the first merge PR
-            if (!match.Success && mergePRFound)
+            if (!wasMergeCommit && mergePRFound)
             {
                 continue;
             }
 
             string prLink;
 
-            if (match.Success)
+            if (wasMergeCommit)
             {
                 if (commitHeaderAdded && !mergePRHeaderAdded)
                 {
@@ -153,7 +113,7 @@ internal class PRFinder
                 // Replace "#{prNumber}" with "{prNumber}" so that AzDO won't linkify it
                 comment = comment.Replace($"#{prNumber}", prNumber);
 
-                prLink = $@"- [{comment}]({GetGitHubPullRequestUrl(repoUrl, prNumber)})";
+                prLink = $@"- [{comment}]({host.GetPullRequestUrl(repoUrl, prNumber)})";
             }
             else
             {
@@ -163,27 +123,18 @@ internal class PRFinder
                     logger.LogInformation("### Commits since last PR:");
                 }
 
-                var fullSHA = commit.CommitId;
+                var fullSHA = commit.Sha;
                 var shortSHA = fullSHA.Substring(0, 7);
 
                 // Take the subject line since it should be descriptive.
-                comment = $"{commit.Subject} ({shortSHA})";
+                comment = $"{commit.MessageShort} ({shortSHA})";
 
-                prLink = $@"- [{comment}]({repoUrl}/commit/{fullSHA})";
+                prLink = $@"- [{comment}]({host.GetCommitUrl(repoUrl, fullSHA)})";
             }
 
             logger.LogInformation(prLink);
         }
 
         return 0;
-    }
-
-    internal struct GitCommit
-    {
-        public string CommitId { get; set; }
-        public string Author { get; set; }
-        public string Committer { get; set; }
-        public string Subject { get; set; }
-        public string Body { get; set; }
     }
 }

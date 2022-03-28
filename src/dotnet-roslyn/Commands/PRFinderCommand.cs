@@ -30,14 +30,14 @@ internal static class PRFinderCommand
 
     private class PrFinderCommandDefaultHandler : ICommandHandler
     {
-        public async Task<int> InvokeAsync(InvocationContext context)
+        public Task<int> InvokeAsync(InvocationContext context)
         {
             var logger = context.SetupLogging();
 
             var previousCommit = context.ParseResult.GetValueForOption(PreviousCommitShaOption)!;
             var currentCommit = context.ParseResult.GetValueForOption(CurrentCommitSHAOption)!;
 
-            return await PRFinder.PRFinder.FindPRsAsync(previousCommit, currentCommit, logger);
+            return Task.FromResult(PRFinder.PRFinder.FindPRs(previousCommit, currentCommit, logger));
         }
     }
 }
