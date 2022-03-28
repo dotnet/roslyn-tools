@@ -107,10 +107,12 @@ namespace Microsoft.Roslyn.Tool.NuGet
                 foreach (var packageId in packageIds)
                 {
                     await PublishPackageAsync(packageId, version);
+                    logger.LogInformation($"Package '{packageId}' published.");
 
                     if (unlisted)
                     {
                         await UnlistPackageAsync(packageId, version);
+                        logger.LogInformation($"Package '{packageId}' unlisted.");
                     }
                 }
 

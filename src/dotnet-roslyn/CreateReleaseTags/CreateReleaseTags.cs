@@ -57,7 +57,7 @@ public static class CreateReleaseTags
                 {
                     if (!existingTags.Any(t => t.FriendlyName == roslynTagName))
                     {
-                        logger.LogInformation($"Tag {roslynTagName} is missing.");
+                        logger.LogInformation($"Tag '{roslynTagName}' is missing.");
 
                         RoslynBuildInformation? roslynBuild = null;
                         foreach (var connection in connections)
@@ -72,7 +72,7 @@ public static class CreateReleaseTags
 
                         if (roslynBuild is not null)
                         {
-                            logger.LogInformation($"Tagging {roslynBuild.CommitSha} as {roslynTagName}.");
+                            logger.LogInformation($"Tagging {roslynBuild.CommitSha} as '{roslynTagName}'.");
 
                             string message = $"Build Branch: {roslynBuild.SourceBranch}\r\nInternal ID: {roslynBuild.BuildId}\r\nInternal VS ID: {visualStudioRelease.BuildId}";
 
@@ -80,12 +80,12 @@ public static class CreateReleaseTags
                         }
                         else
                         {
-                            logger.LogWarning($"Unable to find the build for {roslynTagName}.");
+                            logger.LogWarning($"Unable to find the build for '{roslynTagName}'.");
                         }
                     }
                     else
                     {
-                        logger.LogInformation($"Tag {roslynTagName} already exists.");
+                        logger.LogInformation($"Tag '{roslynTagName}' already exists.");
                     }
                 }
             }
