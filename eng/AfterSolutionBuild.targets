@@ -2,7 +2,7 @@
   <!-- Removes files from the `*.symbols.nupkg` packages that cause errors with symbol publishing. -->
   <Target Name="StripFilesFromSymbolsPackages" AfterTargets="Pack">
     <ItemGroup>
-      <SymbolsPackageWithBadFiles Include="$(ArtifactsNonShippingPackagesDir)/Microsoft.Roslyn.*.symbols.nupkg" />
+      <SymbolsPackageWithBadFiles Include="$(ArtifactsNonShippingPackagesDir)/Microsoft.RoslynTools.*.symbols.nupkg" />
     </ItemGroup>
 
     <PropertyGroup>
