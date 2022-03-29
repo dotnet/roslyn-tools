@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
@@ -226,8 +226,8 @@ Once all conflicts are resolved and all the tests pass, you are free to merge th
 
 ### Identify authors of changes which introduced merge conflicts
 Scroll to the bottom, then for each file containing conflicts copy its path into the following searches:
-- https://github.com/dotnet/roslyn/find/{srcBranch}
-- https://github.com/dotnet/roslyn/find/{destBranch}
+- https://github.com/{repoOwner}/{repoName}/find/{srcBranch}
+- https://github.com/{repoOwner}/{repoName}/find/{destBranch}
 
 Usually the most recent change to a file between the two branches is considered to have introduced the conflicts, but sometimes it will be necessary to look for the conflicting lines and check the blame in each branch. Generally the author whose change introduced the conflicts should pull down this PR, fix the conflicts locally, then push up a commit resolving the conflicts.
 

@@ -492,13 +492,7 @@ namespace Roslyn.Insertion
                     if (Options.CreateDraftPr)
                     {
                         // When creating Draft PRs no policies are automatically started.
-                        await TryQueueVSBuildPolicy(pullRequest, "Insertion Hash Check", insertionBranchName);
-                        await TryQueueVSBuildPolicy(pullRequest, "Insertion Sign Check", insertionBranchName);
-                        await TryQueueVSBuildPolicy(pullRequest, "Insertion Symbol Check", insertionBranchName);
-                        await TryQueueVSBuildPolicy(pullRequest, "Cloudbuild - MSBuildRetail", insertionBranchName);
                         await TryQueueVSBuildPolicy(pullRequest, "Required Tests", insertionBranchName);
-                        await TryQueueVSBuildPolicy(pullRequest, "Optional Tests", insertionBranchName);
-                        await TryQueueVSBuildPolicy(pullRequest, "Experimental Tests", insertionBranchName);
                     }
                 }
 
