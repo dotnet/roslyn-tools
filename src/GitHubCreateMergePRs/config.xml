@@ -58,7 +58,7 @@
     <merge from="release/dev17.1" to="release/dev17.2" />
 
     <!-- regular branch flow -->
-    <merge from="main" to="release/dev17.2" />
+    <!--<merge from="main" to="release/dev17.2" />-->
     <merge from="feature/auto-widen" to="feature/erased-unions" />
   </repo>
 
