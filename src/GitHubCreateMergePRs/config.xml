@@ -77,8 +77,8 @@
 
   <!-- dotnet-format service branches -->
   <repo owner="dotnet" name="format" mergeOwners="joerobich">
-    <merge from="release/5.x" to="release/6.x" />
-    <merge from="release/6.0.1xx-rc2" to="release/6.x" />
+    <merge from="release/6.0.2xx" to="release/6.0.3xx" />
+    <merge from="release/6.0.3xx" to="release/6.x" />
     <merge from="release/6.x" to="main" />
   </repo>
 
