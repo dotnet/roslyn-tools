@@ -258,14 +258,3 @@ function GetExistingPR([string] $existingPR) {
         return "/updateexistingpr=$existingPR"
     }
 }
-
-function GetOverwritePR([switch] $overwritePR) {
-    if($overwritePR)
-    {
-        return "/overwritepr"
-    }
-    else
-    {
-        return ""
-    }
-}
