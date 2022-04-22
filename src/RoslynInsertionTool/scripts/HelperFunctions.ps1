@@ -250,3 +250,22 @@ function GetClientSecret([string] $clientSecret) {
         return "/cs=$clientSecret"
     }
 }
+
+function GetExistingPR([string] $existingPR) {
+    if (IsDefaultValue $existingPR) {
+        return ""
+    } else {
+        return "/updateexistingpr=$existingPR"
+    }
+}
+
+function GetOverwritePR([switch] $overwritePR) {
+    if($overwritePR)
+    {
+        return "/overwritepr"
+    }
+    else
+    {
+        return ""
+    }
+}
