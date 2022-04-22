@@ -30,8 +30,9 @@ param([string] $clientId,
       [string] $reviewerGUID,
       [string] $userName,
       [string] $password,
-      [string] $existingPr,
-      [switch] $overwritePr)
+      [string] $existingPR,
+      [switch] $overwritePR,
+      [switch] $createPlaceholderPR)
 
 . $PSScriptRoot\HelperFunctions.ps1
 
@@ -63,12 +64,23 @@ $password = GetPassword -password $password
 $clientId = GetClientId -clientId $clientId
 $clientSecret = GetClientSecret -clientSecret $clientSecret
 $existingPR = GetExistingPR -existingPR $existingPR
-$overwritePRFlag = GetOverwritePR -overwritePR $overwritePR
+
+$overwritePRFlag = ""
+if ($overwritePR.IsPresent -and $overwritePR)
+{
+    $overwritePRFlag = "/overwritepr"
+}
+
+$placeholderFlag = ""
+if ($createPlaceholderPR.IsPresent -and $createPlaceholderPR)
+{
+    $placeholderFlag = "/createdummypr"
+}
 
 if ($insertionCount -lt 1) {
     $insertionCount = 1
 }
 
 for ($i = 0; $i -lt $insertionCount; $i++) {
-    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/tp=$titlePrefix" "/ts=$titleSuffix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" "/reviewerGUID=$reviewerGUID" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName $componentPassword $userName $password $clientId $clientSecret $existingPR $overwritePRFlag
+    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/tp=$titlePrefix" "/ts=$titleSuffix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" "/reviewerGUID=$reviewerGUID" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName $componentPassword $userName $password $clientId $clientSecret $existingPR $overwritePRFlag $placeholderFlag
 }
