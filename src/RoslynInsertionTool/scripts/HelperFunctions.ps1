@@ -37,11 +37,19 @@ function GetComponentGitHubRepoName([string] $componentGitHubRepoName) {
     }
 }
 
-function GetComponentUserName([string] $componentAzdoUri) {
-    if (IsDefaultValue $componentAzdoUri) {
+function GetComponentUserName([string] $componentUserName) {
+    if (IsDefaultValue $componentUserName) {
+        return "/cbu=vslsnap@microsoft.com"
+    } else {
+        return "/cbu=$componentUserName"
+    }
+}
+
+function GetComponentPassword([string] $componentPassword) {
+    if (IsDefaultValue $componentPassword) {
         return ""
     } else {
-        return "/cbu=vslsnap@microsoft.com"
+        return "/cbp=$componentPassword"
     }
 }
 
@@ -208,5 +216,37 @@ function GetReviewerGUID([string] $reviewerGUID) {
     }
     else {
         return $reviewerGUID
+    }
+}
+
+function GetUserName([string] $userName) {
+    if (IsDefaultValue $userName) {
+        return "/u=vslsnap@microsoft.com"
+    } else {
+        return "/u=$userName"
+    }
+}
+
+function GetPassword([string] $password) {
+    if (IsDefaultValue $password) {
+        return ""
+    } else {
+        return "/p=$password"
+    }
+}
+
+function GetClientId([string] $clientId) {
+    if (IsDefaultValue $clientId) {
+        return ""
+    } else {
+        return "/ci=$clientId"
+    }
+}
+
+function GetClientSecret([string] $clientSecret) {
+    if (IsDefaultValue $clientSecret) {
+        return ""
+    } else {
+        return "/cs=$clientSecret"
     }
 }
