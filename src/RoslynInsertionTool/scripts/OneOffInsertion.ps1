@@ -7,6 +7,8 @@ param([string] $clientId,
       [string] $componentProjectName,
       [string] $componentBranchName,
       [string] $componentName,
+      [string] $componentUserName,
+      [string] $componentPassword,
       [string] $componentGitHubRepoName,
       [string] $dropPath,
       [string] $insertCore,
@@ -25,7 +27,9 @@ param([string] $clientId,
       [string] $createDraftPR,
       [string] $cherryPick,
       [string] $skipCoreXTPackages,
-      [string] $reviewerGUID)
+      [string] $reviewerGUID,
+      [string] $userName,
+      [string] $password)
 
 . $PSScriptRoot\HelperFunctions.ps1
 
@@ -36,7 +40,8 @@ EnsureRequiredValue -friendlyName "VisualStudioBranchName" -value $visualStudioB
 $componentAzdoUri = GetComponentAzdoUri -componentAzdoUri $componentAzdoUri
 $componentProjectName = GetComponentProjectName -componentProjectName $componentProjectName
 $componentGitHubRepoName = GetComponentGitHubRepoName -componentGitHubRepoName $componentGitHubRepoName
-$componentUserName = GetComponentUserName -componentAzdoUri $componentAzdoUri
+$componentUserName = GetComponentUserName -componentUserName $componentUserName
+$componentPassword = GetComponentPassword -componentPassword $componentPassword
 $buildQueueName = GetBuildQueueName -componentName $componentName -buildQueueName $buildQueueName
 $dropPathFlag = GetDropPathFlag -componentName $componentName -dropPath $dropPath
 $insertCore = GetInsertCore -componentName $componentName -insertCore $insertCore
@@ -51,11 +56,15 @@ $createDraftPR = GetCreateDraftPR -createDraftPR $createDraftPR
 $cherryPick = GetCherryPick -cherryPick $cherryPick
 $skipCoreXTPackages = GetSkipCoreXTPackages -skipCoreXTPackages $skipCoreXTPackages
 $reviewerGUID = GetReviewerGUID -reviewerGUID $reviewerGUID
+$userName = GetUserName -userName $userName
+$password = GetPassword -password $password
+$clientId = GetClientId -clientId $clientId
+$clientSecret = GetClientSecret -clientSecret $clientSecret
 
 if ($insertionCount -lt 1) {
     $insertionCount = 1
 }
 
 for ($i = 0; $i -lt $insertionCount; $i++) {
-    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/u=vslsnap@microsoft.com" "/ci=$clientId" "/cs=$clientSecret" "/tp=$titlePrefix" "/ts=$titleSuffix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" "/reviewerGUID=$reviewerGUID" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName
+    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/tp=$titlePrefix" "/ts=$titleSuffix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" "/reviewerGUID=$reviewerGUID" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName $componentPassword $userName $password $clientId $clientSecret
 }
