@@ -1,6 +1,7 @@
-paths:
-  exclude:
-    - src/GitHubCreateMergePRs/config.xml
+pr:
+  paths:
+    exclude:
+      - src/GitHubCreateMergePRs/config.xml
 
 jobs:
 - job: Windows
