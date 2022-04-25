@@ -1,4 +1,13 @@
+
+# Branches that trigger a build on commit
+trigger:
+- main
+
+# Branches that trigger builds on PR
 pr:
+  branches:
+    include:
+    - main
   paths:
     exclude:
       - src/GitHubCreateMergePRs/config.xml
