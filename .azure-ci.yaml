@@ -1,3 +1,8 @@
+pr:
+  paths:
+    exclude:
+      - src/GitHubCreateMergePRs/config.xml
+
 jobs:
 - job: Windows
   pool:
