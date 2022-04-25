@@ -1,4 +1,3 @@
-
 # Branches that trigger a build on commit
 trigger:
 - main
