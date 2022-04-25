@@ -2,9 +2,7 @@
   <repo owner="dotnet" name="roslyn" mergeOwners="dibarbet">
     <!-- For a list of VS versions under servicing, see https://docs.microsoft.com/en-us/visualstudio/releases/2019/servicing#support-options-for-enterprise-and-professional-customers -->
     <!-- Roslyn servicing branches (flowing between releases) -->
-    <merge from="dev15.9.x" to="release/dev16.4-vs-deps" />
-    <merge from="release/dev16.4-vs-deps" to="release/dev16.7-vs-deps" />
-    <merge from="release/dev16.7-vs-deps" to="release/dev16.9-vs-deps" />
+    <merge from="dev15.9.x" to="release/dev16.9-vs-deps" />
     <merge from="release/dev16.9-vs-deps" to="release/dev16.11-vs-deps" />
     <merge from="release/dev16.11-vs-deps" to="release/dev17.0-vs-deps" />
 
