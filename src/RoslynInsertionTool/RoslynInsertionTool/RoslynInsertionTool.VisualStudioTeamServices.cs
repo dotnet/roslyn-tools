@@ -393,19 +393,7 @@ namespace Roslyn.Insertion
 
         private static async Task<string> DownloadBuildArtifactsAsync(BuildHttpClient buildClient, Build build, BuildArtifact artifact, CancellationToken cancellationToken)
         {
-            var tempDirectory = Path.Combine(Path.GetTempPath(), string.Concat(Options.InsertionName, Options.ComponentBranchName).Replace(" ", "_").Replace("/", "_"));
-            if (Directory.Exists(tempDirectory))
-            {
-                // Be judicious and clean up old artifacts so we do not eat up memory on the scheduler machine.
-                Directory.Delete(tempDirectory, recursive: true);
-
-                // Sometimes a creation of a directory races with deletion since at least in .net 4.6 deletion is not a blocking call.
-                // Hence explictly waiting for the directory to be deleted before moving on.
-                Stopwatch w = Stopwatch.StartNew();
-
-                while (Directory.Exists(tempDirectory) && w.ElapsedMilliseconds < 20 * 1000) Thread.Sleep(100);
-            }
-
+            var tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tempDirectory);
 
             var archiveDownloadPath = Path.Combine(tempDirectory, artifact.Name);
