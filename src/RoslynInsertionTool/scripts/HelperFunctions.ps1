@@ -81,7 +81,7 @@ function GetDropPathFlag([string] $componentName, [string] $dropPath) {
         }
     }
     else {
-      if ($dropPath.startsWith("/dp=") {
+      if ($dropPath.startsWith("/dp=")) {
         return $dropPath
       }
       return "/dp=$dropPath"
