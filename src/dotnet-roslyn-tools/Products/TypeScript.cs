@@ -4,21 +4,21 @@
 
 namespace Microsoft.RoslynTools.Products;
 
-internal class Razor : IProduct
+internal class TypeScript : IProduct
 {
-    public string Name => "Razor";
+    public string Name => "TypeScript";
 
-    public string RepoBaseUrl => "https://github.com/dotnet/razor-tooling";
-    public string ComponentJsonFileName => @".corext\Configs\aspnet-components.json";
-    public string ComponentName => "Microsoft.VisualStudio.RazorExtension";
-    public string? PackageName => null;
+    public string RepoBaseUrl => "https://devdiv.visualstudio.com/DevDiv/_git/TypeScript-VS";
+    public string ComponentJsonFileName => @".corext\Configs\components.json";
+    public string ComponentName => "TypeScript_Tools";
+    public string? PackageName => "VS.ExternalAPIs.TypeScript.SourceMapReader.dev15";
     public string? ArtifactsFolderName => null;
     public string[] ArtifactsSubFolderNames => Array.Empty<string>();
 
     public string? GetBuildPipelineName(string buildProjectName)
         => buildProjectName switch
         {
-            "internal" => "razor-tooling-ci-official",
+            "DevDiv" => "TypeScript-VS Signed Build",
             _ => null
         };
 }
