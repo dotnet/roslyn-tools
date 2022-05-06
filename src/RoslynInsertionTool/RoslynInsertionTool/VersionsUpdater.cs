@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
@@ -67,11 +67,7 @@ namespace Roslyn.Insertion
             //   values:                     const string AssemblyNameVersion = "<version-number>";
             //   footer: closing tag:    #>
             var lines = content.Split('\n').Select(line => line.TrimEnd('\r')).ToList();
-            var finalLines = new List<string>();
             bool IsVersionLine(string line) => line.TrimStart().StartsWith("const");
-            var headerLines = lines.TakeWhile(line => !IsVersionLine(line)).ToList();
-            var valueLines = lines.Skip(headerLines.Count).TakeWhile(IsVersionLine).ToList();
-            var footerLines = lines.Skip(headerLines.Count + valueLines.Count).ToList();
 
             // find the variable or the appropriate insertion location
             var constExpression = "const string";
@@ -82,16 +78,22 @@ namespace Roslyn.Insertion
                 var variableLength = endIndex - startIndex;
                 return line.Substring(startIndex, variableLength);
             }
-            var sortedValueLines = valueLines.OrderBy(GetLineVariableName).ToList();
 
             // rather than get fancy, linearly search through the sorted list and update or add as appropriate
             // the file is small so this is fine
             bool valueUpdated = false;
             var newLine = $@"    const string {variableName} = ""{newVersion.ToFullVersion()}"";";
-            for (int lineIndex = 0; lineIndex < sortedValueLines.Count; lineIndex++)
+            for(int lineIndex = 0; lineIndex < lines.Count; lineIndex++)
             {
-                var line = sortedValueLines[lineIndex];
+                var line = lines[lineIndex];
+                if (!IsVersionLine(line))
+                {
+                    continue;
+                }
+
                 var currentVariableName = GetLineVariableName(line);
+
+                // The lines are already sorted in the file, so compare by name to see where the new line needs to go.
                 var comparison = String.Compare(currentVariableName, variableName, StringComparison.OrdinalIgnoreCase);
                 if (comparison == 0)
                 {
@@ -103,7 +105,7 @@ namespace Roslyn.Insertion
                     if (newVersion > oldVersion)
                     {
                         newLine = line.Substring(0, versionStart) + newVersion.ToFullVersion() + line.Substring(versionEnd);
-                        sortedValueLines[lineIndex] = newLine;
+                        lines[lineIndex] = newLine;
                     }
                     valueUpdated = true;
                     break;
@@ -111,7 +113,7 @@ namespace Roslyn.Insertion
                 else if (comparison > 0)
                 {
                     // we passed it, add it right before this line
-                    sortedValueLines.Insert(lineIndex, newLine);
+                    lines.Insert(lineIndex, newLine);
                     valueUpdated = true;
                     break;
                 }
@@ -120,11 +122,10 @@ namespace Roslyn.Insertion
             if (!valueUpdated)
             {
                 // value was last alphabetically, just add it to the end
-                sortedValueLines.Add(newLine);
+                lines.Add(newLine);
             }
 
-            var allLines = headerLines.Concat(sortedValueLines).Concat(footerLines);
-            _versionsTemplateContent = string.Join("\r\n", allLines);
+            _versionsTemplateContent = string.Join("\r\n", lines);
         }
 
         private static int IndexOfOrThrow(string str, char value, int startIndex = 0)
