@@ -86,7 +86,7 @@ namespace Roslyn.Insertion
             for(int lineIndex = 0; lineIndex < lines.Count; lineIndex++)
             {
                 var line = lines[lineIndex];
-                if (string.IsNullOrWhitespace(line) || !IsVersionLine(line))
+                if (string.IsNullOrWhiteSpace(line) || !IsVersionLine(line))
                 {
                     continue;
                 }
