@@ -16,7 +16,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.3" />
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.0.5" />
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.0" />
     <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="16.155.0-preview" />
     <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="16.155.0-preview" />
     <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="16.155.0-preview" />
