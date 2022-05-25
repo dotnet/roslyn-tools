@@ -5,16 +5,17 @@
     <merge from="dev15.9.x" to="release/dev16.9-vs-deps" />
     <merge from="release/dev16.9-vs-deps" to="release/dev16.11-vs-deps" />
     <merge from="release/dev16.11-vs-deps" to="release/dev17.0-vs-deps" />
+    <merge from="release/dev17.0-vs-deps" to="release/dev17.1" />
+    <merge from="release/dev17.1" to="release/dev17.2" />
 
     <!-- Roslyn last servicing branch (flowing into current branch) -->
-    <merge from="release/dev17.0-vs-deps" to="release/dev17.1" />
-
-    <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
+    <merge from="release/dev17.2" to="release/dev17.3" />
 
     <!-- Roslyn release branches (flowing between releases) -->
-    <merge from="release/dev17.1" to="release/dev17.2" />
-    <merge from="release/dev17.2" to="release/dev17.3" />
     <merge from="release/dev17.3" to="main" />
+
+    <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
+    <merge from="main" to="main-vs-deps" />
 
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/list-patterns" owners="333fred,jcouv" frequency="weekly" />
