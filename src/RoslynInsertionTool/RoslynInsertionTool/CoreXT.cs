@@ -29,7 +29,8 @@ namespace Roslyn.Insertion
 
         private const string DefaultConfigPath = ".corext/Configs/default.config";
         private const string ComponentsJsonPath = ".corext/Configs/components.json";
-        private const string PackagePropsPath = "Packages.props";
+        private const string PackagePropsPath = "Directory.Packages.props";
+        private const string LegacyPackagePropsPath = "Packages.props";
 
         private readonly string _defaultConfigOriginal;
 
@@ -136,10 +137,11 @@ namespace Roslyn.Insertion
 
         private static XAttribute? GetVersionAttributeInPropsFileOpt(XDocument document, PackageInfo packageInfo)
         {
+            // Support both the existing tags - "PackageVersion" and "Include" as well the legacy tags "PackageReference" and "Update" so we could still update servicing branches.
             return document?.Root
                 .Elements().Where(e => string.Equals(e.Name.LocalName, "ItemGroup"))
-                .Elements().Where(e => string.Equals(e.Name.LocalName, "PackageReference"))
-                .Where(p => p.Attribute("Update")?.Value == packageInfo.PackageName)
+                .Elements().Where(e => string.Equals(e.Name.LocalName, "PackageVersion") || string.Equals(e.Name.LocalName, "PackageReference"))
+                .Where(p => p.Attribute("Include")?.Value == packageInfo.PackageName || p.Attribute("Update")?.Value == packageInfo.PackageName)
                 .Select(x => x.Attribute("Version")).SingleOrDefault();
         }
 
@@ -358,7 +360,19 @@ namespace Roslyn.Insertion
         {
             var versionDescriptor = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
 
-            await ProcessPropsPath(PackagePropsPath, versionDescriptor);
+            var packagePropsItem = await gitClient.GetItemsAsync(RoslynInsertionTool.VSRepoId,
+                   scopePath: PackagePropsPath,
+                   recursionLevel: VersionControlRecursionType.Full,
+                   download: true,
+                   versionDescriptor: versionDescriptor);
+
+            var packagePropsFile = PackagePropsPath;
+            if (!packagePropsItem.Any())
+            {
+                packagePropsFile = LegacyPackagePropsPath;
+            }
+
+            await ProcessPropsPath(packagePropsFile, versionDescriptor);
 
             if (PackagePropFileToDocumentMap.Any())
             {
@@ -426,13 +440,20 @@ namespace Roslyn.Insertion
         {
             try
             {
+                // "PackageReference" and "Update" tags are the legacy nomenclature that we still need to support for servicing branches.
                 var packageRefs = document.Root
                     .Elements().Where(e => string.Equals(e.Name.LocalName, "ItemGroup"))
-                    .Elements().Where(e => string.Equals(e.Name.LocalName, "PackageReference"));
+                    .Elements().Where(e => string.Equals(e.Name.LocalName, "PackageVersion") || string.Equals(e.Name.LocalName, "PackageReference"));
 
                 foreach (var packageRef in packageRefs)
                 {
-                    var name = packageRef.Attribute("Update")?.Value;
+                    var name = packageRef.Attribute("Include")?.Value;
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        // Try the legacy nomenclature
+                        name = packageRef.Attribute("Update")?.Value;
+                    }
+
                     if (!string.IsNullOrEmpty(name))
                     {
                         if (!PackageToPropFilesMap.ContainsKey(name!))
