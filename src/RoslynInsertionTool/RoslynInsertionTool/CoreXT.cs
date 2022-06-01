@@ -29,7 +29,7 @@ namespace Roslyn.Insertion
 
         private const string DefaultConfigPath = ".corext/Configs/default.config";
         private const string ComponentsJsonPath = ".corext/Configs/components.json";
-        private const string PackagePropsPath = "Packages.props";
+        private const string PackagePropsPath = "Directory.Packages.props";
 
         private readonly string _defaultConfigOriginal;
 
@@ -138,8 +138,8 @@ namespace Roslyn.Insertion
         {
             return document?.Root
                 .Elements().Where(e => string.Equals(e.Name.LocalName, "ItemGroup"))
-                .Elements().Where(e => string.Equals(e.Name.LocalName, "PackageReference"))
-                .Where(p => p.Attribute("Update")?.Value == packageInfo.PackageName)
+                .Elements().Where(e => string.Equals(e.Name.LocalName, "PackageVersion"))
+                .Where(p => p.Attribute("Include")?.Value == packageInfo.PackageName)
                 .Select(x => x.Attribute("Version")).SingleOrDefault();
         }
 
@@ -428,11 +428,11 @@ namespace Roslyn.Insertion
             {
                 var packageRefs = document.Root
                     .Elements().Where(e => string.Equals(e.Name.LocalName, "ItemGroup"))
-                    .Elements().Where(e => string.Equals(e.Name.LocalName, "PackageReference"));
+                    .Elements().Where(e => string.Equals(e.Name.LocalName, "PackageVersion"));
 
                 foreach (var packageRef in packageRefs)
                 {
-                    var name = packageRef.Attribute("Update")?.Value;
+                    var name = packageRef.Attribute("Include")?.Value;
                     if (!string.IsNullOrEmpty(name))
                     {
                         if (!PackageToPropFilesMap.ContainsKey(name!))
