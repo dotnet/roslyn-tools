@@ -354,7 +354,7 @@ namespace Roslyn.Insertion
             return pair;
         }
 
-        private static Task<bool> IsFilePresent(
+        private static async Task<bool> IsFilePresent(
             GitHttpClient gitClient,
             GitVersionDescriptor versionDescriptor,
             string filePath)
