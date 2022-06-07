@@ -354,7 +354,7 @@ namespace Roslyn.Insertion
             return pair;
         }
 
-        private static async Task<bool> IsFilePresent(
+        private static async Task<bool> IsFilePresentAsync(
             GitHttpClient gitClient,
             GitVersionDescriptor versionDescriptor,
             string filePath)
@@ -380,7 +380,7 @@ namespace Roslyn.Insertion
         {
             var versionDescriptor = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
 
-            var packagePropsFile = IsFilePresent(gitClient, versionDescriptor, PackagePropsPath)
+            var packagePropsFile = await IsFilePresentAsync(gitClient, versionDescriptor, PackagePropsPath)
                 ? PackagePropsPath
                 : LegacyPackagePropsPath;
 
