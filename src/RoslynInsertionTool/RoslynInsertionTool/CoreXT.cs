@@ -354,23 +354,35 @@ namespace Roslyn.Insertion
             return pair;
         }
 
+        private static Task<bool> IsFilePresent(
+            GitHttpClient gitClient,
+            GitVersionDescriptor versionDescriptor,
+            string filePath)
+        {
+            try
+            {
+                var packagePropsItem = await gitClient.GetItemsAsync(RoslynInsertionTool.VSRepoId,
+                    scopePath: filePath,
+                    recursionLevel: VersionControlRecursionType.Full,
+                    download: true,
+                    versionDescriptor: versionDescriptor);
+                return packagePropsItem.Any();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private static async Task PopulatePackagePropFileMaps(
             GitHttpClient gitClient,
             string commitId)
         {
             var versionDescriptor = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
 
-            var packagePropsItem = await gitClient.GetItemsAsync(RoslynInsertionTool.VSRepoId,
-                   scopePath: PackagePropsPath,
-                   recursionLevel: VersionControlRecursionType.Full,
-                   download: true,
-                   versionDescriptor: versionDescriptor);
-
-            var packagePropsFile = PackagePropsPath;
-            if (!packagePropsItem.Any())
-            {
-                packagePropsFile = LegacyPackagePropsPath;
-            }
+            var packagePropsFile = IsFilePresent(gitClient, versionDescriptor, PackagePropsPath)
+                ? PackagePropsPath
+                : LegacyPackagePropsPath;
 
             await ProcessPropsPath(packagePropsFile, versionDescriptor);
 
