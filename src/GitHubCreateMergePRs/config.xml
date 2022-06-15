@@ -11,11 +11,16 @@
     <!-- Roslyn last servicing branch (flowing into current branch) -->
     <merge from="release/dev17.2" to="release/dev17.3" />
 
-    <!-- Roslyn release branches (flowing between releases) -->
+    <!-- Roslyn branches (flowing between releases) -->
     <merge from="release/dev17.3" to="main" />
+    <merge from="main" to="release/dev17.4" />
 
     <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
     <merge from="main" to="main-vs-deps" />
+    <merge from="release/dev17.4" to="release/dev17.4-vs-deps" />
+      
+    <!-- Roslyn vs-deps branches (flowing between releases) -->
+    <merge from="main-vs-deps" to="release/dev17.4-vs-deps" />
 
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/list-patterns" owners="333fred,jcouv" frequency="weekly" />
