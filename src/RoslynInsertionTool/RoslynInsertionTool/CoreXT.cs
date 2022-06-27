@@ -221,14 +221,14 @@ namespace Roslyn.Insertion
                 return false;
             }
 
-            var componentJSON = componentDocument["Components"][componentName];
+            var componentJSON = componentDocument["Components"]?[componentName];
             if (componentJSON == null)
             {
                 return false;
             }
 
-            var componentFilename = (string)componentJSON["fileName"];
-            var componentUri = new Uri((string)componentJSON["url"]);
+            var componentFilename = (string?)componentJSON["fileName"];
+            var componentUri = new Uri((string?)componentJSON["url"]);
             var version = componentJSON.Value<string>("version"); // might not be present
             component = new Component(componentName, componentFilename, componentUri, version);
             return true;
@@ -238,26 +238,33 @@ namespace Roslyn.Insertion
         {
             var (_, componentDocument) = GetJsonDocumentForComponent(component.Name);
 
-            if (componentDocument != null)
+            if (componentDocument is null)
             {
-                var componentJSON = (JObject)componentDocument["Components"][component.Name];
-                componentJSON["fileName"] = component.Filename;
-                componentJSON["url"] = component.Uri.ToString();
-                if (component.Version == null)
-                {
-                    // ensure no 'version' property is set in the JSON
-                    var versionProperty = componentJSON.Property("version");
-                    versionProperty?.Remove();
-                }
-                else
-                {
-                    // otherwise set or update the version
-                    componentJSON["version"] = component.Version;
-                }
-
-                string componentFilePath = ComponentToFileMap[component.Name];
-                dirtyComponentFiles.Add(componentFilePath);
+                return;
             }
+
+            var componentJSON = (JObject?)componentDocument["Components"]?[component.Name];
+            if (componentJSON is null)
+            {
+                return;
+            }
+
+            componentJSON["fileName"] = component.Filename;
+            componentJSON["url"] = component.Uri.ToString();
+            if (component.Version == null)
+            {
+                // ensure no 'version' property is set in the JSON
+                var versionProperty = componentJSON.Property("version");
+                versionProperty?.Remove();
+            }
+            else
+            {
+                // otherwise set or update the version
+                componentJSON["version"] = component.Version;
+            }
+
+            string componentFilePath = ComponentToFileMap[component.Name];
+            dirtyComponentFiles.Add(componentFilePath);
         }
 
         private static async Task PopulateComponentJsonMaps(
@@ -276,7 +283,7 @@ namespace Roslyn.Insertion
                 {
                     foreach (var import in imports)
                     {
-                        string subComponentFileName = (string)import;
+                        var subComponentFileName = (string?)import;
 
                         if (!string.IsNullOrEmpty(subComponentFileName))
                         {
@@ -298,11 +305,11 @@ namespace Roslyn.Insertion
         {
             if (jDocument != null && !string.IsNullOrEmpty(componentsJsonFileName))
             {
-                var jComponents = (JObject)jDocument["Components"];
+                var jComponents = (JObject?)jDocument["Components"];
 
                 if (jComponents != null)
                 {
-                    Dictionary<string, JToken> componentsMap = jComponents.ToObject<Dictionary<string, JToken>>();
+                    var componentsMap = jComponents.ToObject<Dictionary<string, JToken>>();
 
                     if (componentsMap != null && componentsMap.Any())
                     {
@@ -393,7 +400,7 @@ namespace Roslyn.Insertion
                 var importedPropPaths = parentPackagesDoc.Root.Elements().Where(e => string.Equals(e.Name.LocalName, "Import"))
                     .Select(e => e.Attributes("Project").FirstOrDefault()?.Value);
 
-                foreach(var propPath in importedPropPaths)
+                foreach (var propPath in importedPropPaths)
                 {
                     if (propPath == null) continue;
 
