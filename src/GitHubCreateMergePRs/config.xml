@@ -24,11 +24,7 @@
     <merge from="release/dev17.4" to="release/dev17.4-vs-deps" />
 
     <!-- Roslyn feature branches -->
-    <merge from="main" to="features/list-patterns" owners="333fred,jcouv" frequency="weekly" />
-    <merge from="main" to="features/required-members" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/semi-auto-props" owners="333fred" frequency="weekly" />
-    <merge from="main" to="features/RawStringLiterals" owners="CyrusNajmabadi" frequency="daily" />
-    <merge from="main" to="features/snappy/nodelay" owners="CyrusNajmabadi" frequency="weekly" />
     <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
     <merge from="main" to="features/DocumentOutline" owners="jmarolf,emilyanas2323" frequency="weekly" />
     <merge from="main" to="features/FixAllNamingViolation" owners="Cosifne" frequency="weekly" />
