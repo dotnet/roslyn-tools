@@ -28,6 +28,7 @@
     <merge from="main" to="features/editorconfig_lsp" owners="dibarbet,Danyboyyy" frequency="weekly" />
     <merge from="main" to="features/FixAllNamingViolation" owners="Cosifne" frequency="weekly" />
     <merge from="main" to="features/use-azure-build-machines" owners="jmarolf" />
+    <merge from="main" to="features/cache-artifacts" owners="jmarolf" />
   </repo>
 
   <repo owner="dotnet" name="roslyn-sdk">
