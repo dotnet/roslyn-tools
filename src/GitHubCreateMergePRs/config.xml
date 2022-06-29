@@ -26,7 +26,7 @@
     <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
     <merge from="main" to="features/DocumentOutline" owners="jmarolf,emilyanas2323" frequency="weekly" />
     <merge from="main" to="features/FixAllNamingViolation" owners="Cosifne" frequency="weekly" />
-    <merge from="main" to="features/use-azure-build-machines" owners="jmarolf" frequency="daily" />
+    <merge from="main" to="features/use-azure-build-machines" owners="jmarolf" />
   </repo>
 
   <repo owner="dotnet" name="roslyn-sdk">
