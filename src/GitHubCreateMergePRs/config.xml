@@ -63,7 +63,6 @@
     <merge from="release/dev17.2" to="release/dev17.3" />
     <merge from="release/dev17.3" to="release/dev17.4" />
 
-
     <!-- regular branch flow -->
     <merge from="main" to="release/dev17.4" />
     <merge from="feature/auto-widen" to="feature/erased-unions" />
