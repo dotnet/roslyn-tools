@@ -20,6 +20,7 @@ internal static class PRTaggerCommand
     {
         var command = new Command("pr-tagger", "Tags PRs inserted in a given VS build.")
         {
+            VSBuild,
             CommitId,
             GitHubUsername,
             GitHubPassword,

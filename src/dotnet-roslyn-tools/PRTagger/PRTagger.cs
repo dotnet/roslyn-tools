@@ -61,8 +61,8 @@ internal class PRTagger
         }
 
         using var dncengConnection = new AzDOConnection(settings.DncEngAzureDevOpsBaseUri, "internal", settings.DncEngAzureDevOpsToken);
-        var previousRoslynCommitSha = await TryGetRoslynCommitShaFromBuildAsync(dncengConnection, previousRoslynBuild, logger).ConfigureAwait(false);
-        var currentRoslynCommitSha = await TryGetRoslynCommitShaFromBuildAsync(dncengConnection, currentRoslynBuild, logger).ConfigureAwait(false);
+        var previousRoslynCommitSha = await TryGetRoslynCommitShaFromBuildAsync(dncengConnection, previousRoslynBuild).ConfigureAwait(false);
+        var currentRoslynCommitSha = await TryGetRoslynCommitShaFromBuildAsync(dncengConnection, currentRoslynBuild).ConfigureAwait(false);
 
         if (previousRoslynCommitSha is null || currentRoslynCommitSha is null)
         {
