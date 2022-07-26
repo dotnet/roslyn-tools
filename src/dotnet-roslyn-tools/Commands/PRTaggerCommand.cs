@@ -6,25 +6,29 @@ namespace Microsoft.RoslynTools.Commands;
 
 using System.CommandLine.Invocation;
 using System.CommandLine;
+using Microsoft.RoslynTools.Authentication;
 
 internal static class PRTaggerCommand
 {
     private static readonly PRTaggerCommandDefaultHandler s_prTaggerCommandHandler = new();
 
-    internal static readonly Option<string> VSBuild = new(new[] { "--build", "-b" }, "VS build number") { IsRequired = true };
-    internal static readonly Option<string> CommitId = new(new[] { "--commit", "-c" }, "VS build commit") { IsRequired = true };
-    internal static readonly Option<string> GitHubUsername = new(new[] { "--username", "-u" }, "GitHub username") { IsRequired = true };
-    internal static readonly Option<string> GitHubPassword = new(new[] { "--password", "-p" }, "GitHub password") { IsRequired = true };
+    private static readonly Option<string> ProductName = new(new[] { "--product-name", "-p" }, "Name of product (e.g. 'roslyn' or 'razor')") { IsRequired = true };
+    private static readonly Option<string> VSBuild = new(new[] { "--build", "-b" }, "VS build number") { IsRequired = true };
+    private static readonly Option<string> CommitId = new(new[] { "--commit", "-c" }, "VS build commit") { IsRequired = true };
+    private static readonly Option<string> GitHubToken = new(new[] { "--github-token" }, "Token used to authenticate GitHub.") { IsRequired = true };
+    private static readonly Option<string> DevDivAzDOToken = new(new[] { "--devdiv-azdo-token" }, "Token used to authenticate to DevDiv Azure DevOps.") { IsRequired = true };
+    private static readonly Option<string> DncEngAzDOToken = new(new[] { "--dnceng-azdo-token" }, "Token used to authenticate to DncEng Azure DevOps.") { IsRequired = true };
 
     public static Symbol GetCommand()
     {
         var command = new Command("pr-tagger", "Tags PRs inserted in a given VS build.")
         {
+            ProductName,
             VSBuild,
             CommitId,
-            GitHubUsername,
-            GitHubPassword,
-            CommonOptions.DevDivAzDOTokenOption,
+            GitHubToken,
+            DevDivAzDOToken,
+            DncEngAzDOToken,
         };
 
         command.Handler = s_prTaggerCommandHandler;
@@ -36,14 +40,18 @@ internal static class PRTaggerCommand
         public async Task<int> InvokeAsync(InvocationContext context)
         {
             var logger = context.SetupLogging();
+            var productName = context.ParseResult.GetValueForOption(ProductName)!;
             var vsBuild = context.ParseResult.GetValueForOption(VSBuild)!;
             var vsCommitSha = context.ParseResult.GetValueForOption(CommitId)!;
-            var gitHubUsername = context.ParseResult.GetValueForOption(GitHubUsername)!;
-            var gitHubPassword = context.ParseResult.GetValueForOption(GitHubPassword)!;
-            var settings = context.ParseResult.LoadSettings(logger);
+            var settings = new RoslynToolsSettings
+            {
+                GitHubToken = context.ParseResult.GetValueForOption(GitHubToken)!,
+                DevDivAzureDevOpsToken = context.ParseResult.GetValueForOption(DevDivAzDOToken)!,
+                DncEngAzureDevOpsToken = context.ParseResult.GetValueForOption(DncEngAzDOToken)!
+            };
 
             return await PRTagger.PRTagger.TagPRs(
-                vsBuild, vsCommitSha, settings, gitHubUsername, gitHubPassword, logger, CancellationToken.None).ConfigureAwait(false);
+                productName, vsBuild, vsCommitSha, settings, logger, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

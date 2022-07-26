@@ -10,6 +10,14 @@ using System.Text;
 
 internal class PRFinder
 {
+    /// <summary>
+    /// Finds the PRs merged between two given commits.
+    /// </summary>
+    /// <param name="previousCommitSha">Previous commit SHA.</param>
+    /// <param name="currentCommitSha">Current commit SHA.</param>
+    /// <param name="logger">Logger where result will be output.</param>
+    /// <param name="builder">Optional if the caller wants result as a string.</param>
+    /// <returns></returns>
     public static int FindPRs(string previousCommitSha, string currentCommitSha, ILogger logger, StringBuilder? builder = null)
     {
         using var repo = new Repository(Environment.CurrentDirectory);

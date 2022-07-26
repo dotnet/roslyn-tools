@@ -11,25 +11,37 @@ using Microsoft.RoslynTools.Products;
 using Microsoft.RoslynTools.Utilities;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Text;
 
 internal class PRTagger
 {
     private static readonly Roslyn s_roslynInfo = new();
+    private static readonly Razor s_razorInfo = new();
 
-    // TO-DO: Catch potential exceptions
+    /// <summary>
+    /// Creates a GitHub issue containing the PRs inserted into a given VS build.
+    /// </summary>
+    /// <param name="productName">Name of product (e.g. 'Roslyn' or 'Razor')</param>
+    /// <param name="vsBuild">VS build number</param>
+    /// <param name="vsCommitSha">Commit SHA for VS build</param>
+    /// <param name="settings">Authentication tokens</param>
+    /// <param name="logger"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Exit code indicating whether issue was successfully created.</returns>
     public static async Task<int> TagPRs(
+        string productName,
         string vsBuild,
         string vsCommitSha,
         RoslynToolsSettings settings,
-        string gitHubUsername,
-        string gitHubPassword,
         ILogger logger,
         CancellationToken cancellationToken)
     {
-        // Set up connection to DevDiv AzDo and get VS repo
         using var devdivConnection = new AzDOConnection(settings.DevDivAzureDevOpsBaseUri, "DevDiv", settings.DevDivAzureDevOpsToken);
+        using var dncengConnection = new AzDOConnection(settings.DncEngAzureDevOpsBaseUri, "internal", settings.DncEngAzureDevOpsToken);
+
+        // Retrieve VS repo
         var vsRepository = await GetVSRepositoryAsync(devdivConnection.GitClient);
 
         // Find previous VS commit SHA
@@ -37,47 +49,61 @@ internal class PRTagger
             vsCommitSha, vsRepository.Id, cancellationToken: cancellationToken).ConfigureAwait(false);
         var previousVsCommitSha = vsCommit.Parents.First();
 
-        // Get associated Roslyn build for current and previous VS commit SHAs
-        var currentRoslynBuild = await TryGetRoslynBuildNumberForReleaseAsync(vsCommitSha, devdivConnection).ConfigureAwait(false);
-        var previousRoslynBuild = await TryGetRoslynBuildNumberForReleaseAsync(previousVsCommitSha, devdivConnection).ConfigureAwait(false);
-
-        if (currentRoslynBuild is null)
+        // Figure out which repo we're working with
+        if (!TryGetProductInfo(productName, out var productInfo))
         {
-            logger.LogError($"Roslyn build not found for VS commit SHA {currentRoslynBuild}");
+            logger.LogError($"Product info not found for {productName}.");
             return -1;
         }
 
-        if (previousRoslynBuild is null)
+        // Get associated product build for current and previous VS commit SHAs
+        var currentBuild = await TryGetBuildNumberForReleaseAsync(productInfo, vsCommitSha, devdivConnection).ConfigureAwait(false);
+        var previousBuild = await TryGetBuildNumberForReleaseAsync(productInfo, previousVsCommitSha, devdivConnection).ConfigureAwait(false);
+
+        if (currentBuild is null)
         {
-            logger.LogError($"Roslyn build not found for VS commit SHA {previousRoslynBuild}");
+            logger.LogError($"{productInfo.Name} build not found for VS commit SHA {currentBuild}.");
+            return -1;
+        }
+
+        if (previousBuild is null)
+        {
+            logger.LogError($"{productInfo.Name} build not found for VS commit SHA {previousBuild}.");
             return -1;
         }
 
         // If builds are the same, there are no PRs to tag
-        if (currentRoslynBuild.Equals(previousRoslynBuild))
+        if (currentBuild.Equals(previousBuild))
         {
-            logger.LogInformation($"No PRs found to tag; Roslyn build numbers are equal: {currentRoslynBuild}");
+            logger.LogInformation($"No PRs found to tag; {productInfo.Name} build numbers are equal: {currentBuild}.");
             return 0;
         }
 
-        using var dncengConnection = new AzDOConnection(settings.DncEngAzureDevOpsBaseUri, "internal", settings.DncEngAzureDevOpsToken);
-        var previousRoslynCommitSha = await TryGetRoslynCommitShaFromBuildAsync(dncengConnection, previousRoslynBuild).ConfigureAwait(false);
-        var currentRoslynCommitSha = await TryGetRoslynCommitShaFromBuildAsync(dncengConnection, currentRoslynBuild).ConfigureAwait(false);
+        // Get commit SHAs for product builds
+        var previousProductCommitSha = await TryGetProductCommitShaFromBuildAsync(productInfo, dncengConnection, previousBuild).ConfigureAwait(false);
+        var currentProductCommitSha = await TryGetProductCommitShaFromBuildAsync(productInfo, dncengConnection, currentBuild).ConfigureAwait(false);
 
-        if (previousRoslynCommitSha is null || currentRoslynCommitSha is null)
+        if (previousProductCommitSha is null || currentProductCommitSha is null)
         {
-            logger.LogError($"Error retrieving Roslyn commit SHAs.");
+            logger.LogError($"Error retrieving {productInfo.Name} commit SHAs.");
             return -1;
         }
 
+        logger.LogInformation($"Finding PRs between {productInfo.Name} commit SHAs {previousProductCommitSha} and {currentProductCommitSha}.");
+
+        // Find PRs between product commit SHAs
         var prDescription = new StringBuilder();
-        var isSuccess = PRFinder.PRFinder.FindPRs(previousRoslynCommitSha, currentRoslynCommitSha, logger, prDescription);
+        var isSuccess = PRFinder.PRFinder.FindPRs(previousProductCommitSha, currentProductCommitSha, logger, prDescription);
         if (isSuccess != 0)
         {
-            return -1;
+            return isSuccess;
         }
-        var issueCreated = await TryCreateIssue(vsBuild, prDescription.ToString(), gitHubUsername, gitHubPassword, logger);
-        return issueCreated ? 0 : 1;
+
+        logger.LogInformation($"Creating issue...");
+
+        // Create issue
+        var issueCreated = await TryCreateIssue(productInfo, vsBuild, prDescription.ToString(), settings.GitHubToken, logger);
+        return issueCreated ? 0 : -1;
     }
 
     private static async Task<GitRepository> GetVSRepositoryAsync(GitHttpClient gitClient)
@@ -85,12 +111,30 @@ internal class PRTagger
         return await gitClient.GetRepositoryAsync("DevDiv", "VS");
     }
 
-    private static async Task<string?> TryGetRoslynBuildNumberForReleaseAsync(
+    private static bool TryGetProductInfo(string productName, [NotNullWhen(true)] out IProduct? productInfo)
+    {
+        if (productName.Equals(s_roslynInfo.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            productInfo = s_roslynInfo;
+            return true;
+        }
+        else if (productName.Equals(s_razorInfo.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            productInfo = s_razorInfo;
+            return true;
+        }
+
+        productInfo = null;
+        return false;
+    }
+
+    private static async Task<string?> TryGetBuildNumberForReleaseAsync(
+        IProduct productInfo,
         string vsCommitSha,
         AzDOConnection vsConnection)
     {
         var url = await VisualStudioRepository.GetUrlFromComponentJsonFileAsync(
-            vsCommitSha, GitVersionType.Commit, vsConnection, s_roslynInfo.ComponentJsonFileName, s_roslynInfo.ComponentName);
+            vsCommitSha, GitVersionType.Commit, vsConnection, productInfo.ComponentJsonFileName, productInfo.ComponentName);
         if (url is null)
         {
             return null;
@@ -107,26 +151,22 @@ internal class PRTagger
         }
     }
 
-    private static async Task<string?> TryGetRoslynCommitShaFromBuildAsync(
+    private static async Task<string?> TryGetProductCommitShaFromBuildAsync(
+        IProduct productInfo,
         AzDOConnection buildConnection,
         string buildNumber)
     {
         var build = (await buildConnection.TryGetBuildsAsync(
-            s_roslynInfo.GetBuildPipelineName(buildConnection.BuildProjectName)!, buildNumber))?.SingleOrDefault();
+            productInfo.GetBuildPipelineName(buildConnection.BuildProjectName)!, buildNumber))?.SingleOrDefault();
 
-        if (build == null)
-        {
-            return null;
-        }
-
-        return build.SourceVersion;
+        return build?.SourceVersion;
     }
 
     private async static Task<bool> TryCreateIssue(
+        IProduct product,
         string vsBuildNumber,
         string issueBody,
-        string gitHubUsername,
-        string gitHubPassword,
+        string gitHubToken,
         ILogger logger)
     {
         var client = new HttpClient
@@ -134,7 +174,7 @@ internal class PRTagger
             BaseAddress = new("https://api.github.com/")
         };
 
-        var authArray = Encoding.ASCII.GetBytes($"{gitHubUsername}:{gitHubPassword}");
+        var authArray = Encoding.ASCII.GetBytes($"{gitHubToken}");
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
             "Basic",
             Convert.ToBase64String(authArray));
@@ -142,17 +182,15 @@ internal class PRTagger
             "user-agent",
             "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2;)");
 
-        // Needed to call the check-runs endpoint
-        client.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/vnd.github.antiope-preview+json"));
+        var repoName = product.RepoBaseUrl.Split('/').Last();
 
-        // TO-DO: Generalize for other repos
-        // https://developer.github.com/v3/pulls/#create-a-pull-request
-        var response = await client.PostAsyncAsJson($"repos/dotnet/roslyn/issues", JsonConvert.SerializeObject(
+        // https://docs.github.com/en/rest/issues/issues#create-an-issue
+        var response = await client.PostAsyncAsJson($"repos/dotnet/{repoName}/issues", JsonConvert.SerializeObject(
             new
             {
                 title = $"[Automated] PRs inserted in VS build {vsBuildNumber}",
                 body = issueBody,
+                labels = new string[] { "vs-insertion" }
             }));
 
         if (response.IsSuccessStatusCode)
