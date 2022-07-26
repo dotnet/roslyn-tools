@@ -2,13 +2,15 @@
 // The.NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
+namespace Microsoft.RoslynTools.PRFinder;
+
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
-namespace Microsoft.RoslynTools.PRFinder;
+using System.Text;
 
 internal class PRFinder
 {
-    public static int FindPRs(string previousCommitSha, string currentCommitSha, ILogger logger)
+    public static int FindPRs(string previousCommitSha, string currentCommitSha, ILogger logger, StringBuilder? builder = null)
     {
         using var repo = new Repository(Environment.CurrentDirectory);
 
@@ -82,7 +84,7 @@ internal class PRFinder
 
         logger.LogDebug($"### Changes from [{previousCommitSha}]({host.GetCommitUrl(repoUrl, previousCommitSha)}) to [{currentCommitSha}]({host.GetCommitUrl(repoUrl, currentCommitSha)}):");
 
-        logger.LogInformation($"[View Complete Diff of Changes]({host.GetDiffUrl(repoUrl, previousCommitSha, currentCommitSha)})");
+        RecordLine($"[View Complete Diff of Changes]({host.GetDiffUrl(repoUrl, previousCommitSha, currentCommitSha)})", logger, builder);
 
         var commitHeaderAdded = false;
         var mergePRHeaderAdded = false;
@@ -107,7 +109,7 @@ internal class PRFinder
                 if (commitHeaderAdded && !mergePRHeaderAdded)
                 {
                     mergePRHeaderAdded = true;
-                    logger.LogInformation("### Merged PRs:");
+                    RecordLine("### Merged PRs:", logger, builder);
                 }
 
                 mergePRFound = true;
@@ -122,7 +124,7 @@ internal class PRFinder
                 if (!commitHeaderAdded)
                 {
                     commitHeaderAdded = true;
-                    logger.LogInformation("### Commits since last PR:");
+                    RecordLine("### Commits since last PR:", logger, builder);
                 }
 
                 var fullSHA = commit.Sha;
@@ -134,9 +136,15 @@ internal class PRFinder
                 prLink = $@"- [{comment}]({host.GetCommitUrl(repoUrl, fullSHA)})";
             }
 
-            logger.LogInformation(prLink);
+            RecordLine(prLink, logger, builder);
         }
 
         return 0;
+    }
+
+    private static void RecordLine(string line, ILogger logger, StringBuilder? builder)
+    {
+        logger.LogInformation(line);
+        builder?.AppendLine(line);
     }
 }
