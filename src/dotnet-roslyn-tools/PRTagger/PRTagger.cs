@@ -193,15 +193,13 @@ internal class PRTagger
                 labels = new string[] { "vs-insertion" }
             }));
 
-        if (response.IsSuccessStatusCode)
-        {
-            logger.LogInformation("Successfully created issue.");
-            return true;
-        }
-        else
+        if (!response.IsSuccessStatusCode)
         {
             logger.LogInformation($"Issue creation failed with status code: {response.StatusCode}");
             return false;
         }
+
+        logger.LogInformation("Successfully created issue.");
+        return true;
     }
 }
