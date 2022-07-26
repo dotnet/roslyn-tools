@@ -151,7 +151,7 @@ internal class PRTagger
         var response = await client.PostAsyncAsJson($"repos/dotnet/roslyn/issues", JsonConvert.SerializeObject(
             new
             {
-                title = $"[Automated] PRs in VS build {vsBuildNumber}",
+                title = $"[Automated] PRs inserted in VS build {vsBuildNumber}",
                 body = issueBody,
             }));
 
