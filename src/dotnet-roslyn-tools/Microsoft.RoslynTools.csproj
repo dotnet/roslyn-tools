@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
@@ -27,7 +27,6 @@
     <PackageReference Include="LibGit2Sharp" Version="0.27.0-preview-0175" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="16.201.0-preview" />
-    <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="16.201.0-preview" />
     <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="16.201.0-preview" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NuGet.Protocol" Version="6.1.0" />
