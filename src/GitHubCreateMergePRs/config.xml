@@ -18,6 +18,7 @@
     <merge from="release/dev17.3" to="release/dev17.4" />
     <merge from="release/dev17.3-vs-deps" to="release/dev17.4-vs-deps" />
     <merge from="release/dev17.4" to="main" />
+    <merge from="release/dev17.4-vs-deps" to="main-vs-deps" />
 
     <!-- Roslyn branches (from non-vs-deps to vs-deps) -->
     <merge from="release/dev17.3" to="release/dev17.3-vs-deps" />
