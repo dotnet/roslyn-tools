@@ -195,7 +195,7 @@ internal class PRTagger
 
         if (!response.IsSuccessStatusCode)
         {
-            logger.LogInformation($"Issue creation failed with status code: {response.StatusCode}");
+            logger.LogError($"Issue creation failed with status code: {response.StatusCode}");
             return false;
         }
 
