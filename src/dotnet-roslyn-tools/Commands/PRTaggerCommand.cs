@@ -12,9 +12,9 @@ internal static class PRTaggerCommand
 {
     private static readonly PRTaggerCommandDefaultHandler s_prTaggerCommandHandler = new();
 
-    private static readonly Option<string> ProductName = new Option<string>(new[] { "--product-name", "-p" }, "Name of product (e.g. 'roslyn' or 'razor')") { IsRequired = true }
+    private static readonly Option<string> ProductName = new Option<string>(new[] { "--product-name", "-n" }, "Name of product (e.g. 'roslyn' or 'razor')") { IsRequired = true }
         .FromAmong("roslyn", "razor");
-    private static readonly Option<string> ProductRepoPath = new(new[] { "--repo-path" }, "Path to product repo") { IsRequired = true };
+    private static readonly Option<string> ProductRepoPath = new(new[] { "--repo-path", "-p" }, "Path to product repo") { IsRequired = true };
     private static readonly Option<string> VSBuild = new(new[] { "--build", "-b" }, "VS build number") { IsRequired = true };
     private static readonly Option<string> CommitId = new(new[] { "--commit", "-c" }, "VS build commit") { IsRequired = true };
 
