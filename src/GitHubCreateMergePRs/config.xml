@@ -31,6 +31,7 @@
     <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
     <merge from="main" to="features/DocumentOutline" owners="jmarolf,emilyanas2323" frequency="weekly" />
     <merge from="main" to="features/editorconfig_lsp" owners="dibarbet,Danyboyyy" frequency="weekly" />
+    <merge from="main" to="features/ConvertToRecord" owners="Soreloser2,jasonmalinowski" frequency="weekly" />
     <merge from="main" to="features/FixAllNamingViolation" owners="Cosifne" frequency="weekly" />
   </repo>
 
