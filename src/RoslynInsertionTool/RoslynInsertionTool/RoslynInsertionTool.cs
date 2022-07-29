@@ -482,6 +482,7 @@ namespace Roslyn.Insertion
                         }
 
                         await QueueVSBuildPolicy(pullRequest, "Request Perf DDRITs");
+                        await QueueVSBuildPolicy(pullRequest, "Insertion Symbol Check");
                     }
                     catch (Exception ex)
                     {
