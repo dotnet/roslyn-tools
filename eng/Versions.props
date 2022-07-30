@@ -21,7 +21,7 @@
     <MicrosoftVisualStudioExtensibilityTestingSupportFilesVersion>1.1.0</MicrosoftVisualStudioExtensibilityTestingSupportFilesVersion>
     <MicrosoftVisualStudioSDKVersion>17.0.0-previews-1-31318-291</MicrosoftVisualStudioSDKVersion>
     <!-- Libs -->
-    <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
+    <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
     <MoqVersion>4.5.21</MoqVersion>
     <NuGetVersioningVersion>5.11.0</NuGetVersioningVersion>
     <MicrosoftAzureKeyVaultVersion>3.0.0</MicrosoftAzureKeyVaultVersion>
