@@ -1,5 +1,5 @@
 <config>
-  <repo owner="dotnet" name="roslyn" mergeOwners="allisonchou">
+  <repo owner="dotnet" name="roslyn" mergeOwners="dibarbet">
     <!--
       VS versions under servicing:
         VS 2019: https://docs.microsoft.com/en-us/lifecycle/products/visual-studio-2019
@@ -31,6 +31,7 @@
     <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
     <merge from="main" to="features/DocumentOutline" owners="jmarolf,emilyanas2323" frequency="weekly" />
     <merge from="main" to="features/editorconfig_lsp" owners="dibarbet,Danyboyyy" frequency="weekly" />
+    <merge from="main" to="features/ConvertToRecord" owners="Soreloser2,jasonmalinowski" frequency="weekly" />
     <merge from="main" to="features/FixAllNamingViolation" owners="Cosifne" frequency="weekly" />
   </repo>
 
@@ -46,6 +47,7 @@
     <merge from="dev17.1.x" to="main" />
     <merge from="dev17.2.x" to="main" />
     <merge from="dev17.3.x" to="main" />
+    <merge from="dev17.4-preview1" to="main" />
   </repo>
 
   <repo owner="dotnet" name="templates">
