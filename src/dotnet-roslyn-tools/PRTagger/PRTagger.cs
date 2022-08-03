@@ -5,7 +5,6 @@
 namespace Microsoft.RoslynTools.PRTagger;
 
 using LibGit2Sharp;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.RoslynTools.Authentication;
 using Microsoft.RoslynTools.Extensions;
@@ -35,7 +34,6 @@ internal class PRTagger
     /// <returns>Exit code indicating whether issue was successfully created.</returns>
     public static async Task<int> TagPRs(
         string productName,
-        string productRepoPath,
         string vsBuild,
         string vsCommitSha,
         RoslynToolsSettings settings,

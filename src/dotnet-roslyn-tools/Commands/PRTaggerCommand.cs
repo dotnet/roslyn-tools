@@ -22,7 +22,6 @@ internal static class PRTaggerCommand
         var command = new Command("pr-tagger", "Tags PRs inserted in a given VS build.")
         {
             ProductName,
-            ProductRepoPath,
             VSBuild,
             CommitId,
             CommonOptions.GitHubTokenOption,
@@ -40,7 +39,6 @@ internal static class PRTaggerCommand
         {
             var logger = context.SetupLogging();
             var productName = context.ParseResult.GetValueForOption(ProductName)!;
-            var productRepoPath = context.ParseResult.GetValueForOption(ProductRepoPath)!;
             var vsBuild = context.ParseResult.GetValueForOption(VSBuild)!;
             var vsCommitSha = context.ParseResult.GetValueForOption(CommitId)!;
             var settings = context.ParseResult.LoadSettings(logger);
@@ -54,7 +52,7 @@ internal static class PRTaggerCommand
             }
 
             return await PRTagger.PRTagger.TagPRs(
-                productName, productRepoPath, vsBuild, vsCommitSha, settings, logger, CancellationToken.None).ConfigureAwait(false);
+                productName, vsBuild, vsCommitSha, settings, logger, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }
