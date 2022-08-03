@@ -4,6 +4,8 @@
 
 namespace Microsoft.RoslynTools.PRTagger;
 
+using LibGit2Sharp;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.RoslynTools.Authentication;
 using Microsoft.RoslynTools.Extensions;
@@ -19,6 +21,7 @@ internal class PRTagger
 {
     private static readonly Roslyn s_roslynInfo = new();
     private static readonly Razor s_razorInfo = new();
+    private static readonly FSharp s_fsharpInfo = new();
 
     /// <summary>
     /// Creates a GitHub issue containing the PRs inserted into a given VS build.
@@ -32,7 +35,6 @@ internal class PRTagger
     /// <returns>Exit code indicating whether issue was successfully created.</returns>
     public static async Task<int> TagPRs(
         string productName,
-        string productRepoPath,
         string vsBuild,
         string vsCommitSha,
         RoslynToolsSettings settings,
@@ -92,6 +94,17 @@ internal class PRTagger
 
         logger.LogInformation($"Finding PRs between {productInfo.Name} commit SHAs {previousProductCommitSha} and {currentProductCommitSha}.");
 
+        string? productRepoPath = null;
+        try
+        {
+            productRepoPath = Repository.Clone(sourceUrl: productInfo.RepoBaseUrl, workdirPath: Environment.CurrentDirectory + productInfo.Name);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Exception while cloning repo: " + ex);
+            return -1;
+        }
+
         // Find PRs between product commit SHAs
         var prDescription = new StringBuilder();
         var isSuccess = PRFinder.PRFinder.FindPRs(previousProductCommitSha, currentProductCommitSha, logger, productRepoPath, prDescription);
@@ -122,6 +135,11 @@ internal class PRTagger
         else if (productName.Equals(s_razorInfo.Name, StringComparison.OrdinalIgnoreCase))
         {
             productInfo = s_razorInfo;
+            return true;
+        }
+        else if (productName.Equals(s_fsharpInfo.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            productInfo = s_fsharpInfo;
             return true;
         }
 
