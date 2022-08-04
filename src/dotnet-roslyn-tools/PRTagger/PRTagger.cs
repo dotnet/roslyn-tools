@@ -5,11 +5,12 @@
 namespace Microsoft.RoslynTools.PRTagger;
 
 using LibGit2Sharp;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.RoslynTools.Authentication;
 using Microsoft.RoslynTools.Extensions;
+using Microsoft.RoslynTools.Products;
 using Microsoft.RoslynTools.Utilities;
+using Microsoft.RoslynTools.VS;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
@@ -18,12 +19,8 @@ using System.Text;
 internal class PRTagger
 {
     /// <summary>
-    /// Creates a GitHub issue containing the PRs inserted into a given VS build.
+    /// Creates GitHub issues containing the PRs inserted into a given VS build.
     /// </summary>
-    /// <param name="gitHubRepoUrl">GitHub repo URL</param>
-    /// <param name="componentJsonFileName">Name of component JSON file (e.g. '.corext\Configs\dotnetcodeanalysis-components.json')</param>
-    /// <param name="componentName">Name of component within JSON file (e.g. 'Microsoft.CodeAnalysis.LanguageService')</param>
-    /// <param name="buildPipelineName">Name of build pipeline (e.g. 'dotnet-roslyn CI')</param>
     /// <param name="vsBuild">VS build number</param>
     /// <param name="vsCommitSha">Commit SHA for VS build</param>
     /// <param name="settings">Authentication tokens</param>
@@ -31,10 +28,6 @@ internal class PRTagger
     /// <param name="cancellationToken"></param>
     /// <returns>Exit code indicating whether issue was successfully created.</returns>
     public static async Task<int> TagPRs(
-        string gitHubRepoUrl,
-        string componentJsonFileName,
-        string componentName,
-        string buildPipelineName,
         string vsBuild,
         string vsCommitSha,
         RoslynToolsSettings settings,
@@ -43,6 +36,7 @@ internal class PRTagger
     {
         using var devdivConnection = new AzDOConnection(settings.DevDivAzureDevOpsBaseUri, "DevDiv", settings.DevDivAzureDevOpsToken);
         using var dncengConnection = new AzDOConnection(settings.DncEngAzureDevOpsBaseUri, "internal", settings.DncEngAzureDevOpsToken);
+        var connections = new AzDOConnection[] { devdivConnection, dncengConnection };
 
         // Retrieve VS repo
         var vsRepository = await GetVSRepositoryAsync(devdivConnection.GitClient);
@@ -52,77 +46,82 @@ internal class PRTagger
             vsCommitSha, vsRepository.Id, cancellationToken: cancellationToken).ConfigureAwait(false);
         var previousVsCommitSha = vsCommit.Parents.First();
 
-        // Get associated product build for current and previous VS commit SHAs
-        var currentBuild = await TryGetBuildNumberForReleaseAsync(componentJsonFileName, componentName, vsCommitSha, devdivConnection).ConfigureAwait(false);
-        var previousBuild = await TryGetBuildNumberForReleaseAsync(componentJsonFileName, componentName, previousVsCommitSha, devdivConnection).ConfigureAwait(false);
-
-        var gitHubRepoName = gitHubRepoUrl.Split('/').Last();
-
-        if (currentBuild is null)
+        foreach (var product in VSBranchInfo.AllProducts)
         {
-            logger.LogError($"{gitHubRepoName} build not found for VS commit SHA {currentBuild}.");
-            return -1;
-        }
+            // Get associated product build for current and previous VS commit SHAs
+            var currentBuild = await TryGetBuildNumberForReleaseAsync(product.ComponentJsonFileName, product.ComponentName, vsCommitSha, devdivConnection).ConfigureAwait(false);
+            var previousBuild = await TryGetBuildNumberForReleaseAsync(product.ComponentJsonFileName, product.ComponentName, previousVsCommitSha, devdivConnection).ConfigureAwait(false);
 
-        if (previousBuild is null)
-        {
-            logger.LogError($"{gitHubRepoName} build not found for VS commit SHA {previousBuild}.");
-            return -1;
-        }
+            var gitHubRepoName = product.RepoBaseUrl.Split('/').Last();
 
-        // If builds are the same, there are no PRs to tag
-        if (currentBuild.Equals(previousBuild))
-        {
-            logger.LogInformation($"No PRs found to tag; {gitHubRepoName} build numbers are equal: {currentBuild}.");
-            return 0;
-        }
-
-        // Get commit SHAs for product builds
-        var previousProductCommitSha = await TryGetProductCommitShaFromBuildAsync(buildPipelineName, dncengConnection, previousBuild).ConfigureAwait(false);
-        var currentProductCommitSha = await TryGetProductCommitShaFromBuildAsync(buildPipelineName, dncengConnection, currentBuild).ConfigureAwait(false);
-
-        if (previousProductCommitSha is null || currentProductCommitSha is null)
-        {
-            logger.LogError($"Error retrieving {gitHubRepoName} commit SHAs.");
-            return -1;
-        }
-
-        logger.LogInformation($"Finding PRs between {gitHubRepoName} commit SHAs {previousProductCommitSha} and {currentProductCommitSha}.");
-
-        // Retrieve GitHub repo
-        string? gitHubRepoPath = null;
-        try
-        {
-            gitHubRepoPath = Environment.CurrentDirectory + "\\" + gitHubRepoName;
-            if (!Repository.IsValid(gitHubRepoPath))
+            if (currentBuild is null)
             {
-                logger.LogInformation("Cloning GitHub repo...");
-                gitHubRepoPath = Repository.Clone(gitHubRepoUrl, workdirPath: gitHubRepoPath);
+                logger.LogError($"{gitHubRepoName} build not found for VS commit SHA {currentBuild}.");
+                continue;
             }
-            else
+
+            if (previousBuild is null)
             {
-                logger.LogInformation($"Repo already exists at {gitHubRepoPath}");
+                logger.LogError($"{gitHubRepoName} build not found for VS commit SHA {previousBuild}.");
+                continue;
             }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError($"Exception while cloning repo: " + ex);
-            return -1;
+
+            // If builds are the same, there are no PRs to tag
+            if (currentBuild.Equals(previousBuild))
+            {
+                logger.LogInformation($"No PRs found to tag; {gitHubRepoName} build numbers are equal: {currentBuild}.");
+                continue;
+            }
+
+            // Get commit SHAs for product builds
+            var previousProductCommitSha = await TryGetProductCommitShaFromBuildAsync(product, connections, previousBuild).ConfigureAwait(false);
+            var currentProductCommitSha = await TryGetProductCommitShaFromBuildAsync(product, connections, currentBuild).ConfigureAwait(false);
+
+            if (previousProductCommitSha is null || currentProductCommitSha is null)
+            {
+                logger.LogError($"Error retrieving {gitHubRepoName} commit SHAs.");
+                continue;
+            }
+
+            logger.LogInformation($"Finding PRs between {gitHubRepoName} commit SHAs {previousProductCommitSha} and {currentProductCommitSha}.");
+
+            // Retrieve GitHub repo
+            string? gitHubRepoPath;
+            try
+            {
+                gitHubRepoPath = Environment.CurrentDirectory + "\\" + gitHubRepoName;
+                if (!Repository.IsValid(gitHubRepoPath))
+                {
+                    logger.LogInformation("Cloning GitHub repo...");
+                    gitHubRepoPath = Repository.Clone(product.RepoBaseUrl, workdirPath: gitHubRepoPath);
+                }
+                else
+                {
+                    logger.LogInformation($"Repo already exists at {gitHubRepoPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Exception while cloning repo: " + ex);
+                continue;
+            }
+
+            // Find PRs between product commit SHAs
+            var prDescription = new StringBuilder();
+            var isSuccess = PRFinder.PRFinder.FindPRs(previousProductCommitSha, currentProductCommitSha, logger, gitHubRepoPath, prDescription);
+            if (isSuccess != 0)
+            {
+                // Error occurred; should be logged in FindPRs method
+                continue;
+            }
+
+            logger.LogInformation($"Creating issue...");
+
+            // Create issue
+            await TryCreateIssueAsync(gitHubRepoName, vsBuild, prDescription.ToString(), settings.GitHubToken, logger).ConfigureAwait(false);
         }
 
-        // Find PRs between product commit SHAs
-        var prDescription = new StringBuilder();
-        var isSuccess = PRFinder.PRFinder.FindPRs(previousProductCommitSha, currentProductCommitSha, logger, gitHubRepoPath, prDescription);
-        if (isSuccess != 0)
-        {
-            return isSuccess;
-        }
-
-        logger.LogInformation($"Creating issue...");
-
-        // Create issue
-        var issueCreated = await TryCreateIssue(gitHubRepoName, vsBuild, prDescription.ToString(), settings.GitHubToken, logger);
-        return issueCreated ? 0 : -1;
+        return 0;
     }
 
     private static async Task<GitRepository> GetVSRepositoryAsync(GitHttpClient gitClient)
@@ -155,15 +154,27 @@ internal class PRTagger
     }
 
     private static async Task<string?> TryGetProductCommitShaFromBuildAsync(
-        string buildPipelineName,
-        AzDOConnection buildConnection,
+        IProduct product,
+        AzDOConnection[] connections,
         string buildNumber)
     {
-        var build = (await buildConnection.TryGetBuildsAsync(buildPipelineName, buildNumber))?.SingleOrDefault();
-        return build?.SourceVersion;
+        foreach (var connection in connections)
+        {
+            var buildPipelineName = product.GetBuildPipelineName(connection.BuildProjectName);
+            if (buildPipelineName is not null)
+            {
+                var build = (await connection.TryGetBuildsAsync(buildPipelineName, buildNumber))?.SingleOrDefault();
+                if (build is not null)
+                {
+                    return build.SourceVersion;
+                }
+            }
+        }
+
+        return null;
     }
 
-    private async static Task<bool> TryCreateIssue(
+    private async static Task TryCreateIssueAsync(
         string gitHubRepoName,
         string vsBuildNumber,
         string issueBody,
@@ -195,10 +206,8 @@ internal class PRTagger
         if (!response.IsSuccessStatusCode)
         {
             logger.LogError($"Issue creation failed with status code: {response.StatusCode}");
-            return false;
         }
 
         logger.LogInformation("Successfully created issue.");
-        return true;
     }
 }

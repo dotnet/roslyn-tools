@@ -6,7 +6,7 @@ namespace Microsoft.RoslynTools.Products;
 
 internal class FSharp : IProduct
 {
-    public string Name => "FSharp";
+    public string Name => "F#";
 
     public string RepoBaseUrl => "https://github.com/dotnet/fsharp";
     public string ComponentJsonFileName => @".corext\Configs\components.json";
