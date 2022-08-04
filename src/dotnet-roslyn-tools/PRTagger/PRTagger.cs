@@ -48,6 +48,12 @@ internal class PRTagger
 
         foreach (var product in VSBranchInfo.AllProducts)
         {
+            // We currently only support creating issues for GitHub repos
+            if (!product.RepoBaseUrl.Contains("github.com"))
+            {
+                continue;
+            }
+
             // Get associated product build for current and previous VS commit SHAs
             var currentBuild = await TryGetBuildNumberForReleaseAsync(product.ComponentJsonFileName, product.ComponentName, vsCommitSha, devdivConnection).ConfigureAwait(false);
             var previousBuild = await TryGetBuildNumberForReleaseAsync(product.ComponentJsonFileName, product.ComponentName, previousVsCommitSha, devdivConnection).ConfigureAwait(false);
