@@ -18,6 +18,8 @@
     <merge from="release/dev17.3" to="release/dev17.4" />
     <merge from="release/dev17.4" to="main" />
 
+    <merge from="main" to="main-vs-deps" />
+
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/semi-auto-props" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/lambda-default-parameters" owners="adamperlin,333fred" frequency="weekly" />
