@@ -480,7 +480,6 @@ namespace Roslyn.Insertion
                             // spin waiting for a build to test against until it timesout.
                             await QueueVSBuildPolicy(pullRequest, "CloudBuild - PR");
                             await QueueVSBuildPolicy(pullRequest, "Cloudbuild - MSBuildRetail");
-                            
                         }
 
                         await QueueVSBuildPolicy(pullRequest, "Request Perf DDRITs");
