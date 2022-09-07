@@ -479,6 +479,8 @@ namespace Roslyn.Insertion
                             // If we do not queue a CloudBuild the Perf DDRITs request will
                             // spin waiting for a build to test against until it timesout.
                             await QueueVSBuildPolicy(pullRequest, "CloudBuild - PR");
+                            await QueueVSBuildPolicy(pullRequest, "Cloudbuild - MSBuildRetail");
+                            
                         }
 
                         await QueueVSBuildPolicy(pullRequest, "Request Perf DDRITs");
