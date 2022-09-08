@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="VisualStudioRepoAzdoUserName" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">vslsnap@microsoft.com</Value>
+      <Value Profile="(Default)">dn-bot@microsoft.com</Value>
     </Setting>
     <Setting Name="VisualStudioRepoProjectName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">DevDiv</Value>
@@ -12,7 +12,7 @@
       <Value Profile="(Default)">\\cpvsbuild\drops\Roslyn</Value>
     </Setting>
     <Setting Name="InsertionBranchName" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">dev/vslsnap/insertions/</Value>
+      <Value Profile="(Default)">dev/dn-bot/insertions/</Value>
     </Setting>
     <Setting Name="ComponentBuildQueueName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Roslyn-Signed</Value>
