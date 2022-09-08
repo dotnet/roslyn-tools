@@ -39,7 +39,7 @@ function GetComponentGitHubRepoName([string] $componentGitHubRepoName) {
 
 function GetComponentUserName([string] $componentUserName) {
     if (IsDefaultValue $componentUserName) {
-        return "/cbu=vslsnap@microsoft.com"
+        return "/cbu=dn-bot@microsoft.com"
     } else {
         return "/cbu=$componentUserName"
     }
@@ -224,7 +224,7 @@ function GetReviewerGUID([string] $reviewerGUID) {
 
 function GetUserName([string] $userName) {
     if (IsDefaultValue $userName) {
-        return "/u=vslsnap@microsoft.com"
+        return "/u=dn-bot@microsoft.com"
     } else {
         return "/u=$userName"
     }

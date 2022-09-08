@@ -55,13 +55,13 @@ The default values for these (again, from app.config) are almost always what you
 
 | Short Name | Full Name | Description | 
 | --- | --- | --- |
-| **/u**=vslsnap@microsoft.com | **/username**=vslsnap@microsoft.com | Username to authenticate with VSTS *and* git. |
+| **/u**=dn-bot@microsoft.com | **/username**=dn-bot@microsoft.com | Username to authenticate with VSTS *and* git. |
 | **/p**=Your password | **/password**=Your password | The password used to authenticate both VSTS *and* git. If not specified will attempt to load from Azure KeyVault. |
 | **/ep**=C:\Workspaces\DevDiv\VS | **/enlistmentpath**=C:\Workspaces\DevDiv\VS | This is the absolute path to the Visual Studio enlistment on the machine that is running `rit.exe`. |
 | | **/vstsurl**=https://devdiv.visualstudio.com/DefaultCollection/ | The url to the default collection of the VSTS server. |
 | **/tfspn**=DevDiv | **/tfsprojectname**=DevDiv | The project that contains the branch specified in **visualstudiobranchname** |
 | **/rdp**=\\\\cpvsbuild\drops\Roslyn | **/roslyndroppath**=\\\\cpvsbuild\drops\Roslyn | Location where the signed binaries are dropped.  Will use this path in combination with  **roslynbuildname** to find signed binaries, unless the path ends with ```Binaries\Debug``` or ```Binaries\Release``` (for local testing purposes only) |
-| **/nbn**=dev/vslsnap/insertions/ | **/newbranchname**=dev/vslsnap/insertions/ | The name of the branch we create when staging our insertion. Will have the current date and insertion branch appended to it. If empty a new branch and pull request are not created (for local testing purposes only).  |
+| **/nbn**=dev/dn-bot/insertions/ | **/newbranchname**=dev/dn-bot/insertions/ | The name of the branch we create when staging our insertion. Will have the current date and insertion branch appended to it. If empty a new branch and pull request are not created (for local testing purposes only).  |
 | **/sb**=20160127.1  | **/specificbuild**=20160127.1 | Only the latest build is inserted by default, and `rit.exe` will exit if no discovered passing builds are newer than the currently inserted version.  By specifying this setting `rit.exe` will skip this logic and insert the specified build. |
 | **/parts**=src\alm\shared;src\CodeSense | **/partitions**=src\alm\shared;src\CodeSense | A set of folders relative to **enlistmentpath** that should successfully build after we have inserted.  List should be separated by `;`. |
 | **/part**=src\CodeSense | **/partition**=src\CodeSense | *Can be specified more than once.* A folder relative to **enlistmentpath** that should successfully build after we have inserted. |  

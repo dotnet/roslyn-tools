@@ -19,7 +19,7 @@ namespace Roslyn.Insertion {
 
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("vslsnap@microsoft.com")]
+        [global::System.Configuration.DefaultSettingValueAttribute("dn-bot@microsoft.com")]
         public string VisualStudioRepoAzdoUserName {
             get {
                 return ((string)(this["VisualStudioRepoAzdoUserName"]));
@@ -55,7 +55,7 @@ namespace Roslyn.Insertion {
 
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("dev/vslsnap/insertions/")]
+        [global::System.Configuration.DefaultSettingValueAttribute("dev/dn-bot/insertions/")]
         public string InsertionBranchName {
             get {
                 return ((string)(this["InsertionBranchName"]));

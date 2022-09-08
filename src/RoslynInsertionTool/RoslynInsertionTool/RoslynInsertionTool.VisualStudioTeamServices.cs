@@ -289,7 +289,7 @@ namespace Roslyn.Insertion
                     new IdentityRefWithVote { Vote = (short)Vote.Approved },
                     repository.Id,
                     pullRequest.PullRequestId,
-                    VSLSnapUserId.ToString(),
+                    DotNetBotUserId.ToString(),
                     cancellationToken: cancellationToken
                     );
                 Console.WriteLine($"Updated {pullRequest.Description} with AutoApprove");

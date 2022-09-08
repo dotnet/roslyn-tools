@@ -26,7 +26,7 @@ namespace Roslyn.Insertion
         public static readonly Guid VSRepoId = new Guid("a290117c-5a8a-40f7-bc2c-f14dbe3acf6d");
         //Easiest way to get these GUIDs is to create a PR search in AzDo
         //You'll get something like https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequests?_a=active&createdBy=GUID-here
-        public static readonly Guid VSLSnapUserId = new Guid("9f64bc2f-479b-429f-a665-fec80e130b1f");
+        public static readonly Guid DotNetBotUserId = new Guid("122d5278-3e55-4868-9d40-1e28c2515fc4");
 
         private static List<string> WarningMessages { get; } = new List<string>();
 
