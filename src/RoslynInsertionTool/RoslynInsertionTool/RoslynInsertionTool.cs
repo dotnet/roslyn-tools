@@ -484,6 +484,11 @@ namespace Roslyn.Insertion
 
                         await QueueVSBuildPolicy(pullRequest, "Request Perf DDRITs");
                         await QueueVSBuildPolicy(pullRequest, "Insertion Symbol Check");
+
+                        if (Options.RunSpeedometerInValidation)
+                        {
+                            await QueueVSBuildPolicy(pullRequest, "Request Speedometer Perf Run");
+                        }
                     }
                     catch (Exception ex)
                     {

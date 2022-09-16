@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
@@ -42,6 +42,7 @@ partial class RoslynInsertionToolCommandline
             ValidationBuildQueueName: settings.ValidationBuildQueueName,
             RunDDRITsInValidation: settings.RunDDRITsInValidation,
             RunRPSInValidation: settings.RunRPSInValidation,
+            RunSpeedometerInValidation: settings.RunSpeedometerInValidation,
             LogFileLocation: settings.LogFileLocation,
             CreateDraftPr: settings.CreateDraftPr,
             SkipCoreXTPackages: ParseSkipCoreXTPackages(settings.SkipCoreXTPackages));
@@ -194,6 +195,11 @@ partial class RoslynInsertionToolCommandline
                 "rr=|runrpsinvalidation=",
                 $"Whether or not to run RPS tests as part of a validation build.  Defaults to \"{options.RunRPSInValidation}\".",
                 runRPSInValidation => options = options with { RunRPSInValidation = bool.Parse(runRPSInValidation) }
+            },
+            {
+                "rs=|runspeedometerinvalidation=",
+                $"Whether or not to run Speedometer tests as part of a validation build.  Defaults to \"{options.RunSpeedometerInValidation}\".",
+                runSpeedometerInValidation => options = options with { RunSpeedometerInValidation = bool.Parse(runSpeedometerInValidation) }
             },
             {
                 "dm|createdummypr",

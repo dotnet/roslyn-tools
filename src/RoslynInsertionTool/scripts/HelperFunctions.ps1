@@ -158,6 +158,15 @@ function GetQueueValidation([string] $visualStudioBranchName, [string] $queueVal
     }
 }
 
+function GetQueueSpeedometerValidation([string] $queueSpeedometerValidation) {
+    if (IsDefaultValue $queueSpeedometerValidation) {
+        return ""
+    }
+    else {
+        return "/rs=$queueSpeedometerValidation";
+    }
+}
+
 function GetSpecificBuildFlag([string] $specificBuild) {
     if (IsDefaultValue $specificBuild) {
         return ""
