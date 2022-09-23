@@ -481,7 +481,7 @@ namespace Roslyn.Insertion
                             await QueueVSBuildPolicy(pullRequest, "CloudBuild - PR");
 
                             // MSBuildRetail policy doesn't exist in servicing branches.
-                            await TryQueueVSBuildPolicy(pullRequest, "Cloudbuild - MSBuildRetail");
+                            await TryQueueVSBuildPolicy(pullRequest, "Cloudbuild - MSBuildRetail", insertionBranchName);
                         }
 
                         await QueueVSBuildPolicy(pullRequest, "Request Perf DDRITs");
