@@ -23,7 +23,14 @@ namespace Roslyn.Insertion
         private static Dictionary<string, (string original, JObject document)> ComponentFileToDocumentMap = null!;
         private static HashSet<string> dirtyComponentFiles = null!;
 
+        /// <summary>
+        /// A map that maps from the package name to the list of prop files that specify the package version.
+        /// </summary>
         private static Dictionary<string, ICollection<string>> PackageToPropFilesMap = null!;
+
+        /// <summary>
+        /// A map from a property file name to the original content and parsed XML document.
+        /// </summary>
         private static Dictionary<string, (string original, XDocument document)> PackagePropFileToDocumentMap = null!;
         private static HashSet<string> dirtyPropsFiles = null!;
 
