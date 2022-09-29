@@ -142,14 +142,32 @@ namespace Roslyn.Insertion
                 .Select(x => x.Attribute("version")).SingleOrDefault();
         }
 
-        private static XAttribute? GetVersionAttributeInPropsFileOpt(XDocument document, PackageInfo packageInfo)
+        /// <summary>
+        /// Returns the appropriate element that contains the version of the specified package. Will return either a <see cref="XAttribute" /> or <see cref="XElement"/> depending.
+        /// </summary>
+        private static XObject? GetVersionAttributeOrElementInPropsFile(XDocument document, PackageInfo packageInfo)
         {
             // Support both the existing tags - "PackageVersion" and "Include" as well the legacy tags "PackageReference" and "Update" so we could still update servicing branches.
-            return document?.Root
+            var attribute = document.Root
                 .Elements().Where(e => string.Equals(e.Name.LocalName, "ItemGroup"))
                 .Elements().Where(e => string.Equals(e.Name.LocalName, "PackageVersion") || string.Equals(e.Name.LocalName, "PackageReference"))
                 .Where(p => p.Attribute("Include")?.Value == packageInfo.PackageName || p.Attribute("Update")?.Value == packageInfo.PackageName)
                 .Select(x => x.Attribute("Version")).SingleOrDefault();
+
+            if (attribute is null)
+                return null;
+
+            // If the attribute is a property substitution, then we'll see if we actually can find the property itself
+            if (attribute.Value.StartsWith("$(") && attribute.Value.EndsWith(")"))
+            {
+                var propertyName = attribute.Value.Substring(2, attribute.Value.Length - 3);
+                var versionProperty = document.Root.Elements("PropertyGroup").Elements(propertyName).SingleOrDefault();
+
+                if (versionProperty is not null)
+                    return versionProperty;
+            }
+
+            return attribute;
         }
 
         private XElement GetClosestFollowingPackageElement(PackageInfo packageInfo)
@@ -190,8 +208,13 @@ namespace Roslyn.Insertion
                     (string? original, XDocument? document) pair = (null, null);
                     if (PackagePropFileToDocumentMap.TryGetValue(file, out pair!))
                     {
-                        var propsVersionAttribute = GetVersionAttributeInPropsFileOpt(pair.document!, packageInfo);
-                        propsVersionAttribute?.SetValue(packageInfo.Version.ToString());
+                        var versionObject = GetVersionAttributeOrElementInPropsFile(pair.document!, packageInfo);
+                        if (versionObject is XAttribute attribute)
+                            attribute.SetValue(packageInfo.Version.ToString());
+                        else if (versionObject is XElement element)
+                            element.SetValue(packageInfo.Version.ToString());
+                        else if (versionObject is not null)
+                            throw new Exception($"Unexpected type of object returned from {nameof(GetVersionAttributeOrElementInPropsFile)}: {versionObject.GetType().FullName}");
 
                         dirtyPropsFiles.Add(file);
                     }
