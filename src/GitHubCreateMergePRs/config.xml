@@ -1,13 +1,12 @@
 <config>
-  <repo owner="dotnet" name="roslyn" mergeOwners="Cosifne">
+  <repo owner="dotnet" name="roslyn" mergeOwners="RikkiGibson">
     <!--
       VS versions under servicing:
         VS 2019: https://docs.microsoft.com/en-us/lifecycle/products/visual-studio-2019
         VS 2022: https://docs.microsoft.com/en-us/lifecycle/products/visual-studio-2022
     -->
     <!-- Roslyn servicing branches (flowing between releases) -->
-    <merge from="dev15.9.x" to="release/dev16.9-vs-deps" />
-    <merge from="release/dev16.9-vs-deps" to="release/dev16.11-vs-deps" />
+    <merge from="dev15.9.x" to="release/dev16.11-vs-deps" />
     <merge from="release/dev16.11-vs-deps" to="release/dev17.0-vs-deps" />
     <merge from="release/dev17.0-vs-deps" to="release/dev17.2" />
     <merge from="release/dev17.2" to="release/dev17.3" />
