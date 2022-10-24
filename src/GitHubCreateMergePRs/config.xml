@@ -15,9 +15,12 @@
     <merge from="release/dev17.3" to="release/dev17.4" />
 
     <!-- Roslyn release branches (flowing between releases) -->
-    <merge from="release/dev17.4" to="main" />
+    <merge from="release/dev17.4" to="release/dev17.5" />
+    <merge from="release/dev17.5" to="main" />
+    <merge from="release/dev17.5-vs-deps" to="main-vs-deps" />
       
     <!-- Roslyn release branches (flowing to -vs-deps) -->
+    <merge from="release/dev17.5" to="release/dev17.5-vs-deps" />
     <merge from="main" to="main-vs-deps" />
 
     <!-- Roslyn feature branches -->
