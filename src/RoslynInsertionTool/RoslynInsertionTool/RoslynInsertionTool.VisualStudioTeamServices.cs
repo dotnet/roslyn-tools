@@ -241,13 +241,13 @@ namespace Roslyn.Insertion
                 if (evaluation != null)
                 {
                     await policyClient.RequeuePolicyEvaluationAsync(repository.ProjectReference.Id, evaluation.EvaluationId);
-                    Console.WriteLine($"Started '{buildPolicy}' build policy on {pullRequest.Description}");
+                    Console.WriteLine($"Started '{buildPolicy}' build policy on {pullRequest.Title}");
                     break;
                 }
 
                 if (stopwatch.Elapsed > timeout)
                 {
-                    throw new ArgumentException($"Cannot find a '{buildPolicy}' build policy in {pullRequest.Description}.");
+                    throw new ArgumentException($"Cannot find a '{buildPolicy}' build policy in {pullRequest.Title}.");
                 }
             }
         }
