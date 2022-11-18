@@ -59,6 +59,7 @@ function GetBuildQueueName([string] $componentName, [string] $buildQueueName) {
             "F#" { return "FSharp-Signed" }
             "Live Unit Testing" { return "TestImpact-Signed" }
             "Project System" { return "DotNet-Project-System" }
+            "Razor" { return "razor-ci-official" }
             "Roslyn" { return "Roslyn-Signed" }
             "VS Unit Testing" { return "VSUnitTesting-Signed" }
             default {
