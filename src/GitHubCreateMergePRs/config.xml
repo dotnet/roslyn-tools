@@ -25,7 +25,6 @@
 
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/semi-auto-props" owners="333fred" frequency="weekly" />
-    <merge from="main" to="features/lambda-default-parameters" owners="adamperlin,333fred" frequency="weekly" />
     <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
     <merge from="main" to="features/editorconfig_lsp" owners="dibarbet,Danyboyyy" frequency="weekly" />
     <merge from="main" to="features/FixAllNamingViolation" owners="Cosifne" frequency="weekly" />
