@@ -29,6 +29,7 @@
     <merge from="main" to="features/editorconfig_lsp" owners="dibarbet,Danyboyyy" frequency="weekly" />
     <merge from="main" to="features/FixAllNamingViolation" owners="Cosifne" frequency="weekly" />
     <merge from="main" to="features/solutionEvents" owners="CyrusNajmabadi,dibarbet" frequency="daily" />
+    <merge from="main" to="features/SharedSyntaxTrees" owners="CyrusNajmabadi" frequency="daily" />
   </repo>
 
   <repo owner="dotnet" name="roslyn-sdk">
