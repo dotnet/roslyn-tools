@@ -20,12 +20,6 @@ public partial class App : MauiWinUIApplication
 		this.InitializeComponent();
 	}
 
-    protected override MauiApp CreateMauiApp()
-    {
-        var builder = MauiApp.CreateBuilder();
-        builder.Services.AddTransient<IFolderPicker, WindowsFolderPicker>();
-
-        return MauiProgram.Build(builder);
-    }
+    protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 }
 

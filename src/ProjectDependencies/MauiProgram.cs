@@ -7,8 +7,10 @@ namespace ProjectDependencies;
 
 public static class MauiProgram
 {
-	public static MauiApp Build(MauiAppBuilder builder)
+	public static MauiApp CreateMauiApp()
 	{
+        var builder = MauiApp.CreateBuilder();
+
 		builder
 			.UseMauiApp<App>()
 			.UseMauiCommunityToolkit()
@@ -21,6 +23,13 @@ public static class MauiProgram
 
 				fonts.AddMaterialIconFonts();
             });
+
+#if WINDOWS
+        builder.Services.AddTransient<IFolderPicker, ProjectDependencies.Platforms.Windows.WindowsFolderPicker>();
+#endif
+
+        builder.Services.AddTransient<MainPage>();
+        builder.Services.AddTransient<App>();
 
         return builder.Build();
 	}

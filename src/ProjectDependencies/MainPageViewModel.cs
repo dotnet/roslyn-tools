@@ -8,7 +8,21 @@ namespace ProjectDependencies;
 public class MainPageViewModel : BindableObject
 {
     public ObservableCollection<DependencyNode> Nodes { get; } = new();
-    public string? Directory { get; set; }
+
+    private string? _directory;
+    public string? Directory
+    {
+        get => _directory;
+        set
+        {
+            if (value != _directory)
+            {
+                _directory = value;
+                OnPropertyChanged(nameof(Directory));
+            }
+        }
+    }
+
     public string? PackageName { get; set; }
     public string? PackageVersion { get; set; }
 
