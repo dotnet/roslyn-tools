@@ -16,6 +16,10 @@ namespace ProjectDependencies
     {
         static readonly LockFileFormat s_lockFileFormat = new();
 
+        /// <summary>
+        /// Uses project.assets.json files in the given folder to search for dependency graphs related to <paramref name="packageName"/> with version <paramref name="packageVersion"/>.
+        /// Note that it does an exact match for both and is not particularly optimized for speed. It recursively looks through all loaded files until it finds a root. 
+        /// </summary>
         public static async Task<ImmutableArray<DependencyNode>> FindDependenciesAsync(string folder, string packageName, string packageVersion, Action<int, bool> callback, CancellationToken cancellationToken)
         {
             var collectionOfLockFiles = new ConcurrentDictionary<string, LockFile>();
