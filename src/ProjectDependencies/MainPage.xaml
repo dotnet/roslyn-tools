@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:uranium="clr-namespace:UraniumUI.Pages;assembly=UraniumUI"
+             xmlns:attachment="clr-namespace:UraniumUI.Material.Attachments;assembly=UraniumUI.Material"
+             xmlns:material="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material"
+             xmlns:m="clr-namespace:UraniumUI.Icons.MaterialIcons;assembly=UraniumUI.Icons.MaterialIcons"
+             xmlns:input="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+             xmlns:validation="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
+             x:Class="ProjectDependencies.MainPage"
+             xmlns:local="clr-namespace:ProjectDependencies"
+             x:Name="page">
+    <uranium:UraniumContentPage.BindingContext>
+        <local:MainPageViewModel />
+    </uranium:UraniumContentPage.BindingContext>
+
+    <uranium:UraniumContentPage.Resources>
+        <Style TargetType="Frame">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SecondaryContainer}, Dark={StaticResource SecondaryContainerDark}}" />
+        </Style>
+    </uranium:UraniumContentPage.Resources>
+
+    <StackLayout Orientation="Vertical">
+        <input:FormView Spacing="20" SubmitCommand="{Binding CalculateTreeCommand}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Entry
+                    Grid.Column="0"
+                    Text="{Binding Directory}"
+                    Placeholder="Directory" />
+                <Button 
+                    Text="..."
+                    Clicked="FilePicker_Clicked" />
+            </Grid>
+
+            <Entry
+                Text="{Binding PackageName}"
+                Placeholder="Package name" />
+
+            <Entry
+                Text="{Binding PackageVersion}"
+                Placeholder="Package version" />
+
+            <Button
+                StyleClass="FilledButton"
+                Text="Calculate"
+                input:FormView.IsSubmitButton="True" />
+        </input:FormView>
+        <BoxView StyleClass="Divider" />
+        <Label Text="{Binding LoadingText}" IsVisible="{Binding Loading}" />
+        <material:TreeView ItemsSource="{Binding Nodes}" IsExpandedPropertyName="IsExpanded" IsLeafPropertyName="IsLeaf">
+            <material:TreeView.ItemTemplate>
+                <DataTemplate>
+                    <HorizontalStackLayout Spacing="5">
+                        <Label Text="{Binding Name}" FontAttributes="Bold" VerticalTextAlignment="Center"/>
+                        <Label Text="{Binding Version}" FontAttributes="Italic" VerticalTextAlignment="Center" />
+                        <Label Text="{Binding Children.Count, StringFormat='({0})'}" VerticalTextAlignment="Center" />
+                    </HorizontalStackLayout>
+                </DataTemplate>
+            </material:TreeView.ItemTemplate>
+        </material:TreeView>
+    </StackLayout>
+</uranium:UraniumContentPage>
