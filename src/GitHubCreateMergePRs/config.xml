@@ -67,6 +67,7 @@
     <merge from="release/dev17.5" to="release/dev17.6" />
 
     <!-- regular branch flow -->
+    <merge from="release/dev17.5" to="main" />
     <merge from="main" to="release/dev17.6" />
     <merge from="feature/auto-widen" to="feature/erased-unions" />
   </repo>
