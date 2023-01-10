@@ -43,9 +43,9 @@
     <merge from="dev17.1.x" to="main" />
     <merge from="dev17.2.x" to="main" />
     <merge from="dev17.3.x" to="main" />
-    <merge from="dev17.4.x" to="main" />
     <merge from="dev17.4-preview1" to="main" />
     <merge from="dev17.4-preview2" to="main" />
+    <merge from="dev17.4.x" to="main" />
     <merge from="dev17.5-preview2" to="main" />
   </repo>
 
