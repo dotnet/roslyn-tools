@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
@@ -12,6 +12,8 @@ using System.Xml.Linq;
 
 public class Program
 {
+    private const string DayTimeFormat = "dddd, dd MMMM yyyy HH:mm:ss";
+
     public static async Task<int> Main(string[] args)
     {
         // Default when no args passed in.
@@ -222,6 +224,7 @@ public class Program
         // Daily and Weekly runs only happen at the start of the day
         if (!isStartOfDay)
         {
+            Console.WriteLine($"{merge} is skipped because it is not the start of the day. Current time is {DateTime.Now.ToString(DayTimeFormat)}.");
             return false;
         }
 
