@@ -224,7 +224,7 @@ public class Program
         // Daily and Weekly runs only happen at the start of the day
         if (!isStartOfDay)
         {
-            Console.WriteLine($"{merge} is skipped because it is not the start of the day. Current time is {DateTime.Now.ToString(DayTimeFormat)}.");
+            Console.WriteLine($"{merge} is skipped because it is not the start of the day. Current time is {DateTime.UtcNow.ToString(DayTimeFormat)}.");
             return false;
         }
 
