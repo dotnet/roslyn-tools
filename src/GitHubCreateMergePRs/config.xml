@@ -26,7 +26,6 @@
     <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
     <merge from="main" to="features/editorconfig_lsp" owners="dibarbet,Danyboyyy" frequency="weekly" />
     <merge from="main" to="features/FixAllNamingViolation" owners="Cosifne" frequency="weekly" />
-    <merge from="main" to="features/CollectionLiterals" owners="CyrusNajmabadi" />
     <merge from="main" to="features/UsingAliasesTypes" owners="CyrusNajmabadi" />
   </repo>
 
