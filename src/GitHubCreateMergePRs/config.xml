@@ -35,6 +35,11 @@
     <merge from="main" to="dev17.0" />
   </repo>
 
+  <!-- razor -->
+  <repo owner="dotnet" name="razor" mergeOwners="davidwengier,Cosifne">
+    <merge from="release/dev17.6" to="main" />
+  </repo>
+
   <!-- Project System repo -->
   <repo owner="dotnet" name="project-system">
     <merge from="dev16.11.x" to="main" />
