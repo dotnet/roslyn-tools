@@ -10,7 +10,7 @@
     <merge from="release/dev16.11-vs-deps" to="release/dev17.0-vs-deps" />
     <merge from="release/dev17.0-vs-deps" to="release/dev17.2" />
     <merge from="release/dev17.2" to="release/dev17.3" />
-      
+
     <!-- Roslyn last servicing branch (flowing into current branch) -->
     <merge from="release/dev17.3" to="release/dev17.4" />
 
@@ -18,7 +18,7 @@
     <merge from="release/dev17.4" to="release/dev17.5" />
     <merge from="release/dev17.5-vs-deps" to="release/dev17.6" />
     <merge from="release/dev17.6" to="main" />
-      
+
     <!-- Roslyn release branches (flowing to -vs-deps) -->
     <merge from="release/dev17.5" to="release/dev17.5-vs-deps" />
 
@@ -39,6 +39,7 @@
   <!-- razor -->
   <repo owner="dotnet" name="razor" mergeOwners="davidwengier,Cosifne">
     <merge from="release/dev17.6" to="main" />
+    <merge from="release/dev17.5" to="main" />
   </repo>
 
   <!-- Project System repo -->
