@@ -40,6 +40,7 @@
   <repo owner="dotnet" name="razor" mergeOwners="davidwengier,Cosifne">
     <merge from="release/dev17.6" to="main" />
     <merge from="release/dev17.5" to="main" />
+    <merge from="release/dev17.5" to="release/dev17.6" />
   </repo>
 
   <!-- Project System repo -->
