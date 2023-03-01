@@ -44,7 +44,8 @@ namespace Microsoft.RoslynTools.NuGet
 
                 var dependencies = new Dictionary<DependencyResult, List<(PackageDependency Dependency, NuGetVersion? DesiredVersion)>>();
 
-                await foreach (var dependency in GetAllDependenciesAsync())
+                var (foundDependencies, idToDependentsMap) = await GetAllDependenciesAsync().ConfigureAwait(false); 
+                foreach (var dependency in foundDependencies)
                 {
                     DependencyResult result;
                     NuGetVersion? desiredVersion = null;
@@ -125,6 +126,10 @@ namespace Microsoft.RoslynTools.NuGet
                     foreach (var (dependency, _) in releaseUnavailablePackages.OrderBy(x => x.Dependency.Id))
                     {
                         logger.LogWarning("{DependencyId}, {DependencyMinVersion}", dependency.Id, dependency.VersionRange.MinVersion);
+
+                        logger.LogWarning("Dependents:");
+                        foreach (var dependent in idToDependentsMap[dependency.Id])
+                            logger.LogWarning($"     {dependent}");
                     }
                 }
 
@@ -135,6 +140,10 @@ namespace Microsoft.RoslynTools.NuGet
                     foreach (var (dependency, _) in missingPackages.OrderBy(x => x.Dependency.Id))
                     {
                         logger.LogError("{DependencyId}, {DependencyMinVersion}", dependency.Id, dependency.VersionRange.MinVersion);
+
+                        logger.LogError("Dependents:");
+                        foreach (var dependent in idToDependentsMap[dependency.Id])
+                            logger.LogError($"     {dependent}");
                     }
                 }
 
@@ -146,11 +155,12 @@ namespace Microsoft.RoslynTools.NuGet
                 return 1;
             }
 
-            async IAsyncEnumerable<PackageDependency> GetAllDependenciesAsync()
+            async Task<(List<PackageDependency> foundDependencies, Dictionary<string, List<string>> idToDependentsMap)> GetAllDependenciesAsync()
             {
                 var local = Repository.Factory.GetCoreV3(packageFolder);
                 var localFinder = await local.GetResourceAsync<FindPackageByIdResource>().ConfigureAwait(false);
-                var foundPackages = new HashSet<string>();
+                var idToDependentsMap = new Dictionary<string, List<string>>();
+                var foundDependencies = new List<PackageDependency>();
 
                 foreach (var package in packages)
                 {
@@ -161,13 +171,19 @@ namespace Microsoft.RoslynTools.NuGet
                     {
                         foreach (var dependency in group.Packages)
                         {
-                            if (foundPackages.Add(dependency.Id))
+                            if (!idToDependentsMap.TryGetValue(dependency.Id, out var dependentsList))
                             {
-                                yield return dependency;
+                                foundDependencies.Add(dependency);
+                                dependentsList = new List<string>();
+                                idToDependentsMap[dependency.Id] = dependentsList;
                             }
+
+                            dependentsList.Add(package);
                         }
                     }
                 }
+
+                return (foundDependencies, idToDependentsMap);
             }
         }
     }
