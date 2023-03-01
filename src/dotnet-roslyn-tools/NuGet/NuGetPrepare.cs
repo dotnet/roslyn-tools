@@ -3,7 +3,8 @@
 // See the License.txt file in the project root for more information.
 
 using Microsoft.Extensions.Logging;
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
+using static Microsoft.RoslynTools.NuGet.Helpers;
 
 namespace Microsoft.RoslynTools.NuGet
 {
@@ -11,36 +12,11 @@ namespace Microsoft.RoslynTools.NuGet
     {
         private const string NotPublishedDirectoryName = "NotPublished";
 
-        private static readonly string[] RoslynPackageIds =
-            {
-                "Microsoft.CodeAnalysis",
-                "Microsoft.CodeAnalysis.Common",
-                "Microsoft.CodeAnalysis.Compilers",
-                "Microsoft.CodeAnalysis.CSharp",
-                "Microsoft.CodeAnalysis.CSharp.CodeStyle",
-                "Microsoft.CodeAnalysis.CSharp.Features",
-                "Microsoft.CodeAnalysis.CSharp.Scripting",
-                "Microsoft.CodeAnalysis.CSharp.Workspaces",
-                "Microsoft.CodeAnalysis.EditorFeatures.Text",
-                "Microsoft.CodeAnalysis.Features",
-                "Microsoft.CodeAnalysis.Scripting",
-                "Microsoft.CodeAnalysis.Scripting.Common",
-                "Microsoft.CodeAnalysis.VisualBasic",
-                "Microsoft.CodeAnalysis.VisualBasic.CodeStyle",
-                "Microsoft.CodeAnalysis.VisualBasic.Features",
-                "Microsoft.CodeAnalysis.VisualBasic.Workspaces",
-                "Microsoft.CodeAnalysis.Workspaces.Common",
-                "Microsoft.CodeAnalysis.Workspaces.MSBuild",
-                "Microsoft.Net.Compilers.Toolset",
-                "Microsoft.VisualStudio.LanguageServices"
-            };
-
         internal static async Task<int> PrepareAsync(ILogger logger)
         {
             try
             {
                 string? version;
-
                 var determinedVersion = TryDetermineRoslynPackageVersion(out version);
 
                 if (!determinedVersion)
@@ -49,10 +25,12 @@ namespace Microsoft.RoslynTools.NuGet
                     return 1;
                 }
 
+                Contract.Assert(version is not null);
+
                 logger.LogInformation($"Moving {version} packages...");
 
                 var publishedPackages = RoslynPackageIds
-                    .Select(packageId => $"{packageId}.{version}.nupkg")
+                    .Select(packageId => GetPackageFileName(packageId, version))
                     .ToHashSet();
 
                 if (!Directory.Exists(NotPublishedDirectoryName))
@@ -84,19 +62,6 @@ namespace Microsoft.RoslynTools.NuGet
             }
 
             return 0;
-
-            static bool TryDetermineRoslynPackageVersion([NotNullWhen(returnValue: true)] out string? version)
-            {
-                var packageFileName = Directory.GetFiles(Environment.CurrentDirectory, "Microsoft.Net.Compilers.Toolset.*.nupkg").FirstOrDefault();
-                if (packageFileName is null)
-                {
-                    version = null;
-                    return false;
-                }
-
-                version = Path.GetFileNameWithoutExtension(packageFileName).Substring(32);
-                return true;
-            }
 
             static bool IsPublishedPackage(string packagePath, HashSet<string> publishedPackages)
             {
