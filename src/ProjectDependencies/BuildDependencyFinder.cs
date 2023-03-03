@@ -21,7 +21,7 @@ namespace ProjectDependencies
         /// Uses project.assets.json files in the given folder to search for dependency graphs related to <paramref name="packageName"/> with version <paramref name="packageVersion"/>.
         /// Note that it does an exact match for both and is not particularly optimized for speed. It recursively looks through all loaded files until it finds a root. 
         /// </summary>
-        public static async Task<DependencyNode[]> FindDependenciesAsync(string folder, string packageName, string packageVersion, Action<int, bool> callback, CancellationToken cancellationToken)
+        public static DependencyNode[] FindDependencies(string folder, string packageName, string packageVersion, Action<int, bool> callback, CancellationToken cancellationToken)
         {
             var collectionOfLockFiles = new Dictionary<string, LockFile>();
 
@@ -35,12 +35,12 @@ namespace ProjectDependencies
 
             callback(fileCount, true);
 
-            var roots = await BuildReversedDependencyGraphAsync(collectionOfLockFiles, packageName, packageVersion, cancellationToken);
+            var roots = BuildReversedDependencyGraph(collectionOfLockFiles, packageName, packageVersion, cancellationToken);
 
             return roots;
         }
 
-        private static Task<DependencyNode[]> BuildReversedDependencyGraphAsync(IReadOnlyDictionary<string, LockFile> lockFiles, string packageName, string packageVersion, CancellationToken cancellationToken)
+        private static DependencyNode[] BuildReversedDependencyGraph(IReadOnlyDictionary<string, LockFile> lockFiles, string packageName, string packageVersion, CancellationToken cancellationToken)
         {
             // Find all the initial version nodes for the package
             var rootNodes = new List<DependencyNode>();
@@ -92,7 +92,7 @@ namespace ProjectDependencies
                 }
             });
 
-            return Task.FromResult(finalRoots);
+            return finalRoots;
         }
 
         private static void FindDependentLibraries(DependencyNode currentNode, IReadOnlyDictionary<string, LockFile> lockFiles)

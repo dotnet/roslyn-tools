@@ -47,7 +47,9 @@
             <Button Content="Calculate" Click="Calculate_Clicked" />
         </StackPanel>
 
-        <TreeView Grid.Row="1" MinHeight="100" MinWidth="100" Name="DependenciesTree">
+        <TextBlock Grid.Row="1" Visibility="Collapsed" Text="Loading..." Name="StatusText" />
+        
+        <TreeView Grid.Row="1" Name="DependenciesTree">
             <TreeView.ItemTemplate>
                 <DataTemplate DataType="local:DependencyNode">
                     <StackPanel Orientation="Horizontal">

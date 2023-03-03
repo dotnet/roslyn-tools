@@ -65,28 +65,42 @@ namespace ProjectDependencies
             }
         }
 
-        private async void Calculate_Clicked(object sender, RoutedEventArgs e)
+        private void Calculate_Clicked(object sender, RoutedEventArgs e)
         {
             _dependenciesCancellationSource.Cancel();
             _dependenciesCancellationSource = new();
 
             var cancellationToken = _dependenciesCancellationSource.Token;
-            DependenciesTree.Items.Clear();
-            var nodes = await BuildDependencyFinder.FindDependenciesAsync(
-                Path,
-                PackageName,
-                PackageVersion,
-                (count, finished) =>
-                {
 
-                },
-                cancellationToken).ConfigureAwait(true);
-
-            cancellationToken.ThrowIfCancellationRequested();
-            foreach (var node in nodes)
+            try
             {
-                DependenciesTree.Items.Add(node);
+                DependenciesTree.Visibility = Visibility.Collapsed;
+                StatusText.Visibility = Visibility.Visible;
+
+                DependenciesTree.Items.Clear();
+                var nodes = BuildDependencyFinder.FindDependencies(
+                    Path,
+                    PackageName,
+                    PackageVersion,
+                    (count, finished) =>
+                    {
+                        StatusText.Text = $"Loading from {count} files";
+                    },
+                    cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
+                foreach (var node in nodes)
+                {
+                    DependenciesTree.Items.Add(node);
+                }
             }
+            finally
+            {
+                DependenciesTree.Visibility = Visibility.Visible;
+                StatusText.Visibility = Visibility.Collapsed;
+            }
+
+            
         }
     }
 }
