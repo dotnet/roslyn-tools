@@ -1,14 +1,18 @@
-﻿using NuGet.ProjectModel;
+using NuGet.ProjectModel;
+using System;
 using System.Collections.ObjectModel;
+using System.Security.Policy;
 
 namespace ProjectDependencies;
 
 public class DependencyNode
 {
-    public DependencyNode? Parent { get; init; }
-    public string Name { get; init; }
-    public string Version { get; init; }
-    public string TypeKind { get; init; }
+    public string DisplayName => ToString();
+
+    public DependencyNode? Parent { get; }
+    public string Name { get; }
+    public string Version { get; }
+    public string TypeKind { get; }
     public bool IsExpanded { 
         get; 
         set; 
@@ -41,10 +45,8 @@ public class DependencyNode
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(
-            HashCode.Combine(Name.GetHashCode(),
-            HashCode.Combine(Version.GetHashCode(),
-            HashCode.Combine(TypeKind.GetHashCode(), Parent?.GetHashCode() ?? 0))));
+        // Good enough? 🤷
+        return ToString().GetHashCode();
     }
 
     public override string ToString()

@@ -1,14 +1,15 @@
-﻿using NuGet.ProjectModel;
+using NuGet.ProjectModel;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
+using System.Threading;
+using System.IO;
 
 namespace ProjectDependencies
 {
@@ -20,31 +21,34 @@ namespace ProjectDependencies
         /// Uses project.assets.json files in the given folder to search for dependency graphs related to <paramref name="packageName"/> with version <paramref name="packageVersion"/>.
         /// Note that it does an exact match for both and is not particularly optimized for speed. It recursively looks through all loaded files until it finds a root. 
         /// </summary>
-        public static async Task<ImmutableArray<DependencyNode>> FindDependenciesAsync(string folder, string packageName, string packageVersion, Action<int, bool> callback, CancellationToken cancellationToken)
+        public static DependencyNode[] FindDependencies(string folder, string packageName, string packageVersion, Action<int, bool> callback, CancellationToken cancellationToken)
         {
-            var collectionOfLockFiles = new ConcurrentDictionary<string, LockFile>();
+            var collectionOfLockFiles = new Dictionary<string, LockFile>();
 
             var fileCount = 0;
             foreach (var file in Directory.EnumerateFiles(folder, "project.assets.json", SearchOption.AllDirectories))
             {
-                await LoadLockFileAsync(file, collectionOfLockFiles);
+                cancellationToken.ThrowIfCancellationRequested();
+                LoadLockFile(file, collectionOfLockFiles);
                 callback(++fileCount, false);
             }
 
             callback(fileCount, true);
 
-            var roots = await BuildReversedDependencyGraphAsync(collectionOfLockFiles.ToImmutableDictionary(), packageName, packageVersion, cancellationToken);
+            var roots = BuildReversedDependencyGraph(collectionOfLockFiles, packageName, packageVersion, cancellationToken);
 
             return roots;
         }
 
-        private static Task<ImmutableArray<DependencyNode>> BuildReversedDependencyGraphAsync(ImmutableDictionary<string, LockFile> lockFiles, string packageName, string packageVersion, CancellationToken cancellationToken)
+        private static DependencyNode[] BuildReversedDependencyGraph(IReadOnlyDictionary<string, LockFile> lockFiles, string packageName, string packageVersion, CancellationToken cancellationToken)
         {
             // Find all the initial version nodes for the package
             var rootNodes = new List<DependencyNode>();
 
-            foreach (var (fileName, lockFile) in lockFiles)
+            foreach (var pair in lockFiles)
             {
+                var (fileName, lockFile) = (pair.Key, pair.Value);
+
                 foreach (var target in lockFile.Targets)
                 {
                     foreach (var library in target.Libraries)
@@ -57,7 +61,7 @@ namespace ProjectDependencies
                             {
                                 if (TryGetMatchingDependency(rootNodes, dependency, out var dependencyNode))
                                 {
-                                    dependencyNode.EnsureDependentNode(library);
+                                    dependencyNode!.EnsureDependentNode(library);
                                     break;
                                 }
 
@@ -68,15 +72,16 @@ namespace ProjectDependencies
                 }
             }
 
-            var finalRoots = rootNodes.ToImmutableArray();
+            var finalRoots = rootNodes.ToArray();
 
             // Now that we have the roots, we need to span out and fill in the dependency chains. For each root
             // we'll kick up a thread to do this
             Parallel.ForEach(finalRoots, (node) =>
             {
                 var nodesToTraverse = new Stack<DependencyNode>(node.Children);
-                while (nodesToTraverse.TryPop(out var currentNode))
+                while (nodesToTraverse.Count > 0)
                 {
+                    var currentNode = nodesToTraverse.Pop();
                     cancellationToken.ThrowIfCancellationRequested();
 
                     FindDependentLibraries(currentNode, lockFiles);
@@ -87,13 +92,15 @@ namespace ProjectDependencies
                 }
             });
 
-            return Task.FromResult(finalRoots);
+            return finalRoots;
         }
 
-        private static void FindDependentLibraries(DependencyNode currentNode, ImmutableDictionary<string, LockFile> lockFiles)
+        private static void FindDependentLibraries(DependencyNode currentNode, IReadOnlyDictionary<string, LockFile> lockFiles)
         {
-            foreach (var (fileName, lockFile) in lockFiles)
+            foreach (var pair in lockFiles)
             {
+                var (fileName, lockFile) = (pair.Key, pair.Value);
+
                 foreach (var target in lockFile.Targets)
                 {
                     foreach (var library in target.Libraries)
@@ -112,7 +119,7 @@ namespace ProjectDependencies
             }
         }
 
-        private static bool TryGetMatchingDependency(List<DependencyNode> rootNodes, PackageDependency dependency, [NotNullWhen(true)] out DependencyNode? dependencyNode)
+        private static bool TryGetMatchingDependency(List<DependencyNode> rootNodes, PackageDependency dependency, out DependencyNode? dependencyNode)
         {
             foreach (var node in rootNodes)
             {
@@ -128,14 +135,11 @@ namespace ProjectDependencies
             return false;
         }
 
-        private static async Task LoadLockFileAsync(string file, ConcurrentDictionary<string, LockFile> collectionOfLockFiles)
+        private static void LoadLockFile(string file, Dictionary<string, LockFile> collectionOfLockFiles)
         {
-            var text = await File.ReadAllTextAsync(file);
+            var text = File.ReadAllText(file);
             var lockFile = s_lockFileFormat.Parse(text, $"In Memory: {file}");
-            if (!collectionOfLockFiles.TryAdd(file, lockFile))
-            {
-                throw new InvalidOperationException();
-            }
+            collectionOfLockFiles.Add(file, lockFile);
         }
     }
 }
