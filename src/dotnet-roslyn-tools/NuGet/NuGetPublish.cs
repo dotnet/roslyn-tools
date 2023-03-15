@@ -3,8 +3,10 @@
 // See the License.txt file in the project root for more information.
 
 using Microsoft.Extensions.Logging;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.RoslynTools.Utilities;
+using System.Diagnostics.Contracts;
+
+using static Microsoft.RoslynTools.NuGet.Helpers;
 
 namespace Microsoft.RoslynTools.NuGet
 {
@@ -13,74 +15,7 @@ namespace Microsoft.RoslynTools.NuGet
         public const string RoslynRepo = "roslyn";
         public const string RoslynSdkRepo = "roslyn-sdk";
 
-        private static readonly string[] RoslynPackageIds =
-            {
-                "Microsoft.CodeAnalysis",
-                "Microsoft.CodeAnalysis.Common",
-                "Microsoft.CodeAnalysis.Compilers",
-                "Microsoft.CodeAnalysis.CSharp",
-                "Microsoft.CodeAnalysis.CSharp.CodeStyle",
-                "Microsoft.CodeAnalysis.CSharp.Features",
-                "Microsoft.CodeAnalysis.CSharp.Scripting",
-                "Microsoft.CodeAnalysis.CSharp.Workspaces",
-                "Microsoft.CodeAnalysis.EditorFeatures.Text",
-                "Microsoft.CodeAnalysis.Features",
-                "Microsoft.CodeAnalysis.Scripting",
-                "Microsoft.CodeAnalysis.Scripting.Common",
-                "Microsoft.CodeAnalysis.VisualBasic",
-                "Microsoft.CodeAnalysis.VisualBasic.CodeStyle",
-                "Microsoft.CodeAnalysis.VisualBasic.Features",
-                "Microsoft.CodeAnalysis.VisualBasic.Workspaces",
-                "Microsoft.CodeAnalysis.Workspaces.Common",
-                "Microsoft.CodeAnalysis.Workspaces.MSBuild",
-                "Microsoft.Net.Compilers.Toolset",
-                "Microsoft.VisualStudio.LanguageServices"
-            };
-
-        private static readonly string[] RoslynSdkPackageIds =
-            {
-                "Microsoft.CodeAnalysis.Analyzer.Testing",
-                "Microsoft.CodeAnalysis.CodeFix.Testing",
-                "Microsoft.CodeAnalysis.CodeRefactoring.Testing",
-                "Microsoft.CodeAnalysis.CSharp.Analyzer.Testing",
-                "Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.MSTest",
-                "Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.NUnit",
-                "Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit",
-                "Microsoft.CodeAnalysis.CSharp.CodeFix.Testing",
-                "Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.MSTest",
-                "Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.NUnit",
-                "Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit",
-                "Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing",
-                "Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing.MSTest",
-                "Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing.NUnit",
-                "Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing.XUnit",
-                "Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing",
-                "Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing.MSTest",
-                "Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing.NUnit",
-                "Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing.XUnit",
-                "Microsoft.CodeAnalysis.SourceGenerators.Testing",
-                "Microsoft.CodeAnalysis.Testing.Verifiers.MSTest",
-                "Microsoft.CodeAnalysis.Testing.Verifiers.NUnit",
-                "Microsoft.CodeAnalysis.Testing.Verifiers.XUnit",
-                "Microsoft.CodeAnalysis.VisualBasic.Analyzer.Testing",
-                "Microsoft.CodeAnalysis.VisualBasic.Analyzer.Testing.MSTest",
-                "Microsoft.CodeAnalysis.VisualBasic.Analyzer.Testing.NUnit",
-                "Microsoft.CodeAnalysis.VisualBasic.Analyzer.Testing.XUnit",
-                "Microsoft.CodeAnalysis.VisualBasic.CodeFix.Testing",
-                "Microsoft.CodeAnalysis.VisualBasic.CodeFix.Testing.MSTest",
-                "Microsoft.CodeAnalysis.VisualBasic.CodeFix.Testing.NUnit",
-                "Microsoft.CodeAnalysis.VisualBasic.CodeFix.Testing.XUnit",
-                "Microsoft.CodeAnalysis.VisualBasic.CodeRefactoring.Testing",
-                "Microsoft.CodeAnalysis.VisualBasic.CodeRefactoring.Testing.MSTest",
-                "Microsoft.CodeAnalysis.VisualBasic.CodeRefactoring.Testing.NUnit",
-                "Microsoft.CodeAnalysis.VisualBasic.CodeRefactoring.Testing.XUnit",
-                "Microsoft.CodeAnalysis.VisualBasic.SourceGenerators.Testing",
-                "Microsoft.CodeAnalysis.VisualBasic.SourceGenerators.Testing.MSTest",
-                "Microsoft.CodeAnalysis.VisualBasic.SourceGenerators.Testing.NUnit",
-                "Microsoft.CodeAnalysis.VisualBasic.SourceGenerators.Testing.XUnit"
-            };
-
-        internal static async Task<int> PublishAsync(string repoName, string source, string apiKey, bool unlisted, ILogger logger)
+        internal static async Task<int> PublishAsync(string repoName, string source, string apiKey, bool unlisted, bool ignoreMissingPackage, ILogger logger)
         {
             try
             {
@@ -96,11 +31,36 @@ namespace Microsoft.RoslynTools.NuGet
                     return 1;
                 }
 
+                Contract.Assert(version is not null);
+
                 var packageIds = repoName == RoslynRepo
                     ? RoslynPackageIds
                     : RoslynSdkPackageIds;
 
                 logger.LogInformation($"Publishing {version} packages...");
+
+                var hasMissingPackageError = false;
+                foreach (var packageId in packageIds)
+                {
+                    if (!File.Exists(GetPackageFileName(packageId, version)))
+                    {
+                        if (ignoreMissingPackage)
+                        {
+                            logger.LogInformation($"Missing package '{packageId}' is ignored.");
+                        }
+                        else
+                        {
+                            logger.LogError($"Required package '{packageId}' is missing");
+                            hasMissingPackageError = true;
+                        }
+                    }
+                }
+
+                if (hasMissingPackageError)
+                {
+                    logger.LogInformation("Publication failed.");
+                    return 1;
+                }
 
                 foreach (var packageId in packageIds)
                 {
@@ -132,38 +92,12 @@ namespace Microsoft.RoslynTools.NuGet
 
             return 0;
 
-            static bool TryDetermineRoslynPackageVersion([NotNullWhen(returnValue: true)] out string? version)
+            Task<ProcessResult> PublishPackageAsync(string packageId, string version)
             {
-                var packageFileName = Directory.GetFiles(Environment.CurrentDirectory, "Microsoft.Net.Compilers.Toolset.*.nupkg").FirstOrDefault();
-                if (packageFileName is null)
-                {
-                    version = null;
-                    return false;
-                }
-
-                version = Path.GetFileNameWithoutExtension(packageFileName).Substring(32);
-                return true;
+                return ProcessRunner.RunProcessAsync("dotnet", $"nuget push --source \"{source}\" --api-key \"{apiKey}\" \"{GetPackageFileName(packageId, version)}\"");
             }
 
-            static bool TryDetermineRoslynSdkPackageVersion([NotNullWhen(returnValue: true)] out string? version)
-            {
-                var packageFileName = Directory.GetFiles(Environment.CurrentDirectory, "Microsoft.CodeAnalysis.Analyzer.Testing.*.nupkg").FirstOrDefault();
-                if (packageFileName is null)
-                {
-                    version = null;
-                    return false;
-                }
-
-                version = Path.GetFileNameWithoutExtension(packageFileName).Substring(40);
-                return true;
-            }
-
-            Task<ProcessResult> PublishPackageAsync(string packageId, string? version)
-            {
-                return ProcessRunner.RunProcessAsync("dotnet", $"nuget push --source \"{source}\" --api-key \"{apiKey}\" \"{packageId}.{version}.nupkg\"");
-            }
-
-            Task<ProcessResult> UnlistPackageAsync(string packageId, string? version)
+            Task<ProcessResult> UnlistPackageAsync(string packageId, string version)
             {
                 return ProcessRunner.RunProcessAsync("dotnet", $"nuget delete {packageId} {version} --source \"{source}\" --api-key \"{apiKey}\" --non-interactive");
             }

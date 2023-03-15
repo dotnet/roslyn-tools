@@ -21,6 +21,7 @@ internal class NuGetPublishCommand
     internal static readonly Option<string> SourceOption = new Option<string>(new[] { "--source", "-s" }, () => "https://www.nuget.org", "Package source (URL, UNC/folder path or package source name) to use.");
     internal static readonly Option<string> ApiKeyOption = new Option<string>(new[] { "--api-key", "-k" }, "The API key for the server.") { IsRequired = true };
     internal static readonly Option<bool> UnlistedOption = new Option<bool>(new[] { "--unlisted", "-u" }, "Whether to publish the packages as unlisted.");
+    internal static readonly Option<bool> IgnoreMissingPackagesOption = new Option<bool>(new[] { "--ignore", "-i" }, "Whether to ignore missing packages.");
 
     public static Symbol GetCommand()
     {
@@ -30,6 +31,7 @@ internal class NuGetPublishCommand
             SourceOption,
             ApiKeyOption,
             UnlistedOption,
+            IgnoreMissingPackagesOption,
             VerbosityOption
         };
         command.Handler = s_nuGetPublishCommandHandler;
@@ -47,8 +49,9 @@ internal class NuGetPublishCommand
             var source = context.ParseResult.GetValueForOption(SourceOption)!;
             var apiKey = context.ParseResult.GetValueForOption(ApiKeyOption)!;
             var unlisted = context.ParseResult.GetValueForOption(UnlistedOption)!;
+            var ignore = context.ParseResult.GetValueForOption(IgnoreMissingPackagesOption)!;
 
-            return await NuGetPublish.PublishAsync(repoName, source, apiKey, unlisted, logger);
+            return await NuGetPublish.PublishAsync(repoName, source, apiKey, unlisted, ignore, logger);
         }
     }
 }
