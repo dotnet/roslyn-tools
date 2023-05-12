@@ -13,12 +13,9 @@
 
     <!-- Roslyn release branches (flowing between releases) -->
     <merge from="release/dev17.4" to="release/dev17.5-vs-deps" />
-    <merge from="release/dev17.5-vs-deps" to="release/dev17.6" />
+    <merge from="release/dev17.5-vs-deps" to="release/dev17.6-vs-deps" />
     <merge from="release/dev17.6-vs-deps" to="release/dev17.7" />  
     <merge from="release/dev17.7" to="main" />  
-
-    <!-- Roslyn release branches (flowing to -vs-deps) -->
-    <merge from="release/dev17.6" to="release/dev17.6-vs-deps" />
 
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/semi-auto-props" owners="333fred" frequency="weekly" />
