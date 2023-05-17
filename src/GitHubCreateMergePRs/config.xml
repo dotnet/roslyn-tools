@@ -1,5 +1,5 @@
 <config>
-  <repo owner="dotnet" name="roslyn" mergeOwners="allisonchou">
+  <repo owner="dotnet" name="roslyn" mergeOwners="Cosifne">
     <!--
       VS versions under servicing:
         VS 2019: https://docs.microsoft.com/en-us/lifecycle/products/visual-studio-2019
@@ -9,27 +9,20 @@
     <merge from="dev15.9.x" to="release/dev16.11-vs-deps" />
     <merge from="release/dev16.11-vs-deps" to="release/dev17.0-vs-deps" />
     <merge from="release/dev17.0-vs-deps" to="release/dev17.2" />
-    <merge from="release/dev17.2" to="release/dev17.3" />
-
-    <!-- Roslyn last servicing branch (flowing into current branch) -->
-    <merge from="release/dev17.3" to="release/dev17.4" />
+    <merge from="release/dev17.2" to="release/dev17.4" />
 
     <!-- Roslyn release branches (flowing between releases) -->
     <merge from="release/dev17.4" to="release/dev17.5-vs-deps" />
-    <merge from="release/dev17.5-vs-deps" to="release/dev17.6" />
-    <merge from="release/dev17.6" to="main" />
-    <merge from="release/dev17.6-vs-deps" to="main-vs-deps" />
-
-    <!-- Roslyn release branches (flowing to -vs-deps) -->
-    <merge from="main" to="main-vs-deps" />
-    <merge from="release/dev17.6" to="release/dev17.6-vs-deps" />
+    <merge from="release/dev17.5-vs-deps" to="release/dev17.6-vs-deps" />
+    <merge from="release/dev17.6-vs-deps" to="release/dev17.7" />  
+    <merge from="release/dev17.7" to="main" />  
 
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/semi-auto-props" owners="333fred" frequency="weekly" />
     <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
     <merge from="main" to="features/editorconfig_lsp" owners="dibarbet,Danyboyyy" frequency="weekly" />
     <merge from="main" to="features/FixAllNamingViolation" owners="Cosifne" frequency="weekly" />
-    <merge from="main" to="features/UsingAliasesTypes" owners="CyrusNajmabadi" />
+    <merge from="main" to="features/StructDiagnosticBag" owners="CyrusNajmabadi" />
     <merge from="main" to="features/lsp_configuration" owners="Cosifne" frequency="daily" />
   </repo>
 
@@ -41,7 +34,8 @@
   <!-- razor -->
   <repo owner="dotnet" name="razor" mergeOwners="davidwengier,allisonchou">
     <merge from="release/dev17.5" to="release/dev17.6" />
-    <merge from="release/dev17.6" to="main" />
+    <merge from="release/dev17.6" to="release/dev17.7" />
+    <merge from="release/dev17.7" to="main" />
   </repo>
 
   <!-- Project System repo -->
@@ -77,10 +71,11 @@
     <merge from="release/dev17.3" to="release/dev17.4" />
     <merge from="release/dev17.4" to="release/dev17.5" />
     <merge from="release/dev17.5" to="release/dev17.6" />
+    <merge from="release/dev17.6" to="release/dev17.7" />
 
     <!-- regular branch flow -->
-    <merge from="release/dev17.5" to="main" />
-    <merge from="main" to="release/dev17.6" />
+    <merge from="release/dev17.6" to="main" />
+    <merge from="main" to="release/dev17.7" />
     <merge from="feature/auto-widen" to="feature/erased-unions" />
   </repo>
 
