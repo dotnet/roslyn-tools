@@ -87,7 +87,8 @@
     <merge from="release/6.0.2xx" to="release/6.0.3xx" />
     <merge from="release/6.0.3xx" to="release/7.0.1xx" />
     <merge from="release/7.0.1xx" to="release/7.0.3xx" />
-    <merge from="release/7.0.3xx" to="main" />
+    <merge from="release/7.0.3xx" to="release/7.0.4xx" />
+    <merge from="release/7.0.4xx" to="main" />
   </repo>
 
   <!-- msbuild language service branches -->
