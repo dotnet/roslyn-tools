@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Forms;
 
 namespace ProjectDependencies
@@ -14,6 +16,7 @@ namespace ProjectDependencies
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private CancellationTokenSource _dependenciesCancellationSource = new();
+        public ObservableCollection<DependencyNode> Nodes { get; } = new();
 
         public MainWindow()
         {
@@ -77,7 +80,7 @@ namespace ProjectDependencies
                 DependenciesTree.Visibility = Visibility.Collapsed;
                 StatusText.Visibility = Visibility.Visible;
 
-                DependenciesTree.Items.Clear();
+                Nodes.Clear();
                 var nodes = BuildDependencyFinder.FindDependencies(
                     Path,
                     PackageName,
@@ -91,16 +94,14 @@ namespace ProjectDependencies
                 cancellationToken.ThrowIfCancellationRequested();
                 foreach (var node in nodes)
                 {
-                    DependenciesTree.Items.Add(node);
+                    Nodes.Add(node);
                 }
             }
             finally
             {
                 DependenciesTree.Visibility = Visibility.Visible;
                 StatusText.Visibility = Visibility.Collapsed;
-            }
-
-            
+            }            
         }
     }
 }
