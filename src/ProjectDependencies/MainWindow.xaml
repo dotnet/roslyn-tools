@@ -43,23 +43,35 @@
                 <TextBlock Text="Package Version" Grid.Column="0" />
                 <TextBox Text="{Binding PackageVersion, Mode=TwoWay}" Grid.Column="1" />
             </Grid>
-            
+
             <Button Content="Calculate" Click="Calculate_Clicked" />
         </StackPanel>
 
         <TextBlock Grid.Row="1" Visibility="Collapsed" Text="Loading..." Name="StatusText" />
-        
-        <TreeView Grid.Row="1" Name="DependenciesTree">
+
+        <TreeView Grid.Row="1" Name="DependenciesTree" ItemsSource="{Binding Nodes}">
             <TreeView.ItemTemplate>
-                <DataTemplate DataType="local:DependencyNode">
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Name}" FontWeight="Bold" />
                         <TextBlock Text=" (" FontWeight="Light" />
                         <TextBlock Text="{Binding Version}" FontWeight="Light" />
                         <TextBlock Text=")" FontWeight="Light" />
                     </StackPanel>
-                </DataTemplate>
+                </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="{x:Type TreeViewItem}">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                    <Setter Property="FontWeight" Value="Normal" />
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TreeView.ItemContainerStyle>
         </TreeView>
     </Grid>
 </Window>

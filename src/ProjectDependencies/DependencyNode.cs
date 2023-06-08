@@ -1,11 +1,14 @@
 using NuGet.ProjectModel;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Security.Policy;
 
 namespace ProjectDependencies;
 
-public class DependencyNode
+public class DependencyNode : INotifyPropertyChanged
 {
     public string DisplayName => ToString();
 
@@ -13,11 +16,20 @@ public class DependencyNode
     public string Name { get; }
     public string Version { get; }
     public string TypeKind { get; }
-    public bool IsExpanded { 
-        get; 
-        set; 
+
+    private bool _isExpanded;
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set => Set(ref _isExpanded, value);
     }
-    public bool IsLeaf { get; set; }
+
+    private bool _isLeaf;
+    public bool IsLeaf
+    {
+        get => _isLeaf;
+        set => Set(ref _isLeaf, value);
+    }
 
     public ObservableCollection<DependencyNode> Children { get; } = new();
 
@@ -28,6 +40,8 @@ public class DependencyNode
         TypeKind = type;
         Parent = parent;
     }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     internal void EnsureDependentNode(LockFileTargetLibrary library)
     {
@@ -52,5 +66,16 @@ public class DependencyNode
     public override string ToString()
     {
         return Name + ":" + Version;
+    }
+
+    private void Set<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return;
+        }
+
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
