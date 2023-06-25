@@ -1,5 +1,5 @@
 <config>
-  <repo owner="dotnet" name="roslyn" mergeOwners="Cosifne">
+  <repo owner="dotnet" name="roslyn" mergeOwners="RikkiGibson">
     <!--
       VS versions under servicing:
         VS 2019: https://docs.microsoft.com/en-us/lifecycle/products/visual-studio-2019
@@ -13,8 +13,8 @@
 
     <!-- Roslyn release branches (flowing between releases) -->
     <merge from="release/dev17.4" to="release/dev17.5-vs-deps" />
-    <merge from="release/dev17.5-vs-deps" to="release/dev17.6-vs-deps" />
-    <merge from="release/dev17.6-vs-deps" to="release/dev17.7" />  
+    <merge from="release/dev17.5-vs-deps" to="release/dev17.6" />
+    <merge from="release/dev17.6" to="release/dev17.7" />  
     <merge from="release/dev17.7" to="main" />  
 
     <!-- Roslyn feature branches -->
@@ -76,7 +76,7 @@
     <!-- regular branch flow -->
     <merge from="release/dev17.6" to="main" />
     <merge from="main" to="release/dev17.7" />
-    <merge from="feature/auto-widen" to="feature/erased-unions" />
+    <merge from="main" to="release/net8" />
   </repo>
 
   <!-- roslyn-analyzer branches -->
@@ -86,7 +86,9 @@
     <merge from="release/6.0.1xx" to="release/6.0.2xx" />
     <merge from="release/6.0.2xx" to="release/6.0.3xx" />
     <merge from="release/6.0.3xx" to="release/7.0.1xx" />
-    <merge from="release/7.0.1xx" to="main" />
+    <merge from="release/7.0.1xx" to="release/7.0.3xx" />
+    <merge from="release/7.0.3xx" to="release/7.0.4xx" />
+    <merge from="release/7.0.4xx" to="main" />
   </repo>
 
   <!-- msbuild language service branches -->
@@ -95,10 +97,12 @@
   </repo>
 
   <!-- dotnet-format service branches -->
-  <repo owner="dotnet" name="format" mergeOwners="jmarolf">
+  <repo owner="dotnet" name="format" mergeOwners="sharwell">
     <merge from="release/6.0.2xx" to="release/6.0.3xx" />
     <merge from="release/6.0.3xx" to="release/6.x" />
-    <merge from="release/6.x" to="release/7.x" />
+    <merge from="release/6.x" to="release/7.0.1xx" />
+    <merge from="release/7.0.1xx" to="release/7.0.3xx" />
+    <merge from="release/7.0.3xx" to="release/7.x" />
     <merge from="release/7.x" to="main" />
   </repo>
 
