@@ -57,7 +57,7 @@ namespace ProjectDependencies
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
-                            if (dependency.Id.Equals(packageName, StringComparison.OrdinalIgnoreCase) && dependency.VersionRange.OriginalString == packageVersion)
+                            if (dependency.Id.Equals(packageName, StringComparison.OrdinalIgnoreCase) && (dependency.VersionRange.OriginalString == packageVersion || packageVersion.Length == 0))
                             {
                                 if (TryGetMatchingDependency(rootNodes, dependency, out var dependencyNode))
                                 {
