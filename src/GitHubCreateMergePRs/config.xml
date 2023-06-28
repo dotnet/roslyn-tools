@@ -74,8 +74,7 @@
     <merge from="release/dev17.6" to="release/dev17.7" />
 
     <!-- regular branch flow -->
-    <merge from="release/dev17.6" to="main" />
-    <merge from="main" to="release/dev17.7" />
+    <merge from="release/dev17.7" to="main" />
     <merge from="main" to="release/net8" />
   </repo>
 
