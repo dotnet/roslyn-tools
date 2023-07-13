@@ -50,6 +50,7 @@
     <merge from="dev17.4.x" to="main" />
     <merge from="dev17.5-preview2" to="main" />
     <merge from="dev17.5.x" to="main" />
+    <merge from="dev17.7.x" to="main" />
   </repo>
 
   <repo owner="dotnet" name="templates">
