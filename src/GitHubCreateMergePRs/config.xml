@@ -14,8 +14,9 @@
     <!-- Roslyn release branches (flowing between releases) -->
     <merge from="release/dev17.4" to="release/dev17.5-vs-deps" />
     <merge from="release/dev17.5-vs-deps" to="release/dev17.6" />
-    <merge from="release/dev17.6" to="release/dev17.7" />  
-    <merge from="release/dev17.7" to="main" />  
+    <merge from="release/dev17.6" to="release/dev17.7" />
+    <merge from="release/dev17.7" to="release/dev17.8" />
+    <merge from="release/dev17.8" to="main" />
 
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/semi-auto-props" owners="333fred" frequency="weekly" />
@@ -35,7 +36,8 @@
   <repo owner="dotnet" name="razor" mergeOwners="davidwengier,allisonchou">
     <merge from="release/dev17.5" to="release/dev17.6" />
     <merge from="release/dev17.6" to="release/dev17.7" />
-    <merge from="release/dev17.7" to="main" />
+    <merge from="release/dev17.7" to="release/dev17.8" />
+    <merge from="release/dev17.8" to="main" />
   </repo>
 
   <!-- Project System repo -->
