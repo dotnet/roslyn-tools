@@ -1,5 +1,5 @@
 <config>
-  <repo owner="dotnet" name="roslyn" mergeOwners="allisonchou">
+  <repo owner="dotnet" name="roslyn" mergeOwners="dibarbet">
     <!--
       VS versions under servicing:
         VS 2019: https://docs.microsoft.com/en-us/lifecycle/products/visual-studio-2019
@@ -111,5 +111,11 @@
 
   <repo owner="dotnet" name="linker" mergeOwners="agocke,sbomer">
     <merge from="main" to="feature/damAnalyzer" />
+  </repo>
+
+  <repo owner="dotnet" name="vscode-csharp" mergeOwners="dibarbet">
+    <!-- Flow changes made only to release / prerelease branches back up to main. -->
+    <merge from="release" to="main" />
+    <merge from="prerelease" to="main" />
   </repo>
 </config>
