@@ -74,10 +74,11 @@
     <merge from="release/dev17.5" to="release/dev17.6" />
     <merge from="release/dev17.6" to="release/dev17.7" />
     <merge from="release/dev17.7" to="release/dev17.8" />
+    <merge from="release/dev17.8" to="release/dev17.9" />
 
     <!-- regular branch flow -->
-    <merge from="release/dev17.7" to="main" />
-    <merge from="main" to="release/dev17.8" />
+    <merge from="release/dev17.8" to="main" />
+    <merge from="main" to="release/dev17.9" />
   </repo>
 
   <!-- roslyn-analyzer branches -->
