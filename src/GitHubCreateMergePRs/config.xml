@@ -41,16 +41,10 @@
   <!-- Project System repo -->
   <repo owner="dotnet" name="project-system">
     <merge from="dev16.11.x" to="main" />
-    <merge from="dev17.0.x" to="main" />
-    <merge from="dev17.1.x" to="main" />
     <merge from="dev17.2.x" to="main" />
-    <merge from="dev17.3.x" to="main" />
-    <merge from="dev17.4-preview1" to="main" />
-    <merge from="dev17.4-preview2" to="main" />
     <merge from="dev17.4.x" to="main" />
-    <merge from="dev17.5-preview2" to="main" />
-    <merge from="dev17.5.x" to="main" />
     <merge from="dev17.7.x" to="main" />
+    <merge from="dev17.8.x" to="main" />
   </repo>
 
   <repo owner="dotnet" name="templates">
