@@ -15,6 +15,7 @@
 
     <!-- Roslyn release branches (flowing between releases) -->
     <merge from="release/dev17.8" to="main" />
+    <merge from="main" to="release/dev17.9" />
 
     <!-- Roslyn feature branches -->
     <merge from="main" to="features/semi-auto-props" owners="333fred" frequency="weekly" />
