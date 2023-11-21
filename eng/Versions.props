@@ -24,6 +24,7 @@
     <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
     <MoqVersion>4.5.21</MoqVersion>
     <NuGetVersioningVersion>5.11.0</NuGetVersioningVersion>
+    <NuGetProjectModelVersion>6.4.2-rc.1</NuGetProjectModelVersion>
     <MicrosoftAzureKeyVaultVersion>3.0.0</MicrosoftAzureKeyVaultVersion>
     <MicrosoftBuildVersion>15.6.82</MicrosoftBuildVersion>
     <MicrosoftBuildTasksCoreVersion>15.6.82</MicrosoftBuildTasksCoreVersion>
