@@ -1,5 +1,5 @@
 <config>
-  <repo owner="dotnet" name="roslyn" mergeOwners="RikkiGibson">
+  <repo owner="dotnet" name="roslyn" mergeOwners="dibarbet">
     <!--
       VS versions under servicing:
         VS 2019: https://docs.microsoft.com/en-us/lifecycle/products/visual-studio-2019
