@@ -1,5 +1,5 @@
 <config>
-  <repo owner="dotnet" name="roslyn" mergeOwners="dibarbet">
+  <repo owner="dotnet" name="roslyn" mergeOwners="cosifne">
     <!--
       VS versions under servicing:
         VS 2019: https://docs.microsoft.com/en-us/lifecycle/products/visual-studio-2019
@@ -32,7 +32,7 @@
   </repo>
 
   <!-- razor -->
-  <repo owner="dotnet" name="razor" mergeOwners="davidwengier,allisonchou">
+  <repo owner="dotnet" name="razor" mergeOwners="davidwengier">
     <merge from="release/dev17.5" to="release/dev17.6" />
     <merge from="release/dev17.6" to="release/dev17.7" />
     <merge from="release/dev17.7" to="release/dev17.8" />
