@@ -71,10 +71,11 @@
     <merge from="release/dev17.6" to="release/dev17.7" />
     <merge from="release/dev17.7" to="release/dev17.8" />
     <merge from="release/dev17.8" to="release/dev17.9" />
+    <merge from="release/dev17.9" to="release/dev17.10" />
 
     <!-- regular branch flow -->
-    <merge from="release/dev17.8" to="main" />
-    <merge from="main" to="release/dev17.9" />
+    <merge from="release/dev17.9" to="main" />
+    <merge from="main" to="release/dev17.10" />
 
     <!-- feature branches -->
     <merge from="main" to="feature/nullness" owners="T-Gro" frequency="daily" />
