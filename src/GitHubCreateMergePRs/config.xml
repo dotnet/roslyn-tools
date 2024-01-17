@@ -42,11 +42,9 @@
 
   <!-- Project System repo -->
   <repo owner="dotnet" name="project-system">
-    <merge from="dev16.11.x" to="main" />
-    <merge from="dev17.2.x" to="main" />
-    <merge from="dev17.4.x" to="main" />
-    <merge from="dev17.7.x" to="main" />
-    <merge from="dev17.8.x" to="main" />
+    <!-- dotnet/project-system doesn't take enough servicing fixes to warrant
+         automatic PRs from a release branch back to main. This entry is left
+         as a placeholder for if/when we need this functionality again. -->
   </repo>
 
   <repo owner="dotnet" name="templates">
