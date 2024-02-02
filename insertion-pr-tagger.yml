@@ -3,7 +3,8 @@ pool:
 
 stages:
 - stage: tagInsertedPullRequest
-  pool: ubuntu-latest
+  pool:
+    vmImage: 'ubuntu-latest'
   jobs:
   - job: runPRTagger
     steps:
