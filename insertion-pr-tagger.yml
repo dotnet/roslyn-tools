@@ -2,10 +2,10 @@ pool:
   vmImage: 'ubuntu-latest'
 
 stages:
-- stage: Tag inserted pull request
+- stage: tagInsertedPullRequest
   pool: ubuntu-latest
   jobs:
-  - job: RunPRTagger
+  - job: runPRTagger
     steps:
       - task: UseDotNet@2
       - script: dotnet tool install Microsoft.RoslynTools --prerelease --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json -g
