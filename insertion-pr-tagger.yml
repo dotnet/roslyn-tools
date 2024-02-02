@@ -22,4 +22,4 @@ stages:
       - task: UseDotNet@2
       - script: dotnet tool install Microsoft.RoslynTools --prerelease --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json -g
         displayName: Install Roslyn Insertion Tool
-      - script: echo "Hello world"
+      - script: roslyn-tools pr-tagger -b main-34602.64 -c 76ef32b4c79be68ee58633b9ff25e28be110ff43 --github-token $(GitHubToken) --devdiv-azdo-token $(DevDivToken) --dnceng-azdo-token $(DncengToken)
