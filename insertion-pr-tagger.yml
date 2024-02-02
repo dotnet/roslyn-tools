@@ -1,3 +1,14 @@
+resources:
+  pipelines:
+    - pipeline: vs-pipeline
+      source: DD-Official\Release\DD-CB-TestSignVS
+      project: DevDiv
+      trigger:
+        branches:
+          include:
+            - main
+            - rel/*
+
 parameters:
   - name: GitHubToken
     type: string
