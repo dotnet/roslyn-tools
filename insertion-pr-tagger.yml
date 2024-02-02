@@ -1,3 +1,14 @@
+parameters:
+  - name: GitHubToken
+    type: string
+    default: ""
+  - name: DevDivToken
+    type: string
+    default: ""
+  - name: DncengToken
+    type: string
+    default: ""
+
 pool:
   vmImage: 'ubuntu-latest'
 
