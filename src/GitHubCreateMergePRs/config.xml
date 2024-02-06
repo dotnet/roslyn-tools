@@ -79,6 +79,7 @@
 
     <!-- feature branches -->
     <merge from="main" to="feature/nullness" owners="T-Gro" frequency="daily" />
+    <merge from="main" to="lsp" owners="0101" frequency="daily" />
   </repo>
 
   <!-- roslyn-analyzer branches -->
