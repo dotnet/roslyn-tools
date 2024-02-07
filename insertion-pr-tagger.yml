@@ -1,24 +1,10 @@
-resources:
-  pipelines:
-    - pipeline: vs-pipeline
-      source: DD-Official\Release\DD-CB-TestSignVS
-      project: DevDiv
-      trigger:
-        branches:
-          include:
-            - main
-            - rel/*
-
-parameters:
-  - name: GitHubToken
-    type: string
-    default: ""
-  - name: DevDivToken
-    type: string
-    default: ""
-  - name: DncengToken
-    type: string
-    default: ""
+schedules:
+- cron: "0 */12 * * *"
+  displayName: Roslyn Tagger Tool
+  branches:
+    include:
+    - main
+  always: true
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -33,5 +19,5 @@ stages:
       - task: UseDotNet@2
       - script: dotnet tool install Microsoft.RoslynTools --prerelease --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json -g
         displayName: Install Roslyn Insertion Tool
-      - script: roslyn-tools pr-tagger -b main-34526.79 -c 52f1120f305584c4b4e72a4948d6a37077d97d94 --github-token ${{ parameters.GitHubToken }} --devdiv-azdo-token ${{ parameters.DevDivToken }} --dnceng-azdo-token ${{ parameters.DncengToken }}
+      - script: # roslyn-tools pr-tagger --github-token "" --devdiv-azdo-token "" --dnceng-azdo-token ""
         displayName: Run PR Tagger
