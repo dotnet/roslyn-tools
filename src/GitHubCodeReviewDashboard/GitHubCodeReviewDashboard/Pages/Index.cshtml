@@ -4,7 +4,11 @@
     ViewData["Title"] = "Active Pull Requests";
 }
 
-@foreach (var (category, pullRequests) in (await Dashboard.GetCategorizedPullRequests()).OrderBy(i => i.Key))
+@{
+    var (categorizedPullRequests, requestCounter) = await Dashboard.GetCategorizedPullRequests();
+
+}
+@foreach (var (category, pullRequests) in categorizedPullRequests.OrderBy(i => i.Key))
 {
     @if (string.IsNullOrEmpty(Model.Categories) || Model.Categories.Split(",").Contains(category))
     {
@@ -26,3 +30,4 @@
         </ul>
     }
 }
+<p><i>Generation of this page performed @("request".ToQuantity(requestCounter.RequestCount)) to the GitHub API.</i></p>

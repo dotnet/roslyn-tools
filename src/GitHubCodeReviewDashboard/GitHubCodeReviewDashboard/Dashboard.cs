@@ -1,17 +1,22 @@
 using Octokit;
+using Octokit.Caching;
+using Octokit.Internal;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GitHubCodeReviewDashboard
 {
     public static class Dashboard
     {
-        public static async Task<ImmutableDictionary<string, ImmutableArray<PullRequest>>> GetCategorizedPullRequests()
+        public static async Task<(ImmutableDictionary<string, ImmutableArray<PullRequest>>, RequestCounter)> GetCategorizedPullRequests()
         {
             var github = new GitHubClient(new ProductHeaderValue("dotnet-roslyn-Code-Review-Dashboard"));
+            var requestCounter = new RequestCounter();
             github.Credentials = new Credentials(Startup.GitHubToken);
+            github.ResponseCache = requestCounter;
             var openPullRequests = await GetAllPullRequests(github);
             var ideTeamMembers = (await github.Organization.Team.GetAllMembers(1781706)).Select(u => u.Login).ToList();
 
@@ -62,8 +67,8 @@ namespace GitHubCodeReviewDashboard
                 }
             }
 
-            return ImmutableDictionary.CreateRange(
-                pullRequestsByCategory.Select(kvp => KeyValuePair.Create(kvp.Key, kvp.Value.ToImmutable())));
+            return (ImmutableDictionary.CreateRange(
+                pullRequestsByCategory.Select(kvp => KeyValuePair.Create(kvp.Key, kvp.Value.ToImmutable()))), requestCounter);
         }
 
         private static async Task<ImmutableArray<PullRequest>> GetAllPullRequests(GitHubClient github)
@@ -81,6 +86,26 @@ namespace GitHubCodeReviewDashboard
             var allPullRequests = await Task.WhenAll(tasks);
 
             return allPullRequests.SelectMany(prs => prs).OrderByDescending(pr => pr.CreatedAt).ToImmutableArray();
+        }
+
+        /// <summary>
+        /// This is an implementation of <see cref="IResponseCache"/> that doesn't actually cache anything, but counts the number of requests we do
+        /// to make sure we're not doing something terrible.
+        /// </summary>
+        public class RequestCounter : IResponseCache
+        {
+            public int RequestCount;
+
+            public Task<CachedResponse.V1> GetAsync(IRequest request)
+            {
+                Interlocked.Increment(ref RequestCount);
+                return Task.FromResult<CachedResponse.V1>(null);
+            }
+
+            public Task SetAsync(IRequest request, CachedResponse.V1 cachedResponse)
+            {
+                return Task.CompletedTask;
+            }
         }
     }
 }
