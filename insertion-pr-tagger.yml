@@ -1,0 +1,23 @@
+schedules:
+- cron: "0 */12 * * *"
+  displayName: Roslyn Tagger Tool
+  branches:
+    include:
+    - main
+  always: true
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: tagInsertedPullRequest
+  pool:
+    vmImage: 'ubuntu-latest'
+  jobs:
+  - job: runPRTagger
+    steps:
+      - task: UseDotNet@2
+      - script: dotnet tool install Microsoft.RoslynTools --prerelease --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json -g
+        displayName: Install Roslyn Insertion Tool
+      - script: # roslyn-tools pr-tagger --github-token "" --devdiv-azdo-token "" --dnceng-azdo-token ""
+        displayName: Run PR Tagger

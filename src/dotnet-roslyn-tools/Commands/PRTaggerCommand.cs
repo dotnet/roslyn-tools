@@ -2,29 +2,33 @@
 // The.NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
-namespace Microsoft.RoslynTools.Commands;
-
-using System.CommandLine.Invocation;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using Microsoft.Extensions.Logging;
-using Microsoft.RoslynTools.Products;
+using Microsoft.RoslynTools.PRTagger;
+
+namespace Microsoft.RoslynTools.Commands;
 
 internal static class PRTaggerCommand
 {
     private static readonly PRTaggerCommandDefaultHandler s_prTaggerCommandHandler = new();
-
-    private static readonly Option<string> VSBuild = new(new[] { "--build", "-b" }, "VS build number") { IsRequired = true };
-    private static readonly Option<string> CommitId = new(new[] { "--commit", "-c" }, "VS build commit") { IsRequired = true };
+    private static readonly Option<int> maxVsBuildCheckNumber = new(new[] { "--vsBuildCheckNumber" }, () => 50, "Maximum number of VS build to check. Tagger would compare each VS build and its parent commit to find the inserted payload.");
+    private static readonly Option<string> VSBuild = new(new[] { "--build", "-b" }, "VS build number");
 
     public static Symbol GetCommand()
     {
-        var command = new Command("pr-tagger", "Tags PRs inserted in a given VS build.")
+        var command = new Command("pr-tagger",
+            @"Tags PRs inserted in a given VS build.
+It works by checking VS Builds one by one to find the insertion payload.
+The checking build list is created:
+1. If --build is specified, it will just check this VS build to see if insertion has been made. --vsBuildCheckNumber has no effect in this case.
+2. If --build is not specified, it will use the latest VS build as the head. The tail would be the last reported VSBuild in each product repo. Use --vsBuildCheckNumber to control the max number of build to check in each run.")
         {
             VSBuild,
-            CommitId,
+            maxVsBuildCheckNumber,
             CommonOptions.GitHubTokenOption,
             CommonOptions.DevDivAzDOTokenOption,
-            CommonOptions.DncEngAzDOTokenOption
+            CommonOptions.DncEngAzDOTokenOption,
         };
 
         command.Handler = s_prTaggerCommandHandler;
@@ -36,9 +40,6 @@ internal static class PRTaggerCommand
         public async Task<int> InvokeAsync(InvocationContext context)
         {
             var logger = context.SetupLogging();
-
-            var vsBuild = context.ParseResult.GetValueForOption(VSBuild)!;
-            var vsCommitSha = context.ParseResult.GetValueForOption(CommitId)!;
             var settings = context.ParseResult.LoadSettings(logger);
 
             if (string.IsNullOrEmpty(settings.GitHubToken) ||
@@ -49,12 +50,21 @@ internal static class PRTaggerCommand
                 return -1;
             }
 
+            var maxFetchingVSBuildNumber = context.ParseResult.GetValueForOption(maxVsBuildCheckNumber);
+            logger.LogInformation($"Check {maxFetchingVSBuildNumber} VS Builds");
+
+            var vsBuild = context.ParseResult.GetValueForOption(VSBuild);
+            if (!string.IsNullOrEmpty(vsBuild))
+            {
+                logger.LogInformation($"Check VS Build: {vsBuild}");
+            }
+
+            using var remoteConnections = new RemoteConnections(settings);
             return await PRTagger.PRTagger.TagPRs(
-                vsBuild,
-                vsCommitSha,
-                settings,
+                remoteConnections,
                 logger,
-                CancellationToken.None).ConfigureAwait(false);
+                maxFetchingVSBuildNumber,
+                vsBuild).ConfigureAwait(false);
         }
     }
 }
