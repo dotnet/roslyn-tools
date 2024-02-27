@@ -6,6 +6,9 @@ schedules:
     - main
   always: true
 
+variables:
+- group: roslyn-perf-bot
+
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -19,5 +22,5 @@ stages:
       - task: UseDotNet@2
       - script: dotnet tool install Microsoft.RoslynTools --prerelease --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json -g
         displayName: Install Roslyn Insertion Tool
-      - script: # roslyn-tools pr-tagger --github-token "" --devdiv-azdo-token "" --dnceng-azdo-token ""
+      - script: roslyn-tools pr-tagger --github-token  $(roslyn-dotnet-bot-issue-w-pat) --devdiv-azdo-token $(roslyn-dn-bot-devdiv-build-r-release-r-code-r)  --dnceng-azdo-token $(roslyn-dn-bot-dnceng-build-r)
         displayName: Run PR Tagger
