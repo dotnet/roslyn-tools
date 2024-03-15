@@ -33,6 +33,7 @@
     <MicrosoftTeamFoundationServerExtendedClientVersion>15.120.0-preview</MicrosoftTeamFoundationServerExtendedClientVersion>
     <MicrosoftTeamFoundationDistributedTaskWebApi>15.120.0-preview</MicrosoftTeamFoundationDistributedTaskWebApi>
     <MicrosoftVisualStudioServicesClientVersion>15.120.0-preview</MicrosoftVisualStudioServicesClientVersion>
+    <SystemCommandLineExperimentalVersion>0.1.0-alpha-63227-01</SystemCommandLineExperimentalVersion>
     <WindowsAzureStorage>8.1.0</WindowsAzureStorage>
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
     <UsingToolXliff>false</UsingToolXliff>

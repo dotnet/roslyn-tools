@@ -23,7 +23,7 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
-    <PackageReference Include="System.CommandLine.Experimental" Version="0.1.0-alpha-63227-01" />
+    <PackageReference Include="System.CommandLine.Experimental" Version="$(SystemCommandLineExperimentalVersion)" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\roslyn.optprof.lib\roslyn.optprof.lib.csproj" />
