@@ -23,7 +23,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="16.155.0-preview" />
     <PackageReference Include="Microsoft.VisualStudio.Services.Release.Client" Version="16.155.0-preview" />
     <PackageReference Include="Microsoft.WindowsAzure.ConfigurationManager" Version="3.2.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
     <PackageReference Include="NuGet.Versioning" Version="4.9.4" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.10.0" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
