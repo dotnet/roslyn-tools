@@ -21,7 +21,7 @@
     <MicrosoftVisualStudioExtensibilityTestingSupportFilesVersion>1.1.0</MicrosoftVisualStudioExtensibilityTestingSupportFilesVersion>
     <MicrosoftVisualStudioSDKVersion>17.0.0-previews-1-31318-291</MicrosoftVisualStudioSDKVersion>
     <!-- Libs -->
-    <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
+    <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
     <MoqVersion>4.5.21</MoqVersion>
     <NuGetVersioningVersion>5.11.0</NuGetVersioningVersion>
     <NuGetProjectModelVersion>6.4.2-rc.1</NuGetProjectModelVersion>
@@ -33,6 +33,7 @@
     <MicrosoftTeamFoundationServerExtendedClientVersion>15.120.0-preview</MicrosoftTeamFoundationServerExtendedClientVersion>
     <MicrosoftTeamFoundationDistributedTaskWebApi>15.120.0-preview</MicrosoftTeamFoundationDistributedTaskWebApi>
     <MicrosoftVisualStudioServicesClientVersion>15.120.0-preview</MicrosoftVisualStudioServicesClientVersion>
+    <SystemCommandLineExperimentalVersion>0.1.0-alpha-63227-01</SystemCommandLineExperimentalVersion>
     <WindowsAzureStorage>8.1.0</WindowsAzureStorage>
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
     <UsingToolXliff>false</UsingToolXliff>
