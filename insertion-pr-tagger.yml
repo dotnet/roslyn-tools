@@ -9,18 +9,27 @@ schedules:
 variables:
 - group: roslyn-perf-bot
 
-pool:
-  vmImage: 'ubuntu-latest'
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
 
-stages:
-- stage: tagInsertedPullRequest
-  pool:
-    vmImage: 'ubuntu-latest'
-  jobs:
-  - job: runPRTagger
-    steps:
-      - task: UseDotNet@2
-      - script: dotnet tool install Microsoft.RoslynTools --prerelease --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json -g
-        displayName: Install Roslyn Insertion Tool
-      - script: roslyn-tools pr-tagger --github-token  $(roslyn-dotnet-bot-issue-w-pat) --devdiv-azdo-token $(roslyn-dn-bot-devdiv-build-r-release-r-code-r)  --dnceng-azdo-token $(roslyn-dn-bot-dnceng-build-r)
-        displayName: Run PR Tagger
+extends:
+  template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: NetCore1ESPool-Svc-Internal
+      image: 1es-ubuntu-2204
+      os: linux
+    stages:
+    - stage: tagInsertedPullRequest
+      jobs:
+      - job: runPRTagger
+        steps:
+          - task: UseDotNet@2
+          - script: dotnet tool install Microsoft.RoslynTools --prerelease --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json -g
+            displayName: Install Roslyn Insertion Tool
+          - script: roslyn-tools pr-tagger --github-token  $(roslyn-dotnet-bot-issue-w-pat) --devdiv-azdo-token $(roslyn-dn-bot-devdiv-build-r-release-r-code-r)  --dnceng-azdo-token $(roslyn-dn-bot-dnceng-build-r)
+            displayName: Run PR Tagger
