@@ -23,6 +23,11 @@ extends:
       name: NetCore1ESPool-Svc-Internal
       image: 1es-ubuntu-2204
       os: linux
+    sdl:
+      sourceAnalysisPool:
+        name: NetCore1ESPool-Svc-Internal
+        image: 1es-windows-2022-pt
+        os: windows
     stages:
     - stage: tagInsertedPullRequest
       jobs:
