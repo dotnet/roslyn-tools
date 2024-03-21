@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
@@ -9,21 +9,17 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.Versioning;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.Client;
-using Microsoft.TeamFoundation.Client.Reporting;
 using Microsoft.TeamFoundation.Policy.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Task = System.Threading.Tasks.Task;
 
 namespace Roslyn.Insertion
@@ -591,21 +587,46 @@ namespace Roslyn.Insertion
 
             if (oldBuild.Repository.Type == "GitHub" || !string.IsNullOrEmpty(Options.ComponentGitHubRepoName))
             {
-                AppendGitHubChangesToDescription(changes, hardLimit, description, repoId);
+                AppendGitHubChangesToDescription(changes, description, repoId);
             }
             else if (oldBuild.Repository.Type == "TfsGit")
             {
-                AppendAzDOChangesToDescription(oldBuild, changes, hardLimit, description);
+                AppendAzDOChangesToDescription(oldBuild, changes, description);
             }
 
             var result = description.ToString();
             if (result.Length > hardLimit)
             {
-                LogWarning($"PR description is {result.Length} characters long, but the limit is {hardLimit}.");
-                LogWarning(result);
+                Console.WriteLine($"PR description is {result.Length} characters long, but the limit is {hardLimit}.");
+                Console.WriteLine("Full description before truncation:");
+                Console.WriteLine(result);
+
+                result = TruncateDesciptionIfNeeded(result, hardLimit);
             }
 
             return result;
+        }
+
+        private static string TruncateDesciptionIfNeeded(string description, int hardLimit)
+        {
+            const string limitMessage = "Changelog truncated due to description length limit.";
+
+            if (description.Length <= hardLimit)
+                return description;
+
+            var lastIndexOfNewLine = hardLimit;
+
+            while (lastIndexOfNewLine > 0 && lastIndexOfNewLine + limitMessage.Length + Environment.NewLine.Length + 1 > hardLimit)
+            {
+                lastIndexOfNewLine = description.LastIndexOf(Environment.NewLine, lastIndexOfNewLine);
+            }
+
+            if (lastIndexOfNewLine >= 0)
+            {
+                return description.Substring(0, lastIndexOfNewLine + Environment.NewLine.Length) + limitMessage;
+            }
+
+            return limitMessage;
         }
 
         private static readonly Regex IsAzDOReleaseFlowCommit = new Regex(@"^Merged PR \d+: Merging .* to ");
@@ -613,7 +634,7 @@ namespace Roslyn.Insertion
         public static string GetAzDOPullRequestUrl(string repoURL, string prNumber)
             => $"{repoURL}/pullrequest/{prNumber}";
 
-        private static void AppendAzDOChangesToDescription(Build oldBuild, List<GitCommit> changes, int hardLimit, StringBuilder description)
+        private static void AppendAzDOChangesToDescription(Build oldBuild, List<GitCommit> changes, StringBuilder description)
         {
             var repoURL = oldBuild.Repository.Url.AbsoluteUri;
 
@@ -690,19 +711,7 @@ namespace Roslyn.Insertion
                     prLink = $@"- [{comment} ({shortSHA})]({commit.RemoteUrl})";
                 }
 
-                const string limitMessage = "Changelog truncated due to description length limit.";
-
-                // we want to be able to fit this PR link, as well as the limit message (plus line breaks) in case the next PR link doesn't fit
-                int limit = hardLimit - (prLink.Length + Environment.NewLine.Length) - (limitMessage.Length + Environment.NewLine.Length);
-                if (description.Length > limit)
-                {
-                    description.AppendLine(limitMessage);
-                    break;
-                }
-                else
-                {
-                    description.AppendLine(prLink);
-                }
+                description.AppendLine(prLink);
             }
         }
 
@@ -712,7 +721,7 @@ namespace Roslyn.Insertion
         public static string GetGitHubPullRequestUrl(string repoURL, string prNumber)
             => $"{repoURL}/pull/{prNumber}";
 
-        private static void AppendGitHubChangesToDescription(List<GitCommit> changes, int hardLimit, StringBuilder description, string repoId)
+        private static void AppendGitHubChangesToDescription(List<GitCommit> changes, StringBuilder description, string repoId)
         {
             var repoURL = $"//github.com/{repoId}";
 
@@ -810,19 +819,7 @@ namespace Roslyn.Insertion
                     prLink = $@"- [{comment}]({repoURL}/commit/{fullSHA})";
                 }
 
-                const string limitMessage = "Changelog truncated due to description length limit.";
-
-                // we want to be able to fit this PR link, as well as the limit message (plus line breaks) in case the next PR link doesn't fit
-                int limit = hardLimit - (prLink.Length + Environment.NewLine.Length) - (limitMessage.Length + Environment.NewLine.Length);
-                if (description.Length > limit)
-                {
-                    description.AppendLine(limitMessage);
-                    break;
-                }
-                else
-                {
-                    description.AppendLine(prLink);
-                }
+                description.AppendLine(prLink);
             }
         }
 
