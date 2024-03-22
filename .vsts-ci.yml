@@ -20,21 +20,15 @@ variables:
 trigger:
 - main
 
-
 extends:
   template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     pool:
-      name: NetCore1ESPool-Svc-Internal
-      image: 1es-windows-2022-pt
+      name: VSEngSS-MicroBuild2022-1ES
       os: windows
     stages:
     - stage: build
       displayName: Build and Test
-      pool:
-        name: VSEngSS-MicroBuild2019-1ES
-        demands:
-        - cmd
       jobs:
       - job: OfficialBuild
         displayName: Official Build
