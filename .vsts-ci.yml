@@ -26,6 +26,12 @@ extends:
     pool:
       name: VSEngSS-MicroBuild2022-1ES
       os: windows
+    sdl:
+      sourceAnalysisPool:
+        name:  VSEngSS-MicroBuild2022-1ES
+        os: windows
+      sbom:
+        enabled: false
     stages:
     - stage: build
       displayName: Build and Test
