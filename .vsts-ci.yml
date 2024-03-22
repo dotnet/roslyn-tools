@@ -99,57 +99,9 @@ extends:
             mergeTestResults: true
             testRunTitle: 'Unit Tests'
           condition: succeededOrFailed()
-
-        # - task: PublishBuildArtifacts@1
-        #   displayName: Publish binaries
-        #   inputs:
-        #     PathtoPublish: '$(Build.SourcesDirectory)\artifacts\bin'
-        #     ArtifactName: 'bin'
-        #     publishLocation: Container
-        #   condition: succeededOrFailed()
-
-        # - task: PublishBuildArtifacts@1
-        #   displayName: Publish logs
-        #   inputs:
-        #     PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)'
-        #     ArtifactName: 'Build Diagnostic Files'
-        #     publishLocation: Container
-        #   continueOnError: true
-        #   condition: succeededOrFailed()
-
-        # - task: PublishBuildArtifacts@1
-        #   displayName: Publish test results
-        #   inputs:
-        #     PathtoPublish: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)'
-        #     ArtifactName: 'TestResults'
-        #     publishLocation: Container
-        #   condition: succeededOrFailed()
-        # - task: PublishBuildArtifacts@1
-        #   displayName: Publish packages
-        #   inputs:
-        #     PathtoPublish: '$(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)'
-        #     ArtifactName: 'PackageArtifacts'
-        #   condition: succeededOrFailed()
-
-        # Publish Asset Manifests for Build Asset Registry job
-        # - task: PublishBuildArtifacts@1
-        #   displayName: Publish Asset Manifests
-        #   inputs:
-        #     PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(BuildConfiguration)/AssetManifest'
-        #     ArtifactName: AssetManifests
-        #   condition: succeeded()
-        # - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
         - task: MicroBuildCleanup@1
           displayName: Cleanup
           condition: succeededOrFailed()
-
-        # - task: PublishBuildArtifacts@1
-        #   displayName: Publish MicroBuild Artifacts
-        #   inputs:
-        #     PathtoPublish: '$(Build.ArtifactStagingDirectory)\MicroBuild\Output'
-        #     ArtifactName: MicroBuildOutputs
-        #     ArtifactType: Container
-        #   condition: succeededOrFailed()
       # Publish to Build Asset Registry
       - template: /eng/common/templates/job/publish-build-assets.yml@self
         parameters:
