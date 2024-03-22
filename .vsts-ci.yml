@@ -76,7 +76,7 @@ extends:
         - task: MicroBuildSigningPlugin@1
           displayName: Install Signing Plugin
           inputs:
-            signType: real
+            signType: $(SignType)
           condition: succeeded()
         - script: eng\common\CIBuild.cmd
                     -configuration $(BuildConfiguration)
