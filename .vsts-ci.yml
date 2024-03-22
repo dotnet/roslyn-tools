@@ -1,6 +1,11 @@
 resources:
-- repo: self
-  clean: true
+  repositories:
+  - repository: self
+    clean: true
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
 
 # The variables `_DotNetArtifactsCategory` and `_DotNetValidationArtifactsCategory` are required for proper publishing of build artifacts. See https://github.com/dotnet/roslyn/pull/38259
 variables:
@@ -15,115 +20,156 @@ variables:
 trigger:
 - main
 
-stages:
-- stage: build
-  displayName: Build and Test
-  pool:
-    name: VSEngSS-MicroBuild2019-1ES
-    demands:
-    - cmd
 
-  jobs:
-  - job: OfficialBuild
-    displayName: Official Build
+extends:
+  template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: NetCore1ESPool-Svc-Internal
+      image: 1es-windows-2022-pt
+      os: windows
+    stages:
+    - stage: build
+      displayName: Build and Test
+      pool:
+        name: VSEngSS-MicroBuild2019-1ES
+        demands:
+        - cmd
+      jobs:
+      - job: OfficialBuild
+        displayName: Official Build
+        templateContext:
+          outputs:
+          # Note that insertion scripts currently depend on bin directory being uploaded to drops.
+          - output: pipelineArtifact
+            targetPath: $(Build.SourcesDirectory)\artifacts\bin
+            displayName: Publish binaries
+            publishLocation: Container
+            artifactName: bin
+            condition: succeededOrFailed()
+          - output: pipelineArtifact
+            targetPath: $(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)
+            displayName: Publish logs
+            artifactName: 'Build Diagnostic Files'
+            publishLocation: Container
+            continueOnError: true
+            condition: succeededOrFailed()
+          - output: pipelineArtifact
+            displayName: Publish test results
+            targetPath: $(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)
+            artifactName: 'TestResults'
+            publishLocation: Container
+            condition: succeededOrFailed()
+          # Publish our NuPkgs as an artifact. The name of this artifact must be PackageArtifacts as the
+          # arcade templates depend on the name.
+          - output: pipelineArtifact
+            targetPath: $(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)
+            displayName: Publish packages
+            artifactName: 'PackageArtifacts'
+            condition: succeededOrFailed()
+          - output: pipelineArtifact
+            displayName: Publish Asset Manifests
+            targetPath: $(Build.SourcesDirectory)/artifacts/log/$(BuildConfiguration)/AssetManifest
+            artifactName: 'AssetManifests'
+            condition: succeeded()
+          - output: pipelineArtifact
+            displayName: Publish MicroBuild Artifacts
+            targetPath: $(Build.ArtifactStagingDirectory)\MicroBuild\Output
+            artifactName: MicroBuildOutputs
+            artifactType: Container
+            condition: succeededOrFailed()
+        steps:
+        - task: MicroBuildSigningPlugin@1
+          displayName: Install Signing Plugin
+          inputs:
+            signType: real
+          condition: succeeded()
+        - script: eng\common\CIBuild.cmd
+                    -configuration $(BuildConfiguration)
+                    /p:PB_PublishBlobFeedKey=$(PB_PublishBlobFeedKey)
+                    /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+                    /p:DotNetSignType=$(SignType)
+                    /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+                    /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+                    /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
+                    /p:DotnetPublishUsingPipelines=true
+          displayName: Build
 
-    steps:
-    - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
-      displayName: Install Signing Plugin
-      inputs:
-        signType: $(SignType)
-        esrpSigning: true
-      condition: and(succeeded(), ne(variables['SignType'], ''))
+        - template: eng\common\templates\steps\generate-sbom.yml
 
-    - script: eng\common\CIBuild.cmd
-                -configuration $(BuildConfiguration)
-                /p:PB_PublishBlobFeedKey=$(PB_PublishBlobFeedKey)
-                /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-                /p:DotNetSignType=$(SignType)
-                /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-                /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
-                /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
-                /p:DotnetPublishUsingPipelines=true
-      displayName: Build
+        - task: PublishTestResults@2
+          displayName: Publish xUnit Test Results
+          inputs:
+            testRunner: XUnit
+            testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.xml'
+            mergeTestResults: true
+            testRunTitle: 'Unit Tests'
+          condition: succeededOrFailed()
 
-    - template: eng\common\templates\steps\generate-sbom.yml
+        # - task: PublishBuildArtifacts@1
+        #   displayName: Publish binaries
+        #   inputs:
+        #     PathtoPublish: '$(Build.SourcesDirectory)\artifacts\bin'
+        #     ArtifactName: 'bin'
+        #     publishLocation: Container
+        #   condition: succeededOrFailed()
 
-    - task: PublishTestResults@2
-      displayName: Publish xUnit Test Results
-      inputs:
-        testRunner: XUnit
-        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.xml'
-        mergeTestResults: true
-        testRunTitle: 'Unit Tests'
-      condition: succeededOrFailed()
+        # - task: PublishBuildArtifacts@1
+        #   displayName: Publish logs
+        #   inputs:
+        #     PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)'
+        #     ArtifactName: 'Build Diagnostic Files'
+        #     publishLocation: Container
+        #   continueOnError: true
+        #   condition: succeededOrFailed()
 
-    # Note that insertion scripts currently depend on bin directory being uploaded to drops.
-    - task: PublishBuildArtifacts@1
-      displayName: Publish binaries
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\bin'
-        ArtifactName: 'bin'
-        publishLocation: Container
-      condition: succeededOrFailed()
+        # - task: PublishBuildArtifacts@1
+        #   displayName: Publish test results
+        #   inputs:
+        #     PathtoPublish: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)'
+        #     ArtifactName: 'TestResults'
+        #     publishLocation: Container
+        #   condition: succeededOrFailed()
+        # - task: PublishBuildArtifacts@1
+        #   displayName: Publish packages
+        #   inputs:
+        #     PathtoPublish: '$(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)'
+        #     ArtifactName: 'PackageArtifacts'
+        #   condition: succeededOrFailed()
 
-    - task: PublishBuildArtifacts@1
-      displayName: Publish logs
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)'
-        ArtifactName: 'Build Diagnostic Files'
-        publishLocation: Container
-      continueOnError: true
-      condition: succeededOrFailed()
+        # Publish Asset Manifests for Build Asset Registry job
+        # - task: PublishBuildArtifacts@1
+        #   displayName: Publish Asset Manifests
+        #   inputs:
+        #     PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(BuildConfiguration)/AssetManifest'
+        #     ArtifactName: AssetManifests
+        #   condition: succeeded()
+        # - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
+        - task: MicroBuildCleanup@1
+          displayName: Cleanup
+          condition: succeededOrFailed()
 
-    - task: PublishBuildArtifacts@1
-      displayName: Publish test results
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)'
-        ArtifactName: 'TestResults'
-        publishLocation: Container
-      condition: succeededOrFailed()
-    # Publish our NuPkgs as an artifact. The name of this artifact must be PackageArtifacts as the
-    # arcade templates depend on the name.
-    - task: PublishBuildArtifacts@1
-      displayName: Publish packages
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)'
-        ArtifactName: 'PackageArtifacts'
-      condition: succeededOrFailed()
+        # - task: PublishBuildArtifacts@1
+        #   displayName: Publish MicroBuild Artifacts
+        #   inputs:
+        #     PathtoPublish: '$(Build.ArtifactStagingDirectory)\MicroBuild\Output'
+        #     ArtifactName: MicroBuildOutputs
+        #     ArtifactType: Container
+        #   condition: succeededOrFailed()
+      # Publish to Build Asset Registry
+      - template: /eng/common/templates/job/publish-build-assets.yml
+        parameters:
+          publishUsingPipelines: true
+          dependsOn:
+            - OfficialBuild
+          queue:
+            name: Hosted VS2017
 
-    # Publish Asset Manifests for Build Asset Registry job
-    - task: PublishBuildArtifacts@1
-      displayName: Publish Asset Manifests
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(BuildConfiguration)/AssetManifest'
-        ArtifactName: AssetManifests
-      condition: succeeded()
-
-    - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
-      displayName: Cleanup
-      condition: succeededOrFailed()
-
-    - task: PublishBuildArtifacts@1
-      displayName: Publish MicroBuild Artifacts
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)\MicroBuild\Output'
-        ArtifactName: MicroBuildOutputs
-        ArtifactType: Container
-      condition: succeededOrFailed()
-  # Publish to Build Asset Registry
-  - template: /eng/common/templates/job/publish-build-assets.yml
-    parameters:
-      publishUsingPipelines: true
-      dependsOn:
-        - OfficialBuild
-      queue:
-        name: Hosted VS2017
-
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-  - template: eng\common\templates\post-build\post-build.yml
-    parameters:
-      # Symbol validation is not entirely reliable as of yet, so should be turned off until
-      # https://github.com/dotnet/arcade/issues/2871 is resolved.
-      enableSymbolValidation: false
-      enableSourceLinkValidation: false
-      publishingInfraVersion: 3
+    - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      - template: eng\common\templates\post-build\post-build.yml
+        parameters:
+          # Symbol validation is not entirely reliable as of yet, so should be turned off until
+          # https://github.com/dotnet/arcade/issues/2871 is resolved.
+          enableSymbolValidation: false
+          enableSourceLinkValidation: false
+          publishingInfraVersion: 3
