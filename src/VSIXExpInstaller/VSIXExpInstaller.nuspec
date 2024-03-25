@@ -5,6 +5,6 @@
   </metadata>
   <files>
     $CommonFileElements$
-    <file src="net472\VSIXExpInstaller.*" target="tools" />
+    <file src="$NetFrameworkToolCurrent$\VSIXExpInstaller.*" target="tools" />
   </files>
 </package>
