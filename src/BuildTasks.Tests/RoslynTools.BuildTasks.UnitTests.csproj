@@ -3,7 +3,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>$(NetFrameworkToolCurrent);$(NetCurrent)</TargetFrameworks>
-    <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\BuildTasks\RoslynTools.BuildTasks.csproj" />
