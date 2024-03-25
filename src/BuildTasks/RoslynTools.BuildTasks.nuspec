@@ -5,11 +5,11 @@
   </metadata>
   <files>
     $CommonFileElements$
-    <file src="netcoreapp3.1\publish\RoslynTools.*" target="tools\netcoreapp3.1" />
-    <file src="netcoreapp3.1\publish\NuGet.Versioning.*" target="tools\netcoreapp3.1" />
-    <file src="netcoreapp3.1\publish\System.*" target="tools\netcoreapp3.1" />
-    <file src="net472\RoslynTools.*" target="tools\net472" />
-    <file src="net472\NuGet.Versioning.*" target="tools\net472" />
-    <file src="net472\System.*" target="tools\net472" />
+    <file src="$NetCurrent$\publish\RoslynTools.*" target="tools\$NetCurrent$" />
+    <file src="$NetCurrent$\publish\NuGet.Versioning.*" target="tools\$NetCurrent$" />
+    <file src="$NetCurrent$\publish\System.*" target="tools\$NetCurrent$" />
+    <file src="$NetFrameworkCurrent$\RoslynTools.*" target="tools\$NetFrameworkCurrent$" />
+    <file src="$NetFrameworkCurrent$\NuGet.Versioning.*" target="tools\$NetFrameworkCurrent$" />
+    <file src="$NetFrameworkCurrent$\System.*" target="tools\$NetFrameworkCurrent$" />
   </files>
 </package>
