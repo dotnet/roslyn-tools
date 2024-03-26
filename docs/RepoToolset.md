@@ -307,7 +307,7 @@ For example,
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
    <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <VisualStudioInsertionComponent>Microsoft.VisualStudio.ProjectSystem.Managed</VisualStudioInsertionComponent>
   </PropertyGroup>
   <ItemGroup>

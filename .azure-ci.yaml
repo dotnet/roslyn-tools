@@ -23,7 +23,7 @@ jobs:
       release:
         _configuration: Release
   steps:
-  - script: .\eng\common\CIBuild.cmd -configuration $(_configuration) -prepareMachine
+  - script: .\eng\common\CIBuild.cmd -configuration $(_configuration) -prepareMachine  /p:DotnetPublishUsingPipelines=true
 
   - task: PublishTestResults@2
     displayName: Publish xUnit Test Results
@@ -53,7 +53,7 @@ jobs:
       release:
         _configuration: Release
   steps:
-  - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine
+  - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:DotnetPublishUsingPipelines=true
 
   - task: PublishTestResults@2
     displayName: Publish xUnit Test Results

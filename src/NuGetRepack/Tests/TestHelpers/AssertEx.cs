@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
@@ -162,7 +162,7 @@ namespace Roslyn.Test.Utilities
 
             if (normalizedExpected != normalizedActual)
             {
-                Assert.True(false, GetAssertMessage(expected, actual, escapeQuotes, expectedValueSourcePath, expectedValueSourceLine));
+                Assert.Fail(GetAssertMessage(expected, actual, escapeQuotes, expectedValueSourcePath, expectedValueSourceLine));
             }
         }
 
@@ -220,7 +220,7 @@ namespace Roslyn.Test.Utilities
                     assertMessage = message + "\r\n" + assertMessage;
                 }
 
-                Assert.True(false, assertMessage);
+                Assert.Fail(assertMessage);
             }
         }
 
@@ -323,12 +323,12 @@ namespace Roslyn.Test.Utilities
 
         public static void Fail(string message)
         {
-            Assert.False(true, message);
+            Assert.Fail(message);
         }
 
         public static void Fail(string format, params object[] args)
         {
-            Assert.False(true, string.Format(format, args));
+            Assert.Fail(string.Format(format, args));
         }
 
         public static void Null<T>(T @object, string message = null)

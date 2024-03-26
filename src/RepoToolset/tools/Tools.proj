@@ -15,7 +15,7 @@
   <Import Project="BuildStep.props" />
 
   <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
+    <TargetFramework>$(NetFrameworkToolCurrent)</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -14,8 +14,7 @@
 
       instead of the following lines.
     -->
-    <ItemsToSign Include="$(ArtifactsBinDir)GithubMergeTool/**/net46/GithubMergeTool.dll" />
-    <ItemsToSign Include="$(ArtifactsBinDir)VstsMergeTool/**/net46/VstsMergeTool.dll" />
+    <ItemsToSign Include="$(ArtifactsBinDir)GithubMergeTool/**/$(NetCurrent)/GithubMergeTool.dll" />
 
     <!-- Sign 3rd party dlls with 3rd party cert -->
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
