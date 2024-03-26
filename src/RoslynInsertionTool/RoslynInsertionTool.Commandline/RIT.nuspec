@@ -5,6 +5,6 @@
   </metadata>
   <files>
     $CommonFileElements$
-    <file src="$NetFrameworkToolCurrent$/**/*.*" target="tools" />
+    <file src="net472/**/*.*" target="tools" />
   </files>
 </package>

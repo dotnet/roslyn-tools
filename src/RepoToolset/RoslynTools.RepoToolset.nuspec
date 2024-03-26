@@ -10,9 +10,9 @@
     $CommonFileElements$
     <file src="$ProjectDirectory$\sdk\*.*" target="sdk" />
     <file src="$ProjectDirectory$\tools\*.*" target="tools" />
-    <file src="$NetCurrent$\publish\RoslynTools.*" target="tools\tasks\$NetCurrent$" />
-    <file src="$NetCurrent$\publish\System.*" target="tools\tasks\$NetCurrent$" />
-    <file src="$NetFrameworkToolCurrent$\RoslynTools.*" target="tools\tasks\$NetFrameworkToolCurrent$" />
-    <file src="$NetFrameworkToolCurrent$\System.*" target="tools\tasks\$NetFrameworkToolCurrent$" />
+    <file src="Net9.0\publish\RoslynTools.*" target="tools\tasks\Net9.0" />
+    <file src="Net9.0\publish\System.*" target="tools\tasks\Net9.0" />
+    <file src="net472\RoslynTools.*" target="tools\tasks\net472" />
+    <file src="net472\System.*" target="tools\tasks\net472" />
   </files>
 </package>
