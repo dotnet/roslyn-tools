@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <_NuGetRepackAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)roslyntools.nugetrepack.buildtasks\$(RoslynToolsNuGetRepackVersion)\tools\net461\RoslynTools.NuGetRepack.BuildTasks.dll</_NuGetRepackAssembly>
-    <_NuGetRepackAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)roslyntools.nugetrepack.buildtasks\$(RoslynToolsNuGetRepackVersion)\tools\netcoreapp2.0\RoslynTools.NuGetRepack.BuildTasks.dll</_NuGetRepackAssembly>
+    <_NuGetRepackAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)roslyntools.nugetrepack.buildtasks\$(RoslynToolsNuGetRepackVersion)\tools\$(NetFramworkToolCurrent)\RoslynTools.NuGetRepack.BuildTasks.dll</_NuGetRepackAssembly>
+    <_NuGetRepackAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)roslyntools.nugetrepack.buildtasks\$(RoslynToolsNuGetRepackVersion)\tools\$(NetCurrent)\RoslynTools.NuGetRepack.BuildTasks.dll</_NuGetRepackAssembly>
   </PropertyGroup>
 
   <UsingTask TaskName="Roslyn.Tools.UpdatePackageVersionTask" AssemblyFile="$(_NuGetRepackAssembly)" />

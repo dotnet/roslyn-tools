@@ -5,6 +5,6 @@
   </metadata>
   <files>
     $CommonFileElements$
-    <file src="net46/**/*.*" target="tools" />
+    <file src="net472/**/*.*" target="tools" />
   </files>
 </package>

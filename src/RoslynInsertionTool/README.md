@@ -81,4 +81,4 @@ Additionally you will have to provide authentication by following these steps:
  1. Go to https://devdiv.visualstudio.com/_usersSettings/tokens and generate a token with the following scopes: vso.build_execute,vso.code_full,vso.release_execute,vso.packaging
  2. Add the command line arguments `/username=myusername@microsoft.com /password=myauthtoken`
 
-```G:\roslyn-tools\artifacts\bin\RIT\Debug\net46\RIT.exe /username=dmon@microsoft.com /password=token /in="Project System" /bn=main /bq=DotNet-Project-System /vsbn=main /ic=true /id=false /ua=true /uc=false /dpr=true /qv=false```
+```G:\roslyn-tools\artifacts\bin\RIT\Debug\net472\RIT.exe /username=dmon@microsoft.com /password=token /in="Project System" /bn=main /bq=DotNet-Project-System /vsbn=main /ic=true /id=false /ua=true /uc=false /dpr=true /qv=false```
