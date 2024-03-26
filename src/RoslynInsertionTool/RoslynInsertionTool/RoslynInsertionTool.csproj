@@ -27,7 +27,7 @@
     <PackageReference Include="NuGet.Versioning" Version="4.9.4" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.34.0" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="WindowsAzure.ServiceBus" Version="5.2.0" />
   </ItemGroup>
   <ItemGroup>
