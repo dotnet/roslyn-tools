@@ -30,7 +30,7 @@ steps:
 - task: UseDotNet@2
   displayName: 'Install .NET'
   inputs:
-    useGlobalJson: true
+    version: 9.x.x
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - script: dotnet --info; dotnet run -p $(Build.SourcesDirectory)/src/GitHubCreateMergePRs/GitHubCreateMergePRs.csproj --isDryRun=$(isDryRun) --isAutomated=$(isAutomated) --githubToken=$(BotAccount-dotnet-bot-repo-PAT)
