@@ -28,17 +28,11 @@ pool:
 
 steps:
 - task: UseDotNet@2
-  displayName: 'Install .NET Core SDKs'
+  displayName: 'Install .NET'
   inputs:
-    useGlobalJson: true
+    version: 9.x
     installationPath: $(Agent.ToolsDirectory)/dotnet
-    
-- task: UseDotNet@2
-  displayName: 'Install .NET Core Runtime'
-  inputs:
-    packageType: runtime
-    version: 3.1.20
-    installationPath: $(Agent.ToolsDirectory)/dotnet
+    includePreviewVersions: true
 
-- script: dotnet run -p $(Build.SourcesDirectory)/src/GitHubCreateMergePRs/GitHubCreateMergePRs.csproj --isDryRun=$(isDryRun) --isAutomated=$(isAutomated) --githubToken=$(BotAccount-dotnet-bot-repo-PAT)
+- script: dotnet --info; dotnet run -p $(Build.SourcesDirectory)/src/GitHubCreateMergePRs/GitHubCreateMergePRs.csproj --isDryRun=$(isDryRun) --isAutomated=$(isAutomated) --githubToken=$(BotAccount-dotnet-bot-repo-PAT)
   displayName: 'Run GitHub Create Merge PRs'
