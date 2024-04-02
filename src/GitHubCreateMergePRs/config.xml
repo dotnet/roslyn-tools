@@ -16,13 +16,11 @@
     <!-- Roslyn release branches (flowing between releases) -->
     <merge from="release/dev17.10" to="main" />
 
-    <!-- Roslyn feature branches -->
-    <merge from="main" to="features/semi-auto-props" owners="333fred" frequency="weekly" />
-    <merge from="main" to="features/vs2022-theme" owners="joerobich" frequency="weekly" />
-    <merge from="main" to="features/editorconfig_lsp" owners="dibarbet,Danyboyyy" frequency="weekly" />
-    <merge from="main" to="features/FixAllNamingViolation" owners="Cosifne" frequency="weekly" />
-    <merge from="main" to="features/StructDiagnosticBag" owners="CyrusNajmabadi" />
-    <merge from="main" to="features/lsp_configuration" owners="Cosifne" frequency="daily" />
+    <!--
+      Roslyn feature branches, for example merging main into a 'features/example' branch
+      with dibarbet as the owner every week.
+      <merge from="main" to="features/example" owners="dibarbet" frequency="weekly" />
+    -->
   </repo>
 
   <repo owner="dotnet" name="roslyn-sdk">
