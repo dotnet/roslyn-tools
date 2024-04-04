@@ -34,6 +34,10 @@ extends:
       - job: runPRTagger
         steps:
           - task: UseDotNet@2
+            displayName: 'Install .NET'
+            inputs:
+              version: 9.x
+              includePreviewVersions: true
           - script: dotnet tool install Microsoft.RoslynTools --prerelease --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json -g
             displayName: Install Roslyn Insertion Tool
           - script: roslyn-tools pr-tagger --github-token  $(roslyn-dotnet-bot-issue-w-pat) --devdiv-azdo-token $(roslyn-dn-bot-devdiv-build-r-release-r-code-r)  --dnceng-azdo-token $(roslyn-dn-bot-dnceng-build-r)
