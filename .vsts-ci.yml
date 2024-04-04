@@ -103,7 +103,7 @@ extends:
         #   displayName: Cleanup
         #   condition: succeededOrFailed()
       # Publish to Build Asset Registry
-      - template: /eng/common/templates/job/publish-build-assets.yml@self
+      - template: /eng/common/templates-Official/job/publish-build-assets.yml@self
         parameters:
           publishUsingPipelines: true
           dependsOn:
