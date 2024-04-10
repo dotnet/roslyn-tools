@@ -60,11 +60,7 @@ namespace Roslyn.Insertion
 
                 if (!coreXT.TryGetPackageVersion(package, out var previousPackageVersion))
                 {
-                    Console.WriteLine($"New package is being inserted: '{package}'");
-
-                    coreXT.AddNewPackage(package);
-                    newPackageFiles.Add(fileName);
-                    shouldRetainBuild = true;
+                    LogWarning($"Could not find existing version for package: '{package}'. Add a reference to it manually.");
                     continue;
                 }
 
