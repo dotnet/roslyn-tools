@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
+using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Versioning;
@@ -39,14 +40,14 @@ namespace Roslyn.Insertion
         private const string PackagePropsPath = "Directory.Packages.props";
         private const string LegacyPackagePropsPath = "Packages.props";
 
-        private readonly string _defaultConfigOriginal;
+        private readonly string? _defaultConfigOriginal;
 
-        public XDocument ConfigDocument { get; }
+        public XDocument? ConfigDocument { get; }
 
-        private CoreXT(string configOriginalText)
+        private CoreXT(string? configOriginalText)
         {
             _defaultConfigOriginal = configOriginalText;
-            ConfigDocument = XDocument.Parse(configOriginalText, LoadOptions.None);
+            ConfigDocument = configOriginalText is null ? null : XDocument.Parse(configOriginalText, LoadOptions.None);
         }
 
         public static async Task<CoreXT> Load(GitHttpClient gitClient, string commitId)
@@ -54,12 +55,22 @@ namespace Roslyn.Insertion
             var vsRepoId = RoslynInsertionTool.VSRepoId;
             var vsBranch = new GitVersionDescriptor { VersionType = GitVersionType.Commit, Version = commitId };
 
-            using var defaultConfigStream = await gitClient.GetItemContentAsync(
-                vsRepoId,
-                DefaultConfigPath,
-                download: true,
-                versionDescriptor: vsBranch);
-            var defaultConfigOriginal = await new StreamReader(defaultConfigStream).ReadToEndAsync();
+            string? defaultConfigOriginal;
+            try
+            {
+                using var defaultConfigStream = await gitClient.GetItemContentAsync(
+                    vsRepoId,
+                    DefaultConfigPath,
+                    download: true,
+                    versionDescriptor: vsBranch);
+                defaultConfigOriginal = await new StreamReader(defaultConfigStream).ReadToEndAsync();
+                Console.WriteLine($"'{DefaultConfigPath}' found.");
+            }
+            catch (VssServiceException ex) when (ex.IsFileNotFound())
+            {
+                defaultConfigOriginal = null;
+                Console.WriteLine($"'{DefaultConfigPath}' not found. Will search package props files for current versions instead.");
+            }
 
             ComponentToFileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             ComponentFileToDocumentMap = new Dictionary<string, (string, JObject)>(StringComparer.OrdinalIgnoreCase);
@@ -135,11 +146,36 @@ namespace Roslyn.Insertion
 
         private XAttribute? GetDefaultConfigVersionAttribute(PackageInfo packageInfo)
         {
-            return ConfigDocument.Root
+            return ConfigDocument?.Root
                 .Elements("packages")
                 .Elements("package")
                 .Where(p => p.Attribute("id")?.Value == packageInfo.PackageName)
                 .Select(x => x.Attribute("version")).SingleOrDefault();
+        }
+
+        // Try to get a version number from a props file under /src/ConfigData/Packages.
+        private string? GetVersionStringInPropsFile(PackageInfo packageInfo)
+        {
+            if (!PackageToPropFilesMap.TryGetValue(packageInfo.PackageName, out var propsFiles))
+            {
+                return null;
+            }
+
+            var propsFile = propsFiles.First(); // assume if multiple props files then they use the same version
+            if (!PackagePropFileToDocumentMap.TryGetValue(propsFile, out var textAndDocument))
+            {
+                return null;
+            }
+
+            var attributeOrElement = GetVersionAttributeOrElementInPropsFile(textAndDocument.document!, packageInfo);
+            if (attributeOrElement is null)
+                return null;
+
+            if (attributeOrElement is XAttribute attribute)
+                return attribute.Value;
+
+            var element = (XElement)attributeOrElement;
+            return element.Attribute("Version")?.Value ?? element.Value;
         }
 
         /// <summary>
@@ -170,30 +206,12 @@ namespace Roslyn.Insertion
             return attribute;
         }
 
-        private XElement GetClosestFollowingPackageElement(PackageInfo packageInfo)
+        private XElement? GetClosestFollowingPackageElement(PackageInfo packageInfo)
         {
-            return ConfigDocument.Root.
+            return ConfigDocument?.Root.
                 Elements("packages").
                 Elements("package").
                 FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Compare(packageInfo.PackageName, p.Attribute("id").Value) < 0);
-        }
-
-        internal void AddNewPackage(PackageInfo packageInfo)
-        {
-            Console.WriteLine("##vso[task.logissue type=warning] Adding a new package is not supported until we also update for LegacyProjects.props");
-
-#pragma warning disable CS0162 // Unreachable code detected
-            var followingElement = GetClosestFollowingPackageElement(packageInfo);
-
-            var package = new XElement(
-                "package",
-                new XAttribute("id", packageInfo.PackageName),
-                new XAttribute("version", packageInfo.Version.ToString()),
-                new XAttribute("link", $@"src\ExternalAPIs\{packageInfo.LibraryName}"),
-                new XAttribute("tags", "exapis"));
-
-            followingElement.AddAfterSelf(package);
-#pragma warning restore CS0162 // Unreachable code detected
         }
 
         public void UpdatePackageVersion(PackageInfo packageInfo)
@@ -222,22 +240,22 @@ namespace Roslyn.Insertion
             }
         }
 
-        public static NuGetVersion GetPackageVersion(XAttribute versionAttribute)
-        {
-            return NuGetVersion.Parse(versionAttribute.Value);
-        }
-
         public bool TryGetPackageVersion(PackageInfo packageInfo, out NuGetVersion? version)
         {
-            var attribute = GetDefaultConfigVersionAttribute(packageInfo);
-            if (attribute == null)
+            if (GetDefaultConfigVersionAttribute(packageInfo) is { } attribute)
             {
-                version = default;
-                return false;
+                version = NuGetVersion.Parse(attribute.Value);
+                return true;
             }
 
-            version = GetPackageVersion(attribute);
-            return true;
+            if (GetVersionStringInPropsFile(packageInfo) is { } versionString)
+            {
+                version = NuGetVersion.Parse(versionString);
+                return true;
+            }
+
+            version = null;
+            return false;
         }
 
         public bool TryGetComponentByName(string componentName, out Component? component)
