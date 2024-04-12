@@ -64,10 +64,12 @@ namespace Roslyn.Insertion
                     download: true,
                     versionDescriptor: vsBranch);
                 defaultConfigOriginal = await new StreamReader(defaultConfigStream).ReadToEndAsync();
+                Console.WriteLine($"'{DefaultConfigPath}' found.");
             }
             catch (VssServiceException ex) when (ex.IsFileNotFound())
             {
                 defaultConfigOriginal = null;
+                Console.WriteLine($"'{DefaultConfigPath}' not found. Will search package props files for current versions instead.");
             }
 
             ComponentToFileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
