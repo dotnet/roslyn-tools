@@ -20,6 +20,16 @@ variables:
 trigger:
 - main
 
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool:
+      vmImage: 'Ubuntu-16.04'
+    continueOnError: true
+    steps:
+    - script: echo "Hello world"
+
 # extends:
 #   template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
 #   parameters:
