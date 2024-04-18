@@ -89,33 +89,33 @@ extends:
                     /p:DotnetPublishUsingPipelines=true
           displayName: Build
 
-        # - template: eng\common\templates\steps\generate-sbom.yml@self
+        - template: /eng/common/templates-official/steps/generate-sbom.yml@self
 
-    #     - task: PublishTestResults@2
-    #       displayName: Publish xUnit Test Results
-    #       inputs:
-    #         testRunner: XUnit
-    #         testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.xml'
-    #         mergeTestResults: true
-    #         testRunTitle: 'Unit Tests'
-    #       condition: succeededOrFailed()
-    #     - task: MicroBuildCleanup@1
-    #       displayName: Cleanup
-    #       condition: succeededOrFailed()
-    #   # Publish to Build Asset Registry
-    #   - template: /eng/common/templates-official/job/publish-build-assets.yml@self
-    #     parameters:
-    #       publishUsingPipelines: true
-    #       dependsOn:
-    #         - OfficialBuild
-    #       queue:
-    #         name: Hosted VS2017
+        - task: PublishTestResults@2
+          displayName: Publish xUnit Test Results
+          inputs:
+            testRunner: XUnit
+            testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.xml'
+            mergeTestResults: true
+            testRunTitle: 'Unit Tests'
+          condition: succeededOrFailed()
+        - task: MicroBuildCleanup@1
+          displayName: Cleanup
+          condition: succeededOrFailed()
+      # Publish to Build Asset Registry
+      - template: /eng/common/templates-official/job/publish-build-assets.yml@self
+        parameters:
+          publishUsingPipelines: true
+          dependsOn:
+            - OfficialBuild
+          queue:
+            name: Hosted VS2017
 
-    # - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    #   - template: eng\common\templates\post-build\post-build.yml@self
-    #     parameters:
-    #       # Symbol validation is not entirely reliable as of yet, so should be turned off until
-    #       # https://github.com/dotnet/arcade/issues/2871 is resolved.
-    #       enableSymbolValidation: false
-    #       enableSourceLinkValidation: false
-    #       publishingInfraVersion: 3
+    - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      - template: eng\common\templates\post-build\post-build.yml@self
+        parameters:
+          # Symbol validation is not entirely reliable as of yet, so should be turned off until
+          # https://github.com/dotnet/arcade/issues/2871 is resolved.
+          enableSymbolValidation: false
+          enableSourceLinkValidation: false
+          publishingInfraVersion: 3
