@@ -24,7 +24,7 @@ extends:
   template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     pool:
-      name: VSEngSS-MicroBuild2022-1ES
+      name: NetCore1ESPool-Svc-Internal
       os: windows
     stages:
     - stage: build
