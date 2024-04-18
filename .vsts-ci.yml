@@ -91,14 +91,14 @@ extends:
 
         - template: eng\common\templates\steps\generate-sbom.yml@self
 
-        - task: PublishTestResults@2
-          displayName: Publish xUnit Test Results
-          inputs:
-            testRunner: XUnit
-            testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.xml'
-            mergeTestResults: true
-            testRunTitle: 'Unit Tests'
-          condition: succeededOrFailed()
+        # - task: PublishTestResults@2
+        #   displayName: Publish xUnit Test Results
+        #   inputs:
+        #     testRunner: XUnit
+        #     testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.xml'
+        #     mergeTestResults: true
+        #     testRunTitle: 'Unit Tests'
+        #   condition: succeededOrFailed()
         - task: MicroBuildCleanup@1
           displayName: Cleanup
           condition: succeededOrFailed()
