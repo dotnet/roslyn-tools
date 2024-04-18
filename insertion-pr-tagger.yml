@@ -9,6 +9,9 @@ schedules:
 variables:
 - group: roslyn-perf-bot
 
+# Make sure the pipeline doesn't build on commits.
+trigger: none
+
 resources:
   repositories:
   - repository: 1ESPipelineTemplates
