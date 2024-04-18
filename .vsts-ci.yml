@@ -77,7 +77,7 @@ extends:
           displayName: Install Signing Plugin
           inputs:
             signType: $(SignType)
-          condition: succeeded()
+          condition: and(succeeded(), ne(variables['SignType'], ''))
         - script: eng\common\CIBuild.cmd
                     -configuration $(BuildConfiguration)
                     /p:PB_PublishBlobFeedKey=$(PB_PublishBlobFeedKey)
