@@ -18,7 +18,7 @@ variables:
   - name: BuildConfiguration
     value: Release
   - name: SignType
-    value: Real
+    value: ''
   - name: system.debug
     value: false
   - name: TeamName
