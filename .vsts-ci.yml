@@ -34,9 +34,6 @@ extends:
     stages:
     - stage: build
       displayName: Build and Test
-      pool:
-        name: netcore1espool-internal
-        os: 1es-windows-2022-pt
       jobs:
       - job: OfficialBuild
         displayName: Official Build
@@ -114,6 +111,9 @@ extends:
       - template: /eng/common/templates-official/job/publish-build-assets.yml@self
         parameters:
           publishUsingPipelines: true
+          pool:
+            name: netcore1espool-internal
+            os: 1es-windows-2022-pt
           dependsOn:
             - OfficialBuild
           queue:
