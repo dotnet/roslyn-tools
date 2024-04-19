@@ -100,9 +100,6 @@ extends:
                     -configuration $(BuildConfiguration)
                     /p:PB_PublishBlobFeedKey=$(PB_PublishBlobFeedKey)
                     /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-                    /p:DotNetSignType=$(SignType)
-                    /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-                    /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
                     /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
                     /p:DotnetPublishUsingPipelines=true
           displayName: Build
@@ -125,8 +122,9 @@ extends:
         parameters:
           publishUsingPipelines: true
           pool:
-            name: netcore1espool-internal
-            os: 1es-windows-2022-pt
+            name: NetCore1ESPool-Svc-Internal
+            image: 1es-windows-2022-pt
+            os: windows
           dependsOn:
             - OfficialBuild
           queue:
