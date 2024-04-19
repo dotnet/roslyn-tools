@@ -34,6 +34,9 @@ extends:
     stages:
     - stage: build
       displayName: Build and Test
+      pool:
+        name: netcore1espool-internal
+        os: 1es-windows-2022-pt
       jobs:
       - job: OfficialBuild
         displayName: Official Build
