@@ -81,9 +81,10 @@ extends:
             artifactType: Container
             condition: succeededOrFailed()
         steps:
-        - task: MicroBuildSigningPlugin@1
+        - task: MicroBuildSigningPlugin@4
           displayName: Install Signing Plugin
           inputs:
+            zipSources: false
             signType: $(SignType)
           condition: and(succeeded(), ne(variables['SignType'], ''))
         - script: eng\common\CIBuild.cmd
@@ -97,7 +98,7 @@ extends:
                     /p:DotnetPublishUsingPipelines=true
           displayName: Build
 
-        #- template: /eng/common/templates-official/steps/generate-sbom.yml@self
+        - template: /eng/common/templates-official/steps/generate-sbom.yml@self
 
         - task: PublishTestResults@2
           displayName: Publish xUnit Test Results
