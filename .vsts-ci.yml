@@ -34,6 +34,9 @@ extends:
     stages:
     - stage: build
       displayName: Build and Test
+      pool:
+        name: netcore1espool-internal
+        os: 1es-windows-2022-pt
       jobs:
       - job: OfficialBuild
         displayName: Official Build
@@ -68,7 +71,7 @@ extends:
             condition: succeededOrFailed()
           - output: pipelineArtifact
             displayName: Publish Asset Manifests
-            targetPath: $(Build.SourcesDirectory)/artifacts/log/$(BuildConfiguration)/AssetManifest
+            targetPath: $(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)\AssetManifest
             artifactName: 'AssetManifests'
             condition: succeeded()
           - output: pipelineArtifact
