@@ -15,6 +15,14 @@ variables:
     value: .NETCoreValidation
   - name: Codeql.Enabled
     value: true​
+  - name: BuildConfiguration
+    value: Release
+  - name: SignType
+    value: real
+  - name: system.debug
+    value: false
+  - name: TeamName
+    value: Roslyn
 
 # Branches that trigger a build on commit
 trigger:
