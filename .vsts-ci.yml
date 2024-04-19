@@ -30,7 +30,8 @@ extends:
         os: windows
     pool:
       name: NetCore1ESPool-Svc-Internal
-      os: 1es-windows-2022-pt
+      image: 1es-windows-2022-pt
+      os: windows
     stages:
     - stage: build
       displayName: Build and Test
