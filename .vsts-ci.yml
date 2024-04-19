@@ -97,7 +97,7 @@ extends:
                     /p:DotnetPublishUsingPipelines=true
           displayName: Build
 
-        - template: /eng/common/templates-official/steps/generate-sbom.yml@self
+        #- template: /eng/common/templates-official/steps/generate-sbom.yml@self
 
         - task: PublishTestResults@2
           displayName: Publish xUnit Test Results
