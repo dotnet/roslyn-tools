@@ -8,28 +8,22 @@ using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains;
 using BenchmarkDotNet.Toolchains.Results;
 
-namespace Perf
+namespace Perf;
+
+internal sealed class ExternalProcessBuilder : IBuilder
 {
-    internal sealed class ExternalProcessBuilder : IBuilder
+    public BuildResult Build(
+        GenerateResult generateResult,
+        ILogger logger,
+        Benchmark benchmark,
+        IResolver resolver)
     {
-        public BuildResult Build(
-            GenerateResult generateResult,
-            ILogger logger,
-            Benchmark benchmark,
-            IResolver resolver)
+        if (!(benchmark is ExternalProcessBenchmark externalProcessBenchmark))
         {
-            if (!(benchmark is ExternalProcessBenchmark externalProcessBenchmark))
-            {
-                return BuildResult.Failure(generateResult);
-            }
-
-            var exitCode = externalProcessBenchmark.BuildFunc((string)benchmark.Parameters["Commit"]);
-            if (exitCode != 0)
-            {
-                return BuildResult.Failure(generateResult);
-            }
-
-            return BuildResult.Success(generateResult);
+            return BuildResult.Failure(generateResult);
         }
+
+        var exitCode = externalProcessBenchmark.BuildFunc((string)benchmark.Parameters["Commit"]);
+        return exitCode != 0 ? BuildResult.Failure(generateResult) : BuildResult.Success(generateResult);
     }
 }
