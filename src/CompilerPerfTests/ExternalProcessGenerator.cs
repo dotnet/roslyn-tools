@@ -33,12 +33,7 @@ namespace Perf
 
         public GenerateResult GenerateProject(Benchmark benchmark, ILogger logger, string rootArtifactsFolderPath, IConfig config, IResolver resolver)
         {
-            if (!(benchmark is ExternalProcessBenchmark))
-            {
-                return GenerateResult.Failure(null, Array.Empty<string>());
-            }
-
-            return GenerateResult.Success(_artifactsPaths, Array.Empty<string>());
+            return benchmark is not ExternalProcessBenchmark ? GenerateResult.Failure(null, Array.Empty<string>()) : GenerateResult.Success(_artifactsPaths, Array.Empty<string>());
         }
     }
 }
