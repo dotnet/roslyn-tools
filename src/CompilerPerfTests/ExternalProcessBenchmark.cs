@@ -9,26 +9,19 @@ using BenchmarkDotNet.Running;
 
 namespace Perf;
 
-internal sealed class ExternalProcessBenchmark : Benchmark
+internal sealed class ExternalProcessBenchmark(
+    string workingDir,
+    string arguments,
+    Func<string, int> buildFunc,
+    Job job,
+    ParameterInstances parameterInstances)
+    : Benchmark(GetTarget(), job, parameterInstances)
 {
-    public string WorkingDirectory { get; }
+    public string WorkingDirectory { get; } = workingDir;
 
-    public string Arguments { get; }
+    public string Arguments { get; } = arguments;
 
-    public Func<string, int> BuildFunc { get; }
-
-    public ExternalProcessBenchmark(
-        string workingDir,
-        string arguments,
-        Func<string, int> buildFunc,
-        Job job,
-        ParameterInstances parameterInstances)
-        : base(GetTarget(), job, parameterInstances)
-    {
-        WorkingDirectory = workingDir;
-        Arguments = arguments;
-        BuildFunc = buildFunc;
-    }
+    public Func<string, int> BuildFunc { get; } = buildFunc;
 
     /// <summary>
     /// Generate a Target for usage in the Benchmark. This target features a

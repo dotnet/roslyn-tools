@@ -13,22 +13,15 @@ namespace Perf;
 /// This toolchain is designed to take an existing managed application
 /// and run it in an external process.
 /// </summary>
-internal sealed class ExternalProcessToolchain : IToolchain
+internal sealed class ExternalProcessToolchain(string exePath) : IToolchain
 {
     public string Name => throw new System.NotImplementedException();
 
-    public IGenerator Generator { get; }
+    public IGenerator Generator { get; } = new ExternalProcessGenerator(exePath);
 
-    public IBuilder Builder { get; }
+    public IBuilder Builder { get; } = new ExternalProcessBuilder();
 
-    public IExecutor Executor { get; }
-
-    public ExternalProcessToolchain(string exePath)
-    {
-        Generator = new ExternalProcessGenerator(exePath);
-        Builder = new ExternalProcessBuilder();
-        Executor = new ExternalProcessExecutor();
-    }
+    public IExecutor Executor { get; } = new ExternalProcessExecutor();
 
     public bool IsSupported(Benchmark benchmark, ILogger logger, IResolver resolver)
         => benchmark is ExternalProcessBenchmark;

@@ -18,7 +18,7 @@ internal sealed class ExternalProcessBuilder : IBuilder
         Benchmark benchmark,
         IResolver resolver)
     {
-        if (!(benchmark is ExternalProcessBenchmark externalProcessBenchmark))
+        if (benchmark is not ExternalProcessBenchmark externalProcessBenchmark)
         {
             return BuildResult.Failure(generateResult);
         }
