@@ -15,6 +15,7 @@ variables:
     value: .NETCoreValidation
   - name: Codeql.Enabled
     value: true​
+    # $(microsoft-symbol-server-pat) and $(symweb-symbol-server-pat) come from this group
   - group: DotNet-Symbol-Server-Pats
   - name: BuildConfiguration
     value: Release
