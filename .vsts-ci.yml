@@ -77,7 +77,7 @@ extends:
           - output: pipelineArtifact
             targetPath: $(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)
             displayName: Publish packages
-            artifactName: 'PackageArtifacts'
+            artifactName: 'BuildPackageArtifacts'
             condition: succeededOrFailed()
 
           - output: pipelineArtifact
