@@ -50,45 +50,45 @@ extends:
         templateContext:
           outputs:
           # Note that insertion scripts currently depend on bin directory being uploaded to drops.
-          - output: pipelineArtifact
-            targetPath: $(Build.SourcesDirectory)\artifacts\bin
+          - output: buildArtifacts
+            PathtoPublish: $(Build.SourcesDirectory)\artifacts\bin
             displayName: Publish binaries
             publishLocation: Container
             artifactName: bin
             condition: succeededOrFailed()
 
-          - output: pipelineArtifact
-            targetPath: $(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)
+          - output: buildArtifacts
+            PathtoPublish: $(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)
             displayName: Publish logs
             artifactName: 'Build Diagnostic Files'
             publishLocation: Container
             continueOnError: true
             condition: succeededOrFailed()
 
-          - output: pipelineArtifact
+          - output: buildArtifacts
             displayName: Publish test results
-            targetPath: $(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)
+            PathtoPublish: $(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)
             artifactName: 'TestResults'
             publishLocation: Container
             condition: succeededOrFailed()
 
           # Publish our NuPkgs as an artifact. The name of this artifact must be PackageArtifacts as the
           # arcade templates depend on the name.
-        #   - output: pipelineArtifact
-        #     targetPath: $(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)
-        #     displayName: Publish packages
-        #     artifactName: 'PackageArtifacts'
-        #     condition: succeededOrFailed()
+          - output: buildArtifacts
+            PathtoPublish: $(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)
+            displayName: Publish packages
+            artifactName: 'PackageArtifacts'
+            condition: succeededOrFailed()
 
-          - output: pipelineArtifact
+          - output: buildArtifacts
             displayName: Publish Asset Manifests
-            targetPath: $(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)\AssetManifest
+            PathtoPublish: $(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)\AssetManifest
             artifactName: 'AssetManifests'
             condition: succeeded()
 
-          - output: pipelineArtifact
+          - output: buildArtifacts
             displayName: Publish MicroBuild Artifacts
-            targetPath: $(Build.ArtifactStagingDirectory)\MicroBuild\Output
+            PathtoPublish: $(Build.ArtifactStagingDirectory)\MicroBuild\Output
             artifactName: MicroBuildOutputs
             artifactType: Container
             condition: succeededOrFailed()
