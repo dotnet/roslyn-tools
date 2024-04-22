@@ -97,6 +97,9 @@ extends:
           env:
             TeamName: '$(TeamName)'
           condition: and(succeeded(), ne(variables['SignType'], ''))
+        - template: /eng/common/templates/job/job.yml@self
+          parameters:
+            enablePublishUsingPipelines: true
         - script: eng\common\CIBuild.cmd
                     -configuration $(BuildConfiguration)
                     /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
