@@ -74,11 +74,11 @@ extends:
 
           # Publish our NuPkgs as an artifact. The name of this artifact must be PackageArtifacts as the
           # arcade templates depend on the name.
-          - output: pipelineArtifact
-            targetPath: $(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)
-            displayName: Publish packages
-            artifactName: 'BuildPackageArtifacts'
-            condition: succeededOrFailed()
+        #   - output: pipelineArtifact
+        #     targetPath: $(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)
+        #     displayName: Publish packages
+        #     artifactName: 'PackageArtifacts'
+        #     condition: succeededOrFailed()
 
           - output: pipelineArtifact
             displayName: Publish Asset Manifests
