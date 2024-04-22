@@ -19,7 +19,7 @@ variables:
   - name: BuildConfiguration
     value: Release
   - name: SignType
-    value: ''
+    value: Real
   - name: system.debug
     value: false
   - name: TeamName
@@ -45,9 +45,6 @@ extends:
     - stage: build
       displayName: Build and Test
       jobs:
-      - template: /eng/common/templates-official/job/job.yml@self
-        parameters:
-          enablePublishUsingPipelines: true
       - job: OfficialBuild
         displayName: Official Build
         templateContext:
