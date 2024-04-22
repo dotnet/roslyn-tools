@@ -99,7 +99,6 @@ extends:
           condition: and(succeeded(), ne(variables['SignType'], ''))
         - script: eng\common\CIBuild.cmd
                     -configuration $(BuildConfiguration)
-                    /p:PB_PublishBlobFeedKey=$(PB_PublishBlobFeedKey)
                     /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
                     /p:DotNetSignType=$(SignType)
                     /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
