@@ -45,6 +45,9 @@ extends:
     - stage: build
       displayName: Build and Test
       jobs:
+      - template: /eng/common/templates-official/job/job.yml@self
+        parameters:
+        enablePublishUsingPipelines: true
       - job: OfficialBuild
         displayName: Official Build
         templateContext:
@@ -97,9 +100,7 @@ extends:
           env:
             TeamName: '$(TeamName)'
           condition: and(succeeded(), ne(variables['SignType'], ''))
-        - template: /eng/common/templates/job/job.yml@self
-          parameters:
-            enablePublishUsingPipelines: true
+
         - script: eng\common\CIBuild.cmd
                     -configuration $(BuildConfiguration)
                     /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
