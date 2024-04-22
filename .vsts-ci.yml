@@ -47,7 +47,7 @@ extends:
       jobs:
       - template: /eng/common/templates-official/job/job.yml@self
         parameters:
-        enablePublishUsingPipelines: true
+          enablePublishUsingPipelines: true
       - job: OfficialBuild
         displayName: Official Build
         templateContext:
