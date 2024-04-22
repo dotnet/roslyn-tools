@@ -15,6 +15,7 @@ variables:
     value: .NETCoreValidation
   - name: Codeql.Enabled
     value: true​
+  - group: DotNet-Symbol-Server-Pats
   - name: BuildConfiguration
     value: Release
   - name: SignType
