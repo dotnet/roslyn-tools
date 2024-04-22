@@ -56,6 +56,7 @@ extends:
             publishLocation: Container
             artifactName: bin
             condition: succeededOrFailed()
+
           - output: pipelineArtifact
             targetPath: $(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)
             displayName: Publish logs
@@ -63,12 +64,14 @@ extends:
             publishLocation: Container
             continueOnError: true
             condition: succeededOrFailed()
+
           - output: pipelineArtifact
             displayName: Publish test results
             targetPath: $(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)
             artifactName: 'TestResults'
             publishLocation: Container
             condition: succeededOrFailed()
+
           # Publish our NuPkgs as an artifact. The name of this artifact must be PackageArtifacts as the
           # arcade templates depend on the name.
           - output: pipelineArtifact
@@ -76,11 +79,13 @@ extends:
             displayName: Publish packages
             artifactName: 'PackageArtifacts'
             condition: succeededOrFailed()
+
           - output: pipelineArtifact
             displayName: Publish Asset Manifests
             targetPath: $(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)\AssetManifest
             artifactName: 'AssetManifests'
             condition: succeeded()
+
           - output: pipelineArtifact
             displayName: Publish MicroBuild Artifacts
             targetPath: $(Build.ArtifactStagingDirectory)\MicroBuild\Output
