@@ -8,7 +8,9 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -344,7 +346,6 @@ namespace Roslyn.Insertion
             }
 
             var buildClient = ComponentBuildConnection.GetClient<BuildHttpClient>();
-
             Debug.Assert(ReferenceEquals(build,
                 (await GetInsertableComponentBuildsAsync(buildClient, cancellationToken, new[] { build })).Single()));
 
@@ -359,9 +360,11 @@ namespace Roslyn.Insertion
             {
                 if (artifact.Name == arcadeArtifactName)
                 {
+                    var artifactType = artifact.Resource.Type;
                     // artifact.Resource.Data should be available and non-null due to BuildWithValidArtifactsAsync,
                     // which checks this precondition
-                    if (!StringComparer.OrdinalIgnoreCase.Equals(artifact.Resource.Type, "pipelineArtifact"))
+                    if (!artifactType.Equals("container", StringComparison.OrdinalIgnoreCase) &&
+                        !artifactType.Equals("pipelineArtifact", StringComparison.OrdinalIgnoreCase))
                     {
                         throw new InvalidOperationException($"Could not find artifact '{arcadeArtifactName}' associated with build '{build.Id}'");
                     }
@@ -395,21 +398,42 @@ namespace Roslyn.Insertion
             var archiveDownloadPath = Path.Combine(tempDirectory, artifact.Name);
             Console.WriteLine($"Downloading artifacts to {archiveDownloadPath}");
 
-            Stopwatch watch = Stopwatch.StartNew();
+            var artifactType = artifact.Resource.Type;
+            Debug.Assert(artifactType.Equals("container", StringComparison.OrdinalIgnoreCase) || artifactType.Equals("pipelineArtifact", StringComparison.OrdinalIgnoreCase));
 
-            using (Stream s = await buildClient.GetArtifactContentZipAsync(Options.ComponentBuildProjectNameOrFallback, build.Id, artifact.Name, cancellationToken))
-            using (var ms = new MemoryStream())
+            Stopwatch watch = Stopwatch.StartNew();
+            if (artifactType.Equals("container", StringComparison.OrdinalIgnoreCase))
             {
-                await s.CopyToAsync(ms);
-                using (ZipArchive archive = new ZipArchive(ms))
-                {
-                    archive.ExtractToDirectory(tempDirectory);
-                }
+                using var contentStream = await buildClient.GetArtifactContentZipAsync(Options.ComponentBuildProjectNameOrFallback, build.Id, artifact.Name, cancellationToken);
+                await ExtractToDirectoryAsync(contentStream, tempDirectory).ConfigureAwait(false);
+                Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds / 1000} seconds");
+                return archiveDownloadPath;
+            }
+            else
+            {
+                var downloadUrl = artifact.Resource.DownloadUrl;
+                var pat = !string.IsNullOrEmpty(Options.ComponentBuildAzdoUri)
+                    ? Options.ComponentBuildAzdoPassword
+                    : Options.VisualStudioRepoAzdoPassword;
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
+                    Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(string.Format("{0}:{1}", "", pat))));
+
+                using var response = await client.GetAsync(downloadUrl).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await ExtractToDirectoryAsync(contentStream, tempDirectory).ConfigureAwait(false);
+                Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds / 1000} seconds");
+                return archiveDownloadPath;
             }
 
-            Console.WriteLine($"Artifact download took {watch.ElapsedMilliseconds / 1000} seconds");
-
-            return Path.Combine(tempDirectory, artifact.Name);
+            static async Task ExtractToDirectoryAsync(Stream contentStream, string tempDirectory)
+            {
+                using var ms = new MemoryStream();
+                await contentStream.CopyToAsync(ms).ConfigureAwait(false);
+                using ZipArchive archive = new ZipArchive(ms);
+                archive.ExtractToDirectory(tempDirectory);
+            }
         }
 
         private static Component[] GetLatestBuildComponents(Build newestBuild, InsertionArtifacts buildArtifacts, CancellationToken cancellationToken)
