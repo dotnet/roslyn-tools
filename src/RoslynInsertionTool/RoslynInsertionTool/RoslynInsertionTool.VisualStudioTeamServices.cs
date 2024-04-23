@@ -411,6 +411,9 @@ namespace Roslyn.Insertion
             }
             else
             {
+                // When the published by Publish artifacts pipeline task, buildClient.GetArtifactContentZipAsync() is unable to get the content of the artifacts.
+                // See https://developercommunity.visualstudio.com/t/exception-is-being-thrown-for-getartifactcontentzi/1270336
+                // It recommended to use http client to download the payload directly from the Url.
                 var downloadUrl = artifact.Resource.DownloadUrl;
                 var pat = !string.IsNullOrEmpty(Options.ComponentBuildAzdoUri)
                     ? Options.ComponentBuildAzdoPassword
