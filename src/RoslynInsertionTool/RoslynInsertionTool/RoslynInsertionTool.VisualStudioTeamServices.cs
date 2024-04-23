@@ -361,7 +361,7 @@ namespace Roslyn.Insertion
                 {
                     // artifact.Resource.Data should be available and non-null due to BuildWithValidArtifactsAsync,
                     // which checks this precondition
-                    if (!StringComparer.OrdinalIgnoreCase.Equals(artifact.Resource.Type, "container"))
+                    if (!StringComparer.OrdinalIgnoreCase.Equals(artifact.Resource.Type, "pipelineArtifact"))
                     {
                         throw new InvalidOperationException($"Could not find artifact '{arcadeArtifactName}' associated with build '{build.Id}'");
                     }
