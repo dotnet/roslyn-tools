@@ -106,7 +106,6 @@
     <merge from="release/7.0.4xx" to="release/8.0.1xx" />
     <merge from="release/8.0.1xx" to="release/8.0.2xx" />
     <merge from="release/8.0.2xx" to="release/8.x" />
-    <merge from="release/8.x" to="main" />
   </repo>
 
   <repo owner="dotnet" name="linker" mergeOwners="agocke,sbomer">
