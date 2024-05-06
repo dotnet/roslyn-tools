@@ -99,12 +99,13 @@
 
   <!-- dotnet-format service branches -->
   <repo owner="dotnet" name="format" mergeOwners="sharwell">
-    <merge from="release/6.0.1xx" to="release/6.0.3xx" />
-    <merge from="release/6.0.3xx" to="release/6.x" />
-    <merge from="release/6.x" to="release/7.0.1xx" />
+    <merge from="release/6.0.1xx" to="release/6.0.4xx" />
+    <merge from="release/6.0.4xx" to="release/7.0.1xx" />
     <merge from="release/7.0.1xx" to="release/7.0.3xx" />
-    <merge from="release/7.0.3xx" to="release/7.x" />
-    <merge from="release/7.x" to="release/8.x" />
+    <merge from="release/7.0.3xx" to="release/7.0.4xx" />
+    <merge from="release/7.0.4xx" to="release/8.0.1xx" />
+    <merge from="release/8.0.1xx" to="release/8.0.2xx" />
+    <merge from="release/8.0.2xx" to="release/8.x" />
     <merge from="release/8.x" to="main" />
   </repo>
 
