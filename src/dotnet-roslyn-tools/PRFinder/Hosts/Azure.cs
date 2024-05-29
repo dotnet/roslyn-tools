@@ -54,23 +54,19 @@ public class Azure : IRepositoryHost
         return false;
     }
 
-    public bool TryParseMergeInfo(Commit commit, out string prNumber, out string comment)
+    public Task<MergeInfo?> TryParseMergeInfoAsync(Commit commit)
     {
         var match = IsAzDOMergePRCommit.Match(commit.Message);
         if (match.Success)
         {
             // Merge PR Messages are in the form "Merged PR 320820: Resolving encoding issue on test summary pane, using UTF8 now\n\nAdded a StreamWriterWrapper to resolve encoding issue"
-            comment = commit.MessageShort;
-            prNumber = match.Groups[1].Value;
-            return true;
+            return Task.FromResult<MergeInfo?>(new(match.Groups[1].Value, commit.Message));
         }
         else
         {
             // Todo: Determine if there is a format for AzDO squash merges that preserves the PR #
         }
 
-        comment = string.Empty;
-        prNumber = string.Empty;
-        return false;
+        return Task.FromResult<MergeInfo?>(null);
     }
 }

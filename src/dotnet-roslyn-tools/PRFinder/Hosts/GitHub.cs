@@ -53,37 +53,35 @@ public class GitHub : IRepositoryHost
         return false;
     }
 
-    public bool TryParseMergeInfo(Commit commit, out string prNumber, out string comment)
+    public async Task<MergeInfo?> TryParseMergeInfoAsync(Commit commit)
     {
         var match = IsGitHubMergePRCommit.Match(commit.MessageShort);
         if (match.Success)
         {
-            prNumber = match.Groups[1].Value;
+            var prNumber = match.Groups[1].Value;
 
             // Merge PR Messages are in the form "Merge pull request #39526 from mavasani/GetValueUsageInfoAssert\n\nFix an assert in IOperationExtension.GetValueUsageInfo"
             // Try and extract the 1st non-empty line since it is the useful part of the message, otherwise take the first line.
             var lines = commit.Message.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            comment = lines.Length > 1
+            var comment = lines.Length > 1
                 ? $"{lines[1]} (#{prNumber})"
                 : commit.MessageShort;
-            return true;
+            return new(prNumber, comment);
         }
         else
         {
             match = IsGitHubSquashedPRCommit.Match(commit.MessageShort);
             if (match.Success)
             {
-                prNumber = match.Groups[1].Value;
+                var prNumber = match.Groups[1].Value;
 
                 // Squash PR Messages are in the form "Nullable annotate TypeCompilationState and MessageID (#39449)"
                 // Take the 1st line since it should be descriptive.
-                comment = commit.MessageShort;
-                return true;
+                var comment = commit.MessageShort;
+                return new(prNumber, comment);
             }
         }
 
-        prNumber = string.Empty;
-        comment = string.Empty;
-        return false;
+        return null;
     }
 }

@@ -120,17 +120,17 @@ internal class PRFinder
                 continue;
             }
 
-            var wasMergeCommit = host.TryParseMergeInfo(commit, out var prNumber, out var comment);
+            var mergeInfo = await host.TryParseMergeInfoAsync(commit);
 
             // We will print commit comments until we find the first merge PR
-            if (!wasMergeCommit && mergePRFound)
+            if (mergeInfo is null && mergePRFound)
             {
                 continue;
             }
 
             string prLink;
 
-            if (wasMergeCommit)
+            if (mergeInfo is not null)
             {
                 if (commitHeaderAdded && !mergePRHeaderAdded)
                 {
@@ -140,7 +140,7 @@ internal class PRFinder
 
                 mergePRFound = true;
 
-                prLink = formatter.FormatPRListItem(comment, prNumber, host.GetPullRequestUrl(prNumber));
+                prLink = formatter.FormatPRListItem(mergeInfo.Comment, mergeInfo.PrNumber, host.GetPullRequestUrl(mergeInfo.PrNumber));
             }
             else
             {
