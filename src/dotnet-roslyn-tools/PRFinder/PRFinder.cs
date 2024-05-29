@@ -90,7 +90,7 @@ internal class PRFinder
         }
 
         IRepositoryHost host = isGitHub
-            ? new Hosts.GitHub(repoUrl)
+            ? new Hosts.GitHub(repoUrl, logger)
             : new Hosts.Azure(repoUrl);
 
         IPRLogFormatter formatter = format == DefaultFormat
