@@ -12,15 +12,21 @@ public class GitHub : IRepositoryHost
     private static readonly Regex IsGitHubReleaseFlowCommit = new(@"^Merge pull request #\d+ from dotnet/merges/");
     private static readonly Regex IsGitHubMergePRCommit = new(@"^Merge pull request #(\d+) from");
     private static readonly Regex IsGitHubSquashedPRCommit = new(@"\(#(\d+)\)(?:\n|$)");
+    private readonly string _repoUrl;
 
-    public string GetCommitUrl(string repoUrl, string commitSha)
-        => $"{repoUrl}/commit/{commitSha}";
+    public GitHub(string repoUrl)
+    {
+        _repoUrl = repoUrl;
+    }
 
-    public string GetDiffUrl(string repoUrl, string previousSha, string currentSha)
-        => $"{repoUrl}/compare/{previousSha}...{currentSha}?w=1";
+    public string GetCommitUrl(string commitSha)
+        => $"{_repoUrl}/commit/{commitSha}";
 
-    public string GetPullRequestUrl(string repoUrl, string prNumber)
-        => $"{repoUrl}/pull/{prNumber}";
+    public string GetDiffUrl(string previousSha, string currentSha)
+        => $"{_repoUrl}/compare/{previousSha}...{currentSha}?w=1";
+
+    public string GetPullRequestUrl(string prNumber)
+        => $"{_repoUrl}/pull/{prNumber}";
 
     public bool ShouldSkip(Commit commit, ref bool mergePRFound)
     {
