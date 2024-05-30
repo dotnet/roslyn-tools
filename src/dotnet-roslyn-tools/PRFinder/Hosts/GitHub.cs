@@ -25,14 +25,19 @@ public class GitHub : IRepositoryHost
     {
         _repoUrl = repoUrl;
         _logger = logger;
-        _httpClient = new HttpClient()
+        _logger.LogTrace($"Creating GitHub repository host with base url: {repoUrl}");
+
+        var split = _repoUrl.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var owner = split[^2];
+        var repo = split[^1];
+        _httpClient = new HttpClient(new LoggingHandler(logger))
         {
-            BaseAddress = new Uri(repoUrl)
+            BaseAddress = new Uri($"https://api.github.com/repos/{owner}/{repo}/pulls/"),
         };
 
-        _httpClient.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
+        _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.text+json"));
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "roslyn-pr-finder");
+        _httpClient.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2022-11-28");
     }
 
     public string GetCommitUrl(string commitSha)
@@ -111,10 +116,9 @@ public class GitHub : IRepositoryHost
 
     private async Task<string?> TryGetPrTitleAsync(string prNumber)
     {
-        _logger.LogTrace($"Attempting to fetch PR Title for {prNumber} at {_httpClient.BaseAddress}/pull/{prNumber}");
-
-        var request = new HttpRequestMessage(HttpMethod.Get, $"pulls/{prNumber}");
-        var response = await _httpClient.GetFromJsonAsync<PullRequestResponse>($"pulls/{prNumber}");
+        var relativeUrl = $"{prNumber}";
+        _logger.LogTrace($"Attempting to fetch PR Title for {prNumber} at {_httpClient.BaseAddress}{relativeUrl}");
+        var response = await _httpClient.GetFromJsonAsync<PullRequestResponse>(relativeUrl);
 
         return response?.Title;
     }
@@ -126,5 +130,41 @@ public class GitHub : IRepositoryHost
 
         [JsonPropertyName ("description")]
         public string Body { get; set; } = "";
+    }
+
+    private class LoggingHandler : DelegatingHandler
+    {
+        private ILogger _logger;
+
+        public LoggingHandler(ILogger logger)
+            : base(new HttpClientHandler())
+        {
+            _logger = logger;
+        }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            _logger.LogTrace("Request:");
+            _logger.LogTrace(request.RequestUri?.ToString() ?? request.ToString());
+            if (request.Content != null)
+            {
+                _logger.LogTrace(await request.Content.ReadAsStringAsync());
+            }
+
+            _logger.LogTrace("");
+
+            var response = await base.SendAsync(request, cancellationToken);
+
+            _logger.LogTrace("Response:");
+            _logger.LogTrace(response.ToString());
+            if (response.Content != null)
+            {
+                _logger.LogTrace(await response.Content.ReadAsStringAsync());
+            }
+
+            _logger.LogTrace("");
+
+            return response;
+        }
     }
 }
