@@ -116,11 +116,19 @@ public class GitHub : IRepositoryHost
 
     private async Task<string?> TryGetPrTitleAsync(string prNumber)
     {
-        var relativeUrl = $"{prNumber}";
-        _logger.LogTrace($"Attempting to fetch PR Title for {prNumber} at {_httpClient.BaseAddress}{relativeUrl}");
-        var response = await _httpClient.GetFromJsonAsync<PullRequestResponse>(relativeUrl);
+        try
+        {
+            var relativeUrl = $"{prNumber}";
+            _logger.LogTrace($"Attempting to fetch PR Title for {prNumber} at {_httpClient.BaseAddress}{relativeUrl}");
+            var response = await _httpClient.GetFromJsonAsync<PullRequestResponse>(relativeUrl);
 
-        return response?.Title;
+            return response?.Title;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, e.Message);
+            return null;
+        }
     }
 
     private class PullRequestResponse
