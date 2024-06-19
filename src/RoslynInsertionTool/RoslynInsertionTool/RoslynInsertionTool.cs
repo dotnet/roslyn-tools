@@ -30,7 +30,7 @@ namespace Roslyn.Insertion
 
         private static List<string> WarningMessages { get; } = new List<string>();
 
-        private static RoslynInsertionToolOptions Options { get; set; }
+        internal static RoslynInsertionToolOptions Options { get; set; }
 
         public static async Task<(bool success, int pullRequestId)> PerformInsertionAsync(
             RoslynInsertionToolOptions options,

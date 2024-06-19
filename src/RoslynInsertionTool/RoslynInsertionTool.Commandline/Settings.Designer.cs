@@ -277,5 +277,16 @@ namespace Roslyn.Insertion {
                 return ((string)(this["SkipCoreXTPackages"]));
             }
         }
+
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UpdateXamlRoslynVersion
+        {
+            get
+            {
+                return ((bool)(this["UpdateXamlRoslynVersion"]));
+            }
+        }
     }
 }
