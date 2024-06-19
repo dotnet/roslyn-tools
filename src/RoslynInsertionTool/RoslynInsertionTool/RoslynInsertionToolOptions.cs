@@ -25,6 +25,7 @@ namespace Roslyn.Insertion
         string BuildDropPath,
         bool InsertCoreXTPackages,
         bool UpdateCoreXTLibraries,
+        bool UpdateXamlRoslynVersion,
         bool InsertDevDivSourceFiles,
         bool InsertWillowPackages,
         string InsertionName,

@@ -34,6 +34,7 @@ partial class RoslynInsertionToolCommandline
             InsertionBranchName: settings.InsertionBranchName,
             InsertCoreXTPackages: settings.InsertCoreXTPackages,
             UpdateCoreXTLibraries: settings.UpdateCoreXTLibraries,
+            UpdateXamlRoslynVersion: settings.UpdateXamlRoslynVersion,
             InsertDevDivSourceFiles: settings.InsertDevDivSourceFiles,
             InsertWillowPackages: settings.InsertWillowPackages,
             InsertionName: settings.InsertionName,
@@ -150,6 +151,11 @@ partial class RoslynInsertionToolCommandline
                 "uc=|updatecorextlibraries=",
                 $"Updates a props file used by CoreXT for generating links to library paths. Defaults to \"{options.UpdateCoreXTLibraries}\".",
                 updateCoreXTLibraries => options = options with { UpdateCoreXTLibraries = bool.Parse(updateCoreXTLibraries) }
+            },
+            {
+                "updatexamlroslynversion=",
+                $"Updates <XamlRoslynVersion> inside /src/Xaml/Versions.props. Defaults to \"{options.UpdateXamlRoslynVersion}\".",
+                updateXamlRoslynVersion => options = options with { UpdateXamlRoslynVersion = bool.Parse(updateXamlRoslynVersion) }
             },
             {
                 "ua=|updateassemblyversions=",

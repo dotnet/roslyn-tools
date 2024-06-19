@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
@@ -39,6 +40,7 @@ namespace Roslyn.Insertion
         private const string ComponentsJsonPath = ".corext/Configs/components.json";
         private const string PackagePropsPath = "Directory.Packages.props";
         private const string LegacyPackagePropsPath = "Packages.props";
+        private const string XamlVersionPropsPath = "/src/Xaml/Versions.props";
 
         private readonly string? _defaultConfigOriginal;
 
@@ -237,6 +239,16 @@ namespace Roslyn.Insertion
                         dirtyPropsFiles.Add(file);
                     }
                 }
+            }
+
+            // Update <XamlRoslynVersion> inside /src/Xaml/Versions.props.
+            if (RoslynInsertionTool.Options.UpdateXamlRoslynVersion &&
+                packageInfo.IsRoslyn &&
+                PackagePropFileToDocumentMap.TryGetValue(XamlVersionPropsPath, out var xamlProps) &&
+                xamlProps.document.XPathSelectElements("//*[local-name()='XamlRoslynVersion']").FirstOrDefault() is { } xamlRoslynVersionElement)
+            {
+                xamlRoslynVersionElement.Value = packageInfo.Version.ToString();
+                dirtyPropsFiles.Add(XamlVersionPropsPath);
             }
         }
 
@@ -440,6 +452,8 @@ namespace Roslyn.Insertion
                 : LegacyPackagePropsPath;
 
             await ProcessPropsPath(packagePropsFile, versionDescriptor);
+
+            await ProcessPropsPath(XamlVersionPropsPath, versionDescriptor);
 
             if (PackagePropFileToDocumentMap.Any())
             {
