@@ -69,8 +69,8 @@
     <merge from="release/dev17.10" to="release/dev17.11" />
 
     <!-- regular branch flow -->
-    <merge from="release/dev17.10" to="main" />
-    <merge from="main" to="release/dev17.11" />
+    <merge from="release/dev17.11" to="main" />
+    <!-- <merge from="main" to="release/dev17.11" /> -->
 
     <!-- feature branches -->
     <merge from="main" to="feature/nullness" owners="T-Gro" frequency="daily" />
