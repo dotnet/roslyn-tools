@@ -117,9 +117,10 @@ internal class PRFinder
             IncludeReachableFrom = startCommit,
             ExcludeReachableFrom = endCommit,
         };
-        var commitLog = path is null
-            ? repo.Commits.QueryBy(commitFilter)
-            : repo.Commits.QueryBy(path, commitFilter).Select(e => e.Commit);
+        var commitsForPath = path is not null
+            ? repo.Commits.QueryBy(path, commitFilter).Select(e => e.Commit.Sha).ToHashSet()
+            : null;
+        var commitLog = repo.Commits.QueryBy(commitFilter);
 
         logger.LogDebug(formatter.FormatChangesHeader(startRef, host.GetCommitUrl(startRef), endRef, host.GetCommitUrl(endRef)));
 
@@ -140,6 +141,12 @@ internal class PRFinder
 
             // We will print commit comments until we find the first merge PR
             if (mergeInfo is null && mergePRFound)
+            {
+                continue;
+            }
+
+            // We need to ensure the commit is for the path if one is provided
+            if (commitsForPath is not null && !IsCommitForPath(commit, commitsForPath))
             {
                 continue;
             }
@@ -183,6 +190,43 @@ internal class PRFinder
         logger.LogInformation(line);
         builder?.AppendLine(line);
     }
+
+    private static bool IsCommitForPath(Commit commit, HashSet<string> commitsForPath)
+    {
+        // Check if the commit is for the path.
+        var commitParents = commit.Parents.ToArray();
+        if (commitsForPath.Contains(commit.Sha))
+        {
+            return true;
+        }
+
+        // If the commit isn't a merge commit, then it cannot be for the path.
+        if (commitParents.Length == 1)
+        {
+            return false;
+        }
+
+        // Since we report PRs based on merge commits we will walk the parents
+        // looking for commit to the path. If we encouter another merge commit
+        // we will assume we have gone too far and stop.
+        foreach (var parentCommit in commitParents)
+        {
+            var prCommit = parentCommit;
+
+            while (prCommit?.Parents.Count() == 1)
+            {
+                if (commitsForPath.Contains(prCommit.Sha))
+                {
+                    return true;
+                }
+
+                prCommit = prCommit.Parents.FirstOrDefault();
+            }
+        }
+
+        return false;
+    }
+
 
     private static bool TryFindGitRepoPath(string startPath, [NotNullWhen(returnValue: true)] out string? repoPath)
     {
