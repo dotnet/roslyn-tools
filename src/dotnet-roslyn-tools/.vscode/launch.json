@@ -18,7 +18,9 @@
               "-e",
               "main",
               "--path",
-              "src/dotnet-roslyn-tools"
+              "src/dotnet-roslyn-tools",
+              "-v",
+              "diag"
             ],
             "cwd": "${workspaceFolder}",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console

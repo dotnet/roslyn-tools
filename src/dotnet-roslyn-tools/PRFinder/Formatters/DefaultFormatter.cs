@@ -6,8 +6,10 @@ namespace Microsoft.RoslynTools.PRFinder.Formatters;
 
 public class DefaultFormatter : IPRLogFormatter
 {
-    public virtual string FormatChangesHeader(string start, string startUrl, string end, string endUrl)
-        => $"### Changes from [{start}]({startUrl}) to [{end}]({endUrl}):";
+    public virtual string FormatChangesHeader(string start, string startUrl, string end, string endUrl, string? path)
+        => path is null
+            ? $"### Changes from [{start}]({startUrl}) to [{end}]({endUrl}):"
+            : $"### Changes from [{start}]({startUrl}) to [{end}]({endUrl}) under `{path}`:";
 
     public virtual string FormatCommitListItem(string comment, string shortSHA, string commitUrl)
         => $"- [{comment} ({shortSHA})]({commitUrl})";

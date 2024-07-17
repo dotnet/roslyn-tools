@@ -122,7 +122,7 @@ internal class PRFinder
             : null;
         var commitLog = repo.Commits.QueryBy(commitFilter);
 
-        logger.LogDebug(formatter.FormatChangesHeader(startRef, host.GetCommitUrl(startRef), endRef, host.GetCommitUrl(endRef)));
+        logger.LogDebug(formatter.FormatChangesHeader(startRef, host.GetCommitUrl(startRef), endRef, host.GetCommitUrl(endRef), path));
 
         RecordLine(formatter.FormatDiffHeader(host.GetDiffUrl(startRef, endRef)), logger, builder);
 

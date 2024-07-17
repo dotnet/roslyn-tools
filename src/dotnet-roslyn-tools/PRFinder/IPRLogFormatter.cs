@@ -6,7 +6,7 @@ namespace Microsoft.RoslynTools.PRFinder;
 
 public interface IPRLogFormatter
 {
-    string FormatChangesHeader(string start, string startUrl, string end, string endUrl);
+    string FormatChangesHeader(string start, string startUrl, string end, string endUrl, string? path);
     string FormatDiffHeader(string diffUrl);
     string GetCommitSectionHeader();
     string GetPRSectionHeader();
