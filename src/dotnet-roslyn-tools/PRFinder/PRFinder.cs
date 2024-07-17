@@ -6,7 +6,7 @@ namespace Microsoft.RoslynTools.PRFinder;
 
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
-using System.Runtime.Serialization;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 internal class PRFinder
@@ -18,34 +18,42 @@ internal class PRFinder
     /// <summary>
     /// Finds the PRs merged between two given commits.
     /// </summary>
-    /// <param name="previousCommitSha">Previous commit SHA.</param>
-    /// <param name="currentCommitSha">Current commit SHA.</param>
+    /// <param name="startRef">Previous commit SHA.</param>
+    /// <param name="endRef">Current commit SHA.</param>
     /// <param name="logger">Logger where result will be output.</param>
     /// <param name="repoPath">Optional path to product repo. Current directory will be used otherwise.</param>
     /// <param name="builder">Optional if the caller wants result as a string.</param>
     /// <returns></returns>
     public static async Task<int> FindPRsAsync(
-        string previousCommitSha,
-        string currentCommitSha,
+        string startRef,
+        string endRef,
+        string? path,
         string format,
         ILogger logger,
         string? repoPath = null,
         StringBuilder? builder = null)
     {
-        using var repo = new Repository(repoPath ?? Environment.CurrentDirectory);
-
-        var currentCommit = repo.Lookup<Commit>(currentCommitSha);
-        var previousCommit = repo.Lookup<Commit>(previousCommitSha);
-
-        if (previousCommit is null)
+        // If we are not provided a repo path, walk up the file system to fine one.
+        if (repoPath is null && !TryFindGitRepoPath(Environment.CurrentDirectory, out repoPath))
         {
-            logger.LogError($"Previous commit SHA '{previousCommitSha}' does not exist. Please fetch and try again.");
+            logger.LogError("The current directory is not part of a git repository.");
             return -1;
         }
 
-        if (currentCommit is null)
+        using var repo = new Repository(repoPath);
+
+        var startCommit = repo.Lookup<Commit>(endRef);
+        var endCommit = repo.Lookup<Commit>(startRef);
+
+        if (endCommit is null)
         {
-            logger.LogError($"Current commit SHA '{currentCommitSha}' does not exist. Please fetch and try again.");
+            logger.LogError($"Starting ref '{startRef}' does not exist. Please fetch and try again.");
+            return -1;
+        }
+
+        if (startCommit is null)
+        {
+            logger.LogError($"Ending ref '{endRef}' does not exist. Please fetch and try again.");
             return -1;
         }
 
@@ -103,16 +111,19 @@ internal class PRFinder
         };
 
         // Get commit history starting at the current commit and ending at the previous commit
-        var commitLog = repo.Commits.QueryBy(
-            new CommitFilter
-            {
-                IncludeReachableFrom = currentCommit,
-                ExcludeReachableFrom = previousCommit
-            });
+        path = CleanPath(path);
+        var commitFilter = new CommitFilter
+        {
+            IncludeReachableFrom = startCommit,
+            ExcludeReachableFrom = endCommit,
+        };
+        var commitLog = path is null
+            ? repo.Commits.QueryBy(commitFilter)
+            : repo.Commits.QueryBy(path, commitFilter).Select(e => e.Commit);
 
-        logger.LogDebug(formatter.FormatChangesHeader(previousCommitSha, host.GetCommitUrl(previousCommitSha), currentCommitSha, host.GetCommitUrl(currentCommitSha)));
+        logger.LogDebug(formatter.FormatChangesHeader(startRef, host.GetCommitUrl(startRef), endRef, host.GetCommitUrl(endRef)));
 
-        RecordLine(formatter.FormatDiffHeader(host.GetDiffUrl(previousCommitSha, currentCommitSha)), logger, builder);
+        RecordLine(formatter.FormatDiffHeader(host.GetDiffUrl(startRef, endRef)), logger, builder);
 
         var commitHeaderAdded = false;
         var mergePRHeaderAdded = false;
@@ -171,5 +182,40 @@ internal class PRFinder
     {
         logger.LogInformation(line);
         builder?.AppendLine(line);
+    }
+
+    private static bool TryFindGitRepoPath(string startPath, [NotNullWhen(returnValue: true)] out string? repoPath)
+    {
+        var currentDirectory = new DirectoryInfo(startPath);
+        while (currentDirectory != null)
+        {
+            if (currentDirectory.GetDirectories(".git").Length != 0)
+            {
+                repoPath = currentDirectory.FullName;
+                return true;
+            }
+
+            currentDirectory = currentDirectory.Parent;
+        }
+
+        repoPath = null;
+        return false;
+    }
+
+    private static string? CleanPath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        // Clean up the path
+        path = path.Replace('\\', '/');
+        if (path.StartsWith("./"))
+        {
+            path = path[2..];
+        }
+
+        return path;
     }
 }
