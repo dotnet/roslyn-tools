@@ -66,13 +66,13 @@
     <merge from="release/dev17.8" to="release/dev17.9" />
     <merge from="release/dev17.9" to="release/dev17.10" />
     <merge from="release/dev17.10" to="release/dev17.11" />
+    <merge from="release/dev17.11" to="release/dev17.12" />
 
     <!-- regular branch flow -->
     <merge from="release/dev17.11" to="main" />
-    <!-- <merge from="main" to="release/dev17.11" /> -->
+    <merge from="main" to="release/dev17.12" />
 
     <!-- feature branches -->
-    <merge from="main" to="feature/nullness" owners="T-Gro" frequency="daily" />
     <merge from="main" to="lsp" owners="0101" frequency="daily" />
   </repo>
 
