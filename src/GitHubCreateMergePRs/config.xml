@@ -107,10 +107,4 @@
   <repo owner="dotnet" name="linker" mergeOwners="agocke,sbomer">
     <merge from="main" to="feature/damAnalyzer" />
   </repo>
-
-  <repo owner="dotnet" name="vscode-csharp" mergeOwners="dibarbet">
-    <!-- Flow changes made only to release / prerelease branches back up to main. -->
-    <merge from="release" to="main" />
-    <merge from="prerelease" to="main" />
-  </repo>
 </config>
