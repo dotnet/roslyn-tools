@@ -7,30 +7,22 @@ using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains;
 
-namespace Perf
+namespace Perf;
+
+/// <summary>
+/// This toolchain is designed to take an existing managed application
+/// and run it in an external process.
+/// </summary>
+internal sealed class ExternalProcessToolchain(string exePath) : IToolchain
 {
-    /// <summary>
-    /// This toolchain is designed to take an existing managed application
-    /// and run it in an external process.
-    /// </summary>
-    internal sealed class ExternalProcessToolchain : IToolchain
-    {
-        public string Name => throw new System.NotImplementedException();
+    public string Name => throw new System.NotImplementedException();
 
-        public IGenerator Generator { get; }
+    public IGenerator Generator { get; } = new ExternalProcessGenerator(exePath);
 
-        public IBuilder Builder { get; }
+    public IBuilder Builder { get; } = new ExternalProcessBuilder();
 
-        public IExecutor Executor { get; }
+    public IExecutor Executor { get; } = new ExternalProcessExecutor();
 
-        public ExternalProcessToolchain(string exePath)
-        {
-            Generator = new ExternalProcessGenerator(exePath);
-            Builder = new ExternalProcessBuilder();
-            Executor = new ExternalProcessExecutor();
-        }
-
-        public bool IsSupported(Benchmark benchmark, ILogger logger, IResolver resolver)
-            => benchmark is ExternalProcessBenchmark;
-    }
+    public bool IsSupported(Benchmark benchmark, ILogger logger, IResolver resolver)
+        => benchmark is ExternalProcessBenchmark;
 }
