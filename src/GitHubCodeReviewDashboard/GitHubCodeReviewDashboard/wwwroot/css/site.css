@@ -1,0 +1,19 @@
+a {
+    text-decoration: none;
+}
+
+body {
+    font-family: sans-serif;
+}
+
+.category a {
+    font-size: small;
+}
+
+.draft-label {
+    /* The background-color here is the same color GitHub uses for the draft label */
+    background-color: #6a737d;
+    border-radius: 2px;
+    color: #ffffff;
+    padding: 2px 4px;
+}
