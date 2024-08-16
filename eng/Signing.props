@@ -22,5 +22,6 @@
     <FileSignInfo Include="Ben.Demystifier.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="Colorful.Console.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="LibGit2Sharp.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Octokit.dll" CertificateName="3PartySHA2" />
   </ItemGroup>
 </Project>
