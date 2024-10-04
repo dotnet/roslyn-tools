@@ -8,8 +8,6 @@
     <!-- Roslyn servicing branches (flowing between releases) -->
     <merge from="dev15.9.x" to="release/dev16.11-vs-deps" />
     <merge from="release/dev16.11-vs-deps" to="release/dev17.6" />
-    <merge from="release/dev17.6" to="release/dev17.8" />
-    <merge from="release/dev17.8" to="release/dev17.10" />
     <merge from="release/dev17.10" to="release/dev17.11" />
     <merge from="release/dev17.11" to="release/dev17.12" />
 
