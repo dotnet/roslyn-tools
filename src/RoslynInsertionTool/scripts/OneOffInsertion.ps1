@@ -33,7 +33,8 @@ param([string] $clientId,
       [string] $password,
       [string] $existingPR,
       [switch] $overwritePR,
-      [switch] $createPlaceholderPR)
+      [switch] $createPlaceholderPR,
+      [switch] $updatexamlroslynversion)
 
 . $PSScriptRoot\HelperFunctions.ps1
 
@@ -79,10 +80,16 @@ if ($createPlaceholderPR.IsPresent -and $createPlaceholderPR)
     $placeholderFlag = "/createdummypr"
 }
 
+$updateXamlRoslynVersionFlag = ""
+if ($updatexamlroslynversion.IsPresent -and $updatexamlroslynversion)
+{
+    $updateXamlRoslynVersionFlag = "/updatexamlroslynversion=true"
+}
+
 if ($insertionCount -lt 1) {
     $insertionCount = 1
 }
 
 for ($i = 0; $i -lt $insertionCount; $i++) {
-    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/tp=$titlePrefix" "/ts=$titleSuffix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" "/reviewerGUID=$reviewerGUID" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName $componentPassword $userName $password $clientId $clientSecret $existingPR $overwritePRFlag $placeholderFlag $queueSpeedometerValidation
+    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/tp=$titlePrefix" "/ts=$titleSuffix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" "/reviewerGUID=$reviewerGUID" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName $componentPassword $userName $password $clientId $clientSecret $existingPR $overwritePRFlag $placeholderFlag $queueSpeedometerValidation $updateXamlRoslynVersionFlag
 }
