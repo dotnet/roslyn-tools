@@ -34,7 +34,7 @@ param([string] $clientId,
       [string] $existingPR,
       [switch] $overwritePR,
       [switch] $createPlaceholderPR,
-      [switch] $updatexamlroslynversion)
+      [switch] $updateXamlRoslynVersion)
 
 . $PSScriptRoot\HelperFunctions.ps1
 
