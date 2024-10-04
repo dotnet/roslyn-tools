@@ -453,7 +453,10 @@ namespace Roslyn.Insertion
 
             await ProcessPropsPath(packagePropsFile, versionDescriptor);
 
-            await ProcessPropsPath(XamlVersionPropsPath, versionDescriptor);
+            if (RoslynInsertionTool.Options.UpdateXamlRoslynVersion)
+            {
+                await ProcessPropsPath(XamlVersionPropsPath, versionDescriptor);
+            }
 
             if (PackagePropFileToDocumentMap.Any())
             {
