@@ -34,7 +34,7 @@ param([string] $clientId,
       [string] $existingPR,
       [switch] $overwritePR,
       [switch] $createPlaceholderPR,
-      [switch] $updateXamlRoslynVersion)
+      [string] $updateXamlRoslynVersion)
 
 . $PSScriptRoot\HelperFunctions.ps1
 
@@ -80,11 +80,7 @@ if ($createPlaceholderPR.IsPresent -and $createPlaceholderPR)
     $placeholderFlag = "/createdummypr"
 }
 
-$updateXamlRoslynVersionFlag = ""
-if ($updatexamlroslynversion.IsPresent -and $updatexamlroslynversion)
-{
-    $updateXamlRoslynVersionFlag = "/updatexamlroslynversion=true"
-}
+$updateXamlRoslynVersionFlag = GetUpdateXamlRoslynVersion $updatexamlroslynversion
 
 if ($insertionCount -lt 1) {
     $insertionCount = 1
