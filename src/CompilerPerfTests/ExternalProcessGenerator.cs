@@ -11,34 +11,23 @@ using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains;
 using BenchmarkDotNet.Toolchains.Results;
 
-namespace Perf
+namespace Perf;
+
+internal sealed class ExternalProcessGenerator(string exePath) : IGenerator
 {
-    internal sealed class ExternalProcessGenerator : IGenerator
+    private readonly ArtifactsPaths _artifactsPaths = new(
+        rootArtifactsFolderPath: "",
+        buildArtifactsDirectoryPath: "",
+        binariesDirectoryPath: "",
+        programCodePath: "",
+        appConfigPath: "",
+        projectFilePath: "",
+        buildScriptFilePath: "",
+        executablePath: exePath,
+        programName: Path.GetFileName(exePath));
+
+    public GenerateResult GenerateProject(Benchmark benchmark, ILogger logger, string rootArtifactsFolderPath, IConfig config, IResolver resolver)
     {
-        private readonly ArtifactsPaths _artifactsPaths;
-
-        public ExternalProcessGenerator(string exePath)
-        {
-            _artifactsPaths = new ArtifactsPaths(
-                rootArtifactsFolderPath: "",
-                buildArtifactsDirectoryPath: "",
-                binariesDirectoryPath: "",
-                programCodePath: "",
-                appConfigPath: "",
-                projectFilePath: "",
-                buildScriptFilePath: "",
-                executablePath: exePath,
-                programName: Path.GetFileName(exePath));
-        }
-
-        public GenerateResult GenerateProject(Benchmark benchmark, ILogger logger, string rootArtifactsFolderPath, IConfig config, IResolver resolver)
-        {
-            if (!(benchmark is ExternalProcessBenchmark))
-            {
-                return GenerateResult.Failure(null, Array.Empty<string>());
-            }
-
-            return GenerateResult.Success(_artifactsPaths, Array.Empty<string>());
-        }
+        return benchmark is not ExternalProcessBenchmark ? GenerateResult.Failure(null, Array.Empty<string>()) : GenerateResult.Success(_artifactsPaths, Array.Empty<string>());
     }
 }
