@@ -271,3 +271,12 @@ function GetExistingPR([string] $existingPR) {
         return "/updateexistingpr=$existingPR"
     }
 }
+
+function GetUpdateXamlRoslynVersion([string] $updateXamlRoslynVersion) {
+    if (IsDefaultValue $updateXamlRoslynVersion) {
+        return ""
+    }
+    else {
+        return "/updatexamlroslynversion=$updateXamlRoslynVersion"
+    }
+}
