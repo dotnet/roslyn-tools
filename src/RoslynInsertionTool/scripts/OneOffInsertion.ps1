@@ -34,7 +34,8 @@ param([string] $clientId,
       [string] $existingPR,
       [switch] $overwritePR,
       [switch] $createPlaceholderPR,
-      [string] $updateXamlRoslynVersion)
+      [string] $updateXamlRoslynVersion,
+      [string] $retainInsertedBuild)
 
 . $PSScriptRoot\HelperFunctions.ps1
 
@@ -54,6 +55,7 @@ $insertDevDiv = GetInsertDevDiv -insertDevDiv $insertDevDiv
 $toolsetFlag = GetinsertToolsetFlag -componentName $componentName -insertToolset $insertToolset
 $queueValidation = GetQueueValidation -visualStudioBranchName $visualStudioBranchName -queueValidation $queueValidation
 $queueSpeedometerValidation = GetQueueSpeedometerValidation $queueSpeedometerValidation
+$retainInsertedBuild = GetRetainInsertedBuild $retainInsertedBuild
 $specificBuildFlag = GetSpecificBuildFlag -specificBuild $specificBuild
 $updateAssemblyVersions = GetUpdateAssemblyVersions -componentName $componentName -visualStudioBranchName $visualStudioBranchName -updateAssemblyVersions $updateAssemblyVersions
 $updateCoreXTLibraries = GetUpdateCoreXTLibraries -componentName $componentName -updateCoreXTLibraries $updateCoreXTLibraries
@@ -87,5 +89,5 @@ if ($insertionCount -lt 1) {
 }
 
 for ($i = 0; $i -lt $insertionCount; $i++) {
-    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/tp=$titlePrefix" "/ts=$titleSuffix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" "/reviewerGUID=$reviewerGUID" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName $componentPassword $userName $password $clientId $clientSecret $existingPR $overwritePRFlag $placeholderFlag $queueSpeedometerValidation $updateXamlRoslynVersionFlag
+    & $PSScriptRoot\RIT.exe  "/in=$componentName" "/bn=$componentBranchName" "/bq=$buildQueueName" "/vsbn=$visualStudioBranchName" "/ic=$insertCore" "/id=$insertDevDiv" "/qv=$queueValidation" "/ua=$updateAssemblyVersions" "/uc=$updateCoreXTLibraries" "/tp=$titlePrefix" "/ts=$titleSuffix" "/wpr=$writePullRequest" "/ac=$autoComplete" "/dpr=$createDraftPR" "/reviewerGUID=$reviewerGUID" $specificBuildFlag $toolsetFlag $dropPathFlag $cherryPick $skipCoreXTPackages $componentAzdoUri $componentProjectName $componentGitHubRepoName $componentUserName $componentPassword $userName $password $clientId $clientSecret $existingPR $overwritePRFlag $placeholderFlag $queueSpeedometerValidation $updateXamlRoslynVersionFlag $retainInsertedBuild
 }
