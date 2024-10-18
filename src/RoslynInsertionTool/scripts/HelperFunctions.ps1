@@ -168,6 +168,15 @@ function GetQueueSpeedometerValidation([string] $queueSpeedometerValidation) {
     }
 }
 
+function GetRetainInsertedBuild([string] $retainInsertedBuild) {
+    if (IsDefaultValue $retainInsertedBuild) {
+        return ""
+    }
+    else {
+        return "/ri=$retainInsertedBuild";
+    }
+}
+
 function GetSpecificBuildFlag([string] $specificBuild) {
     if (IsDefaultValue $specificBuild) {
         return ""
