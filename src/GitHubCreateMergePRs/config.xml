@@ -70,7 +70,6 @@
     <merge from="release/dev17.12" to="release/dev17.13" />
     <!-- regular branch flow -->
     <merge from="release/dev17.13" to="main" />
-    <merge from="main" to="release/dev17.13" />
 
     <!-- feature branches -->
     <merge from="main" to="lsp" owners="0101" frequency="daily" />
