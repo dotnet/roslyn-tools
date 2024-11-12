@@ -29,8 +29,6 @@
 
   <!-- razor -->
   <repo owner="dotnet" name="razor" mergeOwners="davidwengier">
-    <merge from="release/dev17.6" to="release/dev17.8" />
-    <merge from="release/dev17.8" to="release/dev17.10" />
     <merge from="release/dev17.10" to="release/dev17.11" />
     <merge from="release/dev17.11" to="release/dev17.12" />
     <merge from="release/dev17.12" to="release/dev17.13" />
