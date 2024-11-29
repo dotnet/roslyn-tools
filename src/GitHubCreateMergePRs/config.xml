@@ -53,7 +53,7 @@
     <merge from="main" to="release/dev17.13" />
 
     <!-- feature branches -->
-    <merge from="main" to="lsp" owners="0101" frequency="daily" />
+    <merge from="main" to="feature/lsp" owners="0101" frequency="daily" />
   </repo>
 
   <!-- roslyn-analyzer branches -->
