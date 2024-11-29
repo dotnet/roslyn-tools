@@ -47,25 +47,7 @@
 
   <repo owner="dotnet" name="fsharp">
     <!-- releases -->
-    <merge from="dev16.0" to="main" /><!-- latest LTS -->
-    <merge from="release/dev17.0" to="release/dev17.2" />
-    <merge from="release/dev17.3" to="main" /><!-- latest RTM -->
-    <merge from="release/dev16.9" to="release/dev16.10" />
-    <merge from="release/dev16.10" to="release/dev16.11" />
-    <merge from="release/dev16.11" to="release/dev17.0" />
-    <merge from="release/dev17.0" to="release/dev17.1" />
-    <merge from="release/dev17.1" to="release/dev17.2" />
-    <merge from="release/dev17.2" to="release/dev17.3" />
-    <merge from="release/dev17.3" to="release/dev17.4" />
-    <merge from="release/dev17.4" to="release/dev17.5" />
-    <merge from="release/dev17.5" to="release/dev17.6" />
-    <merge from="release/dev17.6" to="release/dev17.7" />
-    <merge from="release/dev17.7" to="release/dev17.8" />
-    <merge from="release/dev17.8" to="release/dev17.9" />
-    <merge from="release/dev17.9" to="release/dev17.10" />
-    <merge from="release/dev17.10" to="release/dev17.11" />
     <merge from="release/dev17.11" to="release/dev17.12" />
-    <merge from="release/dev17.12" to="release/dev17.13" />
     <!-- regular branch flow -->
     <merge from="release/dev17.12" to="main" />
     <merge from="main" to="release/dev17.13" />
