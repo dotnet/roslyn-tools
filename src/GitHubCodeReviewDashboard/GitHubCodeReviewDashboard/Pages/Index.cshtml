@@ -1,0 +1,33 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Active Pull Requests";
+}
+
+@{
+    var (categorizedPullRequests, requestCounter) = await Dashboard.GetCategorizedPullRequests();
+
+}
+@foreach (var (category, pullRequests) in categorizedPullRequests.OrderBy(i => i.Key))
+{
+    @if (string.IsNullOrEmpty(Model.Categories) || Model.Categories.Split(",").Contains(category))
+    {
+        <h2 class="category">@category (@pullRequests.Length) <a href="?categories=@category">(filter to just this)</a></h2>
+        <ul>
+
+            @foreach (var pullRequest in pullRequests)
+            {
+                <li>
+                    @if (pullRequest.Draft)
+                    {
+                        <span class="draft-label">Draft</span>
+                    }
+
+                    <a href="@pullRequest.HtmlUrl">@pullRequest.Title</a> by @pullRequest.User.Login @pullRequest.CreatedAt.Humanize() in @pullRequest.Base.Repository.FullName.
+                </li>
+            }
+
+        </ul>
+    }
+}
+<p><i>Generation of this page performed @("request".ToQuantity(requestCounter.RequestCount)) to the GitHub API.</i></p>
