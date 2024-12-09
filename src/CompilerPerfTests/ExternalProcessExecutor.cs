@@ -14,89 +14,88 @@ using BenchmarkDotNet.Toolchains;
 using BenchmarkDotNet.Toolchains.Parameters;
 using BenchmarkDotNet.Toolchains.Results;
 
-namespace Perf
+namespace Perf;
+
+/// <summary>
+/// Executor designed to take a Benchmark that lists a target executable
+/// and a set of command line parameters and executes that process using
+/// an external dotnet runtime process.
+/// </summary>
+internal sealed class ExternalProcessExecutor : IExecutor
 {
-    /// <summary>
-    /// Executor designed to take a Benchmark that lists a target executable
-    /// and a set of command line parameters and executes that process using
-    /// an external dotnet runtime process.
-    /// </summary>
-    internal sealed class ExternalProcessExecutor : IExecutor
+    public ExecuteResult Execute(ExecuteParameters executeParameters)
     {
-        public ExecuteResult Execute(ExecuteParameters executeParameters)
+        if (!(executeParameters.Benchmark is ExternalProcessBenchmark benchmark))
         {
-            if (!(executeParameters.Benchmark is ExternalProcessBenchmark benchmark))
-            {
-                throw new ArgumentException($"Benchmark given is not an {nameof(ExternalProcessBenchmark)}");
-            }
-
-            var exePath = executeParameters.BuildResult.ArtifactsPaths.ExecutablePath;
-
-            using (var proc = new Process { StartInfo = CreateStartInfo(exePath, benchmark) })
-            {
-                return Execute(proc, benchmark, executeParameters.Logger);
-            }
+            throw new ArgumentException($"Benchmark given is not an {nameof(ExternalProcessBenchmark)}");
         }
 
-        private ExecuteResult Execute(Process proc, ExternalProcessBenchmark benchmark, ILogger logger)
+        var exePath = executeParameters.BuildResult.ArtifactsPaths.ExecutablePath;
+
+        using (var proc = new Process { StartInfo = CreateStartInfo(exePath, benchmark) })
         {
-            logger.WriteLineInfo($"// Execute: {proc.StartInfo.FileName} {proc.StartInfo.Arguments}");
+            return Execute(proc, benchmark, executeParameters.Logger);
+        }
+    }
 
-            var invokeCount = benchmark.Job.Run.TargetCount;
-            var measurements = new string[invokeCount];
+    private ExecuteResult Execute(Process proc, ExternalProcessBenchmark benchmark, ILogger logger)
+    {
+        logger.WriteLineInfo($"// Execute: {proc.StartInfo.FileName} {proc.StartInfo.Arguments}");
 
-            for (int i = 0; i < invokeCount; i++)
-            {
-                var clock = Chronometer.BestClock;
-                var start = clock.Start();
+        var invokeCount = benchmark.Job.Run.TargetCount;
+        var measurements = new string[invokeCount];
 
-                proc.Start();
-                proc.WaitForExit();
+        for (int i = 0; i < invokeCount; i++)
+        {
+            var clock = Chronometer.BestClock;
+            var start = clock.Start();
 
-                var span = start.Stop();
+            proc.Start();
+            proc.WaitForExit();
 
-                var measurement = new Measurement(0, IterationMode.Result, i, 1, span.GetNanoseconds()).ToOutputLine();
-                Console.WriteLine(measurement);
-                measurements[i] = measurement;
-            }
+            var span = start.Stop();
 
-            return new ExecuteResult(true, proc.ExitCode, measurements, Array.Empty<string>());
+            var measurement = new Measurement(0, IterationMode.Result, i, 1, span.GetNanoseconds()).ToOutputLine();
+            Console.WriteLine(measurement);
+            measurements[i] = measurement;
         }
 
-        private ProcessStartInfo CreateStartInfo(string exePath, ExternalProcessBenchmark benchmark)
+        return new ExecuteResult(true, proc.ExitCode, measurements, Array.Empty<string>());
+    }
+
+    private ProcessStartInfo CreateStartInfo(string exePath, ExternalProcessBenchmark benchmark)
+    {
+        var startInfo = new ProcessStartInfo
         {
-            var startInfo = new ProcessStartInfo
-            {
-                WorkingDirectory = benchmark.WorkingDirectory,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-            };
+            WorkingDirectory = benchmark.WorkingDirectory,
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+        };
 
-            var runtime = benchmark.Job.Env.HasValue(EnvMode.RuntimeCharacteristic)
-                ? benchmark.Job.Env.Runtime
-                : Runtime.Core;
+        var runtime = benchmark.Job.Env.HasValue(EnvMode.RuntimeCharacteristic)
+            ? benchmark.Job.Env.Runtime
+            : Runtime.Core;
 
-            var args = benchmark.Arguments;
+        var args = benchmark.Arguments;
 
-            switch (runtime)
-            {
-                case ClrRuntime clr:
-                    startInfo.FileName = exePath;
-                    startInfo.Arguments = args;
-                    break;
-                case CoreRuntime core:
-                    startInfo.FileName = "dotnet";
-                    startInfo.Arguments = $"\"{exePath}\" {args}";
-                    break;
-                case MonoRuntime mono:
-                    startInfo.FileName = mono.CustomPath ?? "mono";
-                    startInfo.Arguments = $"\"{exePath}\" {args}";
-                    break;
-                default:
-                    throw new NotSupportedException("Runtime = " + runtime);
-            }
-
-            return startInfo;
+        switch (runtime)
+        {
+            case ClrRuntime clr:
+                startInfo.FileName = exePath;
+                startInfo.Arguments = args;
+                break;
+            case CoreRuntime core:
+                startInfo.FileName = "dotnet";
+                startInfo.Arguments = $"\"{exePath}\" {args}";
+                break;
+            case MonoRuntime mono:
+                startInfo.FileName = mono.CustomPath ?? "mono";
+                startInfo.Arguments = $"\"{exePath}\" {args}";
+                break;
+            default:
+                throw new NotSupportedException("Runtime = " + runtime);
         }
+
+        return startInfo;
     }
 }
