@@ -46,8 +46,6 @@
   </repo>
 
   <repo owner="dotnet" name="fsharp">
-    <!-- releases -->
-    <merge from="release/dev17.11" to="release/dev17.12" />
     <!-- regular branch flow -->
     <merge from="release/dev17.12" to="main" />
     <merge from="main" to="release/dev17.13" />
