@@ -10,8 +10,8 @@
     $CommonFileElements$
     <file src="$ProjectDirectory$\sdk\*.*" target="sdk" />
     <file src="$ProjectDirectory$\tools\*.*" target="tools" />
-    <file src="net9.0\publish\RoslynTools.*" target="tools\tasks\net9.0" />
-    <file src="net9.0\publish\System.*" target="tools\tasks\net9.0" />
+    <file src="net9.0\publish\RoslynTools.*" target="tools\tasks\net10.0" />
+    <file src="net9.0\publish\System.*" target="tools\tasks\net10.0" />
     <file src="net472\RoslynTools.*" target="tools\tasks\net472" />
     <file src="net472\System.*" target="tools\tasks\net472" />
   </files>
