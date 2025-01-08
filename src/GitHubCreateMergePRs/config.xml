@@ -20,9 +20,6 @@
 
   <!-- razor -->
   <repo owner="dotnet" name="razor" mergeOwners="davidwengier">
-    <merge from="release/dev17.10" to="release/dev17.12" />
-    <merge from="release/dev17.12" to="release/dev17.13" />
-    <merge from="release/dev17.13" to="main" />
   </repo>
 
   <!-- Project System repo -->
