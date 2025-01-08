@@ -5,9 +5,9 @@
   </metadata>
   <files>
     $CommonFileElements$
-    <file src="net10.0\publish\RoslynTools.*" target="tools\net10.0" />
-    <file src="net10.0\publish\System.*" target="tools\net10.0" />
-    <file src="net10.0\publish\NuGet.Versioning.*" target="tools\net10.0" />
+    <file src="net9.0\publish\RoslynTools.*" target="tools\net9.0" />
+    <file src="net9.0\publish\System.*" target="tools\net9.0" />
+    <file src="net9.0\publish\NuGet.Versioning.*" target="tools\net9.0" />
     <file src="net472\RoslynTools.*" target="tools\net472" />
     <file src="net472\System.*" target="tools\net472" />
     <file src="net472\NuGet.Versioning.*" target="tools\net472" />
