@@ -62,6 +62,6 @@
   </repo>
 
   <repo owner="dotnet" name="linker" mergeOwners="agocke,sbomer">
-    <merge from="main" to="feature/damAnalyzer" />
+    <!-- dotnet/linker has been archived -->
   </repo>
 </config>
