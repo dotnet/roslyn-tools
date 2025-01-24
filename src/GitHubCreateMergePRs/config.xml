@@ -31,8 +31,7 @@
   </repo>
 
   <repo owner="dotnet" name="templates">
-    <merge from="dev15.9.x" to="dev16.0.x" />
-    <merge from="dev16.0.x" to="main" />
+    <!-- dotnet/templates has been archived -->
   </repo>
 
   <repo owner="dotnet" name="fsharp">
@@ -52,7 +51,7 @@
 
   <!-- msbuild language service branches -->
   <repo owner="dotnet" name="msbuild-language-service">
-    <merge from="main" to="dev/prototype" />
+    <!-- dotnet/msbuild-language-service has been archived -->
   </repo>
 
   <!-- dotnet-format service branches -->
