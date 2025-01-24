@@ -14,8 +14,9 @@
   </repo>
 
   <repo owner="dotnet" name="roslyn-sdk">
-    <merge from="dev16.0.x" to="main" />
-    <merge from="main" to="dev17.0" />
+    <!-- dotnet/roslyn-sdk doesn't take enough servicing fixes to warrant
+         automatic PRs from a release branch back to main. This entry is left
+         as a placeholder for if/when we need this functionality again. -->
   </repo>
 
   <!-- razor -->
