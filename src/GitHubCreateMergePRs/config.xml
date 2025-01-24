@@ -51,7 +51,7 @@
 
   <!-- msbuild language service branches -->
   <repo owner="dotnet" name="msbuild-language-service">
-    <merge from="main" to="dev/prototype" />
+    <!-- dotnet/msbuild-language-service has been archived -->
   </repo>
 
   <!-- dotnet-format service branches -->
