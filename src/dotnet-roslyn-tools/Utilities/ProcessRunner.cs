@@ -1,4 +1,4 @@
-// Licensed to the.NET Foundation under one or more agreements.
+﻿// Licensed to the.NET Foundation under one or more agreements.
 // The.NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
@@ -7,38 +7,23 @@ using System.Diagnostics;
 
 namespace Microsoft.RoslynTools.Utilities;
 
-public readonly struct ProcessResult
+public readonly struct ProcessResult(Process process, int exitCode, ReadOnlyCollection<string> outputLines, ReadOnlyCollection<string> errorLines)
 {
-    public Process Process { get; }
-    public int ExitCode { get; }
-    public ReadOnlyCollection<string> OutputLines { get; }
+    public Process Process { get; } = process;
+    public int ExitCode { get; } = exitCode;
+    public ReadOnlyCollection<string> OutputLines { get; } = outputLines;
     public string Output => string.Join(Environment.NewLine, OutputLines);
-    public ReadOnlyCollection<string> ErrorLines { get; }
+    public ReadOnlyCollection<string> ErrorLines { get; } = errorLines;
     public string Error => string.Join(Environment.NewLine, ErrorLines);
-
-    public ProcessResult(Process process, int exitCode, ReadOnlyCollection<string> outputLines, ReadOnlyCollection<string> errorLines)
-    {
-        Process = process;
-        ExitCode = exitCode;
-        OutputLines = outputLines;
-        ErrorLines = errorLines;
-    }
 }
 
-public readonly struct ProcessInfo
+public readonly struct ProcessInfo(Process process, ProcessStartInfo startInfo, Task<ProcessResult> result)
 {
-    public Process Process { get; }
-    public ProcessStartInfo StartInfo { get; }
-    public Task<ProcessResult> Result { get; }
+    public Process Process { get; } = process;
+    public ProcessStartInfo StartInfo { get; } = startInfo;
+    public Task<ProcessResult> Result { get; } = result;
 
     public int Id => Process.Id;
-
-    public ProcessInfo(Process process, ProcessStartInfo startInfo, Task<ProcessResult> result)
-    {
-        Process = process;
-        StartInfo = startInfo;
-        Result = result;
-    }
 }
 
 public static class ProcessRunner
@@ -66,8 +51,8 @@ public static class ProcessRunner
         bool displayWindow = false,
         Dictionary<string, string>? environmentVariables = null,
         Action<Process>? onProcessStartHandler = null,
-        CancellationToken cancellationToken = default) =>
-        CreateProcess(
+        CancellationToken cancellationToken = default)
+        => CreateProcess(
             CreateProcessStartInfo(executable, arguments, workingDirectory, captureOutput, displayWindow, environmentVariables),
             lowPriority: lowPriority,
             onProcessStartHandler: onProcessStartHandler,

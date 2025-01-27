@@ -1,13 +1,13 @@
-// Licensed to the.NET Foundation under one or more agreements.
+﻿// Licensed to the.NET Foundation under one or more agreements.
 // The.NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
 namespace Microsoft.RoslynTools.PRFinder;
 
-using LibGit2Sharp;
-using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using LibGit2Sharp;
+using Microsoft.Extensions.Logging;
 
 internal class PRFinder
 {
@@ -23,7 +23,6 @@ internal class PRFinder
     /// <param name="logger">Logger where result will be output.</param>
     /// <param name="repoPath">Optional path to product repo. Current directory will be used otherwise.</param>
     /// <param name="builder">Optional if the caller wants result as a string.</param>
-    /// <returns></returns>
     public static async Task<int> FindPRsAsync(
         string startRef,
         string endRef,
@@ -47,13 +46,13 @@ internal class PRFinder
 
         if (endCommit is null)
         {
-            logger.LogError($"Starting ref '{startRef}' does not exist. Please fetch and try again.");
+            logger.LogError("Starting ref '{StartRef}' does not exist. Please fetch and try again.", startRef);
             return -1;
         }
 
         if (startCommit is null)
         {
-            logger.LogError($"Ending ref '{endRef}' does not exist. Please fetch and try again.");
+            logger.LogError("Ending ref '{EndRef}' does not exist. Please fetch and try again.", endRef);
             return -1;
         }
 
@@ -70,7 +69,7 @@ internal class PRFinder
             return 1;
         }
 
-        string repoUrl = string.Empty;
+        var repoUrl = string.Empty;
         if (remote.Url.StartsWith("https://")) // https://github.com/dotnet/roslyn.git
         {
             repoUrl = remote.Url.EndsWith(".git")
@@ -86,7 +85,7 @@ internal class PRFinder
         }
         else
         {
-            logger.LogError($"Remote '{remote.Name}' has an unsupported Url format '{remote.Url}'.");
+            logger.LogError("Remote '{RemoteName}' has an unsupported Url format '{RemoteUrl}'.", remote.Name, remote.Url);
             return 1;
         }
 
@@ -94,7 +93,7 @@ internal class PRFinder
         var isAzure = repoUrl.Contains("azure.com");
         if (!isGitHub && !isAzure)
         {
-            logger.LogError($"Remote '{remote.Name}' has an unsupported URL host '{remote.Url}'.");
+            logger.LogError("Remote '{RemoteName}' has an unsupported URL host '{RemoteUrl}'.", remote.Name, remote.Url);
             return 1;
         }
 
@@ -102,7 +101,7 @@ internal class PRFinder
             ? new Hosts.GitHub(repoUrl, logger)
             : new Hosts.Azure(repoUrl);
 
-        IPRLogFormatter formatter = format switch
+        var formatter = format switch
         {
             DefaultFormat => new Formatters.DefaultFormatter(),
             OmniSharpFormat => new Formatters.OmniSharpFormatter(),
@@ -122,7 +121,7 @@ internal class PRFinder
             : null;
         var commitLog = repo.Commits.QueryBy(commitFilter);
 
-        logger.LogDebug(formatter.FormatChangesHeader(startRef, host.GetCommitUrl(startRef), endRef, host.GetCommitUrl(endRef), path));
+        logger.LogDebug("{Header}", formatter.FormatChangesHeader(startRef, host.GetCommitUrl(startRef), endRef, host.GetCommitUrl(endRef), path));
 
         RecordLine(formatter.FormatDiffHeader(host.GetDiffUrl(startRef, endRef)), logger, builder);
 
@@ -174,7 +173,7 @@ internal class PRFinder
                 }
 
                 var fullSHA = commit.Sha;
-                var shortSHA = fullSHA.Substring(0, 7);
+                var shortSHA = fullSHA[..7];
 
                 prLink = formatter.FormatCommitListItem(commit.MessageShort, shortSHA, host.GetCommitUrl(fullSHA));
             }
@@ -187,7 +186,7 @@ internal class PRFinder
 
     private static void RecordLine(string line, ILogger logger, StringBuilder? builder)
     {
-        logger.LogInformation(line);
+        logger.LogInformation("{Line}", line);
         builder?.AppendLine(line);
     }
 

@@ -1,4 +1,4 @@
-// Licensed to the.NET Foundation under one or more agreements.
+﻿// Licensed to the.NET Foundation under one or more agreements.
 // The.NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
@@ -22,7 +22,6 @@ internal static class RootRoslynCommand
             VSBranchInfoCommand.GetCommand(),
             DartTestCommand.GetCommand(),
         };
-        command.Name = "roslyn-tools";
         command.Description = "The command line tool for performing infrastructure tasks.";
         return command;
     }

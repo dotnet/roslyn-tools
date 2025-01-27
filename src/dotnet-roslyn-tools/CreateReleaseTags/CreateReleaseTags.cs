@@ -1,25 +1,24 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
+using System.Collections.Immutable;
+using System.Net;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
 using Microsoft.RoslynTools.Authentication;
 using Microsoft.RoslynTools.Products;
-using Microsoft.RoslynTools.PRTagger;
 using Microsoft.RoslynTools.Utilities;
 using Microsoft.RoslynTools.VS;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json.Linq;
-using System.Collections.Immutable;
-using System.Net;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace Microsoft.RoslynTools.CreateReleaseTags;
 
-internal static class CreateReleaseTags
+internal static partial class CreateReleaseTags
 {
     public static async Task<int> CreateReleaseTagsAsync(string productName, RoslynToolsSettings settings, ILogger logger)
     {
@@ -33,7 +32,7 @@ internal static class CreateReleaseTags
 
             var connections = new[] { dncengConnection, devdivConnection };
 
-            logger.LogInformation($"Opening {product.Name} repo and gathering tags...");
+            logger.LogInformation("Opening {ProductName} repo and gathering tags...", product.Name);
 
             var repository = new Repository(Environment.CurrentDirectory);
             var existingTags = repository.Tags.ToImmutableArray();
@@ -43,7 +42,7 @@ internal static class CreateReleaseTags
                     r.Url.Equals(product.RepoSshBaseUrl, StringComparison.OrdinalIgnoreCase) ||
                     r.Url.Equals(product.RepoHttpBaseUrl + ".git", StringComparison.OrdinalIgnoreCase)))
             {
-                logger.LogError($"Repo does not appear to be the {product.Name} repo. Please fetch tags if tags are not already fetched and try again.");
+                logger.LogError("Repo does not appear to be the {ProductName} repo. Please fetch tags if tags are not already fetched and try again.", product.Name);
                 return 1;
             }
 
@@ -61,7 +60,7 @@ internal static class CreateReleaseTags
                 {
                     if (!existingTags.Any(t => t.FriendlyName == tagName))
                     {
-                        logger.LogInformation($"Tag '{tagName}' is missing.");
+                        logger.LogInformation("Tag '{TagName}' is missing.", tagName);
 
                         BuildInformation? build = null;
                         foreach (var connection in connections)
@@ -76,9 +75,9 @@ internal static class CreateReleaseTags
 
                         if (build is not null)
                         {
-                            logger.LogInformation($"Tagging {build.CommitSha} as '{tagName}'.");
+                            logger.LogInformation("Tagging {CommitSha} as '{TagName}'.", build.CommitSha, tagName);
 
-                            string message = $"Build Branch: {build.SourceBranch}\r\nInternal ID: {build.BuildId}\r\nInternal VS ID: {visualStudioRelease.BuildId}";
+                            var message = $"Build Branch: {build.SourceBranch}\r\nInternal ID: {build.BuildId}\r\nInternal VS ID: {visualStudioRelease.BuildId}";
 
                             try
                             {
@@ -86,17 +85,17 @@ internal static class CreateReleaseTags
                             }
                             catch (Exception ex)
                             {
-                                logger.LogWarning(ex, $"Unable to tag the commit '{build.CommitSha}' with '{tagName}'.");
+                                logger.LogWarning(ex, "Unable to tag the commit '{CommitSha}' with '{TagName}'.", build.CommitSha, tagName);
                             }
                         }
                         else
                         {
-                            logger.LogWarning($"Unable to find the build for '{tagName}'.");
+                            logger.LogWarning("Unable to find the build for '{TagName}'.", tagName);
                         }
                     }
                     else
                     {
-                        logger.LogInformation($"Tag '{tagName}' already exists.");
+                        logger.LogInformation("Tag '{TagName}' already exists.", tagName);
                     }
                 }
             }
@@ -185,7 +184,7 @@ internal static class CreateReleaseTags
             }
 
             var urlSegments = new Uri(parts[0]).Segments;
-            var branchName = string.Join("", urlSegments.SkipWhile(segment => !segment.EndsWith("roslyn/")).Skip(1).TakeWhile(segment => segment.EndsWith("/"))).TrimEnd('/');
+            var branchName = string.Join("", urlSegments.SkipWhile(segment => !segment.EndsWith("roslyn/")).Skip(1).TakeWhile(segment => segment.EndsWith('/'))).TrimEnd('/');
 
             return branchName;
         }
@@ -255,30 +254,28 @@ internal static class CreateReleaseTags
 
     private static async Task<ImmutableArray<VisualStudioVersion>> GetVisualStudioReleasesAsync(GitHttpClient gitClient)
     {
-        GitRepository vsRepository = await GetVSRepositoryAsync(gitClient);
+        var vsRepository = await GetVSRepositoryAsync(gitClient);
         var tags = await gitClient.GetRefsAsync(vsRepository.Id, filterContains: "release/vs", peelTags: true);
 
         var builder = ImmutableArray.CreateBuilder<VisualStudioVersion>();
 
         foreach (var tag in tags)
         {
-            const string tagPrefix = "refs/tags/release/vs/";
+            const string TagPrefix = "refs/tags/release/vs/";
 
-            if (!tag.Name.StartsWith(tagPrefix))
+            if (!tag.Name.StartsWith(TagPrefix))
             {
                 continue;
             }
 
-            string[] parts = tag.Name.Substring(tagPrefix.Length).Split('-');
+            var parts = tag.Name[TagPrefix.Length..].Split('-');
 
             if (parts.Length != 1 && parts.Length != 2)
             {
                 continue;
             }
 
-            var isDottedVersionRegex = new Regex("^[0-9]+(\\.[0-9]+)*$");
-
-            if (!isDottedVersionRegex.IsMatch(parts[0]))
+            if (!IsDottedVersion().IsMatch(parts[0]))
             {
                 continue;
             }
@@ -308,20 +305,20 @@ internal static class CreateReleaseTags
             }
 
             // It's not entirely clear to me how this format was chosen, but for consistency with old tags, we'll keep it
-            string buildId = $"{buildInformation["Branch"]?.ToString().Replace("/", ".")}-{buildInformation["BuildNumber"]}";
+            var buildId = $"{buildInformation["Branch"]?.ToString().Replace("/", ".")}-{buildInformation["BuildNumber"]}";
 
             if (parts.Length == 2)
             {
-                const string previewPrefix = "preview.";
+                const string PreviewPrefix = "preview.";
 
-                if (!parts[1].StartsWith(previewPrefix))
+                if (!parts[1].StartsWith(PreviewPrefix))
                 {
                     continue;
                 }
 
-                string possiblePreviewVersion = parts[1].Substring(previewPrefix.Length);
+                var possiblePreviewVersion = parts[1][PreviewPrefix.Length..];
 
-                if (!isDottedVersionRegex.IsMatch(possiblePreviewVersion))
+                if (!IsDottedVersion().IsMatch(possiblePreviewVersion))
                 {
                     continue;
                 }
@@ -344,7 +341,7 @@ internal static class CreateReleaseTags
 
     private static string? TryGetTagName(VisualStudioVersion release)
     {
-        string tag = "Visual-Studio-";
+        var tag = "Visual-Studio-";
 
         if (release.MainVersion.StartsWith("16."))
         {
@@ -369,4 +366,7 @@ internal static class CreateReleaseTags
 
         return tag;
     }
+
+    [GeneratedRegex("^[0-9]+(\\.[0-9]+)*$")]
+    private static partial Regex IsDottedVersion();
 }

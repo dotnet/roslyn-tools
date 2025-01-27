@@ -1,4 +1,4 @@
-// Licensed to the.NET Foundation under one or more agreements.
+﻿// Licensed to the.NET Foundation under one or more agreements.
 // The.NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
@@ -11,11 +11,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.RoslynTools.PRFinder.Hosts;
 
-public class GitHub : IRepositoryHost
+public partial class GitHub : IRepositoryHost
 {
-    private static readonly Regex IsGitHubReleaseFlowCommit = new(@"^Merge pull request #\d+ from dotnet/merges/");
-    private static readonly Regex IsGitHubMergePRCommit = new(@"^Merge pull request #(\d+) from");
-    private static readonly Regex IsGitHubSquashedPRCommit = new(@"\(#(\d+)\)(?:\n|$)");
     private readonly string _repoUrl;
 
     private readonly HttpClient _httpClient;
@@ -25,7 +22,7 @@ public class GitHub : IRepositoryHost
     {
         _repoUrl = repoUrl;
         _logger = logger;
-        _logger.LogTrace($"Creating GitHub repository host with base url: {repoUrl}");
+        _logger.LogTrace("Creating GitHub repository host with base url: {RepoUrl}", repoUrl);
 
         var split = _repoUrl.Split('/', StringSplitOptions.RemoveEmptyEntries);
         var owner = split[^2];
@@ -65,7 +62,7 @@ public class GitHub : IRepositoryHost
         }
 
         // Exclude merge commits from auto code-flow PRs (e.g. merges/main-to-main-vs-deps)
-        if (IsGitHubReleaseFlowCommit.Match(commit.MessageShort).Success)
+        if (IsGitHubReleaseFlowCommit().Match(commit.MessageShort).Success)
         {
             mergePRFound = true;
             return true;
@@ -76,7 +73,7 @@ public class GitHub : IRepositoryHost
 
     public async Task<MergeInfo?> TryParseMergeInfoAsync(Commit commit)
     {
-        var match = IsGitHubMergePRCommit.Match(commit.MessageShort);
+        var match = IsGitHubMergePRCommit().Match(commit.MessageShort);
         if (match.Success)
         {
             var prNumber = match.Groups[1].Value;
@@ -99,7 +96,7 @@ public class GitHub : IRepositoryHost
         }
         else
         {
-            match = IsGitHubSquashedPRCommit.Match(commit.MessageShort);
+            match = IsGitHubSquashedPRCommit().Match(commit.MessageShort);
             if (match.Success)
             {
                 var prNumber = match.Groups[1].Value;
@@ -119,14 +116,14 @@ public class GitHub : IRepositoryHost
         try
         {
             var relativeUrl = $"{prNumber}";
-            _logger.LogTrace($"Attempting to fetch PR Title for {prNumber} at {_httpClient.BaseAddress}{relativeUrl}");
+            _logger.LogTrace("Attempting to fetch PR Title for {PrNumber} at {BaseAddress}{RelativeUrl}", prNumber, _httpClient.BaseAddress, relativeUrl);
             var response = await _httpClient.GetFromJsonAsync<PullRequestResponse>(relativeUrl);
 
             return response?.Title;
         }
         catch (Exception e)
         {
-            _logger.LogError(e, e.Message);
+            _logger.LogError(e, "{Message}", e.Message);
             return null;
         }
     }
@@ -140,23 +137,17 @@ public class GitHub : IRepositoryHost
         public string Body { get; set; } = "";
     }
 
-    private class LoggingHandler : DelegatingHandler
+    private class LoggingHandler(ILogger logger) : DelegatingHandler(new HttpClientHandler())
     {
-        private ILogger _logger;
-
-        public LoggingHandler(ILogger logger)
-            : base(new HttpClientHandler())
-        {
-            _logger = logger;
-        }
+        private readonly ILogger _logger = logger;
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             _logger.LogTrace("Request:");
-            _logger.LogTrace(request.RequestUri?.ToString() ?? request.ToString());
+            _logger.LogTrace("{Request}", request.RequestUri?.ToString() ?? request.ToString());
             if (request.Content != null)
             {
-                _logger.LogTrace(await request.Content.ReadAsStringAsync());
+                _logger.LogTrace("{Content}", await request.Content.ReadAsStringAsync(cancellationToken));
             }
 
             _logger.LogTrace("");
@@ -164,10 +155,10 @@ public class GitHub : IRepositoryHost
             var response = await base.SendAsync(request, cancellationToken);
 
             _logger.LogTrace("Response:");
-            _logger.LogTrace(response.ToString());
+            _logger.LogTrace("{Repsonse}", response.ToString());
             if (response.Content != null)
             {
-                _logger.LogTrace(await response.Content.ReadAsStringAsync());
+                _logger.LogTrace("{Content}", await response.Content.ReadAsStringAsync(cancellationToken));
             }
 
             _logger.LogTrace("");
@@ -175,4 +166,11 @@ public class GitHub : IRepositoryHost
             return response;
         }
     }
+
+    [GeneratedRegex(@"^Merge pull request #\d+ from dotnet/merges/")]
+    private static partial Regex IsGitHubReleaseFlowCommit();
+    [GeneratedRegex(@"^Merge pull request #(\d+) from")]
+    private static partial Regex IsGitHubMergePRCommit();
+    [GeneratedRegex(@"\(#(\d+)\)(?:\n|$)")]
+    private static partial Regex IsGitHubSquashedPRCommit();
 }

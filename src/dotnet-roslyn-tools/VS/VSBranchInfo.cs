@@ -1,11 +1,10 @@
-// Licensed to the.NET Foundation under one or more agreements.
+﻿// Licensed to the.NET Foundation under one or more agreements.
 // The.NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
 using Microsoft.Extensions.Logging;
 using Microsoft.RoslynTools.Authentication;
 using Microsoft.RoslynTools.Products;
-using Microsoft.RoslynTools.PRTagger;
 using Microsoft.RoslynTools.Utilities;
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
@@ -16,13 +15,13 @@ namespace Microsoft.RoslynTools.VS;
 
 internal static class VSBranchInfo
 {
-    public static IProduct[] AllProducts = new IProduct[]
-    {
+    public static IProduct[] AllProducts =
+    [
         new Roslyn(),
         new Razor(),
         new TypeScript(),
         new FSharp(),
-    };
+    ];
 
     public static async Task<int> GetInfoAsync(string gitVersion, GitVersionType gitVersionType, string product, bool showArtifacts, RoslynToolsSettings settings, ILogger logger)
     {

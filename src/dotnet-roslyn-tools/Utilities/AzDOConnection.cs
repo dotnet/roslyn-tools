@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
@@ -11,6 +11,7 @@ using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.FileContainer.Client;
 using Microsoft.VisualStudio.Services.WebApi;
+using Build = Microsoft.TeamFoundation.Build.WebApi.Build;
 
 namespace Microsoft.RoslynTools.Utilities;
 
@@ -51,7 +52,7 @@ internal sealed class AzDOConnection : IDisposable
             var buildDefinition = (await BuildClient.GetDefinitionsAsync(BuildProjectName, name: pipelineName)).Single();
             var builds = await BuildClient.GetBuildsAsync(
                 buildDefinition.Project.Id,
-                definitions: new[] { buildDefinition.Id },
+                definitions: [buildDefinition.Id],
                 buildNumber: buildNumber,
                 resultFilter: resultsFilter,
                 queryOrder: buildQueryOrder,
@@ -60,7 +61,7 @@ internal sealed class AzDOConnection : IDisposable
         }
         catch (VssUnauthorizedException ex)
         {
-            logger?.LogError($"Authorization exception while retrieving builds: {ex}");
+            logger?.LogError(ex, "Authorization exception while retrieving builds: {Message}", ex.Message);
             return null;
         }
         catch
@@ -78,11 +79,11 @@ internal sealed class AzDOConnection : IDisposable
             var repositoryField = runPipelineParams.Resources.GetType().GetField("m_repositories", BindingFlags.NonPublic | BindingFlags.Instance);
             repositoryField?.SetValue(runPipelineParams.Resources, repositoryParams);
             var run = await PipelinesHttpClient.RunPipelineAsync(runPipelineParams, BuildProjectName, buildDefinition.Id);
-            logger.LogInformation($"Pipeline running at: {((ReferenceLink)run.Links.Links["web"]).Href}");
+            logger.LogInformation("Pipeline running at: {Href}", ((ReferenceLink)run.Links.Links["web"]).Href);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error running pipeline: {ex.Message}");
+            logger.LogError(ex, "Error running pipeline: {Message}", ex.Message);
         }
     }
 

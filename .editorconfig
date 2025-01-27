@@ -1,50 +1,42 @@
-﻿###############################################################################
-# EditorConfig is awesome: http://EditorConfig.org
-###############################################################################
+﻿# EditorConfig is awesome: https://EditorConfig.org
 
-###############################################################################
-# Top-most EditorConfig file
-###############################################################################
+# top-most EditorConfig file
 root = true
 
-###############################################################################
-# Set default behavior to:
-#   a UTF-8 encoding,
-#   Windows-style line endings,
-#   a newline ending the file,
-#   4 space indentation, and
-#   trimming of trailing whitespace
-###############################################################################
+# Don't use tabs for indentation.
 [*]
 charset = utf-8
-end_of_line = crlf
-insert_final_newline = true
 indent_style = space
+# (Please don't specify an indent_size here; that has too many unintended consequences.)
+
+# Code files
+[*.{cs,csx,vb,vbx}]
 indent_size = 4
-trim_trailing_whitespace = true
+insert_final_newline = true
 
-###############################################################################
-# Set file behavior to:
-#   2 space indentation, and
-#   no newline ending the file
-###############################################################################
-[*.{csproj,json,nuspec,proj,projitems,props,resx,ruleset,shproj,targets,vbproj,vcxproj,vcxproj.filters,vsct,vsixmanifest}]
-indent_size = 2
-insert_final_newline = false
-
-###############################################################################
-# Set file behavior to:
-#   2 space indentation
-###############################################################################
-[*.{cmd,config,ps1}]
+# XML project files
+[*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
 indent_size = 2
 
-###############################################################################
-# Set file behavior to:
-#   tabular indentation
-###############################################################################
-[*.sln]
-indent_style = tab
+# XML config files
+[*.{props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
+indent_size = 2
+
+# JSON files
+[*.json]
+indent_size = 2
+
+# Powershell files
+[*.ps1]
+indent_size = 2
+
+# Shell script files
+[*.sh]
+end_of_line = lf
+indent_size = 2
+
+[*.{cmd,config}]
+indent_size = 2
 
 [*.{cs}]
 file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.\nSee the License.txt file in the project root for more information.
