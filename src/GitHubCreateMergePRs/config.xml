@@ -35,11 +35,7 @@
   </repo>
 
   <repo owner="dotnet" name="fsharp">
-    <!-- regular branch flow -->
-    <merge from="release/dev17.13" to="main" />
-    <merge from="main" to="release/dev17.14" />
-    <!-- feature branches -->
-    <merge from="main" to="feature/lsp" owners="0101" frequency="daily" />
+    <!-- dotnet/fsharp has moved to Arcade inter-branch merge GH action. -->
   </repo>
 
   <!-- roslyn-analyzer branches -->
