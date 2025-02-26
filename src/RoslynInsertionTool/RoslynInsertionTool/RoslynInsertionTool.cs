@@ -502,6 +502,9 @@ namespace Roslyn.Insertion
                     {
                         // When creating Draft PRs no policies are automatically started.
                         await TryQueueVSBuildPolicy(pullRequest, "Required Tests", insertionBranchName);
+
+                        // When creating Draft PRs Scoped-speedometer is not automatically started and executed as part of the Optional Tests policy.
+                        await TryQueueVSBuildPolicy(pullRequest, "Optional Tests", insertionBranchName);
                     }
                 }
 
