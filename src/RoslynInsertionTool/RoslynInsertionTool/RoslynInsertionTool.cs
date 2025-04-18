@@ -192,6 +192,7 @@ namespace Roslyn.Insertion
                         coreXT,
                         insertionArtifacts.GetPackagesDirectory(),
                         Options.SkipCoreXTPackages,
+                        Options.SkipPackageVersionValidation,
                         cancellationToken);
                     retainBuild |= success;
 
@@ -239,7 +240,7 @@ namespace Roslyn.Insertion
                 // *********** Update toolset ********************
                 if (Options.InsertToolset)
                 {
-                    UpdateToolsetPackage(coreXT, insertionArtifacts, buildVersion);
+                    UpdateToolsetPackage(coreXT, insertionArtifacts, buildVersion, options.SkipPackageVersionValidation);
                     retainBuild = true;
                 }
 
@@ -551,7 +552,8 @@ namespace Roslyn.Insertion
         private static void UpdateToolsetPackage(
             CoreXT coreXT,
             InsertionArtifacts artifacts,
-            BuildVersion buildVersion)
+            BuildVersion buildVersion,
+            bool skipPackageVersionValidation)
         {
             Console.WriteLine("Updating toolset compiler package");
 
@@ -568,7 +570,7 @@ namespace Roslyn.Insertion
                 throw new Exception("Toolset package is not installed in this enlistment");
             }
 
-            UpdatePackage(previousPackageVersion, buildVersion, coreXT, package);
+            UpdatePackage(previousPackageVersion, coreXT, package, skipPackageVersionValidation);
         }
 
 #nullable enable

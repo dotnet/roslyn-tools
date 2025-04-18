@@ -61,6 +61,7 @@ namespace Roslyn.Insertion
         public bool SetAutoComplete { get; init; }
         public ImmutableArray<string> CherryPick { get; init; }
         public string ReviewerGUID { get; init; }
+        public bool SkipPackageVersionValidation { get; init; }
 
         public string ComponentBuildProjectNameOrFallback
             => ComponentBuildProjectName ?? VisualStudioRepoProjectName;
