@@ -279,6 +279,11 @@ partial class RoslynInsertionToolCommandline
                 "You'll get the GUID in the URL",
                 reviewerGUID => options = options with { ReviewerGUID = reviewerGUID }
             },
+            {
+                "skippackageversionvalidation",
+                $"Set to true to skip validation that the new packages are a higher version than what already exists in VS",
+                skipPackageVersionValidation => options = options with { SkipPackageVersionValidation = true }
+            },
         };
 
         List<string> extraArguments = null;
