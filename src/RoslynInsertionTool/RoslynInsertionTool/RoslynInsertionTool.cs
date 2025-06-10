@@ -488,7 +488,7 @@ namespace Roslyn.Insertion
                         await QueueVSBuildPolicy(pullRequest, "Request Perf DDRITs");
                         await QueueVSBuildPolicy(pullRequest, "Insertion Symbol Check");
 
-                        if (Options.RunSpeedometerInValidation && Options.InsertionName != "Roslyn")
+                        if (Options.RunSpeedometerInValidation && Options.InsertionName != "Roslyn" && Options.InsertionName != "Razor")
                         {
                             await QueueVSBuildPolicy(pullRequest, "Request Speedometer Perf Run");
                         }
