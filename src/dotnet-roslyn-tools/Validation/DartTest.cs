@@ -3,7 +3,9 @@
 // See the License.txt file in the project root for more information.
 
 using System.Diagnostics;
+using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json.Nodes;
 using Microsoft.Azure.Pipelines.WebApi;
 using Microsoft.Extensions.Logging;
 using Microsoft.RoslynTools.Products;
@@ -80,7 +82,6 @@ internal static class DartTest
     {
         var initCommand = $"init";
         await RunGitCommandAsync(initCommand, logger, targetDirectory, cancellationToken).ConfigureAwait(false);
-        ;
 
         var addGithubRemoteCommand = $"remote add {product.Name.ToLower()} {product.RepoHttpBaseUrl}.git";
         await RunGitCommandAsync(addGithubRemoteCommand, logger, targetDirectory, cancellationToken).ConfigureAwait(false);
