@@ -55,7 +55,8 @@ internal partial class GitHub : IRepositoryHost
         }
 
         // Exclude merge commits from auto code-flow PRs (e.g. merges/main-to-main-vs-deps)
-        if (IsGitHubReleaseFlowCommit().Match(commit.MessageShort).Success)
+        if (IsGitHubReleaseFlowCommit().Match(commit.MessageShort).Success ||
+            IsGitHubActionCodeFlowCommit().Match(commit.MessageShort).Success)
         {
             mergePRFound = true;
             return true;
@@ -92,11 +93,11 @@ internal partial class GitHub : IRepositoryHost
             match = IsGitHubSquashedPRCommit().Match(commit.MessageShort);
             if (match.Success)
             {
-                var prNumber = match.Groups[1].Value;
+                var prNumber = match.Groups[2].Value;
 
                 // Squash PR Messages are in the form "Nullable annotate TypeCompilationState and MessageID (#39449)"
-                // Take the 1st line since it should be descriptive.
-                var comment = commit.MessageShort;
+                // Take the first line up until the PR number.
+                var comment = match.Groups[1].Value;
                 return new(prNumber, comment);
             }
         }
@@ -193,8 +194,10 @@ internal partial class GitHub : IRepositoryHost
 
     [GeneratedRegex(@"^Merge pull request #\d+ from dotnet/merges/")]
     private static partial Regex IsGitHubReleaseFlowCommit();
+    [GeneratedRegex(@"^\[automated\] Merge branch '.*' => '.*' \(#\d+\)")]
+    private static partial Regex IsGitHubActionCodeFlowCommit();
     [GeneratedRegex(@"^Merge pull request #(\d+) from")]
     private static partial Regex IsGitHubMergePRCommit();
-    [GeneratedRegex(@"\(#(\d+)\)(?:\n|$)")]
+    [GeneratedRegex(@"^(.*) \(#(\d+)\)(?:\n|$)")]
     private static partial Regex IsGitHubSquashedPRCommit();
 }

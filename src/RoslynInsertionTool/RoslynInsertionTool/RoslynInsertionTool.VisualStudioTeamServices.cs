@@ -440,10 +440,31 @@ namespace Roslyn.Insertion
 
         private static Component[] GetLatestBuildComponents(Build newestBuild, InsertionArtifacts buildArtifacts, CancellationToken cancellationToken)
         {
-            return Directory.EnumerateFiles(buildArtifacts.RootDirectory, "*.vsman", SearchOption.AllDirectories)
+            var components = Directory.EnumerateFiles(buildArtifacts.RootDirectory, "*.vsman", SearchOption.AllDirectories)
+                .Where(file => !Is1esHardlink(file))
                 .Select(GetComponentFromManifestFile)
                 .OfType<Component>()
                 .ToArray();
+
+            var distinctComponents = components.Select(c => c.Name).Distinct();
+            if (distinctComponents.Count() != components.Length)
+            {
+                LogWarning($"Found duplicate component vsman files in the build artifacts: {string.Join(", ", components.Select(c => $"{c.Name}:{c.Filename}"))}");
+            }
+
+            return components;
+
+            static bool Is1esHardlink(string path)
+            {
+                if (path.Contains("_hardlink"))
+                {
+                    // 1es creates duplicate <folder>_hardlink folders for scanning.  These should be ignored.
+                    Console.WriteLine($"Ignoring {path} as it appears to be a hardlink for 1es scanning");
+                    return true;
+                }
+
+                return false;
+            }
         }
 
         private static Component GetComponentFromManifestFile(string filePath)

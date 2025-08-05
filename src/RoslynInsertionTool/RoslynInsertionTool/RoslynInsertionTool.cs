@@ -192,6 +192,7 @@ namespace Roslyn.Insertion
                         coreXT,
                         insertionArtifacts.GetPackagesDirectory(),
                         Options.SkipCoreXTPackages,
+                        Options.SkipPackageVersionValidation,
                         cancellationToken);
                     retainBuild |= success;
 
@@ -239,7 +240,7 @@ namespace Roslyn.Insertion
                 // *********** Update toolset ********************
                 if (Options.InsertToolset)
                 {
-                    UpdateToolsetPackage(coreXT, insertionArtifacts, buildVersion);
+                    UpdateToolsetPackage(coreXT, insertionArtifacts, buildVersion, options.SkipPackageVersionValidation);
                     retainBuild = true;
                 }
 
@@ -261,7 +262,6 @@ namespace Roslyn.Insertion
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     Console.WriteLine($"Updating CoreXT components file");
-
                     var components = GetLatestBuildComponents(buildToInsert, insertionArtifacts, cancellationToken);
                     var shouldSave = false;
                     foreach (var newComponent in components)
@@ -487,7 +487,7 @@ namespace Roslyn.Insertion
                         await QueueVSBuildPolicy(pullRequest, "Request Perf DDRITs");
                         await QueueVSBuildPolicy(pullRequest, "Insertion Symbol Check");
 
-                        if (Options.RunSpeedometerInValidation && Options.InsertionName != "Roslyn")
+                        if (Options.RunSpeedometerInValidation && Options.InsertionName != "Roslyn" && Options.InsertionName != "Razor")
                         {
                             await QueueVSBuildPolicy(pullRequest, "Request Speedometer Perf Run");
                         }
@@ -502,6 +502,9 @@ namespace Roslyn.Insertion
                     {
                         // When creating Draft PRs no policies are automatically started.
                         await TryQueueVSBuildPolicy(pullRequest, "Required Tests", insertionBranchName);
+
+                        // When creating Draft PRs Scoped-speedometer is not automatically started and executed as part of the Optional Tests policy.
+                        await TryQueueVSBuildPolicy(pullRequest, "Optional Tests", insertionBranchName);
                     }
                 }
 
@@ -548,7 +551,8 @@ namespace Roslyn.Insertion
         private static void UpdateToolsetPackage(
             CoreXT coreXT,
             InsertionArtifacts artifacts,
-            BuildVersion buildVersion)
+            BuildVersion buildVersion,
+            bool skipPackageVersionValidation)
         {
             Console.WriteLine("Updating toolset compiler package");
 
@@ -565,7 +569,7 @@ namespace Roslyn.Insertion
                 throw new Exception("Toolset package is not installed in this enlistment");
             }
 
-            UpdatePackage(previousPackageVersion, buildVersion, coreXT, package);
+            UpdatePackage(previousPackageVersion, coreXT, package, skipPackageVersionValidation);
         }
 
 #nullable enable

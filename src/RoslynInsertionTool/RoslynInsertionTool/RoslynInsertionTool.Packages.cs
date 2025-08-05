@@ -35,6 +35,7 @@ namespace Roslyn.Insertion
             CoreXT coreXT,
             string packagesDir,
             ImmutableArray<string> packagesToBeIgnored,
+            bool skipPackageVersionValidation,
             CancellationToken cancellationToken)
         {
             bool shouldRetainBuild = false;
@@ -64,7 +65,7 @@ namespace Roslyn.Insertion
                     continue;
                 }
 
-                UpdatePackage(previousPackageVersion, buildVersion, coreXT, package);
+                UpdatePackage(previousPackageVersion, coreXT, package, skipPackageVersionValidation);
             }
 
             return (shouldRetainBuild, newPackageFiles);
@@ -72,32 +73,37 @@ namespace Roslyn.Insertion
 
         private static void UpdatePackage(
             NuGetVersion previousPackageVersion,
-            BuildVersion buildVersion,
             CoreXT coreXT,
-            PackageInfo package)
+            PackageInfo package,
+            bool skipPackageVersionValidation)
         {
-            if (package.IsRoslyn)
+            if (!skipPackageVersionValidation && package.Version < previousPackageVersion)
             {
-                if (package.Version < previousPackageVersion)
+                if (package.IsRoslyn)
                 {
                     throw new OutdatedPackageException(
                         $"The version of package '{package}' is older than previously inserted '{previousPackageVersion}'.",
                         package,
                         previousPackageVersion);
                 }
+
+                Console.WriteLine($"Package '{package}' doesn't need to be inserted, version is lower than the one already inserted.");
+                return;
             }
 
-            if (package.Version <= previousPackageVersion)
-            {
-                Console.WriteLine($"Package '{package}' doesn't need to be inserted, version is lower than or equal to the one already inserted.");
-            }
-            else
+            if (package.Version != previousPackageVersion)
             {
                 Console.WriteLine($"Package '{package}' needs to be inserted, previously inserted version is {previousPackageVersion}");
 
                 // update .corext\Configs\default.config and any other props files under src\ConfigData\Packages
                 coreXT.UpdatePackageVersion(package);
+                return;
             }
+            else
+            {
+                Console.WriteLine($"Package '{package}' has the same version.");
+            }
+            
         }
     }
 }

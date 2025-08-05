@@ -18,11 +18,14 @@ internal interface IProduct
 
     string ComponentJsonFileName { get; }
     string ComponentName { get; }
-    string? PackageName { get; }
-    string? PackagePropsFileName { get; }
+    string? VsPackageName { get; }
+    string? VsPackagePropsFileName { get; }
     string? DartLabPipelineName { get; }
+    string? PRValidationPipelineName { get; }
     string? ArtifactsFolderName { get; }
     string[] ArtifactsSubFolderNames { get; }
+
+    string? SdkPackageName { get; }
 
     string? GetBuildPipelineName(string buildProjectName);
 }
