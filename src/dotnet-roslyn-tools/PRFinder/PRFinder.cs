@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
+using Microsoft.RoslynTools.Products;
 using Microsoft.RoslynTools.Utilities;
 
 internal class PRFinder
@@ -78,6 +79,10 @@ internal class PRFinder
             repoUrl = remote.Url.EndsWith(".git")
                 ? remote.Url[..^4]
                 : remote.Url;
+
+            // Remove username if included in the URL
+            if (repoUrl.IndexOf('@') is int atIndex && atIndex >= 0)
+                repoUrl = "https://" + repoUrl[(atIndex + 1)..];
         }
         else if (remote.Url.StartsWith("git@")) // git@github.com:dotnet/roslyn.git
         {
@@ -92,6 +97,9 @@ internal class PRFinder
             return 1;
         }
 
+        var product = Product.GetProductByRepoUrl(repoUrl);
+        var isGitHubMirror = product is not null && product.InternalRepoBaseUrl is not null && product.IsGitHubRepo();
+
         var isGitHub = repoUrl.Contains("github.com");
         var isAzure = repoUrl.Contains("azure.com");
         if (!isGitHub && !isAzure)
@@ -100,8 +108,10 @@ internal class PRFinder
             return 1;
         }
 
-        IRepositoryHost host = isGitHub
-            ? new Hosts.GitHub(repoUrl, connections, logger)
+        builder ??= new();
+
+        IRepositoryHost host = isGitHub || isGitHubMirror
+            ? new Hosts.GitHub(product?.RepoHttpBaseUrl ?? repoUrl, connections, logger)
             : new Hosts.Azure(repoUrl);
 
         var formatter = format switch
@@ -189,12 +199,13 @@ internal class PRFinder
             RecordLine(prLink, logger, builder);
         }
 
+        logger.LogInformation("{Builder}", builder);
+
         return 0;
     }
 
     private static void RecordLine(string line, ILogger logger, StringBuilder? builder)
     {
-        logger.LogInformation("{Line}", line);
         builder?.AppendLine(line);
     }
 
