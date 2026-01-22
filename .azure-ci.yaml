@@ -11,10 +11,31 @@ pr:
     exclude:
       - src/GitHubCreateMergePRs/config.xml
 
+variables:
+  # Set pool / queue name variables depending on which instance we're running in.
+  - name: PoolName
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      value: NetCore-Public
+    ${{ else }}:
+      value: NetCore1ESPool-Internal
+
+  - name: WindowsQueueName
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      value: 1es-windows-2022-open
+    ${{ else }}:
+      value: 1es-windows-2022
+
+  - name: UbuntuQueueName
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      value: Build.Ubuntu.2204.Amd64.Open
+    ${{ else }}:
+      value: Build.Ubuntu.2204.Amd64
+
 jobs:
 - job: Windows
   pool:
-    vmImage: windows-2019
+    name: $(PoolName)
+    demands: ImageOverride -equals $(WindowsQueueName)
   strategy:
     maxParallel: 2
     matrix:
@@ -44,7 +65,8 @@ jobs:
 
 - job: Linux
   pool:
-    vmImage: ubuntu-latest
+    name: $(PoolName)
+    demands: ImageOverride -equals $(UbuntuQueueName)
   strategy:
     maxParallel: 2
     matrix:
