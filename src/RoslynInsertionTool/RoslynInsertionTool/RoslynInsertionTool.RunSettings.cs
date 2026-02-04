@@ -77,52 +77,48 @@ namespace Roslyn.Insertion
         /// </summary>
         private static (string testsRunsettingsUri, string stageConfigPath)? ReadTestsDropInfo(InsertionArtifacts artifacts)
         {
-            // Look for TestsDrop.json in the artifacts root and common locations
-            var searchPaths = new[]
-            {
-                Path.Combine(artifacts.RootDirectory, TestsDropJsonFileName),
-                Path.Combine(artifacts.RootDirectory, "Insertion", TestsDropJsonFileName),
-            };
+            // Search for TestsDrop.json anywhere in the artifacts directory (same pattern as vsman files)
+            var jsonFiles = Directory.EnumerateFiles(
+                artifacts.RootDirectory,
+                TestsDropJsonFileName,
+                SearchOption.AllDirectories);
 
-            foreach (var jsonPath in searchPaths)
+            foreach (var jsonPath in jsonFiles)
             {
-                if (File.Exists(jsonPath))
+                try
                 {
-                    try
+                    Console.WriteLine($"Reading Tests drop info from: {jsonPath}");
+                    var jsonContent = File.ReadAllText(jsonPath);
+                    var testsDropInfo = JsonConvert.DeserializeAnonymousType(jsonContent, new
                     {
-                        Console.WriteLine($"Reading Tests drop info from: {jsonPath}");
-                        var jsonContent = File.ReadAllText(jsonPath);
-                        var testsDropInfo = JsonConvert.DeserializeAnonymousType(jsonContent, new
-                        {
-                            testsRunsettingsUri = "",
-                            stageConfigPath = ""
-                        });
+                        testsRunsettingsUri = "",
+                        stageConfigPath = ""
+                    });
 
-                        if (testsDropInfo is null)
-                        {
-                            Console.WriteLine($"Warning: Could not parse '{jsonPath}'");
-                            continue;
-                        }
-
-                        if (string.IsNullOrEmpty(testsDropInfo.testsRunsettingsUri))
-                        {
-                            LogWarning($"'{jsonPath}' is missing 'testsRunsettingsUri' field.");
-                            return null;
-                        }
-
-                        if (string.IsNullOrEmpty(testsDropInfo.stageConfigPath))
-                        {
-                            LogWarning($"'{jsonPath}' is missing 'stageConfigPath' field.");
-                            return null;
-                        }
-
-                        return (testsDropInfo.testsRunsettingsUri, testsDropInfo.stageConfigPath);
-                    }
-                    catch (Exception ex)
+                    if (testsDropInfo is null)
                     {
-                        // JSON exists but is malformed - this is a warning
-                        LogWarning($"Could not parse '{jsonPath}': {ex.Message}");
+                        Console.WriteLine($"Warning: Could not parse '{jsonPath}'");
+                        continue;
                     }
+
+                    if (string.IsNullOrEmpty(testsDropInfo.testsRunsettingsUri))
+                    {
+                        LogWarning($"'{jsonPath}' is missing 'testsRunsettingsUri' field.");
+                        return null;
+                    }
+
+                    if (string.IsNullOrEmpty(testsDropInfo.stageConfigPath))
+                    {
+                        LogWarning($"'{jsonPath}' is missing 'stageConfigPath' field.");
+                        return null;
+                    }
+
+                    return (testsDropInfo.testsRunsettingsUri, testsDropInfo.stageConfigPath);
+                }
+                catch (Exception ex)
+                {
+                    // JSON exists but is malformed - this is a warning
+                    LogWarning($"Could not parse '{jsonPath}': {ex.Message}");
                 }
             }
 
@@ -149,7 +145,7 @@ namespace Roslyn.Insertion
                 if (fieldIndex >= 0)
                 {
                     var prefix = line.Substring(0, fieldIndex + fieldName.Length);
-                    lines[i] = $"{prefix} '{newUri}'";
+                    lines[i] = $"{prefix} {newUri}";
                     return string.Join("\n", lines);
                 }
             }
