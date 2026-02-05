@@ -284,6 +284,16 @@ namespace Roslyn.Insertion
                     }
                 }
 
+                // ************* Update runsettingsuri in test stage configuration *************
+                // This is automatically enabled when the component publishes a TestsDrop.json file
+                // This is what helps define what integration tests are run at various stages in the VS repo.
+                cancellationToken.ThrowIfCancellationRequested();
+                if (await UpdateRunSettingsUriAsync(gitClient, baseBranch.ObjectId, insertionArtifacts) is GitChange runSettingsChange)
+                {
+                    allChanges.Add(runSettingsChange);
+                    retainBuild = true;
+                }
+
                 // ************* Ensure the build is retained on the servers *************
                 if (Options.RetainInsertedBuild && retainBuild && !buildToInsert.KeepForever.GetValueOrDefault())
                 {
