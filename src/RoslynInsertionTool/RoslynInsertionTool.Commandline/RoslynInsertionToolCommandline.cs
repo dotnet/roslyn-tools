@@ -298,7 +298,7 @@ partial class RoslynInsertionToolCommandline
             return false;
         }
 
-        if (extraArguments.Count > 0)
+        if (extraArguments.Where(s => !string.IsNullOrEmpty(s)).Count() > 0)
         {
             Console.WriteLine($"Unknown arguments: {string.Join(" ", extraArguments)}");
             return false;
