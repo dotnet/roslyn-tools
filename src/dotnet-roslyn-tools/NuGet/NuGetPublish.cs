@@ -33,6 +33,7 @@ internal class NuGetPublish
         "Microsoft.CodeAnalysis.VisualBasic.Workspaces",
         "Microsoft.CodeAnalysis.Workspaces.Common",
         "Microsoft.CodeAnalysis.Workspaces.MSBuild",
+        "Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts",
         "Microsoft.Net.Compilers.Toolset",
         "Microsoft.Net.Compilers.Toolset.Framework",
 
@@ -122,8 +123,7 @@ internal class NuGetPublish
                 var result = await PublishPackageAsync(packageId, version, skipDuplicateFlag);
                 if (result.ExitCode != 0)
                 {
-                    logger.LogError("Failed to publish '{PackageId}'", packageId);
-                    throw new InvalidOperationException(result.Output);
+                    logger.LogError("Failed to publish '{PackageId}': {Message}", packageId, result.Output);
                 }
                 else
                 {
