@@ -50,10 +50,10 @@ extends:
               scriptType: pscore
               scriptLocation: inlineScript
               inlineScript: |
-                $dncengAzdoToken = az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv
-                if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($dncengAzdoToken)) {
-                  Write-Error 'Failed to acquire dnceng Azure DevOps access token via WIF.'
+                $azdoToken = az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv
+                if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($azdoToken)) {
+                  Write-Error 'Failed to acquire Azure DevOps access token via WIF.'
                   exit 1
                 }
 
-                roslyn-tools pr-tagger --github-token $(roslyn-dotnet-bot-issue-w-pat) --devdiv-azdo-token $(roslyn-dn-bot-devdiv-build-r-release-r-code-r) --dnceng-azdo-token $dncengAzdoToken
+                roslyn-tools pr-tagger --github-token $(roslyn-dotnet-bot-issue-w-pat) --devdiv-azdo-token "$azdoToken" --dnceng-azdo-token "$azdoToken"
