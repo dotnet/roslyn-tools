@@ -43,5 +43,17 @@ extends:
               includePreviewVersions: true
           - script: dotnet tool install Microsoft.RoslynTools --prerelease --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json -g
             displayName: Install Roslyn Insertion Tool
-          - script: roslyn-tools pr-tagger --github-token  $(roslyn-dotnet-bot-issue-w-pat) --devdiv-azdo-token $(roslyn-dn-bot-devdiv-build-r-release-r-code-r)  --dnceng-azdo-token $(roslyn-dn-bot-dnceng-build-r)
+          - task: AzureCLI@2
             displayName: Run PR Tagger
+            inputs:
+              azureSubscription: 'Roslyn PRTagger: DevDiv'
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                $dncengAzdoToken = az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv
+                if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($dncengAzdoToken)) {
+                  Write-Error 'Failed to acquire dnceng Azure DevOps access token via WIF.'
+                  exit 1
+                }
+
+                roslyn-tools pr-tagger --github-token $(roslyn-dotnet-bot-issue-w-pat) --devdiv-azdo-token $(roslyn-dn-bot-devdiv-build-r-release-r-code-r) --dnceng-azdo-token $dncengAzdoToken
