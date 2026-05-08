@@ -70,7 +70,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.RoslynTools", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectDependencies", "src\ProjectDependencies\ProjectDependencies.csproj", "{FB99AD63-B503-4B6D-AB2B-4A9E71DB4A86}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.RoslynTools.UnitTests", "src\dotnet-roslyn-tools-tests\Microsoft.RoslynTools.UnitTests.csproj", "{CF7C06C8-4BC7-4D18-AA29-D665E59E1A9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.RoslynTools.UnitTests", "src\dotnet-roslyn-tools-tests\Microsoft.RoslynTools.UnitTests.csproj", "{CF7C06C8-4BC7-4D18-AA29-D665E59E1A9D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
