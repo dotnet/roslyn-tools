@@ -49,6 +49,7 @@ jobs:
     displayName: Install .NET SDK
     inputs:
       version: 8.x
+      installationPath: '$(Build.SourcesDirectory)\.dotnet'
 
   - script: .\eng\common\CIBuild.cmd -configuration $(_configuration) -prepareMachine  /p:DotnetPublishUsingPipelines=true
 
@@ -86,6 +87,7 @@ jobs:
     displayName: Install .NET SDK
     inputs:
       version: 8.x
+      installationPath: '$(Build.SourcesDirectory)\.dotnet'
 
   - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:DotnetPublishUsingPipelines=true
 
