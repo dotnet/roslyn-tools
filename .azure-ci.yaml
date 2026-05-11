@@ -44,6 +44,13 @@ jobs:
       release:
         _configuration: Release
   steps:
+  # install .NET 8 for test projects targeting that version
+  - task: UseDotNet@2
+    displayName: Install .NET SDK
+    inputs:
+      version: 8.x
+      installationPath: '$(Build.SourcesDirectory)\.dotnet'
+
   - script: .\eng\common\CIBuild.cmd -configuration $(_configuration) -prepareMachine  /p:DotnetPublishUsingPipelines=true
 
   - task: PublishTestResults@2
@@ -75,6 +82,13 @@ jobs:
       release:
         _configuration: Release
   steps:
+  # install .NET 8 for test projects targeting that version
+  - task: UseDotNet@2
+    displayName: Install .NET SDK
+    inputs:
+      version: 8.x
+      installationPath: '$(Build.SourcesDirectory)/.dotnet'
+
   - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:DotnetPublishUsingPipelines=true
 
   - task: PublishTestResults@2
