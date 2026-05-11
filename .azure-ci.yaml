@@ -87,7 +87,7 @@ jobs:
     displayName: Install .NET SDK
     inputs:
       version: 8.x
-      installationPath: '$(Build.SourcesDirectory)\.dotnet'
+      installationPath: '$(Build.SourcesDirectory)/.dotnet'
 
   - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:DotnetPublishUsingPipelines=true
 
