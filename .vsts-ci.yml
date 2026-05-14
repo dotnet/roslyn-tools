@@ -119,6 +119,13 @@ extends:
             TeamName: '$(TeamName)'
           condition: and(succeeded(), ne(variables['SignType'], ''))
 
+        # install .NET 8 for test projects targeting that version
+        - task: UseDotNet@2
+          displayName: Install .NET SDK
+          inputs:
+            version: 8.x
+            installationPath: '$(Build.SourcesDirectory)\.dotnet'
+
         - script: eng\common\CIBuild.cmd
                     -configuration $(BuildConfiguration)
                     /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
