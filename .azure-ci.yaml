@@ -10,6 +10,7 @@ pr:
   paths:
     exclude:
       - src/GitHubCreateMergePRs/config.xml
+      - .vsts-ci.yml
 
 variables:
   # Set pool / queue name variables depending on which instance we're running in.
