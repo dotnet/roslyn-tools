@@ -373,10 +373,11 @@ partial class RoslynInsertionToolCommandline
         Console.WriteLine($"Processing args succeeded");
 
         var (success, pullRequestId) = await PerformInsertionAsync(options, cancellationToken);
-        if (success && pullRequestId > 0 && !string.IsNullOrEmpty(pullRequestUrlFile))
+        if (success && pullRequestId > 0)
         {
             var pullRequestUrl = $"https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequest/{pullRequestId}";
-            File.WriteAllText(pullRequestUrlFile, pullRequestUrl);
+            if (!string.IsNullOrEmpty(pullRequestUrlFile))
+                File.WriteAllText(pullRequestUrlFile, pullRequestUrl);
 
             if (string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "True", StringComparison.OrdinalIgnoreCase))
             {
