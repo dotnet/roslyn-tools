@@ -370,7 +370,15 @@ partial class RoslynInsertionToolCommandline
         var (success, pullRequestId) = await PerformInsertionAsync(options, cancellationToken);
         if (success && pullRequestId > 0 && !string.IsNullOrEmpty(pullRequestUrlFile))
         {
-            File.WriteAllText(pullRequestUrlFile, $"https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequest/{pullRequestId}");
+            var pullRequestUrl = $"https://dev.azure.com/devdiv/DevDiv/_git/VS/pullrequest/{pullRequestId}";
+            File.WriteAllText(pullRequestUrlFile, pullRequestUrl);
+
+            if (string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "True", StringComparison.OrdinalIgnoreCase))
+            {
+                var summaryFile = Path.GetTempFileName();
+                File.WriteAllText(summaryFile, $"[View insertion pull request {pullRequestId}]({pullRequestUrl})");
+                Console.WriteLine($"##vso[task.uploadsummary]{summaryFile}");
+            }
         }
 
         return success;
